@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { portionCheck } from './portionCheck.ts';
+import { amountCheck, portionCheck } from './portionCheck.ts';
 import type { Item } from './types.ts';
 
 // the 2026-11-19 cone as Open Food Facts had it (jan/05.json before the fix): P 36 (3.6 typed 36) a 100 g, one cone 140 g
@@ -43,5 +43,14 @@ describe('表示値を確認: an amount a label rarely says', () => {
     for (const id of ['mext:01088', 'dishes:x', 'kal:1', 'custom:mabc1234', 'recipe:cabc1234']) expect(portionCheck({ ...CONE, id }, 140)).toEqual([]);
     expect(portionCheck({ ...CONE, id: 'jbfd:1' }, 140)).toEqual(['p', 'pshare', 'energy']);
     expect(portionCheck(CONE, 0)).toEqual([]);
+  });
+});
+
+describe('量を確認: an amount past one sitting, any food', () => {
+  it('salt over 15 g first (the 2026-11-22 soup base ×20: 130 g), then kcal over 2,500; a usual meal, nothing', () => {
+    expect(amountCheck({ kcal: 900, s: 130 })).toBe('salt');
+    expect(amountCheck({ kcal: 3120, s: 0 })).toBe('kcal');
+    expect(amountCheck({ kcal: 3120, s: null })).toBe('kcal');
+    expect(amountCheck({ kcal: 1015, s: 9.1 })).toBeNull(); // 特盛, a ramen's soup all drunk
   });
 });

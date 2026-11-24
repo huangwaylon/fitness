@@ -5,11 +5,12 @@
   // 推定の値（AI）…, else the data's `note`: 廃棄率, 一般的な推定値…, a broth's 「スープを全部飲んだ場合」 first; two lines at most, whole on くわしく). Then the amount's
   // controls (FoodPortion over amount.svelte.ts's picker: the same 状態 swap, portions, −/＋ and grams), what that amount
   // holds (P · F · C · 塩分 as the amount level's head, 食物繊維 a fifth when known and above 0; its kcal on the row,
-  // `kcal`), and the foot: くわしく › (the amount level at what is set: its picture, the 100 g values, another meal) and
+  // `kcal`; 「量を確認」 under them past one sitting's salt or kcal: amountCheck), and the foot: くわしく › (the amount level at what is set: its picture, the 100 g values, another meal) and
   // 追加 with the kcal (logged in the search's meal), one 44 px row. Its height and fade come in over 150 ms (FoodSearch
   // closes it the same way); `still`: come back to from くわしく, already open.
   import type { Item } from '#lib/food/index.ts';
-  import { g1, itemById } from '#lib/food/index.ts';
+  import { amountCheck, g1, itemById } from '#lib/food/index.ts';
+  import { count } from '#lib/sync/log.ts';
   import { formatNum, t } from '#lib/i18n/index.ts';
   import Phrases from '../ui/Phrases.svelte';
   import FoodPortion from './FoodPortion.svelte';
@@ -49,6 +50,13 @@
   const how = $derived(kaloriTrust(info) ?? (isBroth(info) ? [t('food.soupAll'), info.note].filter(Boolean).join('。') : info.note ?? null));
   /** Fibre at this amount, when the food knows it and has some. */
   const fib = $derived(fibreAt(it, a.ok ? a.g : 0));
+  /** More salt or kcal than one sitting holds (amountCheck: a ×20 slipped in): 「量を確認」 under the values, as the
+   *  amount level's, counted once an open. */
+  const slip = $derived(a.ok ? amountCheck(a.n) : null);
+  let slipSeen = false;
+  $effect(() => {
+    if (slip && !slipSeen) (slipSeen = true), count('act:food.big.shown');
+  });
 </script>
 
 <div class="ex" class:shut={closing} class:still {id} role="group" aria-label={it.name} data-food-open={it.id} onanimationend={(e) => closing && e.target === e.currentTarget && onclosed?.()}>
@@ -67,6 +75,7 @@
       <div><dt>{t('food.s')}</dt><dd class="money" data-salt>{g1(a.n.s)}{#if a.n.s !== null}<small>g</small>{/if}</dd></div>
       {#if fib !== null}<div data-food-open-fib><dt>{t('food.fi')}</dt><dd class="money">{fib.toFixed(1)}<small>g</small></dd></div>{/if}
     </dl>
+    {#if slip}<p class="slip" data-food-big={slip}><b>{t('food.big.head')}</b>{' '}<Phrases text={t(`food.big.${slip}`, { n: formatNum(slip === 'salt' ? Math.round(a.n.s ?? 0) : a.n.kcal) })} /></p>{/if}
     <div class="foot">
       <button type="button" class="btn paper small more" data-sfx="page" data-food-open-more aria-label={t('food.detailsOf', { name: it.name })} onclick={() => a.ok && onmore(set())}>{t('food.details')}<span aria-hidden="true">›</span></button>
       <button type="button" class="btn small add" data-sfx="confirm" data-food-open-add aria-disabled={!a.ok} onclick={() => a.ok && onadd(set())}>
@@ -99,6 +108,9 @@
   .nut dt { font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .nut dd { margin: 2px 0 0; font-size: var(--fs-body); }
   .nut small { margin-left: 2px; font-size: var(--fs-s); color: var(--text-soft); }
+  /* 量を確認: quiet, as the amount level's 表示値を確認 */
+  .slip { margin: -4px 0 0; font-size: var(--fs-s); color: var(--text-soft); line-height: 1.4; }
+  .slip b { color: var(--text); }
   /* the foot: くわしく › (paper) and 追加 (the wider), one 44 px row */
   .foot { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); gap: 8px; }
   .foot .btn { margin: 0 0 var(--lip-h); width: 100%; padding-inline: 10px; white-space: nowrap; }

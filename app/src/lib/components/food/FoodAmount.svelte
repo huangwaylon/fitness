@@ -18,7 +18,8 @@
   // The item may be swapped while it is open (an entry opened from its snapshot, the catalog's portions arriving):
   // untouched, the amount starts again from the same grams; touched, the portion picked stays picked (by its label).
   // A packaged product whose amount holds what a label rarely says (food/portionCheck.ts: 50 g of protein in a cone)
-  // has a quiet 「表示値を確認」 under its values, and with `onfix` a 直す: the amount as a new マイ食品, prefilled.
+  // has a quiet 「表示値を確認」 under its values, and with `onfix` a 直す: the amount as a new マイ食品, prefilled. Any
+  // food's amount past one sitting's salt or kcal (food/portionCheck.ts amountCheck: a serving ×20) says 「量を確認」 there instead.
   // A food in a broth (foodUi.ts isBroth: ラーメン, 鍋, スープ, 汁物…) has 「スープ半分」 in the amount's card: on, its
   // salt counts half (the snapshot's `hs`; kcal as it is, said beside it only then), shown so in the values above, the
   // head's description saying 「スープは半分飲んだ場合」 (off: 「スープを全部飲んだ場合」). Not a dish whose
@@ -28,7 +29,7 @@
   import { untrack } from 'svelte';
   import type { Meal } from '#lib/contract/food.ts';
   import { MEALS } from '#lib/contract/food.ts';
-  import { g1, itemById, portionCheck, verifyOf, type Item } from '#lib/food/index.ts';
+  import { amountCheck, g1, itemById, portionCheck, verifyOf, type Item } from '#lib/food/index.ts';
   import { count } from '#lib/sync/log.ts';
   import { formatNum, t } from '#lib/i18n/index.ts';
   import { imgOf, kaloriImg } from '#lib/food/images.ts';
@@ -120,6 +121,13 @@
   $effect(() => {
     if (check && !checkSeen) (checkSeen = true), count('act:food.check.shown');
   });
+  /** More salt or kcal than one sitting holds, whatever the food (amountCheck: a ×20 slipped in), or null: 「量を確認」
+   *  over 表示値を確認, counted once an open. */
+  const slip = $derived(a.ok ? amountCheck(n) : null);
+  let slipSeen = false;
+  $effect(() => {
+    if (slip && !slipSeen) (slipSeen = true), count('act:food.big.shown');
+  });
   function fix() {
     count('act:food.check.fix');
     onfix?.(a.g, a.u);
@@ -156,7 +164,9 @@
       <div><dt>{t('food.s')}</dt><dd class="money" data-salt>{g1(n.s)}{#if n.s !== null}<small>g</small>{/if}</dd></div>
       {#if fib !== null}<div data-food-fib><dt>{t('food.fi')}</dt><dd class="money">{fib.toFixed(1)}<small>g</small></dd></div>{/if}
     </dl>
-    {#if check}
+    {#if slip}
+      <div class="chk" data-food-big={slip}><p><b>{t('food.big.head')}</b>{' '}<Phrases text={t(`food.big.${slip}`, { n: formatNum(slip === 'salt' ? Math.round(n.s ?? 0) : n.kcal) })} /></p></div>
+    {:else if check}
       <div class="chk" data-food-check>
         <p><b>{t('food.check.head')}</b>{' '}<Phrases text={t(`food.check.${check}`)} /></p>
         {#if onfix}<button type="button" class="text-link fix" data-food-fix data-sfx="page" onclick={fix}>{t('food.check.fix')}<span aria-hidden="true"> ›</span></button>{/if}

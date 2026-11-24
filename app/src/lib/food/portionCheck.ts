@@ -55,3 +55,13 @@ export function portionCheck(it: Item, g: number): CheckWhy[] {
   }
   return out;
 }
+
+/** One entry's salt and kcal past which its amount is likely a slip (a soup base's serving ×20: 130 g of salt, a real
+ *  2026-11-22 entry); a ramen with all its soup holds ~9 g, a 特盛 bowl ~1,000 kcal. */
+const AMOUNT_MAX = { salt: 15, kcal: 2500 } as const;
+
+/** Whether an amount of any food (nutrientsFor's values) holds more than one sitting does: 'salt' (first) or 'kcal',
+ *  else null. The amount's 「量を確認」 line. */
+export function amountCheck(n: { kcal: number; s: number | null }): 'salt' | 'kcal' | null {
+  return n.s !== null && n.s > AMOUNT_MAX.salt ? 'salt' : n.kcal > AMOUNT_MAX.kcal ? 'kcal' : null;
+}

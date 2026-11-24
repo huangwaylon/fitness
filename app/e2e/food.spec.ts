@@ -1100,6 +1100,13 @@ test('the amount: 豚ロース fits on the screen, kcal（g） in the head, 100g
   expect(await overflowOf(page)).toEqual([]);
   await open(); // nothing remembered
   await expect(sheet(page).locator('[data-food-per]')).toHaveAttribute('aria-expanded', 'false');
+  // 量を確認: 2 kg (4,967 kcal) is a slip, not a meal; back to 120 g, nothing (amountCheck; FoodOpen's the same)
+  const slip = sheet(page).locator('[data-food-live] [data-food-big]');
+  await expect(slip).toHaveCount(0);
+  await sheet(page).locator('[data-grams]').fill('2000');
+  await expect(slip).toHaveAttribute('data-food-big', 'kcal');
+  await sheet(page).locator('[data-grams]').fill('120');
+  await expect(slip).toHaveCount(0);
 });
 
 test('a drink’s amount: its grams and its per-100 values in ml (「100mlあたりの栄養」)', async ({ page }) => {
