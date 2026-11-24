@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { searchKey } from './text.ts';
-import { entryOf, headOf, nearby, PRODUCT_PENALTY, search, SECONDARY_PENALTY } from './search.ts';
+import { entryOf, headOf, nearby, PRODUCT_PENALTY, search, SECONDARY_PENALTY, unbracketed } from './search.ts';
 import { g1, nutrientsFor, portionsOf, servingGrams, toSnap } from './nutrition.ts';
 import { addDataset, chainPenalty, credits, emptyDb, EST_PENALTY, fillIn, IMPLAUSIBLE_PENALTY, searchFoods, verifyOf } from './db.ts';
 import type { Item } from './types.ts';
@@ -50,6 +50,14 @@ describe('search', () => {
     expect(ids('おにぎり 鮭')).toEqual(['a:6']);
     expect(ids('   ')).toEqual([]);
     expect(search(idx, 'パン', 2).length).toBe(2);
+  });
+  it('a name\'s mid-name （reading） never splits it: 肉骨茶の素 finds 「肉骨茶（バクテー）の素」 (walk-through 11-24)', () => {
+    const bkt = entryOf(item('kal:1', 'DFE 肉骨茶（バクテー）の素 18g'), SECONDARY_PENALTY);
+    expect(ids('肉骨茶の素', undefined, [bkt])).toEqual(['kal:1']);
+    expect(ids('バクテー', undefined, [bkt])).toEqual(['kal:1']); // (the reading still found)
+    expect(unbracketed('DFE 肉骨茶（バクテー）の素 18g')).toBe('dfe肉骨茶の素18g');
+    expect(unbracketed('ごはん（精白米）')).toBe(''); // (at its end: the name's key holds it already)
+    expect(unbracketed('鮭おにぎり')).toBe('');
   });
   it('one row per verify group (the best ranked)', () => {
     expect(ids('パン', (id) => ({ 'a:1': 0, 'a:2': 0 })[id])).toEqual(['a:3', 'a:2']);

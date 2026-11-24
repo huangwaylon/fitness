@@ -14,6 +14,15 @@ import { DEVICE, localKV, readJson, writeJson } from '#lib/sync/storage.ts';
 /** The summary's くわしく open or not, kept for the session (whose day: health/whose.svelte.ts). */
 export const foodLast: { more: boolean } = { more: false };
 
+/** A search's catalog still coming: the lazy datasets (the products, the chain menus) not yet asked for and in for
+ *  this search (`settled`: FoodSearch's wantMore done), or one being fetched again (`pending`: db.pending). */
+export const searchComing = (settled: boolean, pending: boolean): boolean => !settled || pending;
+
+/** 見つかりませんでした: the catalog held, a query, and nothing from any source: no catalog row (core, products, chain
+ *  menus: `results`), no recipe or マイ食品 of ours (`ours`), and nothing still coming (searchComing). */
+export const nothingFound = (o: { held: boolean; query: string; results: number; ours: number; coming: boolean }): boolean =>
+  o.held && !!o.query.trim() && !o.results && !o.ours && !o.coming;
+
 /** A noodle in its broth (a dish's, a shop's, a product's or my own: not MEXT's raw noodles), unless served without
  *  one: ざる, もり, 焼き (鍋焼き has one), まぜ, 油そば, つけ麺, 冷やし, ぶっかけ, 釜玉, 汁なし, a pasta. */
 const NOODLE = /ラーメン|らーめん|拉麺|中華そば|麺|うどん|そば|ちゃんぽん|タンメン|にゅうめん|フォー/;

@@ -5,7 +5,7 @@ import { describe, expect, it } from 'vitest';
 import '#lib/i18n/food.ts';
 import type { FoodCustom, FoodEntry, FoodSnap } from '#lib/contract/food.ts';
 import type { Item, Portion } from '#lib/food/index.ts';
-import { daysText, entryPfcCells, glossOf, goalChip, isBroth, itemOf, keptRows, KEPT_MAX, recentOf, sameItems, stateItem, catOf, kaloriPage, kaloriTrust, plateOf, recipeIdOf, recipePlate, recipeStart, recentShops, shopChips, stateGroups, stemName } from './foodUi.ts';
+import { daysText, entryPfcCells, glossOf, goalChip, isBroth, itemOf, keptRows, KEPT_MAX, recentOf, sameItems, stateItem, catOf, kaloriPage, kaloriTrust, plateOf, recipeIdOf, recipePlate, recipeStart, recentShops, shopChips, stateGroups, stemName, nothingFound, searchComing } from './foodUi.ts';
 import { amountSteps, amountText, defaultPortion, matchPortion, portionLabel, portionText, startOf, stepOf, nextMult } from './portions.ts';
 import { byJan, customDraft, customErrors, draftOf, customItem, janOf, customOf, parseAmount, quickDraft, quickErrors, quickSnap, seasoningLike, servingText, typedKcal } from './drafts.ts';
 import { addDataset, emptyDb } from '#lib/food/db.ts';
@@ -497,5 +497,22 @@ describe('a recipe’s amount starts where I last logged it (recipeStart)', () =
       recipeStart(rec, [e('f1', 3, '1人前'), e('f2', 2, '全部')]), recipeStart(rec, [e('f1', 3, '全部', 'recipe:cother00')]), recipeStart(rec, []),
       recipeStart({ ...rec, sv: 1 }, [e('f2', 2, '全部')])
     ]).toEqual([{ g0: 280, u0: '全部' }, { g0: 280, u0: '全部' }, undefined, undefined, undefined, undefined]);
+  });
+});
+
+describe('nothingFound (見つかりませんでした)', () => {
+  const base = { held: true, query: '肉骨茶の素', results: 0, ours: 0, coming: false };
+  it('only with every source empty and nothing still coming', () => {
+    expect(nothingFound(base)).toBe(true);
+    expect(nothingFound({ ...base, results: 1 })).toBe(false); // a catalog row (core, a product, a chain menu)
+    expect(nothingFound({ ...base, ours: 1 })).toBe(false); // a recipe or マイ食品 of ours
+    expect(nothingFound({ ...base, coming: true })).toBe(false);
+    expect(nothingFound({ ...base, held: false })).toBe(false);
+    expect(nothingFound({ ...base, query: '  ' })).toBe(false);
+  });
+  it('the lazy datasets count as coming till this search has them, not only while db.pending says so', () => {
+    expect(searchComing(false, false)).toBe(true); // (typed, the products not yet asked for: db.pending still false)
+    expect(searchComing(true, true)).toBe(true); // (one fetched again)
+    expect(searchComing(true, false)).toBe(false);
   });
 });

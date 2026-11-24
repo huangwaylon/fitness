@@ -40,7 +40,7 @@
   import NavButton from '../ui/NavButton.svelte';
   import Chip from '../ui/Chip.svelte';
   import ChipRow from '../ui/ChipRow.svelte';
-  import { catOf, keptRows, recentShops, shopChips, stemName, glossOf, itemOf, snapGloss, plateOf, recipeOfEntry } from './foodUi.ts';
+  import { catOf, keptRows, nothingFound, searchComing, recentShops, shopChips, stemName, glossOf, itemOf, snapGloss, plateOf, recipeOfEntry } from './foodUi.ts';
   import { amountSteps, amountText, defaultPortion } from './portions.ts';
   import Pick from '../health/Pick.svelte';
   import { customItem, janOf, servingText, typedKcal } from './drafts.ts';
@@ -195,10 +195,12 @@
     const ids = results.map((it) => it.id);
     untrack(() => keep && (keep.ids = ids));
   });
-  /** The lazy datasets still coming (db.pending): no 見つかりませんでした yet. */
+  /** The lazy datasets still coming (searchComing: not yet in for this search, or fetched again): no 見つかりませんでした
+   *  yet. (db.pending alone was false in the frames before the search first asked for them, and stayed so till one came
+   *  in: 見つかりませんでした over a product found a second later.) */
   const pending = $derived.by(() => {
     void more;
-    return db?.pending ?? false;
+    return searchComing(settled, db?.pending ?? false);
   });
   /** 近いもの for a query nothing holds whole (food/search.ts nearby: a full pass, ~30 ms on a Mac), once typing
    *  pauses. */
@@ -254,10 +256,8 @@
   const recipeById = $derived(new Map(recipes.map((r) => [r.id, r])));
   const myRecipes = $derived(onrecipe ? recipes.filter((r) => hits(r.n)) : []);
   const myFoods = $derived(oncustom ? customs.filter((c) => hits(c.n) || (!!c.jan && !!mineFor?.has(c.jan) && linked?.get(c.jan) === c)) : []);
-  /** Nothing of ours matches what was typed (the catalog's own say so after). */
-  const noneOfOurs = $derived(!myRecipes.length && !myFoods.length);
   /** 見つかりませんでした shown: the log's `act:food.search.none` once a query, once typing has paused (never the query). */
-  const nothing = $derived(!!db && !!q.trim() && !results.length && !pending && noneOfOurs);
+  const nothing = $derived(nothingFound({ held: !!db, query: q, results: results.length, ours: myRecipes.length + myFoods.length, coming: pending }));
   const told = new Set<string>();
   $effect(() => {
     const query = q.trim();
@@ -552,7 +552,7 @@
   {:else if !results.length}
     {#if pending}
       <p class="note" role="status" data-food-pending><Phrases text={t('food.pending')} /></p>
-    {:else if noneOfOurs}
+    {:else if nothing}
       <section class="card none" data-food-none>
         <p class="note" role="status"><Phrases text={t(oncreate ? 'food.noneMake' : 'food.none', { q: q.trim() })} /></p>
         {#if oncreate}

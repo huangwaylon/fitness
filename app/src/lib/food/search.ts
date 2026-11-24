@@ -39,11 +39,25 @@ export const SECONDARY_PENALTY = 1.5;
  *  a brand called たまご. */
 export const PRODUCT_PENALTY = 0.5;
 
+/** A name's （reading） or (note) mid-name: 「DFE 肉骨茶（バクテー）の素 18g」. */
+const READING = /[（(][^（）()]*[）)]/g;
+/** A name's key without its mid-name brackets, when that joins words the name's own key keeps apart (肉骨茶の素 in
+ *  「肉骨茶（バクテー）の素」); else '' (none, or only at its end: 「ごはん（精白米）」). */
+export function unbracketed(name: string, key = searchKey(name)): string {
+  if (!/[（(]/.test(name)) return '';
+  const k = searchKey(name.replace(READING, ''));
+  return k && !key.includes(k) ? k : '';
+}
+
 /** An item's searchable fields as keys, in this order: its name, `full`, each alias, `en`, `brand`, the barcode
- *  (`jan`), `cat`. The parsing worker builds them (dataset.worker.ts), joined by a space (`keys`: no key holds one,
- *  nor a query token: scripts/food-data.ts checks), so the page's slices build none. */
+ *  (`jan`), `cat`, then the name without its mid-name brackets (unbracketed; when it has any). The parsing worker
+ *  builds them (dataset.worker.ts), joined by a space (`keys`: no key holds one, nor a query token:
+ *  scripts/food-data.ts checks), so the page's slices build none. */
 export function keysOf(it: Item): string[] {
-  return [searchKey(it.name), searchKey(it.full), ...(it.aliases ?? []).map(searchKey), searchKey(it.en), searchKey(it.brand), it.jan ?? '', searchKey(it.cat)];
+  const n = searchKey(it.name), nb = unbracketed(it.name, n);
+  const keys = [n, searchKey(it.full), ...(it.aliases ?? []).map(searchKey), searchKey(it.en), searchKey(it.brand), it.jan ?? '', searchKey(it.cat)];
+  if (nb) keys.push(nb);
+  return keys;
 }
 
 /** A brand's keys (Entry `b`): its key, then its words' (split on spaces and ・: 「明治 ザ・チョコレート」 is found by

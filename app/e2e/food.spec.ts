@@ -140,6 +140,25 @@ test('search: 24 rows drawn first, the rest as the list’s end comes near', asy
   await expect.poll(() => rows.count()).toBeGreaterThan(24);
 });
 
+// A query only a lazy dataset holds (a Kalori product, 「DFE 肉骨茶（バクテー）の素 18g」, its reading mid-name): never
+// 見つかりませんでした while the chain menus are still coming (held here: 読み込み中), then the product itself in the
+// results, not under 近いもの (the iOS walk-through 11-24: 見つかりませんでした over it).
+test('search: a product only the chain menus hold, its reading mid-name: 読み込み中 till they land, then found, never 見つかりませんでした', async ({ page }) => {
+  let release = () => {};
+  const held = new Promise<void>((ok) => (release = ok));
+  await page.route(/\/food\/kalori\.json(\?|$)/, async (r) => { await held; await r.continue(); });
+  await openFood(page);
+  const s = sheet(page);
+  await s.locator('[data-add=l]').click();
+  await s.locator('[data-food-q]').fill('肉骨茶の素');
+  await expect(s.locator('[data-food-pending]')).toBeVisible({ timeout: 15_000 });
+  await expect(s.locator('[data-food-none]')).toHaveCount(0);
+  release();
+  await expect(s.locator('[data-food-results]').getByRole('button', { name: /肉骨茶（バクテー）の素/ })).toBeVisible({ timeout: 20_000 });
+  await expect(s.locator('[data-food-none]')).toHaveCount(0);
+  await expect(s.locator('[data-food-pending]')).toHaveCount(0, { timeout: 15_000 });
+});
+
 // What people type, not the catalog's name: nothing holds it whole, so 近いもの offers the foods holding most of it
 // (food/search.ts nearby), under 見つかりませんでした and 自分で作る; a name breaks only at its brackets (ui/Phrases).
 test('search: a long query nothing holds whole offers 近いもの; names break at their brackets', async ({ page }) => {
