@@ -14,5 +14,11 @@
   {"why": "kcal moderately off: P/F/C unknown", "name": "カマの照焼", "cat": "魚介", "kcal": 150, "p": 22.9, "f": 1.2, "c": 62.6, "salt": 1.6, "flags": ["atwater"], "out": {"p": null, "f": null, "c": null}},
   {"why": "a sweetener under its carbs' energy", "name": "スイートゼロ", "cat": "その他", "kcal": 0, "p": 0, "f": 0, "c": 11, "salt": 0, "flags": []},
   {"why": "a zero-sugar bar's polyols (LOW_KCAL_OK's zero)", "name": "Zero sugar bar", "cat": "菓子・デザート", "kcal": 100, "p": 10, "f": 5, "c": 40, "salt": 0.2, "flags": []},
-  {"why": "P+F+C over 105 g", "name": "", "cat": "その他", "kcal": 500, "p": 30, "f": 30, "c": 60, "salt": 1, "flags": ["pfc_sum"], "out": {"p": null, "f": null, "c": null}}
+  {"why": "P+F+C over 105 g", "name": "", "cat": "その他", "kcal": 500, "p": 30, "f": 30, "c": 60, "salt": 1, "flags": ["pfc_sum"], "out": {"p": null, "f": null, "c": null}},
+  {"why": "a sweet's salt over 2 g (おはぎ 4.9: sodium's or a serving's value read as per 100 g)", "name": "おはぎ", "cat": "菓子・デザート", "kcal": 221, "p": 4.8, "f": 1.4, "c": 45, "salt": 4.9, "flags": ["salt_sweet"], "out": {"salt": null}},
+  {"why": "a sweet's salt, フルーツ's ルー no roux", "name": "ガーナプレミアム フルーツショコラ", "cat": "菓子・デザート", "kcal": 519, "p": 6, "f": 31.4, "c": 54.3, "salt": 3, "flags": ["salt_sweet"], "out": {"salt": null}},
+  {"why": "a salted sweet keeps its salt (塩)", "name": "塩キャラメル", "cat": "菓子・デザート", "kcal": 420, "p": 3, "f": 12, "c": 75, "salt": 2.4, "flags": []},
+  {"why": "a protein bar's salt is its own cap's, not a sweet's", "name": "プロテインバー チョコ", "cat": "菓子・デザート", "kcal": 400, "p": 30, "f": 15, "c": 37, "salt": 2.4, "flags": []},
+  {"why": "スパイシー holds no パイ", "name": "スパイシースティック", "cat": "パン", "kcal": 300, "p": 8, "f": 10, "c": 45, "salt": 2.6, "flags": []},
+  {"why": "スッパイ holds no パイ, 茎わかめ is salty", "name": "スッパイマン茎わかめ", "cat": "菓子・デザート", "kcal": 85, "p": 3.3, "f": 0, "c": 21.1, "salt": 6.8, "flags": []}
 ]

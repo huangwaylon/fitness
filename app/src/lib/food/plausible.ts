@@ -51,6 +51,8 @@ export function nameGrams(name: string): number | null {
  *   − 25, not a sweetener, fibre food, seaweed or mushroom): P, F and C unknown (null; off.py drops some).
  * - `salt_copy` (a product's): salt ≥ 5 g a copy of C or P (×0.96–1.02) that 100 g can't hold with the macros, or
  *   over its category's cap (SALT_CAP) in no seasoning or salty food (SALTY): null.
+ * - `salt_sweet` (a product's): a sweet or sweet drink by name (SWEET; no salty, savoury or protein word) with salt
+ *   over SWEET_SALT_MAX: null (sodium's mg or a serving's salt read as per 100 g: カントリーマアム 4.3, おはぎ 4.9).
  * - `portion_kcal` (a product's): its 1食分 the kcal (portionIsKcal): removed.
  * - `name_density`: a chain menu over 9.1 kcal a gram its name states: dropped (the only drop: a product is
  *   always kept, so a live scan never loses one).
@@ -108,6 +110,11 @@ export function plausible(it: Item): Checked {
       flags.push('salt_copy');
     }
   }
+  if (label(it) && known(out.salt) && out.salt > SWEET_SALT_MAX && SWEET_CATS.has(it.cat ?? '') && SWEET.test(nm)
+      && !SWEET_NOT.test(nm.replace(/フルーツ/g, '')) && !SWEET_PROTEIN.test(nm)) {
+    out.salt = null;
+    flags.push('salt_sweet');
+  }
   if (label(it) && out.portions?.some((q) => portionIsKcal(q, out.kcal))) {
     out.portions = out.portions.filter((q) => !portionIsKcal(q, out.kcal));
     if (!out.portions.length) delete out.portions;
@@ -115,6 +122,17 @@ export function plausible(it: Item): Checked {
   }
   return { item: out, flags };
 }
+
+/** Salt per 100 g a sweet never holds (MEXT: chocolate 0.2, cookies 0.6–1.0, おはぎ 0.2, salted caramel ~1). */
+const SWEET_SALT_MAX = 2;
+/** Where a sweet or sweet drink sits. */
+const SWEET_CATS: ReadonlySet<string> = new Set(['菓子・デザート', '飲料', '果物', 'パン', '乳製品']);
+/** Sweets and sweet drinks by name (off.py SWEET). */
+const SWEET = /チョコ|ショコラ|クッキー|ケーキ|バウム|プリン|ゼリー|アイス|ジェラート|ソフトクリーム|大福|おはぎ|ぼたもち|まんじゅう|饅頭|ようかん|羊羹|どら焼|ドーナツ|ワッフル|グミ|キャンディ|キャラメル|飴|タルト|(?<![スッ])パイ(?!ン)|モンブラン|マフィン|マカロン|ムース|パフェ|けんぴ|かりんとう|カステラ|クレープ|エクレア|ティラミス|ジャム|はちみつ|蜂蜜|ジュース|果汁|紅茶|コーヒー|珈琲|ラテ|サイダー|コーラ|プルーン|マシュマロ|あんみつ|わらび餅|ういろう|シャーベット|ソルベ/i;
+/** Salty, savoury or seasoning words that make a sweet's salt plausible (off.py SWEET_NOT; フルーツ cut first: its ルー). */
+const SWEET_NOT = new RegExp(`${SALTY.source}|塩|ソルト|salt|チーズ|cheese|バター|漬|プレッツェル|ポテト|チップ|スナック|クラッカー|プリッツ|おかき|あられ|せんべい|煎餅|ポップコーン|ピザ|カレー|パスタ|サンド|バーガー|キッシュ|ミート|吸い物|わかめ|昆布|こんぶ|用`, 'i');
+/** A protein sweet (a whey's or soy's bar, cookie or drink: their salt has its own caps in off.py). */
+const SWEET_PROTEIN = /プロテイン|protein|ホエイ|whey|wp[ci]|ソイ|soy|大豆|たんぱく|タンパク|蛋白/i;
 
 /** A label's serving (1食分) whose grams are the item's kcal (OFF's serving field holding the energy), 300 g and up: a
  *  smaller one, or a pack's (1個), matches by chance (fried chicken 200 kcal, 200 g). */

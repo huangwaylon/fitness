@@ -302,6 +302,26 @@ SALTY_COPY = re.compile(r'たれ|タレ|だれ|ダレ|だし|ダシ|出汁|ス�
                         r'seasoning|ソース|sauce|醤|しょうゆ|ナンプラー|ふりかけ|furikake|コンソメ|ブイヨン|つゆ|調味|ペースト|明太|'
                         r'たらこ|塩辛|酒盗|梅|生ハム|ジャーキー', re.I)
 
+# A sweet or sweet drink by name with salt over SWEET_SALT_MAX (sodium's mg or a serving's salt read as per 100 g:
+# カントリーマアム 4.3, おはぎ 4.9): salt nulled. plausible.ts SWEET / SWEET_NOT mirror these (フルーツ cut first: its ルー)
+SWEET_SALT_MAX = 2.0
+SWEET_CATS = {'菓子・デザート', '飲料', '果物', 'パン', '乳製品'}
+SWEET = re.compile(r'チョコ|ショコラ|クッキー|ケーキ|バウム|プリン|ゼリー|アイス|ジェラート|ソフトクリーム|大福|おはぎ|ぼたもち|まんじゅう|'
+                   r'饅頭|ようかん|羊羹|どら焼|ドーナツ|ワッフル|グミ|キャンディ|キャラメル|飴|タルト|(?<![スッ])パイ(?!ン)|モンブラン|'
+                   r'マフィン|マカロン|ムース|パフェ|けんぴ|かりんとう|カステラ|クレープ|エクレア|ティラミス|ジャム|はちみつ|蜂蜜|'
+                   r'ジュース|果汁|紅茶|コーヒー|珈琲|ラテ|サイダー|コーラ|プルーン|マシュマロ|あんみつ|わらび餅|ういろう|シャーベット|'
+                   r'ソルベ', re.I)
+SWEET_NOT = re.compile(SALTY_COPY.pattern + r'|塩|ソルト|salt|チーズ|cheese|バター|漬|プレッツェル|ポテト|チップ|スナック|'
+                       r'クラッカー|プリッツ|おかき|あられ|せんべい|煎餅|ポップコーン|ピザ|カレー|パスタ|サンド|バーガー|キッシュ|'
+                       r'ミート|吸い物|わかめ|昆布|こんぶ|用', re.I)
+SWEET_PROTEIN = re.compile(r'プロテイン|protein|ホエイ|whey|wp[ci]|ソイ|soy|大豆|たんぱく|タンパク|蛋白', re.I)
+
+
+def salt_sweet(salt, cat, name):
+    """Salt over SWEET_SALT_MAX in a sweet by name (no salty, savoury or protein word)."""
+    return (salt > SWEET_SALT_MAX and cat in SWEET_CATS and bool(SWEET.search(name))
+            and not SWEET_NOT.search(name.replace('フルーツ', '')) and not SWEET_PROTEIN.search(name))
+
 
 def salt_copy(salt, p, f, c, cat, name):
     """Salt >= 5 g a copy of C or P (x0.96-1.02) that 100 g can't hold with the macros, or over its category's cap
@@ -454,6 +474,9 @@ def plausible(kcal, p, f, c, salt, cat='その他', name='', liquid=False):
         if salt < 0 or salt > 100 or (salt > 60 and cat != '調味料'):
             salt = None
             flags.append('salt>60')
+        elif salt_sweet(salt, cat, nm):
+            salt = None
+            flags.append('salt_sweet')
         elif protein_kind(nm, kcal):
             if salt > PROTEIN_SALT_CAP[protein_kind(nm, kcal)]:
                 salt = None
