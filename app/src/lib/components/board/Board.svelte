@@ -23,6 +23,7 @@
   import type { Season } from '#lib/ui-state/season.ts';
   import { testHooks } from '#lib/ui-state/testMode.ts';
   import { cue } from '#lib/sound/cues.ts';
+  import { quiet } from '#lib/quiet.ts';
 
   interface Props {
     /** Live, not covered by a sheet, page visible. */
@@ -95,8 +96,11 @@
     const three = w.three as BoardProj | null;
     if (!three?.attach || !canvas) return;
     let gone = false;
-    void import('./face3d.ts').then(({ faceMesh }) => {
-      if (gone) return;
+    // (its chunk not had offline, never cached yet: the board stands without its notes' face, counted, not an
+    // unhandled rejection; a failed import stays failed till the page reloads)
+    void quiet(import('./face3d.ts'), 'board.face').then((m) => {
+      if (gone || !m) return;
+      const { faceMesh } = m;
       face3 = faceMesh(canvas);
       face3.night(nightNow);
       three.attach!('board', face3.mesh);

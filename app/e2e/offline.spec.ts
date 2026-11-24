@@ -112,6 +112,46 @@ test.describe('offline after a visit', () => {
   });
 });
 
+// Offline, the island's art not yet kept (models, textures, critter art, a lazy chunk) fails quietly: each loader has
+// its fallback and its `swallow:` count, never an uncaught error or an unhandled rejection (walk-through 11-24 #10).
+// WebKit itself logs a failed fetch ("Load failed", "Fetch API cannot load …", the worker's "respondWith received an
+// error"), which Playwright's WebKit hands on as page errors with no stack: those aren't the page's own, so the page's
+// own listeners are what's read, and a page error with a stack.
+for (const sw of ['allow', 'block'] as const) {
+  test.describe(`offline, the island's art (worker: ${sw})`, () => {
+    test.use({ serviceWorkers: sw });
+    test('fails quietly: no uncaught error, no unhandled rejection', async ({ page, context }) => {
+      const errors: string[] = [];
+      let failed = 0;
+      page.on('pageerror', (e) => e.stack && errors.push(`pageerror: ${e.message}`));
+      page.on('requestfailed', () => failed++);
+      await page.exposeFunction('__uncaught', (m: string) => errors.push(m));
+      await page.addInitScript(() => {
+        const say = (window as unknown as { __uncaught: (m: string) => void }).__uncaught;
+        addEventListener('error', (e) => say(`error: ${e.message}`));
+        addEventListener('unhandledrejection', (e) => say(`unhandledrejection: ${String(e.reason)}`));
+      });
+      // (night: the most art asked; offline before most of it is in)
+      await page.goto(`${BASE}/?demo&date=2026-11-04T22:00`);
+      await up(page);
+      if (sw === 'allow') {
+        await page.waitForFunction(() => !!navigator.serviceWorker.controller);
+        await context.setOffline(true);
+        await page.reload();
+        await up(page);
+      } else await context.setOffline(true);
+      await expect.poll(() => failed).toBeGreaterThan(0);
+      // (the island goes on: its first models in or given up, the step after them idle)
+      await page.waitForFunction(() => {
+        const w = window as unknown as { __world3d?: { loaded(): boolean }; __world?: { idle(): boolean } };
+        return !!w.__world3d?.loaded() && !!w.__world?.idle();
+      });
+      expect(errors).toEqual([]);
+      await context.setOffline(false);
+    });
+  });
+}
+
 // Saved ahead (offline phase B, lib/offline): a trail's area saved on fixture tiles (a blank PNG for every USGS tile,
 // never the network), in its own cache; offline, the map draws from it alone; せってい lists it and 削除 frees it.
 test.describe('a map area saved ahead', () => {
