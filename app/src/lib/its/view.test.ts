@@ -10,7 +10,7 @@ import { parseStatus } from './client.ts';
 import { D10, D4, ROSTER, fiscalYear, type Region, type RosterHotel } from './roster.ts';
 import {
   addDate, addDates, applyPreset, bookingRows, closedOn, controlLine, nightGrid, toggleColumn, toggleNight, dateRows, delisted, draftOf, duration, errorText, eventLines, factRows,
-  attentionLines, changedParts, hotelHint, hotelNote, hotelParts, hotelRows, hotelSummary, legacy, listOrder, needOf, needsAttention, nightOf, pollMs, presetOf, removeDate, sameDraft, saveError,
+  attentionLines, changedParts, hotelHint, hotelNote, hotelParts, hotelRows, hotelSummary, listOrder, needOf, needsAttention, nightOf, pollMs, presetOf, removeDate, sameDraft, saveError,
   edges, savedLine, seasonMiss, settingsSummary, setSearch, stopsAtBooked, toInput, toggleSearch, verdictView, weekday, minuteCells, scanStrip, type Draft
 } from './view.ts';
 
@@ -22,7 +22,8 @@ const TODAY = '2026-11-13';
 const FY2026 = { 2026: { summer: ['2026-07-01', '2026-09-30'], winter: ['2026-12-19', '2027-03-31'] } } as const;
 const STATUS = parseStatus(example.status)!;
 const status = (over: Partial<ItsStatus> = {}): ItsStatus => ({ ...STATUS, ...over });
-const draft = (over: Partial<Draft> = {}): Draft => ({ ...draftOf(STATUS.settings), ...over });
+/** The example's settings as a draft, searching the whole roster (the example's own list is two names). */
+const draft = (over: Partial<Draft> = {}): Draft => ({ ...draftOf(STATUS.settings), search: ROSTER.map((r) => r.name), ...over });
 
 describe('the draft', () => {
   it('is the settings’ editable part; the same when only the order of dates or skips or their spelling differs', () => {
@@ -391,27 +392,18 @@ describe('hotelRows', () => {
 });
 
 describe('the allow-list', () => {
-  it('saved settings without one (a Worker from before it): derived from the roster and the names seen, less the skipped', () => {
-    const legacySettings = { ...STATUS.settings };
-    expect(legacy(legacySettings)).toBe(true);
-    const d = draftOf(legacySettings, ['NAGU 勝浦', '新しいホテル']);
-    expect(d.search).toContain('新しいホテル');
-    expect(d.search).toContain('NAGU 勝浦');
-    expect(d.search).not.toContain('ゆふいん山水館');
-    expect(d.search).not.toContain('ブルーベリーヒル勝浦');
-    expect(d.search.length).toBe(ROSTER.length - 2 + 1);
-    // the same derivation twice is no change (no draft to save, nothing to ask on leaving)
-    expect(sameDraft(d, draftOf(legacySettings, ['NAGU 勝浦', '新しいホテル']))).toBe(true);
-    // and the PUT carries it, the skipped left out
-    const body = toInput(setSearch(d, ['リソルの森'], false), null, NOW);
-    expect(body.search).not.toContain('リソルの森');
-    expect(body.skip).toContain('リソルの森');
+  it('the PUT carries the draft’s, the skipped left out (the example skips one it lists)', () => {
+    const d = draftOf(STATUS.settings);
+    expect(d.search).toEqual(['NAGU 勝浦', 'ブルーベリーヒル勝浦']);
+    expect(sameDraft(d, draftOf(STATUS.settings))).toBe(true);
+    const body = toInput(setSearch(d, ['リソルの森'], true), null, NOW);
+    expect(body.search).toEqual(['NAGU 勝浦', 'リソルの森']);
+    expect(toInput(setSearch(d, ['リソルの森'], false), null, NOW).skip).toContain('リソルの森');
     expect(parseSettingsInput(body, NOW).ok).toBe(true);
   });
-  it('saved with one: taken as it is; a facility offered since is undecided until someone switches it', () => {
+  it('saved: taken as it is; a facility offered since is undecided until someone switches it', () => {
     const s = { ...STATUS.settings, search: ['NAGU 勝浦'] };
-    expect(legacy(s)).toBe(false);
-    expect(draftOf(s, ['新しいホテル']).search).toEqual(['NAGU 勝浦']);
+    expect(draftOf(s).search).toEqual(['NAGU 勝浦']);
     const rows = hotelRows(draftOf(s), ['新しいホテル']);
     expect(rows.filter((r) => r.search).map((r) => r.name)).toEqual(['NAGU 勝浦']);
     expect(rows.find((r) => r.name === '新しいホテル')).toMatchObject({ group: 'new', undecided: true });

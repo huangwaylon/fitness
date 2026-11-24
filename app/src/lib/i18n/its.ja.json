@@ -167,8 +167,6 @@
   "its.hotel.newOff": "除外",
   "its.hotel.newOnLabel": "{name}を探す",
   "its.hotel.newOffLabel": "{name}を除外",
-  "its.hotel.migrate": "新しい施設は自動では探しません。今「探す」の施設は、保存するとこのまま探します。",
-  "its.hotel.migrateSave": "この内容で保存",
   "its.hold.left": "あと{n}分ほどで無効",
   "its.hold.expired": "期限切れ",
   "its.hold.mail": "メール『{hotel}申込手続きのご案内』→ 申込する → 確認",

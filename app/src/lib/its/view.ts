@@ -29,15 +29,9 @@ export interface Draft {
   autoConfirm: boolean;
 }
 
-/** The saved settings carry no allow-list (a Worker from before it): every facility not skipped was searched. */
-export const legacy = (s: ItsSettings): boolean => !Array.isArray(s.search);
-
-/** The saved settings as a draft. Without an allow-list (legacy) it is derived: the roster and the names seen, less
- *  the skipped (what that Worker searched), so 保存 keeps today's facilities and stops taking new ones unasked. */
-export function draftOf(s: ItsSettings, seen: readonly string[] = [], roster: readonly RosterHotel[] = ROSTER): Draft {
-  const skipped = new Set(s.skip.map(normName));
-  const search = legacy(s) ? uniq([...roster.map((r) => r.name), ...seen]).filter((n) => !skipped.has(normName(n))) : [...s.search!];
-  return { intervalSec: s.intervalSec, dates: [...s.dates], guests: s.guests, search, skip: [...s.skip], autoConfirm: s.autoConfirm };
+/** The saved settings as a draft. */
+export function draftOf(s: ItsSettings): Draft {
+  return { intervalSec: s.intervalSec, dates: [...s.dates], guests: s.guests, search: [...(s.search ?? [])], skip: [...s.skip], autoConfirm: s.autoConfirm };
 }
 
 /** Names unique by normName, the first spelling kept. */

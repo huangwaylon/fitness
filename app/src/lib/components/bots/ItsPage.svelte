@@ -3,7 +3,7 @@
   // its settings, on BotPage: the status card (who stopped it in its sentence while stopped) with 直近1時間 (前回 · 次回 ·
   // 予約) and ⋯ (an ActionSheet: 開始 at once, off without a stay; 停止 asks first), a failed 開始 / 停止 under its
   // sentence and, under its act, the holds to finish by mail (bookingRows' action rows, their deadline and steps);
-  // 確認が必要 (a failed dispatch); the migration notice; 日付, never folded: the calendar
+  // 確認が必要 (a failed dispatch); 日付, never folded: the calendar
   // (ItsCalendar: this month or next, a switch beside the heading, 未保存 while the draft changed it; a tap a night, a
   // weekday's header its column) and the nights under it (any, up to 400 days ahead; ✕; tapped open to their
   // facilities by why: view.ts dateRows); 予約 (the other stays); 設定, its rows folded
@@ -14,8 +14,7 @@
   // the backdrop and Esc ask first: guardForm, a tab switch too: `leave`). Read every 15 s while the runner is on its
   // way or running, every minute otherwise, only while shown (useBot.svelte.ts); 保存 / 開始 / 停止 abort a read in
   // flight (an answer older than the one shown is dropped). A poll never touches a draft: when the saved settings moved
-  // under it it says so, with 読み込み直す, and 保存 becomes 上書き保存 (asks first). Saved settings without an
-  // allow-list (a Worker from before it) give a derived one (view.ts draftOf), said once until saved. No priority: the
+  // under it it says so, with 読み込み直す, and 保存 becomes 上書き保存 (asks first). No priority: the
   // app sends none (every facility alike). Not in demo mode (no tab: no fixture). The guest's phone reads it all and
   // changes nothing (the Worker refuses its key on /its/settings and /its/run): no draft, ⋯'s 開始 / 停止 off, the
   // settings' controls aria-disabled (a tap boops: sound/taps.ts), bots.viewOnly in 設定's hint; its own 通知 (ItsNotify) works.
@@ -39,7 +38,7 @@
   import { postRun, putSettings, type ItsReply } from '#lib/its/client.ts';
   import {
     PRESETS, applyPreset, attentionLines, bookingRows, controlLine, dateRows, draftOf, eventLines, factRows, nightGrid, removeDate, toggleColumn, toggleNight,
-    changedParts, hotelHint, hotelParts, hotelRows, hotelSummary, edges, legacy, settingsSummary, minuteCells, presetOf, sameDraft, saveError, savedLine, scanStrip, setSearch,
+    changedParts, hotelHint, hotelParts, hotelRows, hotelSummary, edges, settingsSummary, minuteCells, presetOf, sameDraft, saveError, savedLine, scanStrip, setSearch,
     stopsAtBooked, toInput, toggleSearch, type Draft, type HotelRow, type ListRow
   } from '#lib/its/view.ts';
   import { driver } from '#lib/its/bot.ts';
@@ -125,8 +124,8 @@
   const nowMs = $derived(minuteNow().getTime());
   const today = $derived(dayKey(minuteNow()));
   const name = (m: Member) => (week.view ? villagerNameOf(week.view, m) : m);
-  /** What the page shows: the draft, else the saved settings (an allow-list derived when they have none). */
-  const shown = $derived(draft ?? (status ? draftOf(status.settings, status.seen) : null));
+  /** What the page shows: the draft, else the saved settings. */
+  const shown = $derived(draft ?? (status ? draftOf(status.settings) : null));
   const facts = $derived(status ? factRows(status, today) : []);
   const bookings = $derived(status ? bookingRows(status, today, nowMs) : []);
   /** The holds waiting for a person (in the card, under its act; expired ones too); the other stays under 予約. */
@@ -162,7 +161,6 @@
   /** 設定's rows: each one's summary, and which a draft changed (未保存). */
   const sums = $derived(shown ? settingsSummary(shown, parts, notifyOn) : null);
   const changed = $derived(draft && start ? changedParts(draft, start) : { dates: false, hotels: false, detail: false, notify: false });
-  const migrating = $derived(!!status && stops && legacy(status.settings));
   /** 直近1時間 by Tokyo minute (the Worker's per-minute aggregate; hidden from a Worker without it), drawn by the
    *  shared strip. */
   const cells = $derived(status?.recentMinutes ? minuteCells(status.recentMinutes, status.now) : []);
@@ -173,7 +171,7 @@
   function edit(f: (d: Draft) => Draft) {
     if (!status || !shown || viewOnly) return;
     if (!draft) {
-      start = draftOf(status.settings, status.seen);
+      start = draftOf(status.settings);
       base = status.settings.updatedAt;
     }
     draft = f(shown);
@@ -226,12 +224,6 @@
     if (!status) return;
     base = status.settings.updatedAt;
     conflict = false;
-    void save();
-  }
-
-  /** The allow-list's first save: the derived one as it is (or the draft). */
-  function saveDerived() {
-    if (!draft) edit((d) => d);
     void save();
   }
 
@@ -352,13 +344,6 @@
   {strip}
   {facts} more={events.length ? [{ id: 'recent', label: t('its.sec.recent'), n: events.length, body: recentRow }] : []} tail={dirty ? saveBar : undefined}>
   {#if status && shown}
-    {#if migrating && !viewOnly}
-      <div class="card pad note" data-its-migrate role="status">
-        <p><Phrases text={t('its.hotel.migrate')} /></p>
-        <button type="button" class="btn small paper" data-its-migrate-save data-sfx="tick" aria-disabled={saving} onclick={saveDerived}>{t('its.hotel.migrateSave')}</button>
-      </div>
-    {/if}
-
     <section class="sec" aria-labelledby="its-dates" data-its-dates-sec>
       <MonthSwitch id="its-dates" title={t('its.sec.dates')} months={cal.months} bind:value={cal.value} attr="its-month" onpick={() => (addWhy = null)}>
         {#if changed.dates}<span class="tag unsaved" data-its-unsaved>{t('its.set.unsaved')}</span>{/if}
@@ -534,10 +519,6 @@
   :global(.bpage) .hint.bad, :global(.bpage) .late, :global(.bpage) b.bad { color: var(--coral-text); }
   .lbl { font: 700 var(--fs-s)/1.2 var(--font-ui); color: var(--text-soft); margin: 0 4px; }
   /* a notice: yuzu-tinted */
-  .card.note { background: var(--warn-soft); }
-  .card.note { display: grid; gap: 8px; }
-  .card.note p { margin: 0; font-size: var(--fs-body); font-weight: 700; line-height: var(--lh); }
-  .card.note .btn { justify-self: start; margin: 0; }
 
   .holds { padding: 0; }
   .holds > li { min-height: 0; }

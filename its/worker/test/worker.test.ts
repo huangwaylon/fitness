@@ -27,9 +27,9 @@ async function fresh(extra: Partial<Env> = {}) {
 const put = (body: unknown, key?: string) => page(env, '/its/settings', { method: 'PUT', body: JSON.stringify(body), key });
 const runAction = (action: string, key?: string) => page(env, '/its/run', { method: 'POST', body: JSON.stringify({ action }), key });
 const status = async (): Promise<ItsStatus> => (await page(env, '/its/status')).json();
-// the example's body less its allow-list (an older page's: the example's config and status show no search)
-const { search: exampleSearch, ...olderInput } = example.settingsInput;
-const input = (x: object = {}) => ({ ...olderInput, baseUpdatedAt: null, ...x });
+// the example's body (its allow-list too: the example's config and status show it)
+const exampleSearch = example.settingsInput.search;
+const input = (x: object = {}) => ({ ...example.settingsInput, baseUpdatedAt: null, ...x });
 
 beforeEach(async () => {
   vi.useFakeTimers({ toFake: ['Date'] });
@@ -447,7 +447,7 @@ describe('the allow-list (search)', () => {
   it('is saved when sent; an older page’s save (no search) keeps it; a new list replaces it', async () => {
     let s: ItsStatus = await (await put(input({ search: ['NAGU 勝浦'] }))).json();
     expect(s.settings.search).toEqual(['NAGU 勝浦']);
-    s = await (await put(input({ guests: 3, baseUpdatedAt: s.settings.updatedAt }))).json();
+    s = await (await put(input({ guests: 3, search: undefined, baseUpdatedAt: s.settings.updatedAt }))).json();
     expect(s.settings).toMatchObject({ guests: 3, search: ['NAGU 勝浦'] });
     expect(logs.log.mock.calls.flat().join('\n')).toContain('search=1');
     s = await (await put(input({ search: [], baseUpdatedAt: s.settings.updatedAt }))).json();
@@ -457,7 +457,7 @@ describe('the allow-list (search)', () => {
   });
 
   it('the example’s body saves its list as sent (a name it also skips stays: skip wins when the runner matches)', async () => {
-    const s: ItsStatus = await (await put(input({ search: exampleSearch }))).json();
+    const s: ItsStatus = await (await put(input())).json();
     expect(s.settings.search).toEqual(exampleSearch);
     expect(s.settings.skip).toContain(exampleSearch[1]);
     const c: RunnerConfig = await (await asRunner(env, '/runner/config')).json();
@@ -465,7 +465,7 @@ describe('the allow-list (search)', () => {
   });
 
   it('never set: absent from the settings (the runner’s skip-list rule)', async () => {
-    const s: ItsStatus = await (await put(input())).json();
+    const s: ItsStatus = await (await put(input({ search: undefined }))).json();
     expect('search' in s.settings).toBe(false);
     expect(logs.log.mock.calls.flat().join('\n')).toContain('search=-');
   });

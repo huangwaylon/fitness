@@ -25,7 +25,7 @@ const SKIPPED = ['ゆふいん山水館', 'ブルーベリーヒル勝浦'];
 type Call = { method: string; path: string; auth: string | null; rid: string | null; body: unknown };
 type Reply = { status: number; body: unknown };
 type Answer = (c: Call, n: number, s: Status) => Reply | Promise<Reply> | undefined;
-type Opts = { legacy?: boolean; edit?: (s: Status) => Status };
+type Opts = { edit?: (s: Status) => Status };
 
 /** A phone paired as `who`, the Worker answered by `answer` (else: the status, a PUT or POST applied to it as the
  *  Worker does: a PUT moves updatedAt, 開始 / 停止 doesn't and records `control`), ボット open on 保養所 (the menu's dot
@@ -38,7 +38,7 @@ async function phone(page: Page, context: BrowserContext, who: 'A' | 'G', answer
   await context.addInitScript(() => sessionStorage.setItem('island.botsTab', 'its'));
   await rec.pair(context, who);
   const calls: Call[] = [];
-  const first = (opts.edit ?? ((s) => s))(payload(rec.now(), opts.legacy));
+  const first = (opts.edit ?? ((s) => s))(payload(rec.now()));
   let state = first;
   await page.route(`${ORIGIN}/**`, async (route: Route) => {
     const req = route.request();
@@ -543,20 +543,6 @@ test('the allow-list: presets (関東だけ, 近郊まで, 全部), the parts fo
   expect(body.skip).toContain('新しいリゾート');
 });
 
-test('a Worker without the allow-list: the page derives it, says new facilities aren’t searched, and saves it once asked', async ({ page, context }) => {
-  const { sheet, its, calls } = await phone(page, context, 'A', undefined, { legacy: true });
-  await open(sheet);
-  const note = its.locator('[data-its-migrate]');
-  await expect(note).toContainText('新しい施設は自動では探しません');
-  await expect(its.locator('[data-its-save-bar]')).toHaveCount(0);   // derived, not a change
-  await expect(its.locator('[data-its-dates-total]')).toHaveAttribute('data-its-dates-total', String(ROSTER.length - 2));
-  await note.locator('[data-its-migrate-save]').click();
-  await expect(note).toHaveCount(0);   // the Worker kept it
-  const body = puts(calls)[0].body as { search: string[]; skip: string[] };
-  expect(body.search).toHaveLength(ROSTER.length - 2);
-  expect(body.search).not.toContain('ゆふいん山水館');
-});
-
 test('日付: a calendar (this month or next): a tap puts a night in or out, a weekday’s header its column, past nights inert, a booking marked; the nights under it, tapped open by why', async ({ page, context }) => {
   const { sheet: bots, its } = await phone(page, context, 'A', undefined, {
     edit: (s) => ({ ...s, bookings: [...s.bookings, { id: 'r:9', kind: 'confirmed', date: '2026-11-21', hotel: 'リソルの森', number: 'B77', at: s.now - 60_000, runId: 'r' }] })
@@ -749,6 +735,6 @@ test('the guest’s ボット: 保養所 read with its key as a member’s; no d
   await expect(its.locator('[data-its-notify]')).toBeVisible();
   await unfold(its, 'hotels');
   await expect(its.locator('[data-its-hotel] [role="switch"]').first()).toBeDisabled();
-  await expect(its.locator('[data-its-save-bar], [data-its-migrate], [data-its-new]')).toHaveCount(0);
+  await expect(its.locator('[data-its-save-bar], [data-its-new]')).toHaveCount(0);
   expect(calls.filter((c) => c.method !== 'GET')).toHaveLength(0);
 });

@@ -723,13 +723,14 @@ def test_contract_parity():
           and set(ex['bookingInput']) <= set(b), str(b))
     check('contract: a booking id is runId:seq', b['id'].startswith(rem.run_id + ':'), b['id'])
 
-    saved = {k: getattr(bh, k) for k in ('TARGET_DATES', 'SKIP_HOTELS', '_SKIP_NORM', 'PRIORITY_HOTELS',
-                                         '_PRIORITY_NORM', 'RETRY_DELAY', 'NUM_GUESTS', 'AUTO_CONFIRM')}
+    saved = {k: getattr(bh, k) for k in ('TARGET_DATES', 'SKIP_HOTELS', '_SKIP_NORM', 'SEARCH_HOTELS', '_SEARCH_NORM',
+                                         'PRIORITY_HOTELS', '_PRIORITY_NORM', 'RETRY_DELAY', 'NUM_GUESTS', 'AUTO_CONFIRM')}
     try:
         bh.apply_settings(ex['config']['settings'])
         check('contract: settings applied: dates', bh.TARGET_DATES == ex['config']['settings']['dates'])
         check('contract: settings applied: guests as the form string', bh.NUM_GUESTS == '2')
         check('contract: settings applied: skip matches by normName', bh.is_skipped('ゆふいん山水館'))
+        check('contract: settings applied: the allow-list', bh.is_searched('NAGU 勝浦') and not bh.is_searched('ゆふいん山水館'))
         check('contract: settings applied: auto-confirm off', bh.AUTO_CONFIRM is False)
     finally:
         for k, v in saved.items():
@@ -1022,8 +1023,8 @@ def test_hot_reload(port):
     """Settings from a report reach the running bot: months start and stop scanners, a scanner reads its dates each
     cycle, a skip change applies to the next booking, and auto-confirm turned off after a hold was queued keeps
     Chrome away."""
-    saved = {k: getattr(bh, k) for k in ('TARGET_DATES', 'SKIP_HOTELS', '_SKIP_NORM', 'PRIORITY_HOTELS',
-                                         '_PRIORITY_NORM', 'RETRY_DELAY', 'NUM_GUESTS', 'AUTO_CONFIRM')}
+    saved = {k: getattr(bh, k) for k in ('TARGET_DATES', 'SKIP_HOTELS', '_SKIP_NORM', 'SEARCH_HOTELS', '_SEARCH_NORM',
+                                         'PRIORITY_HOTELS', '_PRIORITY_NORM', 'RETRY_DELAY', 'NUM_GUESTS', 'AUTO_CONFIRM')}
     sup = idle_supervisor()
     try:
         bh.apply_settings(settings(dates=[TARGET, NEXT_MONTH_DAY]))

@@ -167,8 +167,6 @@
   "its.hotel.newOff": "Skip",
   "its.hotel.newOnLabel": "Search {name}",
   "its.hotel.newOffLabel": "Skip {name}",
-  "its.hotel.migrate": "New facilities aren't searched until switched on. Save to keep searching the ones on now.",
-  "its.hotel.migrateSave": "Save as is",
   "its.hold.left": "Lapses in about {n} min",
   "its.hold.expired": "Lapsed",
   "its.hold.mail": "The mail “{hotel}申込手続きのご案内” → 申込する → 確認",

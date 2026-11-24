@@ -11,15 +11,14 @@ export const cors = () => ({ 'Access-Control-Allow-Origin': '*', 'Access-Control
 export type Status = ItsStatus;
 
 /** The contract's example status with its times moved to `now` (its stays, the 21st and 22nd, still ahead), no read
- *  this hour and push off (specs add them); with an allow-list (every roster name but the skipped) unless `legacy`
- *  (settings saved without one). */
-export function payload(now: number, legacy = false): Status {
+ *  this hour and push off (specs add them); its allow-list every roster name but the skipped (the example's is two). */
+export function payload(now: number): Status {
   const s = structuredClone(example.status) as ItsStatus;
   const dt = now - s.now;
   const r = s.runner!;
   const search = ROSTER.map((h) => h.name).filter((n) => !s.settings.skip.includes(n));
   return {
-    ...s, now, settings: { ...s.settings, updatedAt: s.settings.updatedAt! + dt, ...(legacy ? {} : { search }) },
+    ...s, now, settings: { ...s.settings, updatedAt: s.settings.updatedAt! + dt, search },
     runner: { ...r, settingsAt: s.settings.updatedAt! + dt, startedAt: r.startedAt + dt, deadline: r.deadline! + dt, lastScanAt: r.lastScanAt! + dt, lastOkAt: r.lastOkAt! + dt, lastSeen: r.lastSeen + dt,
       solves: { ...r.solves, lastOkAt: r.solves.lastOkAt! + dt }, lastError: { ...r.lastError!, at: r.lastError!.at + dt } },
     bookings: s.bookings.map((b) => ({ ...b, at: b.at + dt })),

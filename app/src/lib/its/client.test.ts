@@ -38,7 +38,9 @@ describe('parseStatus', () => {
     expect([s.seen, s.settings.skip, s.settings.priority, s.bookings.map((b) => b.hotel)]).toEqual([[long], [long], ['NAGU'], [long]]);
   });
   it('reads the allow-list when the Worker keeps one, and leaves it absent when it doesn’t', () => {
-    expect(parseStatus(wire())!.settings).not.toHaveProperty('search');
+    expect(parseStatus(wire())!.settings.search).toEqual(example.status.settings.search);
+    const { search: _s, ...older } = example.status.settings;
+    expect(parseStatus({ ...wire(), settings: older })!.settings).not.toHaveProperty('search');
     expect(parseStatus({ ...wire(), settings: { ...example.status.settings, search: ['NAGU 勝浦', 'a\u202eb', 3] } })!.settings.search).toEqual(['NAGU 勝浦']);
     expect(parseStatus({ ...wire(), settings: { ...example.status.settings, search: [] } })!.settings.search).toEqual([]);
   });
