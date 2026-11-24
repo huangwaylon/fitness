@@ -1,6 +1,7 @@
 <script lang="ts">
   // `/gym#<key>`: the LINE menu's 📱 アプリで設定 (gym/README.md), ジム's page alone (components/bots/GymPage.svelte)
-  // with the link's key (lib/gym/linkKey.ts): LINE's browser has no key of its own. Served as its own shell
+  // with the link's key (lib/gym/linkKey.ts): LINE's browser has no key of its own; its two reads begun by the HTML
+  // (lib/gym/early.ts). Served as its own shell
   // (build-pages/gym.html: scripts/headers.ts); the root layout runs bare here, as for 共有リンク (routes/s).
   import { onMount } from 'svelte';
   import '#lib/i18n/bots.ts';
@@ -10,7 +11,8 @@
   import NavBar from '#lib/components/ui/NavBar.svelte';
   import Phrases from '#lib/components/ui/Phrases.svelte';
 
-  let shown = $state<'wait' | 'page' | 'none'>('wait');
+  /** `old`: the Worker refused the link's key (rotated: an old card's 📱), the cure said. */
+  let shown = $state<'wait' | 'page' | 'none' | 'old'>('wait');
 
   onMount(() => {
     const key = takeLinkKey(location.hash);
@@ -23,9 +25,9 @@
   <NavBar title={t('bots.gym')} pad />
   <div class="body">
     {#if shown === 'page'}
-      <GymPage />
-    {:else if shown === 'none'}
-      <p class="card pad none" data-gym-link-none><Phrases text={t('bots.link.none')} /></p>
+      <GymPage onlink={() => (shown = 'old')} />
+    {:else if shown !== 'wait'}
+      <p class="card pad none" data-gym-link-none={shown}><Phrases text={t(shown === 'old' ? 'bots.link.old' : 'bots.link.none')} /></p>
     {/if}
   </div>
 </main>

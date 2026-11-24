@@ -51,7 +51,8 @@ range); 🔕 on it saves nothing, and 🧹 puts it back to off.
 - **📱 アプリで設定**: the menu's first button opens the app's ジム page in LINE's browser, `${APP_URL}/gym#<LINK_KEY>`
   (docs/bots.md): the calendar and every setting, the same `/gym/config` and `/gym/act`. `LINK_KEY` is member A's
   there (anyone in the group has it, so the app's list names its changes ジムボット; logged `via=link`) and reaches the gym's settings only, as a tap does, never the
-  relay's record. Unset: no button. Rotating it (`secret put`) breaks the old cards' links; 「メニュー」 brings a new card.
+  relay's record. Unset: no button. Rotating it (`secret put`) breaks the old cards' links (the page says so: 「メニュー」 brings a new card). The page's
+  HTML begins both reads (`app/src/lib/gym/early.ts`) (`/gym/config` still has its CORS preflight: Max-Age a day, which browsers cap).
 - **🔧 チェック設定**: the interval (10, 15, 30 or 60 minutes; 15 at first) and stop/restart.
 - Days are picked from 🗓️ buttons, one bubble per week, 25 days ahead (the gym publishes about 4 weeks). Past days,
   passed ⏳ times and announced times that have started are dropped at each check.

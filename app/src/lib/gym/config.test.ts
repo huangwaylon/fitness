@@ -4,6 +4,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { fetchConfig, parseConfig, postAct, settle, type ConfigReply, type GymConfig } from './config.ts';
 import { addDays, type DayRow } from './contract.ts';
+import { takeLinkKey } from './linkKey.ts';
 
 const logs = vi.hoisted(() => [] as unknown[][]);
 vi.mock('#lib/sync/log.ts', () => ({ log: (...a: unknown[]) => void logs.push(a) }));
@@ -110,6 +111,28 @@ describe('fetchConfig', () => {
     // the headers in time, the body never whole
     vi.stubGlobal('fetch', vi.fn(async (_u: string, init: RequestInit) => new Response(new ReadableStream({ start: (c) => init.signal!.addEventListener('abort', () => c.error(init.signal!.reason)) }))));
     expect(await fetchConfig(undefined, URL_, KEY, 20)).toEqual({ ok: false, why: 'unreached' });
+  });
+
+  it('the LINE link’s key refused (401: rotated): `link`, which drops the kept settings', async () => {
+    const LINK = '7a'.repeat(32);
+    takeLinkKey(`#${LINK}`, null);
+    answer(401, '{"ok":false,"error":"unauthorized"}');
+    expect(await fetchConfig(undefined, URL_)).toEqual({ ok: false, why: 'link' });
+    answer(403, '{}');
+    expect(await fetchConfig(undefined, URL_)).toEqual({ ok: false, why: 'hide' });
+    takeLinkKey('', null);
+    expect(settle(wire(), { ok: false, why: 'link' })).toEqual({ cfg: null, state: 'hidden' });
+  });
+
+  it('takes the read gym.html began (early.ts) when it is this Worker’s and key’s, once', async () => {
+    const f = answer(500, '{}');
+    const w = globalThis as { __gymEarly?: unknown };
+    w.__gymEarly = { u: URL_, k: KEY, c: Promise.resolve(new Response(JSON.stringify(wire()))) };
+    expect(await fetchConfig(undefined, URL_, 'ff'.repeat(32))).toEqual({ ok: false, why: 'failed' }); // another key: fetched
+    expect(await fetchConfig(undefined, URL_, KEY)).toEqual({ ok: true, config: wire() });
+    expect(w.__gymEarly).toBeUndefined();
+    expect(await fetchConfig(undefined, URL_, KEY)).toEqual({ ok: false, why: 'failed' });
+    expect(f).toHaveBeenCalledTimes(2);
   });
 });
 

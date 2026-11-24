@@ -1,11 +1,14 @@
 // ボット's status reads (docs/bots.md), one loop for both tabs: a read as the page mounts, then the next
 // `every()` ms after each (保養所 15 s or 60 s, ジム 60 s), only while the page is shown: none while the phone is put
-// away (the next one as it comes back), and leaving the page (the other tab, the sheet closed: it unmounts) aborts the
+// away (the next one as it comes back, unless one began under FRESH_MS ago and is on its way), and leaving the page (the other tab, the sheet closed: it unmounts) aborts the
 // read in flight and stops the loop. `read` gets a signal aborted by a newer read, `hold()` or the page's end, and
 // applies its answer only while it isn't. `skip()`: no read now (保養所 while its 保存 or 開始 answers with the status
 // itself). `warm()` at mount: no read then, the timer started (a read that just happened elsewhere). Call from a
 // component's script (it owns an $effect).
 import { untrack } from 'svelte';
+
+/** A read this young isn't restarted by the phone coming back (ms). */
+const FRESH_MS = 5000;
 
 export interface Poll {
   /** A read now (the timer restarted after it). */
@@ -24,6 +27,8 @@ export interface Poll {
 export function statusPoll(read: (signal: AbortSignal) => Promise<void>, every: () => number, skip: () => boolean = () => false, warm: () => boolean = () => false): Poll {
   const life = new AbortController();
   let ctl: AbortController | null = null;
+  /** When the read in flight began (performance.now()). */
+  let began = 0;
   let timer: ReturnType<typeof setTimeout> | undefined;
   const st = $state({ loading: false });
 
@@ -46,6 +51,7 @@ export function statusPoll(read: (signal: AbortSignal) => Promise<void>, every: 
     clearTimeout(timer);
     ctl?.abort();
     const c = (ctl = new AbortController());
+    began = performance.now();
     const signal = AbortSignal.any([c.signal, life.signal]);
     st.loading = true;
     try {
@@ -63,7 +69,8 @@ export function statusPoll(read: (signal: AbortSignal) => Promise<void>, every: 
   function start(): () => void {
     if (warm()) schedule();
     else void refresh();
-    const onVisible = () => document.hidden || void refresh();
+    // (not over a read that just began: the page shown as it loads, a WebView's first visibilitychange, read twice)
+    const onVisible = () => document.hidden || (ctl && performance.now() - began < FRESH_MS) || void refresh();
     document.addEventListener('visibilitychange', onVisible);
     return () => {
       document.removeEventListener('visibilitychange', onVisible);

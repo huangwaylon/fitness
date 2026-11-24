@@ -20,6 +20,8 @@
 //   layout's had run (the startup review). Its chunk and its static imports, transitively, as modulepreload; its
 //   stylesheets as preload, crossorigin as Vite asks for them (else the preload goes unused and they come twice).
 //   (Before 404.html is copied from it: `npm run build`.)
+// - gym.html runs ジム's two reads inline, before any module (lib/gym/early.ts), its hash in the CSP (every page's: one
+//   _headers policy for all).
 // - index.html carries the chunks' import map (vite.config.ts chunkImportMap: a chunk imports another by a stable key),
 //   inline before any module, its hash added to the CSP's script-src.
 // - The models (`*.glb`, ~1,800 files, 51 MB) and the room and player packs go as application/x-protobuf: Cloudflare
@@ -30,6 +32,7 @@ import { createHash } from 'node:crypto';
 import { existsSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { BOOT_WATCH_JS } from '../src/lib/ui-state/bootWatch.ts';
+import { GYM_ORIGIN, gymEarlyJs } from '../src/lib/gym/early.ts';
 
 const root = join(import.meta.dirname, '..', 'build-pages');
 const base = (process.env.BASE_PATH ?? '').replace(/\/$/, '');
@@ -108,6 +111,19 @@ if (!html.includes('data-island-preload')) {
     console.log('build-pages/index.html: the boot watchdog');
   }
 }
+/** gym.html's early reads (lib/gym/early.ts), its hash in every page's CSP (the _headers policy is the one for all;
+ *  VITE_GYM_URL as the app's, empty: no ジム, none). */
+const gymUrl = process.env.VITE_GYM_URL ?? GYM_ORIGIN;
+const GYM_EARLY = gymUrl ? gymEarlyJs(gymUrl) : '';
+if (GYM_EARLY) {
+  const sha = `'sha256-${createHash('sha256').update(GYM_EARLY).digest('base64')}'`;
+  if (!html.includes(sha)) {
+    const meta = /(<meta http-equiv="content-security-policy" content="[^"]*script-src [^;"]*)([^>]*>)/.exec(html);
+    if (!meta) throw new Error('headers: no script-src in index.html\'s CSP <meta>, for the gym page\'s early reads');
+    html = html.replace(meta[0], `${meta[1]} ${sha}${meta[2]}`);
+    writeFileSync(join(root, 'index.html'), html);
+  }
+}
 {
   // the bare pages (ui-state/paths.ts isBare): 共有リンク's (routes/s) and the LINE menu's ジム (routes/gym), each its own
   // shell, so `/s` and `/gym` answer 200 (Pages serves s.html, gym.html) and a phone without the app's key loads the
@@ -117,7 +133,10 @@ if (!html.includes('data-island-preload')) {
   const noMap = bare.replace(/<script type="importmap">.*?<\/script>/s, '');
   for (const [page, mark] of [['s', "data-share-preload: the shared link page's chunks"], ['gym', "data-gym-preload: the LINE link's gym page's chunks"]]) {
     const links = preloadsOf(`${page}/+page.svelte`, noMap);
-    writeFileSync(join(root, `${page}.html`), withPreloads(bare, mark, links));
+    let shell = withPreloads(bare, mark, links);
+    // ジム's: /status and /gym/config asked for right after the boot watchdog, before any module (lib/gym/early.ts)
+    if (page === 'gym' && GYM_EARLY) shell = shell.replace(/<script data-boot-watch>.*?<\/script>/s, (m) => `${m}\n\t\t<script data-gym-early>${GYM_EARLY}</script>`);
+    writeFileSync(join(root, `${page}.html`), shell);
     console.log(`build-pages/${page}.html: ${links.length} preloads`);
   }
 }

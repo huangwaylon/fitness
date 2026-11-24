@@ -2,7 +2,8 @@
 // contract.ts, the Worker's too): the members-only GET /gym/config (the calendar's 25 rows, the check settings, 🔎's
 // cooldown, the app's last changes, and 📋's words) and POST /gym/act (a change, the select mode's bulk form, or 🔎).
 // Both with this phone's key. The config through lib/keyed.ts (a failure logged as keyed.fail `gym`); an older Worker
-// (no route, no rows) or a key it doesn't take hides the section, no error. The act with its own fetch: an
+// (no route, no rows) or a key it doesn't take hides the section, no error (the LINE link's
+// key refused: `link`, an old card's, the route says so: routes/gym). The act with its own fetch: an
 // X-Request-Id the Worker logs (`rid=`) and the refusal's body (the bot's hint, a 409's config, a 429's Retry-After),
 // a failure logged as gym.fail `act` with the Worker's code. Answers are checked (contract/guards.ts): garbage is a
 // failure, never shown.
@@ -13,6 +14,7 @@ import { errCode, memberCall } from '#lib/bots/memberCall.ts';
 import { isNum, isRec, isText } from '#lib/contract/guards.ts';
 import { log } from '#lib/sync/log.ts';
 import { GYM_URL } from './status.ts';
+import { takeEarly } from './early.ts';
 import {
   INTERVALS, isDay, isSlotClock,
   type ActInput, type Change, type ChangeKind, type DayRow, type GymConfig, type OpenSlot, type Rule, type StatusDay
@@ -79,16 +81,19 @@ export function parseConfig(x: unknown): GymConfig | null {
 /** A fetch's outcome: the settings, or `hide` (no key, a Worker without the route or the rows, or that won't take the
  *  key), `failed` (a server error, garbage) or `unreached` (no answer: offline, a timeout, or a preflight an older
  *  Worker refused without CORS, which the browser can't tell apart; the caller's abort too, which the page ignores). */
-export type ConfigReply = { ok: true; config: GymConfig } | { ok: false; why: 'hide' | 'failed' | 'unreached' };
+export type ConfigReply = { ok: true; config: GymConfig } | { ok: false; why: 'hide' | 'failed' | 'unreached' | 'link' };
 
 /** How long /gym/config's whole answer is waited for (a hung network: lie-fi), then `unreached`: the last one kept is
  *  shown meanwhile (gymActs.svelte.ts). */
 const CONFIG_MS = 15_000;
 
-/** GET /gym/config with this phone's key (the LINE link's first: linkKey.ts) (lib/keyed.ts: its failure logged as keyed.fail `gym`). Never throws. */
+/** GET /gym/config with this phone's key (the LINE link's first: linkKey.ts; `link` when the Worker refuses that one:
+ *  401, a rotated LINK_KEY on an old card) (lib/keyed.ts: its failure logged as keyed.fail `gym`); the read gym.html
+ *  began, if it did (early.ts). Never throws. */
 export async function fetchConfig(signal?: AbortSignal, url = GYM_URL, key = linkKey() ?? getKey(), ms = CONFIG_MS): Promise<ConfigReply> {
   const late = AbortSignal.timeout(ms), both = signal ? AbortSignal.any([signal, late]) : late;
-  const r = await keyed(url && `${url}/gym/config`, key, { signal: both, cache: 'no-store' });
+  const r = await keyed(url && `${url}/gym/config`, key, { signal: both, cache: 'no-store' }, undefined, takeEarly('c', url, both, key));
+  if (!r.ok && r.why === 'refused' && r.res?.status === 401 && key && key === linkKey()) return { ok: false, why: 'link' };
   if (!r.ok) return { ok: false, why: r.why === 'unpaired' || r.why === 'refused' ? 'hide' : r.why === 'failed' ? 'failed' : 'unreached' };
   // (the body under the same deadline: the signal aborts its read too)
   const json: unknown = await r.res.json().catch(() => (late.aborted ? undefined : null));
@@ -100,10 +105,10 @@ export async function fetchConfig(signal?: AbortSignal, url = GYM_URL, key = lin
 }
 
 /** What ジム's settings show after a fetch, given the last good answer: hidden until one comes (an unreached Worker is
- *  most likely an older one, so no error), then a failure keeps it under the retry row; `hide` drops it. */
+ *  most likely an older one, so no error), then a failure keeps it under the retry row; `hide` and `link` drop it. */
 export function settle(cfg: GymConfig | null, r: ConfigReply): { cfg: GymConfig | null; state: 'hidden' | 'ok' | 'failed' } {
   if (r.ok) return { cfg: r.config, state: 'ok' };
-  if (r.why === 'hide' || (r.why === 'unreached' && !cfg)) return { cfg: null, state: 'hidden' };
+  if (r.why === 'hide' || r.why === 'link' || (r.why === 'unreached' && !cfg)) return { cfg: null, state: 'hidden' };
   return { cfg, state: 'failed' };
 }
 

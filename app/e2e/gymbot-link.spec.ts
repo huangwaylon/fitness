@@ -47,3 +47,54 @@ test('no key in the link: a line saying to open it from LINE, nothing asked', as
   await expect(page.locator('[data-gym-link-none]')).toHaveText(/LINEのメニュー/);
   expect(calls.config + calls.act).toBe(0);
 });
+
+test('the reads begin with the HTML, before the page’s JS (gym/early.ts), and are each asked for once', async ({ page, context }) => {
+  const { calls } = await linePhone(page, context);
+  let release!: () => void;
+  const held = new Promise<void>((r) => (release = r));
+  await page.route(/\/_app\/immutable\/.*\.js$/, async (r) => {
+    await held;
+    await r.fallback();
+  });
+  await page.goto(`gym#${LINK}`, { waitUntil: 'commit' });
+  // every chunk held: the inline script alone asked
+  await expect.poll(() => [calls.status, calls.config]).toEqual([1, 1]);
+  release();
+  const root = page.locator('[data-gym-link="page"]');
+  await expect(root.locator('[data-gym-day]')).toHaveCount(25);
+  await expect(root.locator('[data-gym-verdict="degraded"]')).toBeVisible();
+  expect(new URL(page.url()).hash).toBe('');
+  expect([calls.status, calls.config]).toEqual([1, 1]);
+  expect(await page.evaluate(() => '__gymEarly' in window)).toBe(false); // taken, the key gone with it
+});
+
+test('a refused link key (rotated: an old card): the kept settings dropped, a line naming the cure', async ({ page, context }) => {
+  await linePhone(page, context);
+  await page.goto(`gym#${LINK}`);
+  await expect(page.locator('[data-gym-day]')).toHaveCount(25);
+  expect(await page.evaluate(() => localStorage.getItem('island.gymConfig'))).not.toBeNull();
+  await page.route(CONFIG, (r) =>
+    r.request().method() === 'OPTIONS' ? r.fallback() : r.fulfill({ status: 401, headers: { 'Access-Control-Allow-Origin': '*' }, contentType: 'application/json', body: '{"ok":false,"error":"unauthorized"}' }));
+  await page.goto('about:blank'); // (a new load: from /gym, the hash alone would be a jump in the page)
+  await page.goto(`gym#${'7a'.repeat(32)}`);
+  await expect(page.locator('[data-gym-link-none="old"]')).toHaveText(/「メニュー」と送ると/);
+  await expect(page.locator('[data-gym-day]')).toHaveCount(0);
+  expect(await page.evaluate(() => localStorage.getItem('island.gymConfig'))).toBeNull();
+});
+
+test('a repeat open paints the kept status and calendar before any answer; back to the page after leaving it, the same', async ({ page, context }) => {
+  await linePhone(page, context);
+  await page.goto(`gym#${LINK}`);
+  await expect(page.locator('[data-gym-day]')).toHaveCount(25);
+  await expect(page.locator('[data-gym-verdict="degraded"]')).toBeVisible();
+  // the Worker silent from now on (lie-fi): nothing answers
+  await page.route(/gym-bot\.island-fund-relay\.workers\.dev\//, () => new Promise(() => {}));
+  await page.goto('about:blank');
+  await page.goto(`gym#${LINK}`);
+  await expect(page.locator('[data-gym-day]')).toHaveCount(25);
+  await expect(page.locator('[data-gym-verdict="degraded"]')).toBeVisible();
+  await page.goto('about:blank');
+  await page.goBack(); // (LINE's ‹: the hash already gone, the tab's key read)
+  await expect(page.locator('[data-gym-day]')).toHaveCount(25);
+  expect(new URL(page.url()).hash).toBe('');
+});

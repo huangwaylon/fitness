@@ -122,6 +122,29 @@ describe('useBot (a bot page’s status)', () => {
     expect(h.calls).toBe(3);
     stop2();
   });
+
+  it('the phone coming back reads again, but not over a read that just began (a WebView shown as it loads)', async () => {
+    let shown = () => {};
+    vi.stubGlobal('document', { hidden: false, addEventListener: (_: string, f: () => void) => void (shown = f), removeEventListener: () => {} });
+    let answer = (_: unknown) => {};
+    h.answer = () => new Promise((r) => (answer = r));
+    const { useBot } = await load();
+    const bot = useBot('gym', driver);
+    const stop = bot.poll.start();
+    await settle();
+    shown();
+    await settle();
+    expect(h.calls).toBe(1);
+    // one still on its way after 5 s (a hung read): another
+    await vi.advanceTimersByTimeAsync(6_000);
+    shown();
+    await settle();
+    expect(h.calls).toBe(2);
+    answer({ ok: true, status: { tone: 'good' } });
+    await settle();
+    expect(bot.data).toEqual({ tone: 'good' });
+    stop();
+  });
 });
 
 describe('the minute’s re-weighing (summary retone)', () => {

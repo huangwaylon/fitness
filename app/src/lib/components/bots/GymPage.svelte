@@ -25,6 +25,7 @@
   import { checkStrip, edges, factRows, reasonLines, verdictView, type GymStatus } from '#lib/gym/status.ts';
   import { driver } from '#lib/gym/bot.ts';
   import { fetchConfig, postAct, settle, type GymConfig } from '#lib/gym/config.ts';
+  import { linkKey } from '#lib/gym/linkKey.ts';
   import { bulkAct, changeLine, fromWords, longRange, laterNote, monthCells, movedDays, pickSlot, slotCount, undoActs, pickedDays, type SlotPick } from '#lib/gym/calendar.ts';
   import { twoMonths } from '#lib/contract/tokyo.ts';
   import { monthLabel } from '#lib/i18n/format.ts';
@@ -43,6 +44,10 @@
   import { useBot } from './useBot.svelte.ts';
   import { acts, attach, send as sendAct, shownConfig } from './gymActs.svelte.ts';
   import Phrases from '#lib/components/ui/Phrases.svelte';
+
+  /** `onlink`: the Worker refused the LINE link's key (an old card's, rotated: config.ts `link`), the kept settings
+   *  dropped; the route says what to do (routes/gym). */
+  let { onlink }: { onlink?: () => void } = $props();
 
   /** アプリで変更: the newest this many. */
   const CHANGES_SHOWN = 6;
@@ -96,6 +101,7 @@
     const r = await fetchConfig(signal);
     if (cfgCtl === c) cfgLoading = false;
     if (signal.aborted) return;
+    if (!r.ok && r.why === 'link') return void ((acts.confirmed = null), onlink?.());
     // an act answered (or is on its way) since: which of its config and this read's is newer can't be told (a LINE tap
     // between them), so read again once the acts are all answered (else a change made elsewhere waited for the next poll)
     if (acts.queue.length || seen !== acts.answered) return void (reread = true);
@@ -192,6 +198,7 @@
       if (r.changed && q.undoable) offerUndo(q.input, was, r.config);
       return;
     }
+    if (r.http === 401 && linkKey()) return void ((acts.confirmed = null), onlink?.());
     cue('boop');
     if (r.err === 'stale') {
       note = { text: t('gym.err.stale') };

@@ -2,8 +2,8 @@
 // may have no key of its own (LINE's browser, Safari: the PWA's storage is apart). The key is the gym Worker's
 // LINK_KEY, member A's there and nowhere else (never the relay's). Read once from the hash, which then leaves the URL,
 // and kept for this tab (a reload); config.ts sends it before the phone's own key.
-const TAB = 'island.gymLink';
-const KEY_RE = /^[0-9a-f]{32,128}$/;
+export const TAB = 'island.gymLink';
+export const KEY_RE = /^[0-9a-f]{32,128}$/;
 
 let key: string | null = null;
 

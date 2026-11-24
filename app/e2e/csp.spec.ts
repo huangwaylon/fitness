@@ -2,12 +2,13 @@
 // Pages serves it; the same policy in index.html's <meta>, vite.config.ts `csp`): a click-through of the island, its
 // sheets, the music, the shop, the museum, the tent, the editor and the trip map with no violation (every `securitypolicyviolation`
 // event and every console line of a refused load, the page's and its workers').
-import { expect, test, type Page } from './fixtures.ts';
+import { expect, pinnedClock, test, type Page } from './fixtures.ts';
 import { fromMenu, openKenkou } from './hud.ts';
 import { is3d, nav } from './island.ts';
 import { roomUp } from './rooms.ts';
 import { fixtureTiles, gotoTrip, mapReady, mapsDrawn } from './trips.ts';
 import { routeShare, TOKEN } from './share.ts';
+import { fakeGym, routeGym } from './gymbot.ts';
 
 const Q = '?demo&date=2026-11-04T12:00';
 
@@ -132,5 +133,18 @@ test('the shared link page (/s): its read, the trip and its map, no CSP violatio
   await page.locator('[data-trip-tab="map"]').click();
   await mapReady(page);
   expect(net.stray).toEqual([]);
+  await none(page, seen);
+});
+
+// the LINE link's ジム (routes/gym, build-pages/gym.html): its inline early reads (lib/gym/early.ts) under the policy
+test('the gym link page (/gym): its early reads and the calendar, no CSP violation', async ({ page, context }) => {
+  const seen = await watch(page);
+  const clock = pinnedClock();
+  await clock.device(context);
+  const calls = await routeGym(page, fakeGym(clock.now), clock.now);
+  const res = await page.goto(`gym#${'5e'.repeat(32)}`);
+  expect(res?.status()).toBe(200);
+  await expect(page.locator('[data-gym-day]')).toHaveCount(25);
+  expect([calls.status, calls.config]).toEqual([1, 1]);
   await none(page, seen);
 });

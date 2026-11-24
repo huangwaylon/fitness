@@ -15,14 +15,16 @@ export const keyedSink = (fn: typeof sink): void => void (sink = fn);
 export type Keyed = { ok: true; res: Response } | { ok: false; why: KeyedMiss; res?: Response; msg?: string; ms?: number };
 
 /** `init` sent to `url` with `key`; `answerMs`: how long its answer (the headers, never the body's download) is waited
- *  for (`timeout`). */
-export async function keyed(url: string, key: string | null | undefined, init: Omit<RequestInit, 'headers'> & { headers?: Record<string, string> } = {}, answerMs?: number): Promise<Keyed> {
-  const r = await call(url, key, init, answerMs);
+ *  for (`timeout`); `early`: that request begun already (gym/early.ts: gym.html's), its answer taken instead. */
+export async function keyed(url: string, key: string | null | undefined, init: Omit<RequestInit, 'headers'> & { headers?: Record<string, string> } = {}, answerMs?: number,
+  early?: Promise<Response> | null): Promise<Keyed> {
+  const r = await call(url, key, init, answerMs, early);
   if (!r.ok && r.why !== 'unpaired' && r.why !== 'aborted') sink(url, r.why, r.res?.status);
   return r;
 }
 
-async function call(url: string, key: string | null | undefined, init: Omit<RequestInit, 'headers'> & { headers?: Record<string, string> } = {}, answerMs?: number): Promise<Keyed> {
+async function call(url: string, key: string | null | undefined, init: Omit<RequestInit, 'headers'> & { headers?: Record<string, string> } = {}, answerMs?: number,
+  early?: Promise<Response> | null): Promise<Keyed> {
   if (!key || !url) return { ok: false, why: 'unpaired' };
   const late = answerMs === undefined ? null : new AbortController();
   const timer = late && setTimeout(() => late.abort(new DOMException('no answer', 'TimeoutError')), answerMs);
@@ -30,7 +32,7 @@ async function call(url: string, key: string | null | undefined, init: Omit<Requ
   let res: Response;
   const t0 = performance.now();
   try {
-    res = await fetch(url, { ...init, headers: { ...init.headers, Authorization: `Bearer ${key}` }, ...(signal ? { signal } : {}) });
+    res = await (early ?? fetch(url, { ...init, headers: { ...init.headers, Authorization: `Bearer ${key}` }, ...(signal ? { signal } : {}) }));
   } catch (e) {
     const name = e instanceof DOMException ? e.name : '';
     const why = late?.signal.aborted || name === 'TimeoutError' ? 'timeout' : name === 'AbortError' ? 'aborted' : 'unreached';

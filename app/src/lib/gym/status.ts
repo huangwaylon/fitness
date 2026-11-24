@@ -5,6 +5,7 @@ import { t } from '#lib/i18n/index.ts';
 import { isNum, isRec } from '#lib/contract/guards.ts';
 import { chain, stripTicks, type CardStrip, type CellState, type StripCell } from '#lib/strip.ts';
 import { fetchPublic, type PublicReply } from '#lib/bots/fetchPublic.ts';
+import { GYM_ORIGIN, takeEarly } from './early.ts';
 import type { BotTone, BotWord, Fact, VerdictView } from '#lib/bots/types.ts';
 import { timeOf } from '#lib/i18n/when.ts';
 import { OUTCOMES, REASONS, VERDICTS, clockAt, type Check, type GymStatus, type Outcome, type Reason, type Verdict } from './contract.ts';
@@ -14,7 +15,7 @@ import '#lib/i18n/bots.ts';
 export type { Check, GymStatus };
 
 /** The Worker's origin; VITE_GYM_URL overrides it (empty = ボット's ジム tab hidden). vite.config.ts's CSP allows it. */
-export const GYM_URL: string = (import.meta.env?.VITE_GYM_URL as string | undefined) ?? 'https://gym-bot.island-fund-relay.workers.dev';
+export const GYM_URL: string = (import.meta.env?.VITE_GYM_URL as string | undefined) ?? GYM_ORIGIN;
 
 const PROGRAMS = ['training', 'pilates'] as const;
 
@@ -51,8 +52,9 @@ export function parseStatus(x: unknown): GymStatus | null {
 /** A read's outcome: the status, or why not (`offline`: no answer; `http`: another status; `json`: not a status). */
 export type StatusReply = PublicReply<GymStatus>;
 
-/** GET /status (lib/bots/fetchPublic.ts: public, logged as `gym.fail`). */
-export const fetchStatus = (signal?: AbortSignal, url = GYM_URL): Promise<StatusReply> => fetchPublic(`${url}/status`, 'gym.fail', parseStatus, { signal });
+/** GET /status (lib/bots/fetchPublic.ts: public, logged as `gym.fail`); the one gym.html began, if it did (early.ts). */
+export const fetchStatus = (signal?: AbortSignal, url = GYM_URL): Promise<StatusReply> =>
+  fetchPublic(`${url}/status`, 'gym.fail', parseStatus, { signal, early: (s) => takeEarly('s', url, s) });
 
 // ---- The page's view ----
 /** The verdict card's dot: leaf, yuzu, coral, or soft for a runner that was switched off; its word (bots.w). */
