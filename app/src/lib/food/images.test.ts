@@ -2,10 +2,10 @@
 // against its budget: a few hundred files at most (Cloudflare Pages takes 20,000 a deploy, the site's other files most of
 // them), sheets small enough for a phone, every sheet index.json names there and nothing else, every cell inside its
 // sheet, every id a shipped generic food's.
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
-import { imgOf, kaloriImg, loadFoodImages, loadProductImages, type FoodImageIndex } from './images.ts';
+import { forgetCells, imgKnown, imgOf, kaloriImg, loadFoodImages, loadProductImages, type FoodImageIndex } from './images.ts';
 import { addDataset, emptyDb, searchFoods, fromFile } from './db.ts';
 import type { FoodIndex, Shipped } from './types.ts';
 import { STATIC_MAX_FILES } from '../static-budget.ts';
@@ -45,8 +45,30 @@ describe('imgOf', () => {
     expect(imgOf(fixture, 'mext:01088', 48)).toEqual({ url: '/food-img/t-a-0-00000000.webp', x: 256, y: 128, size: 128 });
     expect(imgOf(fixture, 'dishes:nikujaga', 160)).toEqual({ url: '/food-img/d-a-0-00000000.webp', x: 384, y: 0, size: 384 });
   });
-  it('gives none for a food without one, an old snapshot id or no index (the tile)', () => {
-    expect([imgOf(fixture, 'off:4902705126558', 48), imgOf(fixture, 'mext:99999', 48), imgOf(null, 'mext:01088', 48)]).toEqual([null, null, null]);
+  beforeEach(forgetCells);
+  it('gives none for a food without one, an old snapshot id or no index and never seen (the tile)', () => {
+    expect([imgOf(fixture, 'off:4902705126558', 48), imgOf(fixture, 'mext:99999', 48), imgOf(null, 'dishes:nikujaga', 48)]).toEqual([null, null, null]);
+  });
+  it('keeps what it has seen for the next opening with no index (let go): the same objects, so no box draws again', () => {
+    expect([imgKnown('mext:01088'), imgKnown('mext:99999'), imgKnown('custom:x')]).toEqual([false, false, true]);
+    const t = imgOf(fixture, 'mext:01088', 48), d = imgOf(fixture, 'mext:01088', 160);
+    expect(imgOf(fixture, 'mext:99999', 48)).toBeNull();
+    expect([imgKnown('mext:01088'), imgKnown('mext:99999')]).toEqual([true, true]); // (none: known too, the tile)
+    expect(imgOf(null, 'mext:01088', 48)).toBe(t);
+    expect(imgOf(undefined, 'mext:01088', 160)).toBe(d);
+    expect(imgOf(null, 'mext:99999', 48)).toBeNull();
+    // the index in again: the very cells kept (same values); a changed cell replaces them
+    expect(imgOf(structuredClone(fixture), 'mext:01088', 48)).toBe(t);
+    const moved: FoodImageIndex = { ...fixture, keys: [[0, 0, 0, 1, 384, 0]] };
+    expect(imgOf(moved, 'mext:01088', 48)).toEqual({ url: '/food-img/t-a-0-00000000.webp', x: 0, y: 0, size: 128 });
+    expect(imgOf(null, 'mext:01088', 48)).toEqual({ url: '/food-img/t-a-0-00000000.webp', x: 0, y: 0, size: 128 });
+  });
+  it('a product’s none is not final till the products’ ids are in (an index cut by the build)', () => {
+    const cut: FoodImageIndex = { ...fixture, off: 'o1' };
+    expect(imgOf(cut, 'off:4902705126558', 48)).toBeNull();
+    expect(imgKnown('off:4902705126558')).toBe(false);
+    expect(imgOf({ ...cut, offIds: { 'off:4902705126558': 0 } }, 'off:4902705126558', 48)).toEqual(imgOf(fixture, 'mext:01088', 48));
+    expect(imgOf(null, 'off:4902705126558', 48)).toEqual(imgOf(fixture, 'mext:01088', 48));
   });
 });
 
@@ -66,6 +88,7 @@ describe('loadFoodImages', () => {
 });
 
 describe('loadProductImages (the build cuts the products’ ids out of index.json: scripts/food-shards.ts)', () => {
+  beforeEach(forgetCells);
   it('fetches off.json under the index’s `off` once wanted: a product’s cell then; an index without the cut as it is', async () => {
     const cut: FoodImageIndex = { ...fixture, off: 'o1' };
     const fetch = vi.fn<(href: string) => Promise<Response>>().mockResolvedValue(new Response(JSON.stringify({ ids: { 'off:4902705126558': 0 } })));

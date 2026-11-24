@@ -35,6 +35,10 @@ function blobOf(url: string): Promise<Blob> {
   return p;
 }
 
+/** A sheet's bytes fetched ahead (ごはん's day, after the launch: dbHold.svelte.ts primeFoodPics), so its boxes draw on
+ *  the opening with no fetch; a failure is the draw's to see again. */
+export const warmCell = (url: string): Promise<unknown> => blobOf(url).catch(() => {});
+
 /** A file's bytes known here already (a マイ食品's photo just made: drawn at once, before the relay has it). */
 export function primeCell(url: string, b: Blob): void {
   bytes.delete(url);

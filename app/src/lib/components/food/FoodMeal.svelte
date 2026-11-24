@@ -69,7 +69,8 @@
   /** The pictures (loaded once a meal holds an entry) and, for the tiles, the catalog once it is in (never loaded here:
    *  Food.svelte's foodDbSoon, after the open; till then each row's category as this phone remembers it, loggedCat). */
   const db = $derived(held.db), imgs = $derived(held.images);
-  $effect(() => void (entries.length && open && wantImages(entries.map((e) => e.f.id))));
+  // (a recipe's ingredients too: its plate's pictures)
+  $effect(() => void (entries.length && open && wantImages(entries.flatMap((e) => [e.f.id, ...(recipeOf(e)?.it.map((x) => x.f.id) ?? [])]))));
   /** (a chain menu's picture, chainPic, read again as its id shard comes in: Food.svelte wantIds the day's) */
   let more = $state(0);
   $effect(() => held.db?.onAdd(() => more++));

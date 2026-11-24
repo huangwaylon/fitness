@@ -69,16 +69,46 @@ export const dropFoodImages = (): void => void (loading = null);
 let ownOf: (id: string) => FoodImg | null = () => null;
 export const ownPics = (f: (id: string) => FoodImg | null): void => void (ownOf = f);
 
-/** A food's picture for a box of `px` CSS px, or null (its tile). Every picture but a custom food's own photo
+/** A food's two cells (its thumbnail's, its detail's) as an index gave them, null: no picture. */
+type Cells = { t: FoodImg | null; d: FoodImg | null } | null;
+/** The cells looked up so far this page's life (at most CELLS_KEPT, the least recent out): a food's picture on the next
+ *  opening, the index let go of meanwhile (dbHold.svelte.ts primeFoodPics, after the launch), at once and with no index. */
+const seen = new Map<string, Cells>();
+const CELLS_KEPT = 2_000;
+/** Whether the index's answer for `id` is final: a product's waits for loadProductImages' ids (when cut from it). */
+const settled = (ix: FoodImageIndex, id: string): boolean => !id.startsWith('off:') || !ix.off || !!ix.offIds;
+const same = (a: FoodImg | null, b: FoodImg | null): boolean => a === b || (!!a && !!b && a.url === b.url && a.x === b.x && a.y === b.y && a.size === b.size);
+function cellsOf(ix: FoodImageIndex, id: string): Cells {
+  const k = ix.ids[id] ?? ix.offIds?.[id];
+  const c = k === undefined ? undefined : ix.keys[k];
+  if (!c) return null;
+  const ts = ix.sheets[c[0]], ds = ix.sheets[c[3]];
+  return { t: ts ? { url: fileUrl(ts), x: c[1], y: c[2], size: ix.t } : null, d: ds ? { url: fileUrl(ds), x: c[4], y: c[5], size: ix.d } : null };
+}
+/** `id`'s cells from the index (kept in `seen`; the very objects kept before when they are the same, so a box isn't
+ *  drawn again as the index comes in), else as seen before (undefined: never seen). */
+function lookup(ix: FoodImageIndex | null | undefined, id: string): Cells | undefined {
+  const was = seen.get(id);
+  if (!ix || !settled(ix, id)) return was;
+  const now = cellsOf(ix, id);
+  const out = was && now && same(was.t, now.t) && same(was.d, now.d) ? was : now;
+  if (was !== undefined) seen.delete(id); // (to the end: the most recent)
+  seen.set(id, out);
+  if (seen.size > CELLS_KEPT) seen.delete(seen.keys().next().value!);
+  return out;
+}
+/** Whether `id`'s picture is known without the index (a custom food's never needs it). */
+export const imgKnown = (id: string): boolean => id.startsWith('custom:') || seen.has(id);
+/** The cells seen let go of (tests). */
+export const forgetCells = (): void => seen.clear();
+
+/** A food's picture for a box of `px` CSS px, or null (its tile): from the index, or (none in, or let go) as seen
+ *  before. Every picture but a custom food's own photo
  *  (customPics isOwnPhoto) is generated: show the イメージ badge where the design asks for one (the enlarged view). */
 export function imgOf(index: FoodImageIndex | null | undefined, id: string, px: number): FoodImg | null {
   if (id.startsWith('custom:')) return ownOf(id);
-  const k = index?.ids[id] ?? index?.offIds?.[id];
-  if (k === undefined || !index) return null;
-  const c = index.keys[k];
-  const [s, x, y] = px <= THUMB_MAX ? c.slice(0, 3) : c.slice(3, 6);
-  const sheet = index.sheets[s];
-  return sheet ? { url: fileUrl(sheet), x, y, size: px <= THUMB_MAX ? index.t : index.d } : null;
+  const c = lookup(index, id);
+  return c ? (px <= THUMB_MAX ? c.t : c.d) : null;
 }
 
 /** A chain menu's picture (Kalori's generated one, `img`) for a box of `px` CSS px: its 200 px file for a row, the

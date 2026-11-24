@@ -1,6 +1,7 @@
 // The catalog's residency (dbHold.svelte.ts holdFoodDb): kept while ごはん is open and FOOD_KEEP_MS after, let go then (or at
 // once on its unmount), read again after.
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import type { FoodImageIndex } from '#lib/food/images.ts';
 
 let loads = 0;
 /** each load's resolver, when held back (`slow`) */
@@ -14,8 +15,12 @@ vi.mock('#lib/food/index.ts', async (orig) => ({
     return slow ? new Promise((ok) => pending.push(() => ok(db))) : Promise.resolve(db);
   }
 }));
-vi.mock('#lib/food/images.ts', async (orig) => ({ ...(await orig<object>()), loadFoodImages: async () => ({ v: loads }) }));
-const { FOOD_KEEP_MS, foodDb, held, holdFoodDb, letGoFoodDb, wantImages } = await import('./dbHold.svelte.ts');
+/** The pictures' index the next loads give (none: a stand-in), and how many there were. */
+let index: FoodImageIndex | null = null;
+let indexLoads = 0;
+vi.mock('#lib/food/images.ts', async (orig) => ({ ...(await orig<object>()), loadFoodImages: async () => (indexLoads++, index ?? { v: loads }) }));
+const { FOOD_KEEP_MS, foodDb, held, holdFoodDb, letGoFoodDb, primeFoodPics, wantImages } = await import('./dbHold.svelte.ts');
+const { forgetCells, imgOf } = await import('#lib/food/images.ts');
 const foodDbNow = () => held.db;
 
 afterEach(() => vi.useRealTimers());
@@ -79,5 +84,58 @@ describe('holdFoodDb', () => {
     off();
     await Promise.resolve();
     expect(foodDbNow()).toBeNull();
+  });
+});
+
+const fixture: FoodImageIndex = { v: 1, t: 128, d: 384, sheets: ['t-a.webp', 'd-a.webp'], keys: [[0, 0, 128, 1, 0, 0]], ids: { 'mext:01088': 0 } };
+
+describe('primeFoodPics and wantImages (ごはん’s opening made ready ahead: prime.ts)', () => {
+  afterEach(() => {
+    index = null;
+    forgetCells();
+    vi.unstubAllGlobals();
+  });
+
+  it('looks the day’s pictures up once, lets the index go (nobody holds it), fetches their sheets; known: no index', async () => {
+    index = fixture;
+    const fetch = vi.fn(async () => new Response(new Blob(['x'])));
+    vi.stubGlobal('fetch', fetch);
+    const n = indexLoads;
+    await primeFoodPics(['mext:01088', 'mext:99999', 'custom:none']);
+    expect(indexLoads - n).toBe(1);
+    expect(held.images).toBeNull();
+    expect(imgOf(null, 'mext:01088', 40)).toEqual({ url: '/food-img/t-a.webp', x: 0, y: 128, size: 128 });
+    expect(fetch.mock.calls.map(([u]) => u)).toEqual(['/food-img/t-a.webp']);
+    await primeFoodPics(['mext:01088', 'mext:99999']); // (all known: no index; the bytes kept: no fetch)
+    expect([indexLoads - n, fetch.mock.calls.length]).toEqual([1, 1]);
+  });
+
+  it('every picture known: the index waits till after the open, and only while ごはん holds it; one unknown: at once', async () => {
+    index = fixture;
+    vi.stubGlobal('fetch', vi.fn(async () => new Response(new Blob(['x']))));
+    await primeFoodPics(['mext:01088']);
+    vi.useFakeTimers();
+    vi.stubGlobal('requestIdleCallback', undefined);
+    const n = indexLoads;
+    const off = holdFoodDb();
+    wantImages(['mext:01088']);
+    await vi.advanceTimersByTimeAsync(599);
+    expect(indexLoads - n).toBe(0);
+    await vi.advanceTimersByTimeAsync(1);
+    expect(indexLoads - n).toBe(1);
+    await vi.waitFor(() => expect(held.images).toBe(fixture));
+    off();
+    letGoFoodDb();
+    await Promise.resolve();
+    expect(held.images).toBeNull();
+    wantImages(['mext:01088']); // asked, then let go before the wait ends: never loaded
+    letGoFoodDb();
+    await Promise.resolve();
+    await vi.advanceTimersByTimeAsync(1000);
+    expect(indexLoads - n).toBe(1);
+    const off2 = holdFoodDb();
+    wantImages(['mext:01088', 'mext:02000']); // (one never seen)
+    expect(indexLoads - n).toBe(2);
+    off2();
   });
 });
