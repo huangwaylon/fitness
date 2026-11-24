@@ -1,77 +1,60 @@
 # 保存した場所 (saved places)
 
-The couple's Google Maps list (~3,400 places) as a searchable map. The list is the relay's (docs/backend.md "Saved
-places"), the payload `contract/places.ts`. Code: `lib/places/`, `components/places/`.
+Our Google Maps list (~3,400 places) as a searchable map. The list lives on the relay (docs/backend.md "Saved places");
+payload `contract/places.ts`. Code: `lib/places/`, `components/places/`.
 
 ## Entry
 
-The menu's 地図 (`places` in `contract/menu.ts`) opens it, a full sheet (own chunk), not kept between openings.
+The menu's 地図 (`places` in `contract/menu.ts`): a full sheet in its own chunk, not kept between openings.
 
 ## Data
 
-`lib/places/store.svelte.ts`: this phone's copy (IndexedDB `island-places`, by person), then `GET /places`,
-`?since=<ver>` deltas, at most once a minute and back online, no timer (the list is places-pull.yml's to refresh).
-Offline: the copy, else LoadError. Meta: 「12 / 3,412件 · 同期 2時間前」, a coral
-dot past 24 h. Logs: the endpoint and the failure, never a place.
-
-`static/places/` (`vendored.ts`): older builds' details.
+`lib/places/store.svelte.ts`: this phone's copy (IndexedDB `island-places`, `lib/places/cache.ts`), then `GET /places`
+with `?since=<ver>` deltas, at most once a minute and on coming back online; no timer (places-pull.yml refreshes the
+list). Offline: the copy, else LoadError. A coral dot when synced over 24 h ago. Logs never name a place.
+`static/places/` (`vendored.ts`): older vendored details and photos, read beside the relay's.
 
 ## Details
 
-On the relay (runbook §9): `det` in `GET /places` (`PlaceDet`), `GET /places/pics?id=` the photo tokens
-(`picUrl`). `places-details.yml` daily: `lib/places/refresh.ts` picks (new first, then the oldest look-ups), one
-request a place; counts only logged.
+On the relay (runbook §9): `det` in `GET /places` (`PlaceDet`), photo tokens from `GET /places/pics?id=`. Refreshed by
+`places-details.yml` daily (`app/scripts/places-details.ts daily`, picks by `lib/places/refresh.ts`: new first, then the
+oldest look-ups); counts only in the log.
 
 ## Screen
 
-The map under ✕, the location disc, the attribution; the drag-up sheet (map/sheet.svelte.ts; peek: head +
-~2.5 rows) holds the field, the chips, the meta, then virtualised 56 px rows: badge, name, NEW (3 days), ★ (≥ 5
-reviews); 「kind · area · distance」 (kind: Google's, else the sub) or the hit's 「メモ：…」 / 「説明：…」; hours (the
-details'; none 「営業時間は不明」, never open in a chip). A row flies there and opens the card, a marker opens it, a cluster zooms. **Browse** (no
-text or typed chip, no where-chip): the list is the map above the peek, on moveend (held mid-scroll), 「この範囲 214 / 3,412件」 (tap:
-fit all; none: 「この範囲 0 · 全体 N件」 + 全体を見る; world-wide: its home). Typed: global; このあたりで探す → 地図の中心; a long press: この地点の周辺 (1.5 km).
-近い順 from that, an area, me, else the opening centre.
+The map under a drag-up sheet (`components/map/sheet.svelte.ts`): field, chips, meta, then virtualised rows (badge,
+name, NEW for 3 days, kind · area · distance, hours). A row or marker opens the card; a cluster zooms. **Browse** (no
+text or where-chip): the list is what the map shows (「この範囲 214 / 3,412件」). Typed: global; このあたりで探す and a
+long press (1.5 km) set the centre.
 
 ## Search
 
-The field reads each keystroke (`query.ts`) into chips plus text: 営業中, 今日営業, 日曜, 土曜19時 / sat 7pm, ★4 /
-4.5+, 1km以内, 最近, うめが保存, メモあり, -ラーメン, 近く, an area, a category's or kind's words (JA, EN). Time words
-are taken as typed; a category, area or Latin word waits for a space, a particle or 検索. Backspace on an empty field
-drops the last chip. A word nothing has is left out, said (「“デート”は無視しました」); a compound read in pieces (古民家カフェ); an area with none of the outdoors reaches 100 km, said. Rank:
-name, kind/category, area, note, description, fuzzy; then 近い順 / 評価順 (prior-weighted) / 保存が新しい順.
-
-Chips: ⇅ sort and 条件を全部外す (from 2) pinned left, the active ones (yuzu, ×, as added), quick 営業中 and ★4.5以上
-with counts, a picked top's subs (not one under 以外), the tops with counts. **絞り込み** (PlacesFilter, live, map controls
-hidden): 並び順, 営業 (日時を指定: a day, an hour or 終日), 評価, 距離, 保存日, メモあり (members), ジャンル. None
-found: the best 2 chips to drop with counts (`relax`), キーワードだけで探す.
-The focused empty field: 入力の例.
+`lib/places/query.ts` reads each keystroke into chips plus text: hours (営業中, 土曜19時), rating (★4), distance (1km以内),
+最近, うめが保存, メモあり, -word, areas, category and kind words (JA, EN). Words nothing has are dropped and said. Ranking
+in `lib/places/search.ts`; sorts 近い順 / 評価順 / 保存が新しい順. **絞り込み** (`PlacesFilter.svelte`) edits the same
+chips; with no hit, `relax` offers the best chips to drop.
 
 ## Areas
 
-`area.ts`: 都道府県 / 市区町村 from a Japanese address (a row shows 渋谷; the town 神南 searchable), else comma parts (the
-country dropped, the city before a state). An area chip matches its places and anything within 1.5 km of their centre.
+`area.ts`: 都道府県 / 市区町村 from a Japanese address, else comma parts. An area chip matches its places and anything
+within 1.5 km of their centre.
 
 ## Hours
 
-`hours.ts`, in the place's zone: 「営業中 · 21:00まで」 (leaf), 「まもなく閉店 · 21:30まで」 (≤ 60 min, coral),
-「営業時間外 · 17:00から」, 「本日定休 · 明日 11:00から」, 「24時間営業」, 「営業時間は不明」. Past midnight merges. A tap:
-the week (today yuzu, 定休日 coral).
+`hours.ts`, in the place's zone: 営業中 · まもなく閉店 (≤ 60 min) · 営業時間外 · 本日定休 · 24時間営業 · 営業時間は不明.
+Past-midnight periods merge. A tap shows the week.
 
 ## Card
 
-A level in the sheet, its head sticky (a line once scrolled): ‹, the name (15 bold, 2 lines), ⋯ (website, この周辺で探す,
-電話 with details); no ✕ (the bar's). Details: ★, a 2-line description, the band (`/places/pics`; held till its links land);
-icon + 「subtype · area · distance」, NEW; hours (the details'); the note (members) with
-「メモはGoogleマップで編集」; 経路, Googleマップ (cid, ftid, else name), コピー (name + address;
-「住所をコピーしました」); 保存日.
+`PlaceCard.svelte`, a level in the sheet: name, ⋯ (website, この周辺で探す, phone), rating, description, photos
+(`PlacePhotos.svelte`), hours, the note (members only, edited in Google Maps), 経路, Googleマップ, コピー, 保存日.
 
 ## Categories
 
-The contract's 13 tops and subs; colour, shape, glyph: `cats.ts` CAT_STYLE.
+The contract's 13 top categories and subs; colour, shape, glyph in `cats.ts` `CAT_STYLE`.
 
 ## Map
 
-`map/engine.ts` (own chunk): one clustered source (radius 40, to z14); 8 px dots, from z14 22 px badges
-(`map/icons.ts`); the chosen one 28 px, a yuzu ring, its name above; clusters cream discs. The last view kept (fresh: about me if allowed, else all, or over 90° wide the 300 km about the median). Location: the core's
-disc (a sky icon while on), sky dot and halo; refused: MS.refused + 「地図を長押しで地点を選べます」.
-Offline: 「地図はオフラインです（場所のみ表示）」. The layer: docs/hiking.md "Saved places", docs/travel.md "Maps".
+`components/places/map/engine.ts` (own chunk): one clustered source; dots, badges from z14 (`map/icons.ts`), the chosen
+one ringed and named. The last view is kept. Location from the maps' core; refused: long-press to pick a point.
+Offline: places only. The layer on other maps: docs/hiking.md "Saved places", docs/travel.md "Maps".

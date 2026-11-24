@@ -23,12 +23,16 @@ both. A change to one of these is a conscious decision: edit the line, don't let
 - <a id="relay-versions-side-by-side"></a>**Relay versions side by side.** The relay speaks every version in `LIVE_VS`
   (others closed 4004); ship relay first, then the app; drop an old version once `npm run logs -- report` shows no
   phone on it. Why: phones update at different times.
+- **The relay ships first.** A new event type, pref key or field deploys the relay before the app (the record refuses
+  what it doesn't know). Never `wrangler delete` the relay: it is the record.
 - **Push through the relay.** A record change makes the room tell open phones to fetch now; polling stays
   ([backend](backend.md#push)). Why: a partner's steps show within a second.
+- **Weather only on the relay.** No phone calls a weather API; weather is never written to the record.
 - **Shortcut health sync.** One built-in Shortcut per iPhone posts daily totals ([shortcut](ops/shortcut-health-sync.md));
   latest wins; health rows are never compacted or pruned. Why: no third-party app; Health is the truth.
 - **No manual health input.** Every からだ value comes from Apple Health; the meal log and the tree popup's HIIT / Core
   checks are the only typed entries. Why: no daily chores, no second source.
+- **What the log never uses:** Logpush (paid), Analytics Engine, the record's SQLite, invocation logs (IPs).
 - <a id="no-notifications"></a>**No notifications, three exceptions.** The island, the game and health never push. Web
   Push only for 保養所 holds (opt-in per phone, members; its/README.md "Push"), やること reminders (opt-in per item and
   phone; [todo](todo.md)), and a local notification during a hike ([hiking](hiking.md#in-hike-map)). Why: a hold lapses
@@ -61,6 +65,7 @@ both. A change to one of these is a conscious decision: edit the line, don't let
   共有リンク, places' notes, speaking) but never sees the members' からだ figures, enforced by the record
   (`contract/guest.ts`); its ベル wallet earns none ([backend](backend.md#the-guest)). Why: one app; a UI-only rule
   would leak via the cache.
+- **Goals are each person's own;** another's are read-only and the record refuses them.
 - **Profile.** Sex and birth date are locked prefs on the record; BMI uses the Asian cut-offs (23 / 25); resting energy
   is one figure (`model/profile.ts bmrOn`: InBody's lean mass if recent, else Mifflin–St Jeor). Profile values never
   appear in this public repo.
@@ -210,3 +215,8 @@ both. A change to one of these is a conscious decision: edit the line, don't let
 - **Sharing:** expiring links (`/s#<token>`, 1 week to 1 year, never unlimited), revocable, visits counted without
   IP/UA/cookies; a fixed safe subset, private values redacted on the relay; anyone manages any link
   ([travel](travel.md)).
+- **Hike mode navigates only:** nothing recorded; position and heading never leave the phone.
+- **Reference trails from OSM only,** never YAMAP's layer or others' activities; registered hikes stay on the record,
+  never in the repo; YAMAP identity (ids, links, party) is never in the repo ([hiking](hiking.md)).
+- **Wedding board:** anyone edits, guest too; no keyless share link, no ベル tie-in.
+- **やること** reorders by 上へ / 下へ, not drag (no fight with the sheet's scroll); reminders never on by default.

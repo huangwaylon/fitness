@@ -1,219 +1,109 @@
 # トレイル (hiking trails)
 
-The hiking-trails app ("Ume-chan's Trails") ported into the island: fourteen trails (eight in Washington, six in Japan,
-four from our YAMAP activities and plans) on topo maps, an elevation chart and the plans' cards; the unified kit, one list.
-
-## Decisions
-
-- The old app's content comes as it is: write-ups, AllTrails' stats, the simplified tracks, the photos.
-- The old map styles (USGS Topo, GSI 地理院タイル std) as MapLibre raster sources; its tile store not ported ("Offline").
-- Hike mode (歩きはじめる: the location, the strip, off-route and the junction card; "In-hike map") is navigation only:
-  nothing recorded.
-- The entry: the HUD menu's 登山 pill ([design](design.md#island)).
+Ume-chan's Trails in the island: fourteen trails (eight in Washington, six in Japan, four of them from our YAMAP
+activities and plans) on topo maps with an elevation chart, plus anyone's registered hikes. Opened from the HUD menu's
+登山 pill ([design](design.md#island)). Hike mode navigates only: nothing is recorded.
 
 ## Entry
 
-`components/hiking/open.svelte.ts`: `hiking` (a `lazySheet` mounted by `island/Hud.svelte`; the island paused under
-it), `openTrails()` (the list), `openTrail(slug)` (‹ goes to the list). The Seattle guide's hike cards call
-`openTrail(hikeSlugOf(day.hike.gpx))` (`lib/hiking/slugs.ts`, the slugs without the write-ups, which stay off /s: the
-old `…/#/trail/<slug>` link to our slug, else null). With the demo's hooks, `window.__hiking` has both.
+`components/hiking/open.svelte.ts`: `hiking` (a `lazySheet` mounted by `island/Hud.svelte`, the island paused under it),
+`openTrails()`, `openTrail(slug)`. The Seattle guide's hike cards call `openTrail(hikeSlugOf(gpx))`
+(`lib/hiking/slugs.ts`: the old `…/#/trail/<slug>` link to our slug, else null; no write-ups, so it stays off /s).
 
 ## Data
 
-`lib/hiking/`: `types.ts`, `slugs.ts`, `trails.ts` (the fourteen, JA + EN; km and m converted once from AllTrails' miles and feet;
-the gain is AllTrails' DEM figure on purpose: a GPX's own elevations over-count it by 50–60 %), `strings.ts` (chrome
-pairs and formats), `track.ts` (pure: what the view draws; a GPX into a track file is `contract/hikeTrack.ts`'s), `load.ts`,
-`user.ts` (a registered hike as a trail).
+`lib/hiking/`: `trails.ts` (the fourteen, JA + EN; km/m converted once from AllTrails; the gain is AllTrails' DEM
+figure: a GPX's own elevations over-count by 50-60 %), `track.ts` (pure view model), `load.ts`, `user.ts`, `list.ts`,
+`strings.ts`; GPX to track: `contract/hikeTrack.ts`.
 
-- **Tracks:** `static/hiking/tracks/<slug>.json`, `{ v, len, pts: [lon, lat, ele][], wpts }`, from
-  `npm run hiking:tracks -- <old repo>/gpx` (`scripts/hiking-tracks.ts`): elevation smoothed over the raw points (the
-  old app's 15-point centred mean), then Douglas–Peucker at 5 m. `len` is the raw
-  length: the view stretches the simplified line's distances to it, so the km match the old app.
-- **YAMAP's activities** (`utsukushigahara`, `akagi-kurobi`): the track and checkpoints from YAMAP's API without a
-  login (`api.yamap.com/v3/activities/<id>/tracks`: ~20 m apart, DEM-corrected altitude), vendored trimmed
-  (`scripts/data/yamap/<slug>.json`, `lib/hiking/yamapData.ts`): the route at full resolution, its summits (the
-  waypoints, `WPT_JA`), the figures, the day; never the identity — no activity id or link, no members, photos or
-  text, no trailheads, no clock. `--from scripts/data/yamap` rebuilds offline, `--save` refreshes live (the ids in
-  gitignored `app/.env.local`); `yamapData.test` pins envelope = shipped track and scans for the
-  banned keys. The figures are the activity page's (距離, のぼり, タイム with rests); `walked` keeps the date, くだり,
-  標準タイム and コース定数, the credit 「軌跡・記録：YAMAP」. No link and no names (the page names the walkers).
-- **YAMAP's plans** (`akigawa-shiroyama`, `ono-yama`): the plan page saved by hand (its link is private), then
-  `npm run hiking:tracks -- --yamap-plan <page.html> <slug> --save scripts/data/yamap` (its `__NEXT_DATA__` legs and
-  summits vendored the same way — the page never committed, its id, party and planner never read); later rebuilds
-  `--yamap-plan --from scripts/data/yamap <slug>`. The figures are the plan's (its タイム less the rest); `plan` keeps
-  the named stops; credit 「コース・計画：YAMAP」. Edited on YAMAP: save and rerun. 日出 / 日入 (not on the page): the
-  sun's times for the date at the track, rounded down.
-- **Photos:** `static/hiking/photos/<slug>.webp` (1080 × 720 q75; AllTrails users'). The YAMAP four from Wikimedia
-  Commons (CC BY / BY-SA): a 3:2 crop, the subject in the middle half; `photo` holds the
-  credit, shown with 「トリミング・縮小」. The list's thumbs and bands: `scripts/hiking-thumbs.ts`.
+- **Tracks:** `static/hiking/tracks/<slug>.json` `{v, len, pts: [lon, lat, ele][], wpts}` from
+  `npm run hiking:tracks` (`scripts/hiking-tracks.ts`, its header lists the modes): elevation smoothed (15-point
+  centred mean), Douglas-Peucker at 5 m; `len` is the raw length, so the km match AllTrails.
+- **YAMAP activities** (`utsukushigahara`, `akagi-kurobi`): fetched from YAMAP's public API, vendored trimmed in
+  `scripts/data/yamap/<slug>.json` (`lib/hiking/yamapData.ts` `VENDORED`): route, summits, figures, day; never the
+  identity (no activity id or link, members, photos, text, clock). `--yamap --from scripts/data/yamap` rebuilds
+  offline, `--yamap --save` refreshes live (ids in gitignored `app/.env.local`). `yamapData.test` pins envelope =
+  shipped track and scans for banned keys. Credit 「軌跡・記録：YAMAP」, no link, no names.
+- **YAMAP plans** (`akigawa-shiroyama`, `ono-yama`): `--yamap-plan <saved page.html> <slug> --save scripts/data/yamap`
+  (the page saved by hand, never committed; id, party and planner never read). Their envelopes are not vendored yet
+  (`VENDORED` lists the activities only), so only the built tracks ship. Credit 「コース・計画：YAMAP」.
+- **Photos:** `static/hiking/photos/<slug>.webp` (1080 x 720 q75); the YAMAP four from Wikimedia Commons (CC BY /
+  BY-SA, credit in `photo`, 「トリミング・縮小」). Thumbs and bands: `npm run hiking:thumbs`.
 - **Private values:** each plan's link, party and planner are `{p:<pre>PlanUrl}`, `{p:<pre>Party}`, `{p:<pre>Planner}`
-  (`kinpu`, `akigawa`, `ono`) from the record's `trip_note` of the trip `hiking` (set with `record.ts load`: docs/travel.md
-  "Private values"). Until then they show 🔒 and the YAMAP link is hidden.
-
+  (`kinpu`, `akigawa`, `ono`) in the record's `trip_note` of trip `hiking` (set as docs/travel.md "Private values").
+  Until set: 🔒 and no YAMAP link.
 - **Registered hikes** (anyone's, the guest's too): the record's `hike` and `hike_trk` events (`contract/hike.ts`),
-  read and sent by `components/hiking/hikes.svelte.ts` (queued offline). `user.ts` `hikeTrail` makes each a Trail
-  (slug `u-<id>`): its figures, else the track's; the level from km + 1 per 100 m up; GSI inside Japan, else USGS; the
-  route from the track's ends. The track only from the record's rows. 削除 is held for the banner's 取り消す. YAMAP's
-  link is read by the relay (`POST /hiking`); a GPX on the phone (`parseGpx` → `fitTrack` at 5–80 m to the cap),
-  checked as the record checks it before sending. A link already saved opens that hike. A registered hike's data
-  stays on the record, never in the repo; promotion to the curated trails is manual (export → trim → review).
+  via `components/hiking/hikes.svelte.ts` (queued offline). `user.ts` `hikeTrail` makes a Trail (slug `u-<id>`; GSI in
+  Japan, else USGS). Input: a YAMAP link read by the relay (`POST /hiking`, `relay/src/hikeRoute.ts`), a GPX parsed on
+  the phone, or by hand. Their data stays on the record, never in the repo; promotion to a curated trail is manual.
 
 ## Map
 
-`components/hiking/TrailMap.svelte` (light) and `map/engine.ts` (MapLibre on the maps' core,
-design.md "Maps"; not precached, kept once drawn).
-`map/style.ts` `TOPO` puts the region's raster under the overlays (`C`: literal copies of app tokens), drawn on
-style.load. The CSP's `connect-src` names `basemap.nationalmap.gov` and `cyberjapandata.gsi.go.jp`; tiles decode from
-`blob:` (`img-src`). Zoom 9 to each source's ceiling (USGS 16, GSI 18). The notes sit under the save pill: no tile in
-2 s, 「地図を読み込み中…」; none coming, the track alone with a note; offline before a map ever drew, a note (redrawn
-once online). Under drawOff() (the e2e logic tier) a stub draws the track and dot as SVG.
+`components/hiking/TrailMap.svelte` + `map/engine.ts` (MapLibre on the maps' core, design.md "Maps"). `map/style.ts`:
+USGS Topo (z9-16) or GSI std (z9-18) raster under the overlays; both hosts are in the CSP `connect-src`
+(`vite.config.ts`). Notes under the save pill: 「地図を読み込み中…」 after 2 s without a tile; the track alone when
+no tile comes or offline. Under drawOff() (e2e logic tier) a stub draws track and dot as SVG.
 
 ## Offline
 
-(backend.md "Service worker" › Offline.) The fourteen tracks are precached: every chart and route reads offline.
-A photo seen is kept (`island-photos-v1`), one never seen is the paper placeholder. The map draws offline once it has
-drawn on the phone: MapLibre in the shell, the USGS / GSI tiles it drew in `island-tiles-v1` (both send
-`Access-Control-Allow-Origin: *`, so counted at their size); where none was kept, the track alone with the note.
-
-Every trail has 「オフライン用に保存」 on the map, under ‹ (design.md "Offline maps"). The plan (`lib/offline/plan.ts`
-`planTrail`): z12–13 within 3 km of the track, z14–16 within 1 km. Sizes: USGS 1.6–8.8 MB, GSI 1.6–6.4 MB (plan.test
-MEASURED; the YAMAP four with their own `DENSITY`). GSI's tiles are kept on the phone only (never
-re-served), saved to z16 (a saved area's source is capped there, online too: a dead valley can still say online); its
-credit
-「出典：国土地理院（地理院タイル）」 shows on the map above the peek and in the credits.
+The fourteen tracks are precached. Photos seen are kept (`island-photos-v1`), tiles drawn in `island-tiles-v1`
+(backend.md "Service worker"). 「オフライン用に保存」 on each map (design.md "Offline maps"): `lib/offline/plan.ts`
+`planTrail`, z12-13 within 3 km of the track, z14-16 within 1 km (1.6-8.8 MB). GSI tiles stay on the phone, capped at
+z16. A saved area's net file on a weak network: the worker waits 3 s, then
+serves the saved copy (`service-worker/netFallback.ts`).
 
 ## Reference trails
 
-The other paths around a Japan trail, and the forks on its route, from OpenStreetMap (never YAMAP's 登山道 layer nor
-other users' activities: its terms). One file a trail, `static/hiking/net/<slug>.json` (the six GSI trails; none for
-the US ones or a registered hike: its box would place a private hike in the public repo).
+OpenStreetMap paths and forks around the six Japan trails (never YAMAP's 登山道 layer: its terms; none for US trails or
+registered hikes: a box would place a private hike in the repo). `static/hiking/net/<slug>.json`, ODbL
+(`static/hiking/net/LICENSE`), credit 「© OpenStreetMap contributors」 whenever drawn.
 
-- Source and licence: OpenStreetMap through the Overpass API, © OpenStreetMap contributors, ODbL 1.0
-  (`static/hiking/net/LICENSE`; the repo has no licence of its own that could claim them). The credit
-  「© OpenStreetMap contributors」 goes on the map whenever the layer draws, and OSM is in the credits.
-- Refresh, by hand: `npm run hiking:net [slug …]` (`scripts/hiking-net.ts`; `--save <dir>` keeps the Overpass answers,
-  `--from <dir>` builds from them offline). overpass-api.de, then kumi, 3 tries each. Rerun a trail
-  whenever its track is rebuilt: `net.test` fails on a stale file.
-- The build (`lib/hiking/netBuild.ts`, unit-tested on invented networks, never the network): the track's box + 1 km,
-  path / footway / track / steps / bridleway, and roads only within 150 m of the track. Forks are found on the full
-  network: ≥ 3 path / footway / track / steps ends within 25 m of the route (a dead end under 80 m, a hut's door, is
-  none), one pass for each time the route goes by (an out-and-back twice; the next switchback leg, a visit within 300 m
-  along that is 8 m farther than another and itself over 12 m off, is not a pass; a short summit spur's way back down
-  is). Then
-  the route is taken out: each 5 m of it claims the nearest edge running along it within 22 m, and only the unclaimed
-  rest is drawn (a path 10 m beside the route stays when another edge is the route). Douglas–Peucker 5 m, 5 decimals,
-  1 km of the track. Branch bearings 25 m out; a branch's label is its way's name, else the next named peak, saddle,
-  hut or guidepost (its destination; Tokyo's numbered posts are no names) within 3 km along it; the route's own
-  ways prefer a peak, saddle, hut or shelter, and skip a guidepost naming where the way comes from (the end behind it,
-  by the plan's stops or the name's （A〜B）; a peak passed); a label on two branches of one fork on neither.
-- Schema (`lib/hiking/net.ts`, v1): `{v:1, src:'osm', at, trk, north:'true', lines:[{c, n?, h, sac?}],
-  forks:[{p, pass:[{at, inDeg, take}], br:[{deg, n?, line}]}], pois?}`. `at` the OSM data's day; `trk` the hash of the
-  track it was built from (another track: forks hidden, lines still drawn); a pass's `at` is the trail view's distance
-  (m), `take` the branch it leaves by; a branch's `line` is its index in `lines`, -1 the route itself. `pois` (named
-  peaks, saddles, huts, shelters, guideposts) are not drawn yet.
-- Loading: `load.ts` `loadNet` as the map opens (`parseNet`: null on anything unexpected). Not precached; the worker keeps
-  one seen (`island-photos-v1`), and 「オフライン用に保存」 stores it in the trail's area (`planTrail`'s `files`).
+- Refresh by hand: `npm run hiking:net [slug …]` (`scripts/hiking-net.ts`; `--save <dir>` / `--from <dir>` keep and
+  replay Overpass answers). Rerun when a track is rebuilt: `net.test` fails on a stale file.
+- Build: `lib/hiking/netBuild.ts` (pure, unit-tested on invented networks): the track's box + 1 km, footpaths and nearby
+  roads; forks = 3+ path ends within 25 m of the route, per pass; the route's own ways removed; labels from way names or
+  the next named peak/saddle/hut within 3 km.
+- Schema: `lib/hiking/net.ts` (v1; `trk` = hash of the track it was built from: another track hides the forks).
+  `loadNet` parses as the map opens (null on anything unexpected); not precached, kept once seen.
 
 ## Saved places
 
-The maps' shared layer (`components/map/places/`): saved places within 2 km of the track (≤ 40, nearest first) as
-ink-brown squares under the route's marks (10 px from z10, 14 px with the glyph from z12; 12 px hiking). The layers
-disc under ✕ toggles it (保存した場所, then 参考ルート; `island.mapPlaces`, every map's one switch, on by default).
-A tap rings the square in yuzu and opens `PlaceFloat` (name, category, hours, 経路, ✕) 8 px over the discs, panning
-only if the square would be under it; ✕, an empty-map tap, Esc, the layer off or the sheet raised close it. Works
-offline.
+The maps' shared layer (`components/map/places/`): saved places within 2 km of the track (40 nearest) as squares under
+the route. The layers disc toggles it (保存した場所, then 参考ルート; `island.mapPlaces`, one switch for every map). A tap
+opens `PlaceFloat` (name, category, hours, 経路); ✕, an empty tap, Esc or the layer off closes it. Works offline.
 
 ## In-hike map
 
-`components/hiking/map/`: `live.svelte.ts` holds the trail view's live state (the location watch, the compass, the
-camera's mode, hike mode); `follow.ts`, `compass.ts`, `hike.ts`, `junction.ts`, `route.ts` and `wake.ts` are its pure
-parts. Navigation only: nothing recorded, the position and
-heading never leave the phone (`act:hike.*` counters say what, never where). No background alert (a web app gets no
-position while locked).
+`components/hiking/map/`: `live.svelte.ts` (location watch, compass, camera mode, hike mode) over pure `follow.ts`,
+`compass.ts`, `hike.ts`, `junction.ts`, `route.ts`, `wake.ts`. Position and heading never leave the phone
+(`act:hike.*` counters say what, never where). No background alert.
 
-- **Gestures:** two-finger rotation, no pitch; `fit()` lands north up. A one-finger pan
-  lets the camera go; a pinch or a turn keeps following. The sheet's height refits the track unless following or moved.
-- **Discs** (bottom-right, 56 px drawn in a 64 px hit area, high contrast): the location disc loops off (crosshair) →
-  追従 (filled arrow: the dot kept in the band between the controls and the sheet) → off; after a pan it is free
-  (hollow arrow) and a tap follows again; into 追従 the map turns back to north. In hike mode it never goes off (a tap
-  re-centres). The compass never turns the map, only the dot's cone. The N disc shows only while the map is turned
-  (|bearing| > 0.5°); a tap brings north up. The N disc and the line key are themed by the hour as ✕; the location
-  disc (the maps' `LocateDisc`) stays high contrast, grey and struck through once the location is refused (the top
-  slot: MS.refused; MS.again as the maps', docs/travel.md "Maps").
-- **Compass** (the cone only): iOS's `DeviceOrientationEvent.requestPermission()` is called first thing in the tap
-  from off or free into 追従 and in 歩きはじめる's tap, once a session (a resumed hike asks at the
-  next locate tap). It runs with the location, paused while hidden. Refused or
-  unsupported: no cone, never asked again that session, and the copy once, with the Settings path. `webkitCompassHeading` (magnetic) plus the screen's
-  rotation and a declination table, smoothed (≤ 5 Hz, ≥ 5°); `webkitCompassAccuracy` widens the cone
-  (15–60°), worse than 30° shows the figure-8 hint. Permissions-Policy: accelerometer, gyroscope, magnetometer (self).
-- **The dot:** the maps' one (`locLayers`) with a map-aligned cone; stale (from before the page hid): hollow grey, no
-  cone.
-- **Hike mode:** 歩きはじめる, a cream row under the chart (below the fold), with
-  「のこり距離・到着時刻・ルート外れを表示」; its tap folds the sheet. 終了: 「ナビを終了しました · 取り消す」 for 4 s.
-  `maximumAge` 2 s. The peek becomes the strip: 歩いた · のこり · のぼり · {山頂/ゴール}到着 {H:MM}ごろ,
-  the ETA the trail's standard time spread by effort (4 km/h, 300 m/h up, 500 m/h down) and scaled by what's left.
-  The chart behind a tap; the walked route at 40 % (`route.ts`). Matching (`hike.ts`): a moving window along the route; after a silence
-  over 60 s or a jump over 300 m the whole route is searched (the pass nearest a walker's reach), several passes make
-  it unsure (no junction way till 50 m on); only fixes ≤ 100 m accurate and near the route move it; the direction
-  turns on two fixes 30 m the other way; a step over 12 km/h counts for nothing. Kept for a relaunch
-  (`resume.ts`, localStorage `island.hikeNow`: trail, metres along, direction, time; no coordinates, never sent):
-  reopened within 12 h it resumes; 終了 removes it.
-- **Notification** (`hiking/map/notify.ts`): local, Home Screen app, tag `hike`, asked by 歩きはじめる's tap; opens
-  `?open=hike&trail=…`; 終了 closes it, a resume re-shows it once a page. No body updates.
-- **Off the route** (R4): beyond max(50 m, 2 × accuracy) for ≥ 3 fixes and ≥ 20 s shows the coral banner
-  「ルートから{n}外れています」 (metres to 10, from 1,000 m km to a tenth) and a dashed line to the route's nearest
-  point. Under 30 m it clears (「ルートに戻りました」, 4 s). Fixes worse than 100 m don't count. Visual only.
-  Begun over 1 km away: 「ルートまで{n}」 till on the route.
-- **画面をつけたままにする** (hike mode only): a screen wake lock, taken back when the page shows again. If the system lets
-  go of it while the page is shown (Low Power Mode), the switch reads off.
-- **Reference trails** (a Japan guide trail's net file, `loadNet`): OSM's paths draw solid slate on a cream halo, wider
-  z11→z16 (roads paler, thinner; dashes broke into specks on the short ways) under the route, with forks as yuzu rings (⑂). Its toggle is the layers panel's 参考ルート
-  (on by default); while it draws, a line key bottom-left. The attribution names © OpenStreetMap contributors then, and so do
-  the credits (a stale `trk`: lines, no forks).
-- **The junction card** (R1, R12; hike mode; `junction.ts`): the next fork with a footpath within 150 m (kept 15 m
-  past): 「分岐まで{n}m · ルートは{右/左/直進}」 and the names (the route's first, in coral). The word only when the
-  route's branch is over 45° from every other way and unique, else 「ルートは地図の太線」; from the track's bearings,
-  never the compass; walked backward, the fork behind; unsure match: no names. The way to go draws thick (80 m), the
-  others grey. It shares the top slot with the off-route banner, which wins.
-- **The top slot** (`TopSlot.svelte`, under ‹ and the save pill; the map's notes under it): two live regions always there, empty when nothing shows: role="alert" for off
-  the route, role="status" for the rest. The fork's distance on screen moves by 10 m; a screen reader hears it at a
-  new fork and in 50 m steps.
-- e2e: `hiking.spec.ts` fakes the geolocation, compass, wake lock, clock and screen lock; @render tests draw the map.
-- **A saved area's net file on a weak network:** the worker waits 3 s for the network (none at all offline), then
-  serves the saved copy (`service-worker/netFallback.ts`).
+- **Camera:** two-finger rotation, no pitch. Location disc: off → 追従 → off; a pan frees it. The compass turns only
+  the dot's cone; the N disc shows while rotated.
+- **Compass:** permission asked in the tap into 追従 or 歩きはじめる, once a session; accuracy widens the cone 15-60°.
+- **Hike mode** (歩きはじめる): the peek becomes the strip (歩いた · のこり · のぼり · 到着 ETA: 4 km/h, 300 m/h up,
+  500 m/h down, scaled by what's left). Matching in `hike.ts` (`MATCH`): windowed, full search after 60 s silence or a
+  300 m jump; fixes > 100 m accuracy ignored. Resume: `resume.ts`, localStorage `island.hikeNow` (no coordinates),
+  within 12 h. Local notification `hiking/map/notify.ts` (tag `hike`, opens `?open=hike&trail=…`).
+- **Off the route** (`hike.ts` `OFF`): beyond max(50 m, 2 x accuracy) for 3 fixes and 20 s: coral banner and a dashed
+  line; clears under 30 m.
+- **Junction card** (`junction.ts`): the next fork within 150 m: 「分岐まで{n}m · ルートは{右/左/直進}」 from the track's
+  bearings, never the compass. Shares `TopSlot.svelte` (role="alert" / role="status") with the off-route banner, which
+  wins.
+- **画面をつけたままにする:** a wake lock in hike mode.
+- e2e: `hiking.spec.ts` fakes geolocation, compass, wake lock, clock; `hiking-user.spec.ts` uses the real record.
 
 ## Screens
 
-- **The list:** NavBar (✕); one ChipRow: the sort chip (its ActionSheet: おすすめ順, 距離が短い順, 標高差が小さい順, 時間が短い順),
-  すべて 日本 ワシントン州 (one region; すべて clears the levels too), 中級 上級 最上級 (any of them). Then the trails by
-  section (`lib/hiking/list.ts`, from the trail's own data and Tokyo's day): **予定** (a plan today or later, soonest
-  first) as photo cards, a 120px PhotoBand (the level's sticker; name, area, the date) over a StatStrip (距離 · 標高差 ·
-  時間, `stats.ts`); **行きたい** (the guide's order) and **歩いた** (walked, or a plan's day gone; newest first, the date
-  in place of the area) as 64px rows in a dense card: a 56px thumb, name, area, the figures in one line, the sticker.
-  A sort other than おすすめ orders inside each section.
-- **A trail:** the map full screen under ‹ ✕ and the cream discs (locate: the trip map's `LocWatch`, the
-  position never leaves the phone). The drag-up sheet (保存した場所's): the peek (name, figures, 難易度) tall enough for the
-  whole chart, up to ‹ ✕; a pull down from its top or Esc folds it. The body: the chart (press: the readout and the
-  map's dot, kept till tapped again), the plan card (Kinpu, Akigawa, Ōno), 概要, コース紹介, the tips, 詳細情報, credits.
-- <a id="start-time"></a>**Start time** (2026-11-22, anyone's, seen by all): the plan card's 「出発 7:00 ✎」 chip is an
-  unseen `<input type=time>` over it (iOS's wheel). A new start shifts every stop, the stay and the finish by the same
-  minutes (`lib/hiking/start.ts` `shiftPlan`; the total unchanged, a stop past midnight 翌); moved, 「予定 7:00 → 8:30」
-  and 元に戻す (null: the plan's own; picking the plan's start sends null too); 日の入り後に下山 when the finish passes the
-  sunset. A registered hike not yet walked gets the chip with no start of its own, and 下山 …ごろ from its 時間. The record's
-  `hike_start` `{slug, hm}` (`contract/hikeStart.ts`), one slot a slug, the latest to arrive wins. Hike mode
-  (`scheduleOf`): before the first fix 到着 is the plan's finish (予定); after it, the arrival counts from the start while
-  that is still ahead; 日の入り後に下山 under the strip too.
-- **Adding a hike:** ＋ in the list's bar → YAMAPのリンクから · GPXファイルから · 手で入力 → `HikeForm.svelte`: the link
-  (読み込む) or the file, then name (no one's name), 状況, エリア, 日付, the figures (a link's or a file's read-only), 時間,
-  メモ, the chart as preview. Errors are one line under the field. A registered hike: the paper placeholder for its
-  photo; its view adds 記録 (状況, 日付, メモ; 編集 · 削除) and 「軌跡・記録：YAMAP」 for a link's; no track: a plain page.
-- Units follow the km / mi switch (`travel/units.ts`, 旅行's 設定 tab); the language the reader's locale.
+- **The list** (`TrailList.svelte`, `lib/hiking/list.ts`): sort, region and level chips; sections 予定, 行きたい, 歩いた.
+- **A trail:** the map full screen under a drag-up sheet (chart, plan card, write-up, credits).
+- <a id="start-time"></a>**Start time** (anyone's, seen by all): the plan card's 「出発 7:00 ✎」 chip (`StartChip.svelte`)
+  shifts every stop by the same minutes (`lib/hiking/start.ts` `shiftPlan`); 元に戻す sends null; 日の入り後に下山 when the
+  finish passes sunset. The record's `hike_start` `{slug, hm}` (`contract/hikeStart.ts`), one slot a slug.
+- **Adding a hike:** ＋ → YAMAPのリンクから · GPXファイルから · 手で入力 → `HikeForm.svelte`.
+- Units follow the km / mi switch (`travel/units.ts`).
 
-## Later / left out
+## Open
 
-- Recording a hike (a track kept, a free hike with no trail): hike mode navigates only.
-- The GPX picker's `accept=` (.gpx and the XML types) may grey a .gpx out in iOS's Files picker: check on a phone.
-- No landscape side-docked sheet; no waypoint popups (dots on the map, dashed lines on the chart).
-- `e2e/hiking.spec.ts` (logic tier) uses an invented fixture track (`e2e/fixtures/hiking/tiny.gpx`);
-  `e2e/hiking-user.spec.ts` registers hikes on the relay's real record (e2e/liveRoom.ts), YAMAP's import route-mocked
-  with an invented activity.
+- The GPX picker's `accept=` may grey out a .gpx in iOS Files: check on a phone.
+- Not built: recording a hike, landscape docked sheet, waypoint popups.

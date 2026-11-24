@@ -44,7 +44,7 @@ npm run verify     # every CI check but e2e
 
 **Secrets** (names only; never in this public repo):
 - Relay (`npx wrangler secret put`; test copy: `secret bulk .smoke-keys --env test`): `KEY_A`, `KEY_B`, `KEY_C` (guest),
-  `HEALTH_TOKEN`, the GitHub App's (its/README.md "GitHub App"; `ARCHIVE_TOKEN` fallback). Rotation:
+  `HEALTH_TOKEN`, the GitHub App's (its/README.md "GitHub App"; a PAT `ARCHIVE_TOKEN` only as an emergency fallback). Rotation:
   [runbook §3](docs/ops/runbook.md#3-rotate-a-key).
 - Repo (`gh secret set`): `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_API_TOKEN`, `HEALTH_TOKEN`, the `ITS_*`
   ([its/README.md](its/README.md) "Secrets"); the gym bot's: [gym/README.md](gym/README.md) "Secrets".

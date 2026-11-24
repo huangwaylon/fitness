@@ -1,33 +1,35 @@
 # ボット: the bots
 
-The ボット sheet's design (the kit: [Unified kit](design.md#unified-kit)); each bot's own doc: [gym/README.md](../gym/README.md),
+The ボット sheet's design ([Unified kit](design.md#unified-kit)); each bot's own doc: [gym/README.md](../gym/README.md),
 [its/README.md](../its/README.md), [food-data "Kalori"](food-data.md#kalori).
 
-**ボット** (`bots/BotsSheet.svelte`; the guest's read-only: ⋯ off, controls disabled, `bots.viewOnly`): tabs **ジム** · **保養所** · **メニュー** · **定期処理** (`bots/registry.ts`; not in
-demo), the last reopening. A driver per bot (`lib/bots/types.ts`, `lib/<bot>/bot.ts`) words the status: tone, `needsLook`.
-- **Dots** (`StatusDot`): leaf 順調 · 起動中 · 取得中, yuzu 一部不調, yuzu 「!」 遅れ · 保留 · 要対応 (a fine bot needing a look),
-  coral 「!」 不調 · 故障, sunk 待機中 · 停止中 · オフ · まだありません, hollow 不明; drawn on a tab and the menu's ボット (the
-  worst) only while a person must act (`dotShown`, each driver's `needsAttention`); a failed read dimmed, kept. What heals
-  on its own shows in its page only: 一部不調; ジム's 遅れ till 90 min past the next check and 不調 from the site failing
-  till 6 h of failed checks in a row, an idle one (no day to check) ending the run (`LATE_GRACE_MS`, `SITE_GRACE_MS`); 保養所 dots 不調, 遅れ or a hold waiting (要対応); メニュー 保留, 不調, 遅れ or an alert.
-- **Reads** (`useBot`): the shown page (保養所 15 s while running, else 60 s), the others with the sheet (5 min).
-- **Page** (`BotPage`): one `StatusCard` (~132px): dot · word (15 bold) · 「12:00時点」 (13 soft) · ⋯; the act in ink (`act`,
-  保養所's mail, メニュー 保留's merge) else the sentence, never restating the word (none when it says it); result line; the strip, the
-  card's width, 32 drawn in a 44 hit (ok green, avail full height, warn capped, fail hatched, idle a low sunk bar,
-  none a tick; 前回 ringed); one row: the
-  counts > 0 with swatches (idle alone: its label 確認する日なし, no number) + one 成果 (いま空き{n}枠 · 予約 · 品目・店; 不調: 最後の成功), or the picked
-  cell's line, and 「次回 12:09ごろ」 at its end (none stopped or off). Never kept: a 32px sunk line (保養所 running: a plain 確認なし). Count swatches one 10×10 square. · `AttentionCard` (what the card lacks; an act's sentence) · sections · 設定 · くわしく (`FactList`; its `more` rows at the bottom, named with their counts in its summary: ジム アプリで変更, 保養所 最近の動き, メニュー 前回の変更).
-  ⋯ (NavButton, an `ActionSheet`) is the card's one control; only stops ask.
+**ボット** (`bots/BotsSheet.svelte`; the guest's view is read-only: `bots.viewOnly`): tabs **ジム** · **保養所** ·
+**メニュー** · **定期処理** (`bots/registry.ts`), the last one reopening. A driver per bot (`lib/bots/types.ts`,
+`lib/<bot>/bot.ts`) words the status: tone, `needsLook`.
 
-Calendars (`MonthCalendar`, `MonthSwitch`, `monthWeeks`): whole months from 月; past days faint, not-yet days dashed.
-ジム: ⋯ 今すぐ確認 · 停止/再開 · 間隔 ›; 54pt cells (`GymCalendar`), 選択 / 完了 or long press; at once (取り消す).
-ジム alone at `/gym#<key>` (`routes/gym`, bare like `/s`): LINE's menu's 📱 opens it in LINE's browser (no key); the
-link's key (`LINK_KEY`, member A's, gym only) leaves the URL, kept for the tab (`gym/linkKey.ts`), sent first; `gym.html`
-begins both reads inline (`gym/early.ts`).
-保養所: ⋯ 開始 / 停止; holds in the card, under its act. 日付 unfolded, 44 cells (`ItsCalendar`: a tap a night, a weekday its column;
-要対応 a yuzu 「!」 as the tab's, 仮押さえ a yuzu ring;
-✕ any stay) in the 保存 draft (未保存); 設定 folded: 施設 (presets; no ★), 間隔と人数, 通知 (自動で確定 first, in the draft; the push per phone, at once; one switch row each).
-メニュー: `status.json` (`lib/kalori/status.ts`): 遅れ a day past `next` too, naming the missed run (the last one due, not the file's coming `next`); 保留 names `diff.tripped`; ⋯ links only.
-定期処理: the relay's `GET /jobs` (`relay/src/jobs.ts`, `lib/jobs/status.ts`): every other job by where it runs, a row each (age, dot,
-last 24 runs; a tap: 14 days, the runs). 遅れ past 2 cadences + 10 min (daily +2 h), 不調 past 4 or two failures; 「!」 for 不調 or an
-open alert issue. GitHub read by the relay on the tick or a read ≥ 5 min on, never per request.
+- **Dots** (`StatusDot`): leaf 順調 · 起動中 · 取得中; yuzu 一部不調, yuzu 「!」 遅れ · 保留 · 要対応; coral 「!」 不調 · 故障;
+  sunk 待機中 · 停止中 · オフ · まだありません; hollow 不明. On a tab and the menu's ボット (the worst) only while a person must
+  act (`dotShown`, each driver's `needsAttention`). What heals on its own shows in its page only: ジム's 遅れ until 90 min
+  past the next check, 不調 until 6 h of failed checks (`LATE_GRACE_MS`, `SITE_GRACE_MS` in `lib/gym/status.ts`).
+- **Reads** (`useBot`): the shown page (保養所 15 s while running, else 60 s), the others while the sheet is open (5 min).
+- **Page** (`BotPage`): one `StatusCard` (dot · word · 「12:00時点」 · ⋯; the act or a sentence, never restating the word;
+  a strip of recent checks; counts and one result; 「次回 12:09ごろ」), then `AttentionCard`, sections, 設定, くわしく
+  (`FactList`). ⋯ (an `ActionSheet`) is the card's one control; only stops ask first.
+
+Calendars (`MonthCalendar`, `MonthSwitch`, `monthWeeks`): whole months from 月; past days faint, future dashed.
+
+ジム: ⋯ 今すぐ確認 · 停止/再開 · 間隔 ›; `GymCalendar` (選択 / 完了 or long press, applied at once with 取り消す). Alone at
+`/gym#<key>` (`routes/gym`, bare like `/s`): LINE's menu link opens it with `LINK_KEY` (member A's, gym only), which
+leaves the URL and is kept for the tab (`lib/gym/linkKey.ts`); `gym.html` starts both reads inline (`lib/gym/early.ts`).
+
+保養所: ⋯ 開始 / 停止; holds in the card. `ItsCalendar` (a tap a night, a weekday its column) edits a 保存 draft; 設定:
+施設, 間隔と人数, 通知 (自動で確定 in the draft; the push per phone, at once).
+
+メニュー: `status.json` (`lib/kalori/status.ts`): 遅れ a day past `next`, naming the missed run; 保留 names `diff.tripped`;
+⋯ links only.
+
+定期処理: the relay's `GET /jobs` (`relay/src/jobs.ts`, `lib/jobs/status.ts`): every other job by where it runs, a row
+each (age, dot, last 24 runs; a tap: 14 days). 遅れ past 2 cadences + 10 min (daily or weekly: 1 cadence + 2 h);
+止まっています past 4 cadences + 10 min (2 + 2 h), 失敗が続いています on two failures in a row (both coral);
+「!」 also for an open alert issue. The relay reads GitHub on its tick or a read ≥ 5 min after the last, never per
+request.
