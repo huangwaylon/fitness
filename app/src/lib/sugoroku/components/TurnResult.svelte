@@ -26,7 +26,7 @@
 {#if onnext}<button type="button" class="btn" data-sfx="confirm" data-sg-next onclick={onnext}>{s('next')}</button>{/if}
 
 <style>
-  /* the result is an ok card: the kit token, the day leaf on the always-cream sheet (.obj-cream resets it) */
+  /* the result is an ok card: the kit token */
   .res { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 8px 12px; border-radius: var(--r-card); background: var(--ok-bg); box-shadow: inset 0 0 0 2px var(--ok-edge); text-align: center; }
   .res.line { flex-direction: row; justify-content: center; gap: 12px; }
   .soft { margin: 0; font: 500 var(--fs-s)/1.3 var(--font-ui); color: var(--text-soft); }

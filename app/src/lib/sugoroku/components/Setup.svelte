@@ -70,7 +70,7 @@
   .body > * { flex-shrink: 0; }
   .note { margin: 0; font-size: var(--fs-s); color: var(--text-soft); text-wrap: pretty; }
   .seats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
-  /* a seat: the kit's themed control (its edge and the press; navy by night), picked yuzu as a chosen chip */
+  /* a seat: the kit's themed control (its edge and the press), picked yuzu as a chosen chip */
   .seat {
     position: relative; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 10px 4px; margin: 0;
     appearance: none; border: 0; border-radius: var(--r-card); background: var(--ctl); box-shadow: var(--sh-ctl);

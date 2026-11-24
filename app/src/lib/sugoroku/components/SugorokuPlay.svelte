@@ -376,7 +376,7 @@
           {#snippet tools()}<NavButton kind="tool" icon="more" label={s('menu')} popup sfx="open" data-sg-menu onclick={() => (menuOpen = true)} />{/snippet}
           {#snippet team()}
             <!-- the team's stars toward its goal (one number: a team game), and the round -->
-            <span class="team obj-cream" data-sg-team={teamStars(g)}>
+            <span class="team" data-sg-team={teamStars(g)}>
               <Icon name="star" size={16} soft />{#key teamStars(g)}<b class="bump">{teamStars(g)}</b>{/key}<span class="goal">/{teamGoal(g)}</span>
               <span class="tbar"><ProgressBar value={teamStars(g)} max={teamGoal(g)} h={6} fill="var(--c-yuzu)" decor /></span>
               <span class="round">{lastRound ? s('lastRound') : s('round', { n: g.round })}</span>
@@ -385,7 +385,7 @@
           <NavBar pad title={s('title')} onback={close} onclose={close} trailing={tools} middle={team} />
           <div class="scores">
             {#each g.players as p, i (i)}
-              <span class="score obj-cream" class:now={i === g.turn} aria-current={i === g.turn ? 'true' : undefined} data-sg-score={i}>
+              <span class="score" class:now={i === g.turn} aria-current={i === g.turn ? 'true' : undefined} data-sg-score={i}>
                 <Avatar person={p.who} worn size={24} /><span class="pn">{p.name}</span><span class="tag" data-sg-level-tag>{s(`level.${p.level}`)}</span>
                 {#each p.pocket as l, j (j)}<b class="tag pl" lang="en" aria-label={s('pocketOf', { l: l.toUpperCase() })}>{l.toUpperCase()}</b>{/each}
                 {#if p.forced}<b class="tag pl must" lang="en" aria-label={s('hasForced', { l: p.forced.toUpperCase() })}>{p.forced.toUpperCase()}</b>{/if}
@@ -393,7 +393,7 @@
             {/each}
           </div>
         </div>
-        <div class="sheet obj-cream" class:folded={folded && !moving} class:tall={!moving && (ph.k === 'mini' || miniResult)} bind:offsetHeight={sheetH}>
+        <div class="sheet" class:folded={folded && !moving} class:tall={!moving && (ph.k === 'mini' || miniResult)} bind:offsetHeight={sheetH}>
           {#if moving}
             <div class="bar">{#if rolling !== null || rolled}<span class="die" class:rolling={rolling !== null} data-sg-die>{rolling ?? rolled}</span><b>{rolling === null ? s('spun') : ''}</b>
               {:else}<b data-sg-moving>{s('walking')}</b>{/if}</div>
@@ -485,7 +485,7 @@
   /* the player's name (ellipsized: three pills fit a 375 phone) and their level, the kit's 13 px .tag */
   .pn { min-width: 0; max-width: 5.5em; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font: 700 var(--fs-s)/1 var(--font-ui); }
   .score .tag { padding: 2px 7px; }
-  /* the turn's sheet: cream at every time of day (.obj-cream: the day's text inside, as the team pill and the chips), its content's height (at most what leaves the board 160 px), folded a 56 px bar */
+  /* the turn's sheet: cream, its content's height (at most what leaves the board 160 px), folded a 56 px bar */
   .sheet { position: absolute; left: 0; right: 0; bottom: 0; z-index: 1; display: flex; flex-direction: column;
     max-height: max(220px, calc(100% - var(--hud, 88px) - 160px)); padding: 0 calc(12px + var(--safe-right)) calc(6px + var(--safe-bottom)) calc(12px + var(--safe-left));
     box-sizing: border-box; border-radius: var(--r-card) var(--r-card) 0 0; background: var(--c-cream); color: var(--text); box-shadow: 0 -2px 0 var(--c-edge), 0 -6px 18px rgb(60 40 10 / .12); }

@@ -2,7 +2,7 @@
 // cells, the decoded sheet closed a moment after its last draw, a sheet that fails rejected; an older draw never lands
 // over a newer one; a plate's missing picture its tile.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { drawCell, drawPlate, held, nightTint, plateRects } from './cells.ts';
+import { drawCell, drawPlate, held, plateRects } from './cells.ts';
 
 const calls: unknown[][] = [];
 let decodes = 0, closed = 0;
@@ -101,9 +101,5 @@ describe('drawPlate: a recipe’s picture box', () => {
     expect(fills).toEqual(['#EDC3A8']);
     expect(calls.filter((c) => c.length === 9)).toHaveLength(1); // (the good picture)
     expect(held().plates).toBe(before);
-  });
-
-  it('nightTint: the box’s night mix, brightened for the pictures’ .85 filter', () => {
-    expect(nightTint('#F3E2B3')).toBe('#E7DABD');
   });
 });

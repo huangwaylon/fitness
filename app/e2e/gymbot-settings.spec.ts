@@ -4,7 +4,7 @@
 // moved, cleared, the bot's refusals), select mode and one bulk
 // act, a 409 stale, quick edits sent in turn, the bot's refusals in its words, a failure with もう一度, and a poll's change
 // flashed. The Worker is e2e/gymbot.ts's stand-in (page.route; every act's body kept), at the record's pinned time
-// (11/4（水） 12:00). With GYM_UI_SHOTS=<dir>, the last test also writes the screenshots, day and night.
+// (11/4（水） 12:00). With GYM_UI_SHOTS=<dir>, the last test also writes the screenshots.
 import { mkdirSync } from 'node:fs';
 import { expect, test, type BrowserContext, type Page } from './fixtures.ts';
 import { fromMenu } from './hud.ts';
@@ -556,7 +556,7 @@ test('今すぐ確認 after a LINE 🔎: the cooldown counted from the Worker’
   await expect(page.locator('dialog[open] [data-action="check"]')).toHaveText(/^今すぐ確認（あと4[3-5]秒）$/);
 });
 
-test('screenshots, day and night (GYM_UI_SHOTS)', async ({ page, context }) => {
+test('screenshots (GYM_UI_SHOTS)', async ({ page, context }) => {
   const dir = process.env.GYM_UI_SHOTS;
   test.skip(!dir, 'GYM_UI_SHOTS=<dir> writes the screenshots');
   mkdirSync(dir!, { recursive: true });
@@ -569,25 +569,22 @@ test('screenshots, day and night (GYM_UI_SHOTS)', async ({ page, context }) => {
     g.setFrom(g.days[9], Date.parse('2026-11-13T09:00:00+09:00'));
     g.lineTap(g.days[12], ['10:00', '12:00']);
   });
-  for (const tod of ['day', 'night'] as const) {
-    if (tod === 'night') await page.evaluate(() => document.documentElement.setAttribute('data-tod', 'night'));
-    await sheet.locator('[data-gym-config]').evaluate((e) => e.scrollIntoView());
-    await page.screenshot({ path: `${dir}/${tod}-calendar.png` });
-    await sheet.locator('[data-gym-verdict]').screenshot({ path: `${dir}/${tod}-verdict.png` });
-    await day(2).click();
-    await editor.locator('[data-gym-slot="18:00"]').waitFor();
-    await page.screenshot({ path: `${dir}/${tod}-editor.png` });
-    gym.next({ status: 422, body: { ok: false, error: 'from_after_window', hint: 'その時刻からだと、11/6（金）の ⏰ 18:30〜20:00 の枠は残りません。先に時間帯を変えてください。' } });
-    await editor.locator('[data-gym-kind="any"]').click();
-    await editor.locator('[data-gym-note]').waitFor();
-    await page.screenshot({ path: `${dir}/${tod}-refusal.png` });
-    await page.locator('dialog[open] .navbar button.nav.close').last().click();
-    await sheet.locator('[data-gym-select]').click();
-    await sheet.locator('[data-gym-weekday="5"]').click();
-    await day(4).click();
-    await sheet.locator('[data-gym-bulk]').scrollIntoViewIfNeeded();
-    await page.screenshot({ path: `${dir}/${tod}-select.png` });
-    await sheet.locator('[data-gym-bulk]').screenshot({ path: `${dir}/${tod}-bulkbar.png` });
-    await sheet.locator('[data-gym-bulk-done]').click();
-  }
+  await sheet.locator('[data-gym-config]').evaluate((e) => e.scrollIntoView());
+  await page.screenshot({ path: `${dir}/calendar.png` });
+  await sheet.locator('[data-gym-verdict]').screenshot({ path: `${dir}/verdict.png` });
+  await day(2).click();
+  await editor.locator('[data-gym-slot="18:00"]').waitFor();
+  await page.screenshot({ path: `${dir}/editor.png` });
+  gym.next({ status: 422, body: { ok: false, error: 'from_after_window', hint: 'その時刻からだと、11/6（金）の ⏰ 18:30〜20:00 の枠は残りません。先に時間帯を変えてください。' } });
+  await editor.locator('[data-gym-kind="any"]').click();
+  await editor.locator('[data-gym-note]').waitFor();
+  await page.screenshot({ path: `${dir}/refusal.png` });
+  await page.locator('dialog[open] .navbar button.nav.close').last().click();
+  await sheet.locator('[data-gym-select]').click();
+  await sheet.locator('[data-gym-weekday="5"]').click();
+  await day(4).click();
+  await sheet.locator('[data-gym-bulk]').scrollIntoViewIfNeeded();
+  await page.screenshot({ path: `${dir}/select.png` });
+  await sheet.locator('[data-gym-bulk]').screenshot({ path: `${dir}/bulkbar.png` });
+  await sheet.locator('[data-gym-bulk-done]').click();
 });

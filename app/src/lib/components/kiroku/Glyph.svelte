@@ -9,5 +9,5 @@
 
 <style>
   .g { display: inline-block; flex: none; vertical-align: middle; }
-  .pen { fill: currentColor; } /* follows the text, so it reads at night too */
+  .pen { fill: currentColor; } /* follows the text */
 </style>

@@ -138,14 +138,6 @@
   .status.good { background: var(--ok-bg); }
   .status.warn { background: var(--warn-soft); }
   .status.bad { background: color-mix(in srgb, var(--c-coral) 24%, var(--card)); }
-  /* night: only warn and bad filled (warn the night's amber, its cells edged in ink); good, busy and idle plain */
-  :global(:root[data-tod='night']) .status.good { background: var(--card); }
-  /* bad over the night's background, not its lighter card: the soft text 4.9:1 (4.06 over the card) */
-  :global(:root[data-tod='night']) .status.bad { background: color-mix(in srgb, var(--c-coral) 24%, var(--bg)); }
-  /* (the strip's cells only, never the none ticks or the swatches; warn keeps its cap, ink on yuzu: its shape tells it
-     from avail) */
-  :global(:root[data-tod='night']) .status.warn .strip .cell:not(.none) { box-shadow: inset 0 0 0 1px var(--text); }
-  :global(:root[data-tod='night']) .status.warn .strip .cell.warn { box-shadow: inset 0 3px 0 var(--c-ink), inset 0 0 0 1px var(--text); }
   .top { display: flex; align-items: center; gap: 8px; min-height: 24px; }
   .word { font: 700 15px/1.3 var(--font-ui); }
   .asof { font: 700 13px/1.3 var(--font-ui); color: var(--text-soft); font-variant-numeric: tabular-nums; white-space: nowrap; }
@@ -167,10 +159,8 @@
   .cell.warn { background: var(--c-yuzu); box-shadow: inset 0 3px 0 var(--text-soft), inset 0 0 0 1px var(--edge); }
   .cell.fail { background: repeating-linear-gradient(135deg, var(--c-coral) 0 3px, color-mix(in srgb, var(--c-coral) 45%, var(--card)) 3px 5px); }
   .strip .cell.none { height: 4px; }
-  /* idle: ran with nothing to check, a low sunk bar (neither none's tick nor ok's green); the day's sunk beige at night
-     too (the night's --ctl-off is the card's navy: an outline alone) */
+  /* idle: ran with nothing to check, a low sunk bar (neither none's tick nor ok's green) */
   .strip .cell.idle { height: 30%; box-shadow: inset 0 2px 0 var(--edge), inset 0 0 0 1px var(--edge); }
-  :global(:root[data-tod='night']) .cell.idle { background: var(--c-sunk); }
   .cell.none { box-shadow: none; background: color-mix(in srgb, var(--edge) 35%, var(--ctl-off)); }
   /* 前回 ringed; a picked cell outlined */
   .strip .cell.last, .strip .cell.on { outline: 2px solid var(--text); outline-offset: 1px; }

@@ -1,7 +1,6 @@
-// Night's text contrast (docs/design.md "Text colours by surface"): at night (22:00) the theme's text is cream for the
-// navy chrome, so an always-cream surface (a card, a stage, a game sheet) whose text inherits it reads cream on cream
-// (~1.1:1) unless it carries .obj-cream and its own colour; a day-only ink on the themed navy reads ~1.3:1. Each test
-// opens sheets at night and holds every visible text at 3:1 or more on what it sits on (e2e/contrast.ts). The logic tier.
+// The chrome at night (docs/design.md "Chrome and tokens"): one light theme, as NH's menus. At 22:00 the island's sky is
+// night, its sheets the day's paper and ink; each test opens sheets then and holds every visible text at 3:1 or more on
+// what it sits on (e2e/contrast.ts). The logic tier.
 import { expect, test, type Page } from './fixtures.ts';
 import { islandUp, tapBoard } from './island.ts';
 import { fromMenu, openKenkou } from './hud.ts';
@@ -31,6 +30,11 @@ async function island(page: Page) {
 test('the menu’s sheets read at night', async ({ page }, info) => {
   const how = howOf(info.project.name);
   await island(page);
+  // the scene's night, the chrome's paper
+  await expect(page.locator('.if-scene')).toHaveAttribute('data-tod', 'night');
+  await fromMenu(page, 'settings', how);
+  await expect(page.locator('dialog[open]').first()).toHaveCSS('background-color', 'rgb(245, 228, 188)');
+  await page.locator('dialog[open]').getByRole('button', { name: '閉じる' }).first()[how]();
   for (const which of ['bells', 'english', 'travel', 'wedding', 'hiking', 'settings'] as const) {
     await fromMenu(page, which, how);
     expect(await low(page), which).toEqual([]);
@@ -44,8 +48,8 @@ test('けんこう and ごはん read at night', async ({ page }, info) => {
   await island(page);
   await openKenkou(page, 'health');
   expect(await low(page), 'health').toEqual([]);
-  // a met day's callout: cream at every hour, so its ✓ keeps the day's green (the night's light one reads 1.3:1 there;
-  // a lone symbol and a pointer-events: none callout are both outside low()'s walk)
+  // a met day's callout: its ✓ the leaf text (a lone symbol and a pointer-events: none callout are both outside
+  // low()'s walk)
   const chart = page.locator('dialog[open] .mc[data-metric=steps] .chart');
   const b = (await chart.boundingBox())!;
   await chart[how]({ position: { x: 38 + (b.width - 44) * (1.5 / 7), y: b.height - 40 } }); // 10/30, 12.7k of 8,000
@@ -67,7 +71,7 @@ test('けんこう and ごはん read at night', async ({ page }, info) => {
   expect(await low(page), 'food chart').toEqual([]);
 });
 
-test('the look’s cream stage keeps the day’s text at night (its 回せます and the strip’s kind)', async ({ page }, info) => {
+test('the look’s cream stage reads at night (its 回せます and the strip’s kind)', async ({ page }, info) => {
   const how = howOf(info.project.name);
   await island(page);
   await fromMenu(page, 'settings', how);
@@ -81,20 +85,19 @@ test('the look’s cream stage keeps the day’s text at night (its 回せます
   expect(await low(page)).toEqual([]);
 });
 
-test('/speech: the page and its kit cards follow the hour', async ({ page }) => {
+test('/speech: the page and its kit cards read at night', async ({ page }) => {
   await page.goto(`speech${NIGHT}`);
   await expect(page.locator('[data-speech] .card').first()).toBeVisible();
   expect(await low(page)).toEqual([]);
 });
 
-test('英語すごろく’s results read at night (the team’s stars and かいがら on the navy card)', async ({ page }, info) => {
+test('英語すごろく’s setup, play and results read at night', async ({ page }, info) => {
   const how = howOf(info.project.name);
   await island(page);
   await fromMenu(page, 'english', how);
   await page.locator('dialog[open] [data-en-tab="game"]')[how]();
   const sh = page.locator('[data-sugoroku]');
   await sh.locator('[data-sg-new]')[how]();
-  // (the seats: themed controls, navy by night, not cream slabs)
   expect(await low(page), 'setup').toEqual([]);
   await sh.locator('[data-sg-start]')[how]();
   await expect(sh).toHaveAttribute('data-level', 'play');
@@ -106,7 +109,7 @@ test('英語すごろく’s results read at night (the team’s stars and か�
   expect(await low(page), 'results').toEqual([]);
 });
 
-test('the board’s cream pager keeps the day’s sunk ‹ › at night (not night’s navy on cream)', async ({ page }, info) => {
+test('the board’s cream pager: its sunk ‹ › at night', async ({ page }, info) => {
   const how = howOf(info.project.name);
   await island(page);
   await tapBoard(page, { mouse: how === 'click' });
@@ -118,7 +121,7 @@ test('the board’s cream pager keeps the day’s sunk ‹ › at night (not nig
   expect(await low(page)).toEqual([]);
 });
 
-test('a trail’s credits read at night (their links the night’s green on the navy sheet)', async ({ page }, info) => {
+test('a trail’s credits read at night', async ({ page }, info) => {
   const how = howOf(info.project.name);
   await island(page);
   await fromMenu(page, 'hiking', how);
@@ -131,7 +134,7 @@ test('a trail’s credits read at night (their links the night’s green on the 
   expect(await low(page)).toEqual([]);
 });
 
-test('a trail’s chart and plan read at night (the elevation line, the start/goal dots: the night’s coral/green on the navy card)', async ({ page }, info) => {
+test('a trail’s chart and plan read at night (the elevation line, the start/goal dots on the card)', async ({ page }, info) => {
   const how = howOf(info.project.name);
   await island(page);
   await fromMenu(page, 'hiking', how);
@@ -153,7 +156,7 @@ test('a trail’s chart and plan read at night (the elevation line, the start/go
   expect(await low(page)).toEqual([]);
 });
 
-test('a trip’s 日程 reads at night: the day number and the row on now in the day’s colour, mixed light', async ({ page }, info) => {
+test('a trip’s 日程 reads at night: the day number and the row on now', async ({ page }, info) => {
   const how = howOf(info.project.name);
   // Feb 12, 19:30 in Tokyo (night) = 23:30 in Auckland: NZ's day 2, the pill opens into it
   await page.goto('?demo&date=2027-02-12T19:30');
@@ -167,7 +170,7 @@ test('a trip’s 日程 reads at night: the day number and the row on now in the
   expect(await low(page)).toEqual([]);
 });
 
-test('English Study at night: the week’s 達成 and an answered choice’s ○ (the night’s leaf text on navy)', async ({ page }, info) => {
+test('English Study at night: the week’s 達成 and an answered choice’s ○ (the leaf text)', async ({ page }, info) => {
   const how = howOf(info.project.name);
   await fakeYoutube(page);
   // three days studied this week (Mon–Wed; the night is Wednesday's): 今週の3日、達成
@@ -193,12 +196,12 @@ test('English Study at night: the week’s 達成 and an answered choice’s ○
   if (!(await card.locator('[data-ans]').count())) await card.locator('[data-choice="1"]')[how]();
   await expect(card.locator('[data-ans]')).toBeVisible();
   expect(await low(page), 'answered').toEqual([]);
-  // the ○ is a ::before (not a text node, so the walk above can't see it): the night's leaf text, not the day's
+  // the ○ is a ::before (not a text node, so the walk above can't see it): the leaf text, at night too
   const mark = await card.locator('[data-ans] .prl').evaluate((el) => getComputedStyle(el, '::before').color);
-  expect(mark).toBe('rgb(158, 230, 166)'); // --leaf-text at night (#9EE6A6, 5.8:1 on navy)
+  expect(mark).toBe('rgb(37, 110, 51)'); // --leaf-text (#256E33)
 });
 
-test('English Study’s unavailable note at night: an always-tan object (.obj-cream), the day’s ink', async ({ page }, info) => {
+test('English Study’s unavailable note reads at night', async ({ page }, info) => {
   const how = howOf(info.project.name);
   await fakeYoutube(page, { error: 150 });
   await island(page);

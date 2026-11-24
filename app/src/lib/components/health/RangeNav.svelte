@@ -51,7 +51,7 @@
   .nb::before { content: ''; position: absolute; z-index: -1; inset: 6px 0; border-radius: inherit; background: var(--ctl); box-shadow: var(--sh-ctl); }
   .nb:not(.today)::before { inset: 6px; }
   .nb:active:not([aria-disabled='true'])::before { transform: translateY(2px); box-shadow: var(--sh-ctl-press); }
-  /* (off: greyed out, never a filled chip: on today 今日 read as picked, the night's sunk fill a selection) */
+  /* (off: greyed out, never a filled chip: on today 今日 read as picked) */
   .nb[aria-disabled='true'] { color: var(--text-soft); cursor: default; opacity: .45; }
   .nb[aria-disabled='true']::before { box-shadow: var(--sh-ctl); }
 </style>

@@ -1,6 +1,6 @@
 // The text a phone shows and its contrast on what it sits on: every visible element with its own text, its colour
 // composited over its effective background (the ancestors' background colours stacked down to the first opaque one),
-// the WCAG ratio. Night's cream --text inherited into a fixed cream surface (a .obj-cream missing) reads ~1.1:1.
+// the WCAG ratio.
 import type { Page } from './fixtures.ts';
 
 type Low = { sel: string; text: string; fg: string; bg: string; ratio: number; flags: string[]; rect: { x: number; y: number; width: number; height: number } };

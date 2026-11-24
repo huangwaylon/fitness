@@ -280,15 +280,3 @@ test('the turn’s sheet shows its last row whole (tiles’ and buttons’ lips 
   await expect(slots).toHaveAttribute('data-sg-slots', letters[0]);
 });
 
-test('by night the cream turn sheet and the players’ chips keep the day’s ink text (night’s cream text was unreadable on them)', async ({ page }) => {
-  await page.goto('?demo&date=2026-11-04T22:00&sgSeed=e2e-1');
-  await islandUp(page);
-  await openGame(page);
-  await sheet(page).locator('[data-sg-new]').tap();
-  await sheet(page).locator('[data-sg-start]').tap();
-  await expect(sheet(page)).toHaveAttribute('data-level', 'play');
-  await expect(page.locator('html')).toHaveAttribute('data-tod', 'night');
-  const ink = 'rgb(74, 58, 44)';
-  const color = (sel: string) => sheet(page).locator(sel).first().evaluate((el) => getComputedStyle(el).color);
-  for (const sel of ['.sheet', '.sheet [data-sg-spin]', '[data-sg-score]']) expect(await color(sel), sel).toBe(ink);
-});

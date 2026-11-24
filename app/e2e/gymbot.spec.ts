@@ -155,13 +155,8 @@ test('idle alarms only (no day to check, as since 11/14): the strip shows them, 
   await expect(gym.locator('[data-gym-tick][data-last]')).toHaveText('11:56');
   await expect(gym.locator('[data-gym-count]')).toHaveText(['確認する日なし']);
   await expect(gym.locator('[data-gym-next]')).toHaveText('次回 12:09ごろ');
-  // its swatch the others' 10×10; at night the cells keep the day's beige (not the navy card's: an outline alone)
+  // its swatch the others' 10×10
   expect(await gym.locator('[data-gym-count="idle"] .cell').evaluate((e) => [e.getBoundingClientRect().width, e.getBoundingClientRect().height])).toEqual([10, 10]);
-  const fill = () => strip.locator('[data-gym-cell]').last().evaluate((e) => getComputedStyle(e).backgroundColor);
-  const day = await fill();
-  await page.evaluate(() => document.documentElement.setAttribute('data-tod', 'night'));
-  expect(await fill()).toBe(day);
-  await page.evaluate(() => document.documentElement.setAttribute('data-tod', 'day'));
   // a low bar: taller than none's tick, lower than a check's; its line names it
   const h = (await strip.locator('[data-gym-cell]').last().boundingBox())!.height;
   expect(h).toBeGreaterThan(6);

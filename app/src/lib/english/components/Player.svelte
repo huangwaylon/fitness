@@ -46,9 +46,9 @@
       <iframe bind:this={frame} {src} {title} referrerpolicy="strict-origin-when-cross-origin" allow="autoplay; encrypted-media; picture-in-picture" data-yt-frame></iframe>
     {/if}
     {#if !online.current && !player}
-      <p class="note obj-cream" data-yt-offline><Phrases text={s('offline')} /></p>
+      <p class="note" data-yt-offline><Phrases text={s('offline')} /></p>
     {:else if ps === 'error'}
-      <div class="note obj-cream" data-yt-unavailable={player?.error ?? 'none'}>
+      <div class="note" data-yt-unavailable={player?.error ?? 'none'}>
         <p><Phrases text={s('unavailable')} /></p>
         <a class="btn small paper" href="https://www.youtube.com/watch?v={video}" target="_blank" rel="noopener noreferrer" data-sfx="tick">{s('openYoutube')}</a>
         <button type="button" class="btn small paper" data-sfx="tick" data-yt-retry onclick={() => player?.reload(embedUrl(video, location.origin))}>{s('retry')}</button>

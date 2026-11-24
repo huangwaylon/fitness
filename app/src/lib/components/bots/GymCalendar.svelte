@@ -88,8 +88,8 @@
   .marks { display: flex; align-items: center; gap: 1px; }
   .ic { display: grid; place-items: center; }
   .tm { font-size: var(--fs-s); line-height: 1.05; text-align: center; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; }
-  /* fills (coral is for errors only); the legend's swatches the same. 終日 and 時間指定 mixed over the cream card, by
-     night too (a lit tile: ink 7.5:1 and 7.8:1; over the navy card 3.3 and 3.9) */
+  /* fills (coral is for errors only); the legend's swatches the same. 終日 and 時間指定 mixed over the cream card (a lit
+     tile: ink 7.5:1 and 7.8:1) */
   .any { background: color-mix(in srgb, var(--c-leaf) 55%, var(--c-card)); color: var(--c-ink); }
   .range { background: color-mix(in srgb, var(--c-mint) 60%, var(--c-card)); color: var(--c-ink); }
   .usual { background: color-mix(in srgb, var(--c-mint) 22%, var(--card)); box-shadow: none; outline: 2px dashed color-mix(in srgb, var(--c-mint) 75%, var(--text-soft)); outline-offset: -2px; }
@@ -97,7 +97,6 @@
   .off { background: var(--ctl-off); color: var(--text-soft); box-shadow: none; }
   .cell.none { color: var(--text-soft); }
   .sw.none { background: var(--card); box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--edge) 55%, transparent); }
-  :global(:root[data-tod='night']) .any, :global(:root[data-tod='night']) .range { color: var(--c-ink); }
   /* marks: ⏳ a bare glyph, announced a gold count */
   .hg { display: grid; place-items: center; }
   .an {

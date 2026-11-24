@@ -181,7 +181,7 @@
   .hd.solid { background: var(--surface); box-shadow: 0 var(--lip-s) 0 var(--lip); }
   .scroll { padding-bottom: 24px; }
   .scroll.map { padding-bottom: 0; }
-  /* the photo's foot: the place (white at every time of day), its dates and area */
+  /* the photo's foot: the place (white), its dates and area */
   .ht { display: flex; align-items: center; gap: 8px; font: 700 var(--fs-title)/1.2 var(--font-ui); letter-spacing: .02em; }
   .ht .sticker { text-shadow: none; }
   .hs { display: block; font-size: var(--fs-s); opacity: .95; }

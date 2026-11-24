@@ -80,7 +80,7 @@
   .card.bottom { top: calc(100% - var(--safe-bottom, 0px) - 76px); transform: translate(-50%, -100%); }
   .icon { flex: none; width: 58px; height: 58px; border-radius: 50%; background: color-mix(in srgb, var(--c-lip) 45%, var(--c-cream)); display: grid; place-items: center; }
   .txt { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
-  /* a fixed-cream game card at every hour: the ink pair, never the night chrome's text tokens */
+  /* a fixed-cream game card: the ink pair */
   .ja { font-size: var(--fs-talk); line-height: 1.2; }
   .en { color: var(--c-ink-soft); font-size: var(--fs-s); text-transform: capitalize; }
   .more { font-size: var(--fs-s); line-height: 1.3; }

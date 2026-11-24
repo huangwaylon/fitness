@@ -1296,7 +1296,7 @@ test('状態: 鶏もも 皮つき 生 → 焼き keeps 1/2枚 at 90 g, logs 焼�
   await expect(sheet(page).locator('[data-grams]')).toHaveValue('90');
 });
 
-test('category tiles: the night’s tint is darker than the day’s; a picture dimmed a little at night', async ({ page }) => {
+test('category tiles: the same tint and picture at night as by day (one light theme)', async ({ page }) => {
   const tint = async (time: string) => {
     await openFood(page, { date: `2026-11-04T${time}` });
     await sheet(page).locator('[data-add=s]').click();
@@ -1309,9 +1309,8 @@ test('category tiles: the night’s tint is darker than the day’s; a picture d
   };
   const [day, dayPic] = await tint('12:30');
   const [night, nightPic] = await tint('21:30');
-  expect(night).not.toBe(day);
-  expect(dayPic).toBe('none');
-  expect(nightPic).toContain('brightness(0.85)');
+  expect(night).toBe(day);
+  expect([dayPic, nightPic]).toEqual(['none', 'none']);
 });
 
 // マイ食品 (the user: "create my own food and record its calories for future use in case there's a food not in the
@@ -2195,13 +2194,12 @@ test('a tap on a short list while the chain menus come in still lands: the rows 
 // The search's trip after a row's ＋ (food review 11/19: 17 removals within a minute of logging, 16 % edited after):
 // each entry just added shows its amount as a small dropdown (「茶碗1杯（150g） ▾」), switched in place, never removed
 // and added again. And a マイ食品 named like a seasoning or a soup base asks gently for its 塩分 while that is blank.
-// Taps on the phone (WebKit's iPhone 15), clicks on Chromium; SHOTS=<dir>: each at 393×852, day and night.
+// Taps on the phone (WebKit's iPhone 15), clicks on Chromium; SHOTS=<dir>: each at 393×852.
 test.describe('the trip’s amount, a seasoning’s salt', () => {
   test.use({ viewport: { width: 393, height: 852 } });
   const press = (l: Locator, browserName: string) => (browserName === 'webkit' ? l.tap() : l.click());
-  for (const [time, tod] of [['12:30', 'day'], ['22:30', 'night']] as const) {
+  for (const [time, tod] of [['12:30', 'day']] as const) {
     test(`a row’s ＋, then its amount switched in place (${tod}): the entry changed, its kcal with it`, async ({ page, browserName }, info) => {
-      test.skip(tod === 'night' && !process.env.SHOTS, 'SHOTS=<dir> only: the night’s pictures');
       const shot = async (name: string) => {
         if (!process.env.SHOTS) return;
         await settled(page);
@@ -2236,7 +2234,6 @@ test.describe('the trip’s amount, a seasoning’s salt', () => {
     });
 
     test(`マイ食品 named like a soup base (${tod}): 塩分 asked for while blank, gone once typed; never for a protein bar`, async ({ page, browserName }, info) => {
-      test.skip(tod === 'night' && !process.env.SHOTS, 'SHOTS=<dir> only: the night’s pictures');
       await openFood(page, { date: `2026-11-04T${time}` });
       const s = sheet(page);
       await press(s.locator('[data-add=l]'), browserName);

@@ -48,7 +48,7 @@
   const scale = $derived(Math.max(0.2, Math.min(1, room / FIG)));
 </script>
 
-<div class="stage obj-cream" class:strip={mode === 'strip'} style:--h="{H[mode]}px" data-look-stage={mode}>
+<div class="stage" class:strip={mode === 'strip'} style:--h="{H[mode]}px" data-look-stage={mode}>
   <div class="figure" role="img" aria-label={t('look.stageLabel', { name, status })} style:--top="{top}px" style:--k={scale}>
     <LookPreview {who} {look} onturn={() => (turned = true)} />
   </div>
@@ -77,7 +77,6 @@
 </div>
 
 <style>
-  /* cream at every time of day (.obj-cream and its own colour: the day's text inside, the strip's kind and 回せます) */
   .stage {
     flex: none; position: relative; height: var(--h); border-radius: var(--r-card); background: var(--c-cream); color: var(--text);
     box-shadow: 0 var(--lip-h) 0 var(--c-lip); overflow: hidden; transition: height var(--dur-base) var(--ease-soft);

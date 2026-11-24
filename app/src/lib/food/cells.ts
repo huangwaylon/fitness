@@ -100,10 +100,6 @@ export async function drawCell(canvas: HTMLCanvasElement, cell: FoodImg, px: num
 /** One cell of a recipe's picture box (drawPlate): its category's tile (its tint, its glyph's path on a 24 × 24 grid,
  *  in `ink`), and the ingredient's picture over it when it has one (the tile when its sheet can't be had). */
 export type PlateCell = { tint: string; glyph: string; ink: string; img?: FoodImg | null };
-/** A plate's tile tint by night: the box's (FoodThumb's CSS: 78 % of it over the night's navy, #1F2A5E), as the canvas
- *  holds it under the night's `brightness(.85)` on pictures, so it shows as a plain tile's. */
-export const nightTint = (hex: string): string =>
-  `#${[1, 3, 5].map((i) => Math.min(255, Math.round((parseInt(hex.slice(i, i + 2), 16) * 0.78 + parseInt('1F2A5E'.slice(i - 1, i + 1), 16) * 0.22) / 0.85)).toString(16).padStart(2, '0')).join('')}`.toUpperCase();
 /** Each layout's rectangles in a unit box (x, y, w, h): 1 whole, 2 halves, 3 a half and two quarters, 4 a 2 × 2. */
 const LAYOUT: [number, number, number, number][][] = [
   [[0, 0, 1, 1]],

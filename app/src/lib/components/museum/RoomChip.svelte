@@ -4,13 +4,13 @@
   // room of how many it holds 「12/120」; the hall its name only. Under it, while any came in the last day, a gold
   // 「あたらしい n」 tag (this room's new finds; the hall's, the museum's). The world HUD's sizes (34 high in the back pill's 44
   // row), between ‹ しまへ and ⌂; static, the name crossfading as the room changes. Not a button, and not drawn as one: a
-  // solid cream plate (.obj-cream, as ‹ しまへ: the translucent one read sunk, disabled, over the night's dark hall) with no
+  // solid cream plate (as ‹ しまへ: the translucent one read sunk, disabled, over the dark hall) with no
   // edge or lip (the buttons beside it have theirs), a soft shadow; it keeps a finger off the floor under it.
   let { name, found, total, fresh = 0 }: { name: string; found?: number; total?: number; fresh?: number } = $props();
   const count = $derived(found !== undefined && total !== undefined ? `${found}/${total}` : '');
 </script>
 
-<div class="chip obj-cream" role="status" aria-label={[name, count, fresh ? `あたらしい ${fresh}` : ''].filter(Boolean).join(' ')} data-museum-chip={name}>
+<div class="chip" role="status" aria-label={[name, count, fresh ? `あたらしい ${fresh}` : ''].filter(Boolean).join(' ')} data-museum-chip={name}>
   {#key name}<span class="name" aria-hidden="true">{name}</span>{/key}
   {#if count}<span class="n" aria-hidden="true" data-museum-chip-n>{count}</span>{/if}
   {#if fresh}<span class="tag new" aria-hidden="true" data-museum-chip-new>あたらしい {fresh}</span>{/if}

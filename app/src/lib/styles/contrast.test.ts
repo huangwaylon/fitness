@@ -1,12 +1,10 @@
-// The theme's readability (the 2026-11-07 contrast review): .obj-cream (an always-cream
-// object: a bubble, a cream button, a ticket) puts the day text colours and controls back inside it, so the same token
-// reads on navy and on cream, and the soft text holds 4.5:1 where it's read.
+// The theme's readability (the 2026-11-07 contrast review): the soft text, the coloured texts and the tinted cards hold
+// 4.5:1 where they're read. One light theme (tokens.css): these are its values.
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 const tokens = readFileSync(join(import.meta.dirname, 'tokens.css'), 'utf8');
-const theme = readFileSync(join(import.meta.dirname, 'theme.css'), 'utf8');
 
 /** sRGB hex → relative luminance. */
 function lum(hex: string): number {
@@ -14,54 +12,32 @@ function lum(hex: string): number {
   return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
 }
 const contrast = (a: string, b: string) => { const [x, y] = [lum(a), lum(b)].sort((p, q) => q - p); return (x + 0.05) / (y + 0.05); };
-const night = tokens.match(/:root\[data-tod="night"\]\s*\{([^}]*)\}/)![1];
-/** A token's hex in a block: its own, or the primitive it names (`--text-soft: var(--n-soft)`: :root's --n-soft). */
-const tok = (block: string, name: string): string => {
-  const v = block.match(new RegExp(`${name}\\s*:\\s*(#[0-9A-Fa-f]{6}|var\\(--[\\w-]+\\))`))![1];
-  return v.startsWith('var(') ? tok(tokens, v.slice(4, -1)) : v;
-};
+/** A primitive's hex in tokens.css. */
+const tok = (name: string): string => tokens.match(new RegExp(`${name}\\s*:\\s*(#[0-9A-Fa-f]{6})`))![1];
+const hex = (h: string) => h.slice(1).match(/../g)!.map((x) => parseInt(x, 16));
+/** `c` at `pct` over `card`. */
+const over = (c: string, card: string, pct: number) => '#' + hex(c).map((v, i) => Math.round(v * pct + hex(card)[i] * (1 - pct)).toString(16).padStart(2, '0')).join('');
 
 describe('the theme’s readability', () => {
-  it('.obj-cream puts every theme text colour back to its day value', () => {
-    const rule = theme.match(/\.obj-cream, \.btn\.paper \{([^}]*)\}/)?.[1] ?? '';
-    for (const k of ['text', 'text-soft', 'leaf-text', 'coral-text', 'sky-text']) expect(rule).toMatch(new RegExp(`--${k}:\\s*var\\(--c-`));
-  });
-
-  it('.obj-cream puts the controls inside it back to the day ones (a ticket’s choices: not ink on night’s navy)', () => {
-    const rule = theme.match(/\.obj-cream \{([^}]*)\}/)?.[1] ?? '';
-    for (const k of ['ctl', 'ctl-off']) expect(rule).toMatch(new RegExp(`--${k}:\\s*var\\(--c-`));
-    expect(rule).toMatch(/--sh-ctl:\s*var\(--sh-obj\)/);
-  });
-
-  it('an ok card (--ok-bg) keeps the text 4.5:1, day and night', () => {
-    expect(contrast(tok(night, '--text'), tok(tokens, '--n-ok'))).toBeGreaterThanOrEqual(4.5);
-    expect(contrast(tok(night, '--text-soft'), tok(tokens, '--n-ok'))).toBeGreaterThanOrEqual(4.5);
-    // (the kit's green text on it too: an answer card's heading, a missed word; was 4.29:1 at #2F6B4F)
-    expect(contrast(tok(night, '--leaf-text'), tok(tokens, '--n-ok'))).toBeGreaterThanOrEqual(4.5);
+  it('an ok card (--ok-bg: the leaf at 22% over the card) keeps the text 4.5:1', () => {
     expect(tokens).toMatch(/--ok-bg: color-mix\(in srgb, var\(--c-leaf\) 22%, var\(--c-card\)\)/);
-    expect(night).toMatch(/--ok-bg: var\(--n-ok\)/);
+    const ok = over(tok('--c-leaf'), tok('--c-card'), 0.22);
+    for (const t of ['--c-ink', '--c-ink-soft', '--c-leaf-text']) expect(contrast(tok(t), ok), t).toBeGreaterThanOrEqual(4.5);
   });
 
-  it('reads at 4.5:1: night soft text on the night card, the day ink-soft on cream, a sunk control’s soft text', () => {
-    expect(contrast(tok(night, '--text-soft'), tok(night, '--card'))).toBeGreaterThanOrEqual(4.5);
-    expect(contrast(tok(night, '--coral-text'), tok(night, '--card'))).toBeGreaterThanOrEqual(4.5);
-    expect(contrast(tok(tokens, '--c-ink-soft'), tok(tokens, '--c-card'))).toBeGreaterThanOrEqual(4.5);
-    expect(contrast(tok(tokens, '--c-coral-text'), tok(tokens, '--c-card'))).toBeGreaterThanOrEqual(4.5);
-    expect(contrast(tok(night, '--text-soft'), tok(night, '--ctl-off'))).toBeGreaterThanOrEqual(4.5);
-    expect(contrast(tok(tokens, '--c-ink-soft'), tok(tokens, '--c-sunk'))).toBeGreaterThanOrEqual(4.5);
-  });
-
-  it('きろく’s P · F · C tints (FoodMeal: each colour at --pfc-tint-1 / -2 over the card) keep the text 4.5:1, day and night', () => {
-    const hex = (h: string) => h.slice(1).match(/../g)!.map((x) => parseInt(x, 16));
-    const over = (c: string, card: string, pct: number) => '#' + hex(c).map((v, i) => Math.round(v * pct + hex(card)[i] * (1 - pct)).toString(16).padStart(2, '0')).join('');
-    const pct = (block: string, n: 1 | 2) => Number(block.match(new RegExp(`--pfc-tint-${n}:\\s*([\\d.]+)%`))![1]) / 100;
-    for (const c of ['--c-leaf', '--c-yuzu', '--c-mint']) {
-      for (const n of [1, 2] as const) {
-        expect(contrast(tok(tokens, '--c-ink'), over(tok(tokens, c), tok(tokens, '--c-card'), pct(tokens, n)))).toBeGreaterThanOrEqual(4.5);
-        expect(contrast(tok(night, '--text'), over(tok(tokens, c), tok(night, '--card'), pct(night, n)))).toBeGreaterThanOrEqual(4.5);
-      }
+  it('reads at 4.5:1: the soft and coral text on the card and the paper, the soft text on a sunk control', () => {
+    for (const t of ['--c-ink-soft', '--c-coral-text', '--c-leaf-text', '--c-sky-text']) {
+      expect(contrast(tok(t), tok('--c-card')), `${t} on the card`).toBeGreaterThanOrEqual(4.5);
+      expect(contrast(tok(t), tok('--c-paper')), `${t} on the paper`).toBeGreaterThanOrEqual(4.5);
     }
-    expect(pct(tokens, 2)).toBeGreaterThan(pct(tokens, 1));
-    expect(pct(night, 2)).toBeGreaterThan(pct(night, 1));
+    expect(contrast(tok('--c-ink-soft'), tok('--c-sunk'))).toBeGreaterThanOrEqual(4.5);
+  });
+
+  it('きろく’s P · F · C tints (FoodMeal: each colour at --pfc-tint-1 / -2 over the card) keep the text 4.5:1', () => {
+    const pct = (n: 1 | 2) => Number(tokens.match(new RegExp(`--pfc-tint-${n}:\\s*([\\d.]+)%`))![1]) / 100;
+    for (const c of ['--c-leaf', '--c-yuzu', '--c-mint']) {
+      for (const n of [1, 2] as const) expect(contrast(tok('--c-ink'), over(tok(c), tok('--c-card'), pct(n))), `${c} ${n}`).toBeGreaterThanOrEqual(4.5);
+    }
+    expect(pct(2)).toBeGreaterThan(pct(1));
   });
 });

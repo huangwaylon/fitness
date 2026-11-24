@@ -43,7 +43,7 @@
   .big-disc:active::before { transform: translateY(2px); box-shadow: inset 0 0 0 2px var(--c-ink-soft), 0 1px 0 var(--c-ink-soft); }
   .big-disc:focus-visible { outline: none; }
   .big-disc:focus-visible::before { outline: 3px solid var(--focus); outline-offset: 2px; }
-  /* the compass: the map's controls' own (theme.css .disc: --ctl, --edge; navy by night) */
+  /* the compass: the map's controls' own (theme.css .disc: --ctl, --edge) */
   .compass { color: var(--text); }
   .compass::before { background: var(--ctl); box-shadow: inset 0 0 0 2px var(--edge), 0 3px 0 var(--edge), var(--sh-float); }
   .compass:active::before { box-shadow: inset 0 0 0 2px var(--edge), 0 1px 0 var(--edge); }

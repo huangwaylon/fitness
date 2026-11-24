@@ -1,5 +1,5 @@
 <script lang="ts" module>
-  /** A tile's glyph colour in a plate (the box's text: --c-ink, the same by day and night), read once. */
+  /** A tile's glyph colour in a plate (the box's text: --c-ink), read once. */
   let ink = '';
   const INK = () => (ink ||= getComputedStyle(document.documentElement).getPropertyValue('--c-ink').trim() || '#4A3A2C');
 </script>
@@ -7,19 +7,17 @@
 <script lang="ts">
   // A food's picture box (docs/design.md "Gohan"): a fixed NH rounded square with a brown lip, `size` px. Until there
   // are pictures, its category's tile (art.ts FOOD_CAT): the tint, a plain line glyph (a leaf for 野菜: never a
-  // particular food) and the category's word in small type; night tints darker. `img`, a cell of a packed sprite sheet
+  // particular food) and the category's word in small type. `img`, a cell of a packed sprite sheet
   // (its url, the cell's x / y and size in the sheet's pixels), drawn into the box's canvas (food/cells.ts: the sheet
   // decoded a moment, not held) once the box nears the screen, fades in over the tint, the tile again if it fails: the
   // box never changes size, so nothing shifts. Decorative (the row beside it says the name) unless `alt`. `src`, a
   // picture hotlinked from elsewhere (a chain menu's: images.ts kaloriImg), a plain lazy <img> the box's size over the
   // tint, faded in once loaded, the tile again on an error or offline.
   // A recipe's (マイレシピ: `plate`, foodUi.ts plateOf): its ingredients' pictures in one box (1 whole, 2 halves, 3 a
-  // half and two quarters, 4 a 2 × 2; one with no picture, or whose sheet fails, its category's tile, darker by night as
-  // the box's), drawn over the レシピ tile (cells.ts drawPlate, kept per what it holds), and a small round pot on the
+  // half and two quarters, 4 a 2 × 2; one with no picture, or whose sheet fails, its category's tile), drawn over the レシピ tile (cells.ts drawPlate, kept per what it holds), and a small round pot on the
   // box's corner: a recipe, not a food.
   import { FOOD_CAT, type FoodGlyph } from '#lib/art.ts';
-  import { drawCell, drawPlate, nightTint, type PlateCell } from '#lib/food/cells.ts';
-  import { theme } from '#lib/ui-state/theme.svelte.ts';
+  import { drawCell, drawPlate, type PlateCell } from '#lib/food/cells.ts';
   import type { PlatePart } from './foodUi.ts';
 
   interface Props {
@@ -80,10 +78,9 @@
   }
   $effect(() => paint(cv, img, (k) => (loaded = k), (k) => (failed = k)));
   $effect(() => paint(ucv, under, (k) => (underIn = k)));
-  // a recipe's: its cells as drawPlate takes them (each its tile, by night the box's darker tint; a picture over it)
+  // a recipe's: its cells as drawPlate takes them (each its tile, a picture over it)
   let pcv: HTMLCanvasElement | undefined = $state();
-  const night = $derived(theme.tod === 'night');
-  const plateId = $derived(isPlate ? `${night}|${JSON.stringify(plate)}` : '');
+  const plateId = $derived(isPlate ? JSON.stringify(plate) : '');
   let plateIn = $state<string | null>(null), plateBad = $state<string | null>(null);
   $effect(() => {
     if (!pcv || !near || !plate?.length) return;
@@ -91,7 +88,7 @@
     const k = plateId, ink = INK();
     const cells: PlateCell[] = plate.map((x) => {
       const c = FOOD_CAT[x.cat && FOOD_CAT[x.cat] ? x.cat : 'その他'];
-      return { tint: night ? nightTint(c.tint) : c.tint, glyph: GLYPH[c.glyph], ink, img: x.img };
+      return { tint: c.tint, glyph: GLYPH[c.glyph], ink, img: x.img };
     });
     drawPlate(pcv, cells, size).then(() => live && (plateIn = k), () => live && (plateBad = k));
     return () => void (live = false);
@@ -163,11 +160,6 @@
     box-sizing: border-box; width: var(--s); height: var(--s); border-radius: var(--r); background: var(--t);
     box-shadow: 0 var(--lip-s) 0 color-mix(in srgb, var(--c-edge) 60%, transparent); color: var(--c-ink);
   }
-  :global(:root[data-tod='night']) .th { background: color-mix(in srgb, var(--t) 78%, #1F2A5E); }
-  /* a picture on navy: dimmed a little (its cream paper glared beside the night's cards; the tiles tint darker too), a
-     thin cream line inside */
-  :global(:root[data-tod='night']) .cell { filter: brightness(.85) saturate(.95); }
-  :global(:root[data-tod='night']) .pic::after { content: ''; position: absolute; inset: 0; border-radius: inherit; box-shadow: inset 0 0 0 1px rgba(255, 246, 224, 0.6); }
   svg { display: block; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
   .w { font: 700 calc(var(--s) * 0.21)/1 var(--font-ui); white-space: nowrap; letter-spacing: -0.02em; }
   /* (clipped to the box's corners itself: the box doesn't clip, so the recipe's pot may sit over its edge) */

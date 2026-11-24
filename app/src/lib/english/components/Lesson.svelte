@@ -471,9 +471,7 @@
   .nudge .meta { color: inherit; }
   .nudge .text-link { justify-self: start; }
   .reveal, .nudge, .choice { scroll-margin-top: 8px; }
-  /* by night a navy card with the leaf's (the nudge: the sky's) edge, as the choices are navy: a light panel there glared */
-  :global(:root[data-tod='night']) .nudge { background: var(--n-off); box-shadow: inset 0 0 0 2px var(--c-sky); }
-  /* the answer: the kit's ok card (its green text the ink: the night's leaf text is 4.3:1 on --n-ok) */
+  /* the answer: the kit's ok card */
   .reveal { display: grid; gap: 6px; padding: 12px; border-radius: var(--r-row); background: var(--ok-bg); box-shadow: inset 0 0 0 2px var(--ok-edge); color: var(--text); }
   .rhead { font: 700 var(--fs-body)/1.3 var(--font-ui); color: var(--leaf-text); }
   .line { font-style: italic; }
@@ -490,7 +488,6 @@
   .more[open] summary :global(svg) { rotate: 180deg; }
   .more[open] .why { margin-top: 6px; }
   .again { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
-  /* (a themed row, navy by night: a cream one glared on the navy sheet) */
   .seg { flex-wrap: wrap; gap: 2px 10px; min-height: 44px; padding: 8px 14px; font-weight: 700; }
   .at { display: inline-flex; align-items: center; gap: 6px; }
   .ph { color: var(--text-soft); font-size: var(--fs-s); }

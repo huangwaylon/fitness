@@ -6,7 +6,7 @@
 
 <script lang="ts">
   // Bottom sheet on a native <dialog> (focus trap + Esc for free), opening from the thumb. One skin:
-  // the chrome surface (cream; navy at night), radius 32, a lip, the one title bar (NavBar: the title centred, ✕
+  // the chrome surface (paper), radius 32, a lip, the one title bar (NavBar: the title centred, ✕
   // top-right; nothing advertises swipe-down), one CTA in `footer`. Backdrop tap and Esc also close.
   // `footer`: a sticky action row at the bottom, lifted above the on-screen keyboard (--kb from visualViewport).
   // Focused inputs scroll to the centre. While open, the page behind is locked (scrollLock).
@@ -85,7 +85,7 @@
     keep?: boolean;
     /** Sound its open and close tunes. */
     tunes?: boolean;
-    /** Always cream (.obj-cream), as the cream room it opens from (the shop counter's confirm), at night too. */
+    /** A cream surface, as the cream room it opens from (the shop counter's confirm). */
     cream?: boolean;
     /** A form with input not saved (a form that is the sheet itself; forms inside it register: guardForm). */
     dirty?: () => boolean;
@@ -233,7 +233,7 @@
   }
 </script>
 
-<dialog bind:this={dlg} class={cls} class:obj-cream={cream} class:toasting={hosts && !!toasts.current?.action} tabindex="-1" aria-label={label}
+<dialog bind:this={dlg} class={cls} class:cream class:toasting={hosts && !!toasts.current?.action} tabindex="-1" aria-label={label}
   onclose={closed} oncancel={dismissed} onclick={backdrop} data-sfx="self" {@attach open && withKeyboardInset}>
   {#if open || kept}
     {#if hosts}<ToastHost />{/if}
@@ -268,7 +268,7 @@
     overflow: hidden auto; overscroll-behavior: contain;
   }
   dialog:focus { outline: none; }
-  dialog.obj-cream { --surface: var(--c-cream); }
+  dialog.cream { --surface: var(--c-cream); }
   /* the one sheet motion (design.md "Navigation"): up in 240ms, ease-out, no overshoot */
   dialog[open] { animation: up var(--dur-sheet) var(--ease-out); }
   dialog::backdrop { background: var(--scrim); }

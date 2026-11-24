@@ -51,7 +51,6 @@
     border: 0; padding: 0; margin: auto; background: none; max-width: calc(100vw - 32px); max-height: calc(100dvh - 32px); overflow: visible;
   }
   .photo::backdrop { background: color-mix(in srgb, var(--c-ink) 55%, transparent); }
-  :global(:root[data-tod='night']) .photo::backdrop { background: rgba(30, 36, 80, 0.8); }
   .in { position: relative; display: grid; gap: 6px; justify-items: start; padding: 16px; border-radius: 24px; background: var(--card); color: var(--text); }
   .pic { position: relative; justify-self: center; margin-bottom: 6px; }
   .badge {

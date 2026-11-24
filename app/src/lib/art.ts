@@ -115,7 +115,7 @@ export const NUTRIENT_ART: Record<'k' | 'fa' | 's' | 'fi', string> = {
  *  マイレシピ) → its tint, its glyph (a plain line symbol drawn by FoodThumb, never a particular food: a leaf for 野菜,
  *  not a pumpkin) and its word in small type. The tints by family, mid-saturation: grains rice cream, vegetables leaf,
  *  the sea blue, meat coral-brown, fruit peach, dairy and eggs butter, beans and nuts soy tan, seaweed dark green,
- *  mushrooms brown, drinks lilac, sweets pink, seasonings sand, the rest grey-cream (night: FoodThumb darkens them). */
+ *  mushrooms brown, drinks lilac, sweets pink, seasonings sand, the rest grey-cream. */
 export type FoodGlyph =
   | 'bowl' | 'noodles' | 'don' | 'sushi' | 'bread' | 'plate' | 'meat' | 'fish' | 'egg' | 'milk' | 'pod' | 'seed' | 'tuber'
   | 'leaf' | 'side' | 'fruit' | 'mushroom' | 'seaweed' | 'candy' | 'cup' | 'glass' | 'soup' | 'bottle' | 'drop' | 'bag'

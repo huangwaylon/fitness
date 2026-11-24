@@ -182,7 +182,7 @@
   .kc { grid-area: kc; font-size: var(--fs-body); }
   /* the entry's P · F · C (g, as eaten): soft, small; each tinted by its share of the person's day (model/food.ts pfcTint,
      against their goals): an eighth a light tint of its PFC colour (PfcBar's: leaf, yuzu, mint), a quarter a stronger one
-     in bold (tokens --pfc-tint-1/2; night thinner, with a ring of the colour), so a plate heavy in one reads at a glance */
+     in bold (tokens --pfc-tint-1/2), so a plate heavy in one reads at a glance */
   .pfc { grid-area: pfc; display: flex; flex-wrap: wrap; gap: 0 4px; margin-top: 2px; font: 700 var(--fs-xs)/1.25 var(--font-ui); color: var(--text-soft); }
   .m { white-space: nowrap; padding: 1px 5px; border-radius: var(--r-pill); }
   .m-p { --pc: var(--c-leaf); }
@@ -190,7 +190,6 @@
   .m-c { --pc: var(--c-mint); }
   .m.t1 { color: var(--text); background: color-mix(in srgb, var(--pc) var(--pfc-tint-1), transparent); }
   .m.t2 { color: var(--text); font-weight: 800; background: color-mix(in srgb, var(--pc) var(--pfc-tint-2), transparent); }
-  :global(:root[data-tod='night']) .m.t2 { box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--pc) 70%, transparent); }
   .m:first-child { margin-left: -5px; }
   .rm { display: inline-flex; }
   .fresh:focus-visible { outline: 3px solid var(--focus); outline-offset: 0; border-radius: var(--r-chip); }

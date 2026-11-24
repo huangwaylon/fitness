@@ -1,6 +1,6 @@
 <script lang="ts">
   // The unified kit on one page (docs/design.md "Unified kit"; routes/dev/kit, `vite dev` only): every piece the info
-  // sheets are built from, in a full sheet, so a change to one is seen in place. Time of day: `?theme=dusk|night`.
+  // sheets are built from, in a full sheet, so a change to one is seen in place.
   import Sheet from '#lib/components/ui/Sheet.svelte';
   import NavBar from '#lib/components/ui/NavBar.svelte';
   import NavButton from '#lib/components/ui/NavButton.svelte';

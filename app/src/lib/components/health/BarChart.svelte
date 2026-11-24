@@ -111,11 +111,9 @@
 
 <style>
   /* the fill: the share of its days that met the goal (a day: met = solid, not met = pale; today's alike, met once its
-     value is: the dashed outline says it's still running), never under --bar-floor (night's higher: the navy card) */
+     value is: the dashed outline says it's still running), never under --bar-floor */
   .bar { stroke-width: 0; fill-opacity: calc(var(--bar-floor) + (1 - var(--bar-floor)) * var(--met)); }
   .bar.now { stroke-width: 1.5; stroke-dasharray: 3 2; }
-  /* at night a pale bar keeps its full-colour edge too (its fill alone is ~1.6:1 on the navy card) */
-  :global(:root[data-tod='night']) .bar:not(.now) { stroke-width: 1; }
   .pA { fill: var(--person-a); stroke: var(--person-a); }
   .pB { fill: var(--person-b); stroke: var(--person-b); }
   .pG { fill: var(--c-lilac); stroke: var(--c-lilac); }

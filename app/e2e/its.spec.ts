@@ -489,8 +489,7 @@ test('off and on: off moves a facility to 除外, its switch back on searches it
   await nagu.locator('[role="switch"]').click();
   const back = search.locator('[data-its-part="unfit"] [data-its-hotel="NAGU 勝浦"]');
   await expect(back.locator('[role="switch"]')).toHaveAttribute('aria-checked', 'true');
-  // night: the rows' small text in the theme's soft ink, not the yellow row's
-  await page.evaluate(() => document.documentElement.setAttribute('data-tod', 'night'));
+  // the rows' small text in the theme's soft ink, not the yellow row's
   const ink = (sel: string) => its.locator(sel).evaluate((e) => getComputedStyle(e).color);
   expect(await ink('[data-its-hotel="トスラブ箱根ビオーレ"] small')).toBe(await ink('[data-its-saved-by]'));
   // a save sends no priority: the saved ★ (NAGU) let go, every facility alike

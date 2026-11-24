@@ -217,7 +217,7 @@ loads with the first search, or at idle, in a worker).
 
 ### Sheets and harvest
 
-- One sheet skin (`ui/Sheet.svelte`, a `<dialog>`): tan paper, cream cards (navy at night), a sticky title bar, one CTA
+- One sheet skin (`ui/Sheet.svelte`, a `<dialog>`): tan paper, cream cards, a sticky title bar, one CTA
   in a sticky footer above the keyboard ([Unified kit](#unified-kit)).
 - **Harvest** (`sheets/HarvestOverlay.svelte`): from Sunday 19:30 until both have tapped, the week's recap: each
   person's ベル, the ふたりでぜんぶ days and the total; 受け取る → the coins fall into the jars (ceremony only). ✕ = later.
@@ -807,7 +807,7 @@ person has a pocket and かいがら, the guest too.
   tap on the twins, their balloon or the sign (「タップで かう・うる」) opens the list
   at once, on its last tab (an empty pocket: かう). No choice box, no auto-open. The twins talk only in the room.
 - **The list** (`shop/Counter.svelte`: its header has the rows and the bar): 売る · 買う, my かいがら in the bar. A world
-  object: cream at every hour (`.obj-cream`), its 全部 confirm too (`Sheet cream`).
+  object: cream, its 全部 confirm too (`Sheet cream`).
 - **うる**: my pocket (caught, found or picked up, less sold) by section; a row its stack, − / + one, 全部選ぶ a section,
   全部売る all but 苗 and an おねがい's one. Selling leaves the ずかん and the museum; presents and bottles never sell.
 - **かう**: my stock of today, 24 pieces a day, seeded by pack, less what I could place by midnight: the island's
@@ -1034,15 +1034,15 @@ while anything is). **天気** is one group for both the look and [Weather](#wea
   A sheet's lead, hint and note use the same `ui/Phrases.svelte` (linebreaks.test); English in Japanese copy has `lang="en"`.
 - **Buttons:** every tappable has an edge, static cards only a soft lip ([Sizes](#sizes)). Primary leaf, secondary
   cream, selected yuzu, disabled sunk; "can't now" = `aria-disabled` ([Taps](#taps)).
-- **Text colours by surface** (an answer card: `--ok-bg`, navy leaf at night): themed surfaces take `--text`, `--text-soft`, `--leaf-text`, `--coral-text`; an
-  always-cream object (a bubble, a cream button, a ticket) carries `.obj-cream`, the day colours back inside it. Content
-  text ≥ 13px (`--fs-s`); `styles/contrast.test.ts` holds the palettes at 4.5:1.
+- **Text colours:** `--text`, `--text-soft`, `--leaf-text`, `--coral-text`, `--sky-text` (an answer card: `--ok-bg`).
+  Content text ≥ 13px (`--fs-s`); `styles/contrast.test.ts` holds the palette at 4.5:1.
 - **Focus:** one ring (`:focus-visible`; a field's edge turns green instead), none after a pointer input
   (`ui/modality.ts`); focus is restored for keyboard and VoiceOver.
 - **Tokens:** `styles/tokens.css` is the one source (`styles/vars.test.ts`: every `var(--x)`
   is defined). Coral is for errors only; the chart pair `--person-a` / `--person-b` is CVD-checked.
-- **Theme:** `data-tod` comes only from the Tokyo clock (`prefers-color-scheme` ignored); night chrome the `--n-*`
-  primitives. The HUD, plate, dialogue and choices stay cream/yellow.
+- **Theme:** one light theme, as NH's menus: no dark mode, the clock never re-tints the chrome (`prefers-color-scheme`
+  ignored; `e2e/night.spec.ts` reads the sheets at 22:00). Only the scene follows `data-tod` (the sky, the light,
+  `--sea-flat` under 島).
 
 ## Copy
 

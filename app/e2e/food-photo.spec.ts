@@ -91,19 +91,6 @@ test('a custom food\'s picture: its row, its amount (a photo: no イメージ; a
   await page.screenshot({ path: `/tmp/food-review/shots/photo-day-${test.info().project.name}.png` });
 });
 
-test('by night, and with the relay not answering: the tile', async ({ page }) => {
-  await openPictured(page, '2026-11-04T22:00');
-  await expect(page.locator('html')).toHaveAttribute('data-tod', 'night');
-  const s = sheet(page);
-  await s.locator('[data-add=d]').tap();
-  await slid(page);
-  const a1 = s.locator('[data-food-customs] [data-custom=mdemoa1] [data-thumb]');
-  await a1.scrollIntoViewIfNeeded();
-  await expect(a1).toHaveAttribute('data-thumb', 'img', { timeout: 15_000 });
-  await page.screenshot({ path: `/tmp/food-review/shots/photo-search-night-${test.info().project.name}.png` });
-  await page.unrouteAll({ behavior: 'ignoreErrors' });
-});
-
 test('a picture the relay can\'t give (offline, gone): the category\'s tile, never a broken box', async ({ page }) => {
   await openPictured(page, '2026-11-04T12:30', false); // (the fixtures refuse /img/: no answer)
   const s = sheet(page);

@@ -63,7 +63,6 @@
 <style>
   .band { position: relative; flex: none; height: 184px; overflow: hidden; background: var(--c-ink-soft); color: #fff; }
   img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 35%; }
-  :global(:root[data-tod='night']) img { filter: brightness(.8) saturate(.9); }
   /* darker toward the foot and the left, under the type */
   .band::after {
     content: ''; position: absolute; inset: 0; pointer-events: none;

@@ -2,7 +2,7 @@
   // 確認が必要 (docs/bots.md), under the verdict only while there is something to do that its sentence doesn't
   // say: the steps or other reasons, a line each, the bot's own rows (`children`: 保養所's holds), and the links that
   // help (the PR: 44px paper buttons, side by side): a plain card with the verdict's colour as a 4px left edge (the
-  // verdict card alone is filled: one warn surface a page, by day and night), its lines in phrases. A live region (role
+  // verdict card alone is filled: one warn surface a page), its lines in phrases. A live region (role
   // status). `attr`: the page's data-* prefix (data-kalori-alert, data-kalori-reason).
   import type { Snippet } from 'svelte';
   import Phrases from '../ui/Phrases.svelte';

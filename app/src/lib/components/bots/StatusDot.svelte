@@ -18,7 +18,6 @@
     position: relative; display: inline-block; flex: none; width: var(--d); height: var(--d); border-radius: 50%; font-style: normal;
     box-shadow: inset 0 0 0 1px var(--ring), 0 0 0 2px var(--plate, var(--card));
   }
-  :global(:root[data-tod='night']) .sdot { --ring: var(--n-edge); }
   .good { background: var(--c-leaf); }
   .warn { --ring: color-mix(in srgb, var(--c-ink) 55%, transparent); background: var(--c-yuzu); color: var(--c-ink); }
   .bad { background: var(--c-coral); color: var(--c-cream); }

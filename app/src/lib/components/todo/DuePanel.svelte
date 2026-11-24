@@ -97,10 +97,8 @@
 {/if}
 
 <style>
-  /* The world kit's always-cream card (as the pills and FarmPicker's: the same at day, dusk, night and winter): brown
-     text, the lip under it, the theme's colours pinned to the day's inside it (the Tick's ring). */
+  /* The world kit's cream card (as the pills and FarmPicker's): brown text, the lip under it. */
   .due {
-    --ctl: var(--c-card); --edge: var(--c-edge); --text-soft: var(--c-ink-soft);
     position: absolute; top: 0; right: calc(100% + 12px); box-sizing: border-box; display: flex; flex-direction: column;
     padding: 4px 4px 4px 0; border-radius: 22px; background: var(--c-cream); color: var(--c-ink);
     box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--c-lip) 70%, transparent), 0 var(--lip-h) 0 var(--c-lip), 0 6px 14px rgb(60 40 20 / .14);

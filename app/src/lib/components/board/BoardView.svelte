@@ -22,9 +22,8 @@
     at: { x: number; z: number; f: number };
     three: BoardProj | null;
     onclose: () => void;
-    night?: boolean;
   }
-  let { canvas, face, at, three, onclose, night = false }: Props = $props();
+  let { canvas, face, at, three, onclose }: Props = $props();
   const w = useWorld();
   /** The camera's ease, both ways (the user's ≈600 ms). */
   const EASE_MS = 600;
@@ -202,7 +201,7 @@
   const label = (p: Post) => t('board.note', { name: board.author(p.who).name, text: p.t });
 </script>
 
-<div class="bv sheet-copy" class:three={mode === '3d'} class:night class:writing={!!writing} class:kb={kbi.open} bind:this={root} data-board-view={mode} data-ready={ready || undefined}
+<div class="bv sheet-copy" class:three={mode === '3d'} class:writing={!!writing} class:kb={kbi.open} bind:this={root} data-board-view={mode} data-ready={ready || undefined}
   data-keyboard={kbi.keyboard || undefined} style:top={kbi.height ? `${kbi.top}px` : null} style:height={kbi.height ? `${kbi.height}px` : null}
   role="dialog" aria-modal="true" aria-label={t('board.name')}>
   {#if mode === 'sheet'}
@@ -232,7 +231,7 @@
 
   <div class="bar" bind:this={bar}>
     {#if writing}
-      <form class="write obj-cream" onsubmit={submit} data-board-write>
+      <form class="write" onsubmit={submit} data-board-write>
         <textarea bind:this={field} value={writing.text} oninput={typed} rows="4" maxlength={BOARD_CHARS * 2} aria-label={t('board.field')}
           placeholder={t('board.placeholder')} enterkeyhint="enter" data-sfx="none" data-board-field></textarea>
         <div class="row">
@@ -242,7 +241,7 @@
         </div>
       </form>
     {:else if picked}
-      <div class="read obj-cream" data-board-read={picked.id}>
+      <div class="read" data-board-read={picked.id}>
         <div class="who"><b>{board.author(picked.who).name}</b><span>{postDate(picked.p)}{picked.at > picked.p ? ` · ${t('board.edited')}` : ''}</span>
           <NavButton kind="close" onclick={() => ((face.selected = null), (removing = false))} /></div>
         <p class="text">{picked.t}</p>
@@ -255,7 +254,7 @@
         </div>{/if}
       </div>
     {:else}
-      <div class="row pager obj-cream">
+      <div class="row pager">
         <button type="button" class="btn small paper arrow" data-sfx="page" aria-label={t('board.newer')} aria-disabled={page === 0} data-board-newer onclick={() => turn(-1)}><Icon name="back" stroke={2.8} /></button>
         <span class="pg" data-board-page={page + 1}>{page + 1} / {pages}</span>
         <button type="button" class="btn small paper arrow" data-sfx="page" aria-label={t('board.older')} aria-disabled={page >= pages - 1} data-board-older onclick={() => turn(1)}><Icon name="chevron-right" stroke={2.8} /></button>
@@ -305,12 +304,11 @@
   .bar > * { width: min(100%, 560px); }
   .row { display: flex; align-items: center; gap: 8px; justify-content: flex-end; }
   /* the app's buttons (theme.css .btn: leaf the action, cream the rest, sunk when it can't) on fixed-cream game panels */
-  /* the pager and the note's cards: cream at every hour (.obj-cream: their sunk ‹ › and buttons the day's, not night's navy) */
+  /* the pager and the note's cards: cream */
   .pager { justify-content: center; background: var(--c-cream); border-radius: var(--r-card); padding: 8px 8px 4px; box-shadow: 0 var(--lip-h) 0 var(--c-lip); }
   .pg { min-width: 56px; text-align: center; font: 700 var(--fs-body) / 1 var(--font-num); color: var(--c-ink); }
   .row .btn { flex: none; }
   .btn.arrow { min-width: var(--hit); padding: 0; }
-  .bv.night:not(.three) { background: linear-gradient(#1f2f5cee, #2c4a6cee); }
   .pager .btn.go { margin-left: 12px; }
   .read, .write { background: var(--c-card); color: var(--c-ink); border-radius: var(--r-card); padding: 12px 14px 8px; box-shadow: 0 var(--lip-h) 0 var(--c-lip), var(--sh-float); }
   .who { display: flex; align-items: center; gap: 8px; margin: -8px -10px 0 0; font-size: var(--fs-body); }

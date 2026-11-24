@@ -319,9 +319,8 @@ const press = (l: Locator, browserName: string) => (browserName === 'webkit' ? l
 const CONE = '4901005312005';
 const BAD = { id: CONE, name: 'ジャイアントコーン', brand: 'Glico', cat: '菓子・デザート', kcal: 176, p: 36, f: 9.3, c: 19.7, salt: 0.1, portions: [{ label: '1袋', g: 140 }] };
 
-for (const [time, tod] of [['12:30', 'day'], ['22:30', 'night']] as const) {
+for (const [time, tod] of [['12:30', 'day']] as const) {
   test(`表示値を確認 (${tod}): a shard’s product with 50 g of protein a cone, said quietly; 直す → マイ食品 prefilled, saved and added`, async ({ page, browserName }, info) => {
-    test.skip(tod === 'night' && !process.env.SHOTS, 'SHOTS=<dir> only: the night’s pictures');
     // (the sheet's slides over: its finite animations, never the island's endless ones)
     const settled = () => page.locator('dialog[open]').evaluate((d) => Promise.all(d.getAnimations({ subtree: true }).filter((a) => a.effect?.getTiming().iterations !== Infinity).map((a) => a.finished.catch(() => {}))));
     // (a level's slide finished first)
@@ -404,9 +403,8 @@ test('直す keeps the product’s barcode: scanned again, my マイ食品 comes
 
 // Found nowhere (65 % of the scans, food review 11/19): この商品を登録 → a new マイ食品 keeping the code (its name field
 // focused in the tap), 保存して追加 back to the search, and the next scan of the code finds it.
-for (const [time, tod] of [['12:30', 'day'], ['22:30', 'night']] as const) {
+for (const [time, tod] of [['12:30', 'day']] as const) {
   test(`found nowhere (${tod}): この商品を登録 → a マイ食品 keeping the code, logged; scanned again, mine`, async ({ page, browserName }, info) => {
-    test.skip(tod === 'night' && !process.env.SHOTS, 'SHOTS=<dir> only: the night’s pictures');
     const settled = () => page.locator('dialog[open]').evaluate((d) => Promise.all(d.getAnimations({ subtree: true }).filter((a) => a.effect?.getTiming().iterations !== Infinity).map((a) => a.finished.catch(() => {}))));
     const shot = async (name: string) => {
       if (!process.env.SHOTS) return;

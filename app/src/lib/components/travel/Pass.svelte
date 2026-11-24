@@ -86,7 +86,7 @@
   .stub small { font: 700 var(--fs-s)/1.1 var(--font-ui); color: var(--text-soft); }
   .stub b { font-size: 1.75rem; line-height: 1.1; color: var(--text); }
   .stub .tmr { font: 700 var(--fs-talk)/1.2 var(--font-ui); text-align: center; }
-  /* on the trip now: the stub yuzu (its ink dark at night too) */
+  /* on the trip now: the stub yuzu, its ink dark */
   .now .stub { background: var(--c-yuzu); }
   .now .stub small, .now .stub b { color: var(--c-ink); }
   .now .stub .code { color: var(--c-ink); }

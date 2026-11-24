@@ -36,12 +36,10 @@ describe('time of day follows the clock', () => {
     ['15:59', 'day'], ['16:00', 'dusk'], ['18:59', 'dusk'], ['19:00', 'night'], ['23:30', 'night']
   ])('%s → %s', (hm, tod) => expect(todFor(at(`2026-10-29T${hm}`))).toBe(tod));
 
-  it('the chrome follows the time of day alone: night only 19–05', () => {
-    expect(deriveTheme(at('2026-10-29T12:26'))).toMatchObject({ tod: 'day', night: false });
-    expect(deriveTheme(at('2026-10-29T05:30'))).toMatchObject({ tod: 'dawn', night: false });
-    expect(deriveTheme(at('2026-10-29T17:30'))).toMatchObject({ tod: 'dusk', night: false });
-    expect(deriveTheme(at('2026-10-29T21:00'))).toMatchObject({ tod: 'night', night: true });
-    expect(deriveTheme(at('2026-10-29T04:59'))).toMatchObject({ tod: 'night', night: true });
+  it('the scene’s look: the clock’s time of day, season and foliage', () => {
+    expect(deriveTheme(at('2026-10-29T12:26'))).toEqual({ tod: 'day', season: 'autumn', foliage: 'fall' });
+    expect(deriveTheme(at('2026-10-29T21:00')).tod).toBe('night');
+    expect(deriveTheme(at('2026-10-29T04:59')).tod).toBe('night');
   });
 
   it('theme-color = the top of the sky', () => {
@@ -62,8 +60,8 @@ describe('time of day follows the clock', () => {
 describe('previews (ui-state/preview.ts resolves them)', () => {
   it('show the season, foliage and time of day given, the clock’s for the rest', () => {
     expect(deriveTheme(at('2026-10-29T12:00'), { season: 'spring', foliage: 'blossom' })).toMatchObject({ season: 'spring', foliage: 'blossom', tod: 'day' });
-    expect(deriveTheme(at('2026-10-29T12:00'), { tod: 'night' })).toMatchObject({ night: true, tod: 'night', season: 'autumn', foliage: 'fall' });
-    expect(deriveTheme(at('2026-10-29T22:00'), { tod: 'day' })).toMatchObject({ night: false, tod: 'day' });
+    expect(deriveTheme(at('2026-10-29T12:00'), { tod: 'night' })).toMatchObject({ tod: 'night', season: 'autumn', foliage: 'fall' });
+    expect(deriveTheme(at('2026-10-29T22:00'), { tod: 'day' })).toMatchObject({ tod: 'day' });
     expect(deriveTheme(at('2026-10-29T17:00'), { tod: null }).tod).toBe('dusk');
   });
 });

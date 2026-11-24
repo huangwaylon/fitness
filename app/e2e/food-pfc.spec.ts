@@ -98,7 +98,7 @@ const tintContrasts = (l: Locator) =>
     });
   });
 
-for (const [time, tod] of [['12:30', 'day'], ['22:30', 'night']]) {
+for (const [time, tod] of [['12:30', 'day']]) {
   test(`the tints read at 4.5:1 by ${tod}`, async ({ page, browserName }) => {
     await openAt(page, browserName, 393, 852, time);
     await expect(page.locator('html')).toHaveAttribute('data-tod', tod);

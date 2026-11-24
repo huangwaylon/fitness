@@ -107,7 +107,7 @@ has ✕ only; ✕ closes the sheet it is on. No swipe, no in-page 戻る (まと
   「答えはこれ」. Never red, ×, a sound or a percentage; ◎ first try, ○ second.
 - **The reveal:** the result, the line, 意味 and 使えるフレーズ; 言っていること and 迷いやすい点 under 「くわしく」, open by
   itself after a miss. It scrolls up with the answered choice on top. 書き取り counts the words heard (none: 「答えはこれ」,
-  never a 0). The reveal is the kit's ok card (`--ok-bg`: a navy leaf by night); the nudge and まとめ's rows are navy by night like the choices (a light panel glared).
+  never a 0). The reveal is the kit's ok card (`--ok-bg`).
 - **まとめ** writes the clip's row (Progress): 「おつかれさま！」, the もう一度聞きたい場面 (each answered question not ◎: its
   segment as m:ss 「4:22〜4:32」 and the line heard there; the same count as これまでの記録, which keeps answered ones only),
   the unanswered questions on a line of their own (「まだ答えていない質問がNつあるよ」: nothing heard to miss), the clip's phrases and

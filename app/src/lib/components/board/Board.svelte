@@ -219,5 +219,5 @@
 </script>
 
 {#if open && View && canvas}
-  <View {canvas} {face} {night} at={at} three={w.three as BoardProj | null} onclose={() => (open = false)} />
+  <View {canvas} {face} at={at} three={w.three as BoardProj | null} onclose={() => (open = false)} />
 {/if}

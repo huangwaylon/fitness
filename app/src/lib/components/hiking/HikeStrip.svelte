@@ -1,6 +1,6 @@
 <script lang="ts">
   // Hike mode's peek (docs/hiking.md "In-hike map"): the strip (歩いた · のこり · のぼり · {山頂/ゴール}到着 H:MMごろ,
-  // Fredoka 22 on the solid cream, ink at every hour: the cream stays cream by night) and its row, the wake switch
+  // Fredoka 22, ink on the solid cream) and its row, the wake switch
   // (画面をつけたままにする, where the phone has a wake lock) and 終了 (the banner's 取り消す puts the hike back). Their
   // taps never drag the sheet. Before the first fix the 到着 cell is the plan's finish (予定, its start as moved:
   // lib/hiking/start.ts scheduleOf); 日の入り後に下山 under it when the finish (live, or the plan's) passes the sunset.
@@ -60,8 +60,7 @@
 </div>
 
 <style>
-  /* (the strip's cream is the day's at every hour: its text the day's ink too, not the night's light --text) */
-  .hike-strip { --text: var(--c-ink); --text-soft: var(--c-ink-soft); margin: 2px 0 0; background: var(--c-cream); border-radius: var(--r-row); box-shadow: inset 0 0 0 2px var(--c-edge); color: var(--c-ink); }
+  .hike-strip { margin: 2px 0 0; background: var(--c-cream); border-radius: var(--r-row); box-shadow: inset 0 0 0 2px var(--c-edge); color: var(--c-ink); }
   .hike-strip :global(.stats) { padding: 8px 0; }
   .hike-strip :global(.stats b) { font-size: 22px; }
   .hike-strip :global(.stats dt) { font-size: var(--fs-s); color: var(--text); }

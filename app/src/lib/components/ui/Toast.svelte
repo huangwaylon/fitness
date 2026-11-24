@@ -103,7 +103,7 @@
 </script>
 
 {#if !gone}
-  <div bind:this={el} class="banner" class:obj-cream={!!onclose} class:snack class:lasting={!!onclose} class:below class:leaving style:bottom={over === null ? undefined : `max(var(--snack-bottom), ${over}px)`} role="status" popover="manual" use:topLayer
+  <div bind:this={el} class="banner" class:snack class:lasting={!!onclose} class:below class:leaving style:bottom={over === null ? undefined : `max(var(--snack-bottom), ${over}px)`} role="status" popover="manual" use:topLayer
     onpointerenter={hold(true)} onpointerleave={hold(false)} onfocusin={hold(true)} onfocusout={blur} {...rest}>
     <!-- With a button, a tap only holds the banner (so it can be read and undone: a near miss on 取り消す never sends it);
          a swipe down (toward where the snackbar sits) ends it. A swipe: a move while pressed, never a mouse passing
@@ -159,7 +159,7 @@
   .snack:not(:has(.act)) { padding-right: 14px; }
   .snack .pebble { width: 28px; height: 28px; background: none; }
   .snack .txt { overflow-wrap: anywhere; }
-  /* its button: a leaf-tinted pill (cream at night too, as the banner), 36 tall, its hit the bar's whole 44 */
+  /* its button: a leaf-tinted pill, 36 tall, its hit the bar's whole 44 */
   .snack-act {
     appearance: none; border: 0; cursor: pointer; height: 36px; padding: 0 14px; border-radius: var(--r-pill);
     background: color-mix(in srgb, var(--c-leaf) 22%, var(--c-card)); color: var(--c-leaf-text);

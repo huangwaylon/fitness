@@ -28,6 +28,4 @@
   /* a goal not met: a small flat silhouette, like the tree's fruit that hasn't fallen yet */
   .m:not(.on) { opacity: .22; }
   .m:not(.on) :global(.official) { filter: brightness(0); }
-  :global(:root[data-tod='night']) .m:not(.on) { opacity: .35; }
-  :global(:root[data-tod='night']) .m:not(.on) :global(.official) { filter: brightness(0) invert(1); }
 </style>

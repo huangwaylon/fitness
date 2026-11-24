@@ -67,7 +67,6 @@
   li:last-child .sp::before { bottom: auto; height: 12px; }
   li:only-child .sp::before { content: none; }
   .sp i { position: absolute; left: 2px; top: 9px; width: 10px; height: 10px; box-sizing: border-box; border-radius: 50%; background: var(--card); border: 2px solid var(--c); }
-  :global(:root[data-tod='night']) .sp i, :global(:root[data-tod='night']) .sp::before { filter: brightness(1.3); }
   .untimed .sp i { width: 6px; height: 6px; left: 4px; top: 11px; border-width: 1.5px; }
   .tx { padding: 5px 0 5px 2px; min-width: 0; }
   /* gone by (today's rows before the one that is now): quiet */
@@ -76,7 +75,6 @@
   /* now: a big filled dot with a soft ring, its time in the day's colour */
   .now .sp i { left: 0; top: 7px; width: 14px; height: 14px; background: var(--c); border: 0; box-shadow: 0 0 0 4px color-mix(in srgb, var(--c) 22%, transparent); }
   .now .t { color: var(--c); }
-  :global(:root[data-tod='night']) .now .t { color: color-mix(in srgb, var(--c) 30%, var(--text)); }
   .now .ln { font-weight: 600; }
   .nx { margin-right: 6px; color: var(--leaf-text); vertical-align: 1px; }
 

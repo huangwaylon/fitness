@@ -284,7 +284,7 @@
   }
 </script>
 
-<section class="menu sheet-copy obj-cream" data-shop-panel={tab}>
+<section class="menu sheet-copy" data-shop-panel={tab}>
   <!-- the title bar (タヌキ商店, my かいがら, ✕) and the tabs stay put; the list scrolls under them, the bar at the foot -->
   <header class="pin">
     <NavBar title={t('shop.title')} lead={wallet} {trailing} />
@@ -476,12 +476,10 @@
 
 <style>
   /* the sheet: one height on both tabs and after a sale (no jump), its head and tabs pinned at the top and the bar at the foot, only the list between them scrolls (its own
-     scroller, so iOS Safari's rubber band never drags the head off); fixed cream at every time of day, ink text (a game
-     object, as the HUD's) */
+     scroller, so iOS Safari's rubber band never drags the head off); fixed cream, ink text (a game object, as the HUD's) */
   .menu {
     position: absolute; z-index: 4; left: 0; right: 0; bottom: 0; height: 80%; display: flex; flex-direction: column;
     background: var(--c-cream); border-radius: var(--r-card) var(--r-card) 0 0; box-shadow: 0 -4px 0 var(--c-lip); overflow: hidden;
-    /* (.obj-cream: the panel's own controls keep the day's look, fixed cream and ink, at every time of day) */
     --focus: var(--c-ink);
     animation: sheet-in .2s ease-out;
   }

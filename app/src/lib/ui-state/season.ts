@@ -4,8 +4,8 @@
 //     summer Jun 1 – Sep 15, autumn Sep 16 – Dec 10.
 //   foliage (the oaks): cherry blossom only Apr 1–10, green leaves Feb 25 – Oct 15 otherwise,
 //     red-orange fall leaves Oct 16 – Dec 10 (maple week Nov 16–25 is the peak), snow Dec 11 – Feb 24.
-//   time of day: always the clock, never OS dark mode: dawn 05–07, day 07–16, dusk 16–19, night 19–05.
-//     It drives both the scene sky and the chrome (prefers-color-scheme is ignored).
+//   time of day (the scene's sky and light; the chrome has one light theme): dawn 05–07, day 07–16, dusk 16–19,
+//     night 19–05.
 import { jst } from '#lib/time/clock.ts';
 
 export type Season = 'spring' | 'summer' | 'autumn' | 'winter';
@@ -51,8 +51,6 @@ export interface ThemeInput {
   foliage?: Foliage | null;
 }
 export interface ThemeState {
-  /** Night chrome (= tod is night). */
-  night: boolean;
   season: Season;
   foliage: Foliage;
   /** Scene sky. */
@@ -61,7 +59,7 @@ export interface ThemeState {
 
 export function deriveTheme(d: Date, o: ThemeInput = {}): ThemeState {
   const tod = o.tod ?? todFor(d);
-  return { night: tod === 'night', season: o.season ?? seasonFor(d), foliage: o.foliage ?? foliageFor(d), tod };
+  return { season: o.season ?? seasonFor(d), foliage: o.foliage ?? foliageFor(d), tod };
 }
 
 /**

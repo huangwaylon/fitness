@@ -1,6 +1,6 @@
 <script lang="ts">
   // 結婚式's メモ (docs/wedding.md "Notes"): the one shared note as a letter (cream paper with grain, a rose band at
-  // its head, rules every 30px under the text, a tilted heart stamp; a game object: cream at every time of day),
+  // its head, rules every 30px under the text, a tilted heart stamp; a game object),
   // rendered from its small markdown (Markdown.svelte), 「ふたりのメモ」 over it and who saved it last
   // (「11月4日に はなこ が更新」; the old Sheet's note says so instead). A member's 編集 (on the letter) opens the field
   // with the format tools at its foot, over the keyboard (見出し, 太字, リスト, リンク: lib/wedding/markdown.ts' toggles, the
@@ -101,11 +101,9 @@
 
 <style>
   .pad { padding: 10px 12px 16px; display: flex; flex-direction: column; gap: 10px; }
-  /* the letter: a game object, cream at every time of day (the day's ink and controls inside it), a rose band at its
-     head, the hand-cut corners, the lip; the rules are Markdown's lines (30px each, so the text sits on them) */
+  /* the letter: a game object, cream, a rose band at its head, the hand-cut corners, the lip; the rules are Markdown's
+     lines (30px each, so the text sits on them) */
   .letter, .field {
-    --text: var(--c-ink); --text-soft: var(--c-ink-soft); --leaf-text: var(--c-leaf-text); --coral-text: var(--c-coral-text);
-    --card: var(--c-card); --ctl: var(--c-card); --edge: var(--c-edge); --lip: var(--c-lip); --focus: var(--c-ink); --hl: color-mix(in srgb, var(--c-yuzu) 30%, transparent);
     --rose-soft: color-mix(in srgb, var(--c-rose) 30%, var(--c-cream));
     --rose-ink: color-mix(in srgb, var(--c-rose) 40%, var(--c-ink));
     color: var(--text); background-color: var(--c-cream);

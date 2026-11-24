@@ -1,6 +1,5 @@
 /* 英語すごろく's turn tiles (WordTurn, SentenceTurn, PictureTurn; imported by SugorokuPlay, under whose sheet they all
-   show): the paper of a tile with the brown edge's lip, pressed down a step; placed ones mint. The sheet is cream at
-   every hour (.obj-cream), so these are the day's colours. */
+   show): the paper of a tile with the brown edge's lip, pressed down a step; placed ones mint. */
 .sg-tile, .sg-wt {
   position: relative; margin: 0; appearance: none; border: 0; border-radius: var(--r-chip); cursor: pointer;
   background: var(--c-paper); color: var(--c-ink); box-shadow: 0 3px 0 var(--c-edge);

@@ -101,7 +101,7 @@
   {@render under?.()}
   {#if backHint}<div class="bare-hint" role="status" data-bare-hint>{t('room.bareBack')}</div>{/if}
   <div class="chrome">
-  <div class="top obj-cream" class:wide bind:this={top}>
+  <div class="top" class:wide bind:this={top}>
     {#if backShown}<NavButton kind="back" text={back} onclick={onback} sfx="self" />{/if}
     {@render end?.()}
   </div>

@@ -1,7 +1,7 @@
 <script lang="ts">
   // The one title-bar button (docs/design.md "Navigation"): ‹ back (top-left, only on a level), ✕ close (top-right, every
   // sheet), or a `tool` (⚙ ＋…: the lead slot on a top level, or before ✕). One size app-wide: a 32px disc drawn in
-  // the 44px hit, the kit's control (`--ctl`, `--sh-ctl-s`: cream by day, navy at night), the glyph `ui/Icon` at stroke 2.4.
+  // the 44px hit, the kit's control (`--ctl`, `--sh-ctl-s`: cream), the glyph `ui/Icon` at stroke 2.4.
   // The same disc over a photo or a map (a trip's hero, a trail's map): one look everywhere.
   // `text`: ‹ grown into a labelled pill, a full page's way back (‹ しまへ in a room).
   //   <NavButton kind="close" onclick={…} />   <NavButton kind="back" text="しまへ" onclick={…} />
