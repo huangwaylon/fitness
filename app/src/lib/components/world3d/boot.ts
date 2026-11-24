@@ -38,6 +38,12 @@ export interface BootReport {
   stepMs: number;
   /** The GPU programs at the watch's end. */
   progs: number;
+  /** The launch's programs linked ahead (progCache.ts: the last launch's set, made after the first frame), how many of
+   *  them its models' materials took, and the ms from the models in (`loaded`) to the last program linked (0: all
+   *  linked by then). */
+  progPre?: number;
+  progHit?: number;
+  prog?: number;
   /** How long the mount waited for the ground's fields (ms), and where they came from. */
   fieldsMs: number;
   fields: 'cache' | 'worker' | 'main';
@@ -165,6 +171,11 @@ export function swFetches(since: number, sw: ServiceWorker | null | undefined = 
   });
 }
 
+/** The launch's programs linked ahead and its wait on links after the models were in (the engine's progStats). */
+export function progsOf(s: { progPre: number; progHit: number; linkedAt: number }, loaded: number): Pick<BootReport, 'progPre' | 'progHit' | 'prog'> {
+  return { progPre: s.progPre, progHit: s.progHit, prog: loaded && s.linkedAt > loaded ? Math.round(s.linkedAt - loaded) : 0 };
+}
+
 /** The service worker as the page was launched. */
 export function swState(nav: Navigator | undefined = globalThis.navigator): BootReport['sw'] {
   const sw = nav?.serviceWorker;
@@ -182,7 +193,7 @@ export function modelFetches(entries: readonly { name: string; transferSize?: nu
   return { n, net };
 }
 
-type Clocked = Omit<BootReport, 'progs' | 'fieldsMs' | 'fields' | 'sw' | 'warm' | 'net' | 'late' | 'lastM' | 'data' | 'garden' | 'farm'>;
+type Clocked = Omit<BootReport, 'progs' | 'progPre' | 'progHit' | 'prog' | 'fieldsMs' | 'fields' | 'sw' | 'warm' | 'net' | 'late' | 'lastM' | 'data' | 'garden' | 'farm'>;
 
 /** The launch's clock: the engine's frames (`frame`), the page's display frames (`tick`), the marks. `done` once
  *  SETTLE_MS past `shown`; spoiled (never done) by the page hidden or the island paused meanwhile: its frames say
@@ -277,7 +288,7 @@ export const bootReport = (): BootReport | null => report;
  * WATCH_MAX_MS. A later mount (`back`: from a room, another screen) is watched the same way once a page load, its marks
  * from the mount (`perf.back`: the return's worst frame); null after that.
  */
-export function watchBoot(extra: (m: Clocked) => Pick<BootReport, 'progs' | 'fieldsMs' | 'fields' | 'late' | 'lastM' | 'lateF' | 'lateA' | 'lastC' | 'cardF' | 'cardA' | 'tx' | 'txFail' | 'txWebp' | 'txOff' | 'data' | 'garden' | 'farm'>, paused: () => boolean): { clock: BootClock; stop(): void; back: boolean } | null {
+export function watchBoot(extra: (m: Clocked) => Pick<BootReport, 'progs' | 'progPre' | 'progHit' | 'prog' | 'fieldsMs' | 'fields' | 'late' | 'lastM' | 'lateF' | 'lateA' | 'lastC' | 'cardF' | 'cardA' | 'tx' | 'txFail' | 'txWebp' | 'txOff' | 'data' | 'garden' | 'farm'>, paused: () => boolean): { clock: BootClock; stop(): void; back: boolean } | null {
   if (returned || typeof requestAnimationFrame === 'undefined') return null;
   const back = launched;
   if (back) returned = true;

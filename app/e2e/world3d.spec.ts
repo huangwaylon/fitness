@@ -286,6 +286,37 @@ test('the board\'s focus: the camera frames a thing, the finger does nothing mea
   expect(after.pitch).toBe(before.pitch);
 });
 
+test("the launch's programs linked ahead: a second launch makes the first's set before its models land, and they take them (progCache.ts)", { tag: '@render' }, async ({ page }) => {
+  const errors: string[] = [];
+  page.on('console', (m) => (m.type() === 'warning' || m.type() === 'error') && /THREE|shader|program/i.test(m.text()) && errors.push(m.text()));
+  type Boot = { progPre?: number; progHit?: number; prog?: number } | null;
+  const boot = () => page.evaluate(() => (window as unknown as { __world3d: { boot(): Boot } }).__world3d.boot());
+  const kept = () => page.evaluate(() => new Promise<number>((ok) => {
+    const o = indexedDB.open('island-progs', 1);
+    o.onupgradeneeded = () => o.result.createObjectStore('progs');
+    o.onsuccess = () => {
+      const r = o.result.transaction('progs').objectStore('progs').get('last');
+      r.onsuccess = () => (ok((r.result as { progs?: unknown[] } | undefined)?.progs?.length ?? 0), o.result.close());
+      r.onerror = () => (ok(0), o.result.close());
+    };
+    o.onerror = () => ok(0);
+  }));
+  await page.goto(`?${Q}`);
+  await ready(page);
+  await expect.poll(boot, { timeout: 30_000 }).not.toBeNull();
+  expect((await boot())?.progPre).toBe(0);
+  // (kept a moment after the island stood whole)
+  await expect.poll(kept, { timeout: 15_000 }).toBeGreaterThan(5);
+  await page.reload();
+  await ready(page);
+  await expect.poll(boot, { timeout: 30_000 }).not.toBeNull();
+  const b = (await boot())!;
+  expect(b.progPre).toBeGreaterThan(0);
+  expect(b.progHit).toBeGreaterThan(0);
+  await expect.poll(() => page.evaluate(() => (window as unknown as { __world3d: { stats(): { calls: number } } }).__world3d.stats().calls)).toBeGreaterThan(10);
+  expect(errors).toEqual([]);
+});
+
 test('nothing drawn strays off the island: no NaN or far-flung vertex (the falling leaves\' lines), no material warnings', { tag: '@render' }, async ({ page }) => {
   test.setTimeout(60_000);
   const warns: string[] = [];

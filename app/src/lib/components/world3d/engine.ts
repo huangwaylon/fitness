@@ -38,6 +38,7 @@ import { critWant, pace as critters, pacer } from './pace.ts';
 import type { BootWait } from './boot.ts';
 import type { LOG_ACTIVE_TAGS } from '#lib/contract/log.ts';
 import { createWarmup, texturesOf, WAIT_MAX_MS } from './warmup.ts';
+import { letGo, preLink, primeAhead, readProgs, recOf, writeProgs, type Prog } from './progCache.ts';
 import { ktx2Target } from './ktx2.ts';
 import { SEA_X, midXOf } from '#lib/layout/model.ts';
 import { SEA_Y } from '#lib/layout/height.ts';
@@ -163,6 +164,8 @@ const LEAN = 0.42;
  *  rest's in their frame. */
 /** The launch's hold (launchHeld): let go of once no model has come in for this long (ms), the first for the longer. */
 const LAUNCH_STALL_MS = 400, LAUNCH_FIRST_MS = 1200;
+/** The launch's programs linked ahead asked for already (progCache.ts: once a page load, the launch's mount). */
+let progsAsked = false;
 const REST_MS = 2000, REST_FPS = 12, REST_SHADOW_MS = 250, SLOW_SHADOW_MS = 66, MOVING_SHADOW_MS = 200;
 /** A fling faster than this (px/ms) rushes (Island3['rushing']): a touch on it only stops it, as iOS's scroll. */
 const RUSH_V = 0.1;
@@ -269,6 +272,9 @@ export interface Island3 {
   gpu(): string;
   /** Its renderer (a still through it, into a render target: the players' portraits, person3d). */
   renderer(): WebGLRenderer;
+  /** The launch's programs linked ahead (progCache.ts): how many were made, how many of them a material took by the
+   *  island whole, and when the launch's programs were last all linked (performance.now(); 0: never one waiting). */
+  progStats(): { progPre: number; progHit: number; linkedAt: number };
   /** The camera's ends for this screen (the scene fits them: まえ's shore, おく's campsite). */
   setLimits(min: number, max: number): void;
   // ---- the projection (the World's Proj3; px from the canvas's top-left) ----
@@ -1037,6 +1043,46 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
     const ins = things.arrivals(), t = now(), last = ins.length ? ins[ins.length - 1][1] : bornAt;
     return (launching = t - bornAt < WAIT_MAX_MS && t - last < (ins.length ? LAUNCH_STALL_MS : LAUNCH_FIRST_MS));
   }
+  // ---- the launch's programs linked ahead (progCache.ts): the last launch's set made right after the island's first
+  // frame, before the models land; this launch's set kept once the island stands whole (once a page load) ----
+  const progsKept = parallel && !progsAsked ? readProgs() : null;
+  if (progsKept) progsAsked = true;
+  /** The programs the first frame made (the ground's, the sky's: not kept), those made ahead, and the launch's
+   *  numbers. */
+  let firstProgs: Set<object> | null = null, ahead: Prog[] = [], unprime = () => {}, progHit = 0, linkedAt = 0, unlinked = false, progsDone = !progsKept;
+  function linkAhead() {
+    // (a task after the frame: never in it; those the models made meanwhile not made twice)
+    setTimeout(() => void progsKept?.then((recs) => {
+      if (disposed || !recs?.length) return;
+      ahead = preLink(renderer, recs, parallel);
+      unprime = primeAhead(renderer, ahead);
+    }), 0);
+  }
+  /** At each frame of the launch: whether a program is still linking (`linkedAt`: when the last of them was in). */
+  function watchLinks() {
+    let un = false;
+    for (const p of programList() as Prog[]) if (p.program && !p.isReady()) (un = true);
+    if (unlinked && !un) linkedAt = now();
+    unlinked = un;
+  }
+  /** The island whole: this launch's programs (all made since the first frame, the ones made ahead no material took
+   *  left out) kept for the next launch, a moment later, and those made ahead let go of. */
+  function keepLinks() {
+    progsDone = true;
+    const late = (programList() as Prog[]).filter((p) => !firstProgs?.has(p) && !(ahead.includes(p) && p.usedTimes < 2));
+    progHit = ahead.filter((p) => p.usedTimes > 1).length;
+    setTimeout(() => {
+      if (disposed) return;
+      unprime();
+      for (const p of ahead) letGo(renderer, p);
+      const gl = renderer.getContext();
+      // (the same set as kept: not written again, ~0.8 MB a launch)
+      void progsKept?.then((had) => {
+        const keys = new Set(had?.map((r) => r.k));
+        if (keys.size !== late.length || late.some((p) => !keys.has(p.cacheKey))) void writeProgs(late.map((p) => recOf(gl, p)).filter((r) => r !== null));
+      });
+    }, 2000);
+  }
   function midStep() {
     midRaf = 0;
     // (none while the launch's models come in: its steps then took their parsing's time, `loaded` 10-25 ms later)
@@ -1200,7 +1246,14 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
     // (a mount's first frame only compiles, and a held-back ground isn't drawn: the canvas still blank)
     if (!island && !compileOnly) island = noDraw || ready(ground.group, warming);
     const t1 = now();
-    drawnHook?.(t, t1, held ? 'link' : things.holding() ? 'models' : cards.pending() ? 'cards' : null, island);
+    const wait = held ? 'link' : things.holding() ? 'models' : cards.pending() ? 'cards' : null;
+    // (the first frame's programs, the ground's and the sky's, not kept; the rest linked ahead from a task after it)
+    if (!progsDone && !firstProgs) (firstProgs = new Set(programList())), linkAhead();
+    else if (!progsDone && island) {
+      watchLinks();
+      if (!wait && things.arrivals().length) keepLinks();
+    }
+    drawnHook?.(t, t1, wait, island);
     if (swapAt && !noDraw && !compileOnly) {
       swapHook?.(swapOn, swapSet, t1 - t);
       swapAt = 0;
@@ -1354,6 +1407,7 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
       else kick();
     },
     renderer: () => renderer,
+    progStats: () => ({ progPre: ahead.length, progHit, linkedAt }),
     gpu() {
       const gl = renderer.getContext(), ext = gl.getExtension('WEBGL_debug_renderer_info');
       return String(ext ? gl.getParameter(ext.UNMASKED_RENDERER_WEBGL) : gl.getParameter(gl.RENDERER));
@@ -1404,6 +1458,7 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
     dispose() {
       disposed = true;
       warm.clear();
+      unprime();
       for (const d of plainDepth.values()) d.dispose();
       pace.stop();
       if (wakeTimer) clearTimeout(wakeTimer);
