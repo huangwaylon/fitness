@@ -58,12 +58,10 @@
   /** A basemap tile has come (the loading note goes). */
   let tiled = $state(false);
   /** The stub's view: its centre, as a pan moves it. */
-  let stubCenter = $state.raw<LL | null>(null);
 
   /** A flight asked before the engine is in (a fresh phone's fly to me): flown once it is. */
   let pend: { at: LL; z?: number } | null = null;
-  export const fly = (at: LL, z?: number) => (engine ? engine.fly(at, z) : ((stubCenter = at), (pend = { at, z })));
-  export const view = (): { center: LL; r: number } => engine?.view() ?? { center: stubCenter ?? cam.center, r: 1000 };
+  export const fly = (at: LL, z?: number) => (engine ? engine.fly(at, z) : (pend = { at, z }));
   const sayBox = () => engine && onview(engine.bounds(boxPad.bottom, boxPad.top));
   /** 全体を見る: the map about these (the stub: its box). */
   export function fit(lls: readonly LL[]) {
@@ -116,7 +114,7 @@
     const hook = {
       state: () => ({ mode, n: pts.length, sel: sel?.id ?? null, pin, fix, ...engine?.state() }),
       longPress: (lng: number, lat: number) => onpoint([lng, lat]),
-      pan: (lng: number, lat: number) => ((stubCenter = [lng, lat]), onmoved()),
+      pan: () => onmoved(),
       bounds: (w: number, s: number, e: number, n: number) => onview([w, s, e, n])
     };
     const stop = map.start(mode === 'stub', '__placesMap', hook);

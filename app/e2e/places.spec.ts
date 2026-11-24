@@ -141,7 +141,12 @@ async function frames(p: Page) {
   })).toBe(true);
 }
 
-test('browse: no search, the list is the map’s view (the map all of them); a filter chip keeps the view, typed text searches everywhere, cleared back to the view; an empty view and 全体を見る', async ({ page, context }, info) => {
+/** The meta line's scope switch: its two halves. */
+const scopeBtn = (p: Page, k: 'view' | 'all') => view(p).locator(`[data-places-scope="${k}"]`);
+/** The stub map's own pan (a user's: the list goes to the view). */
+const pan = (p: Page, lng: number, lat: number) => p.evaluate(([a, b]) => (window as unknown as { __placesMap: { pan(a: number, b: number): void } }).__placesMap.pan(a, b), [lng, lat]);
+
+test('scope: no search, the list is the map’s view; a chip tap keeps the view; a search is the whole list’s and fits the map; a pan narrows it to the view; 全体 / この範囲 flip it; an empty view', async ({ page, context }, info) => {
   const how = howOf(info.project.name);
   await phone(page, context);
   await openPlaces(page, how);
@@ -149,7 +154,10 @@ test('browse: no search, the list is the map’s view (the map all of them); a f
   // about 渋谷: 7 of the 10
   await bounds(page, [139.69, 35.65, 139.71, 35.67]);
   await expect(rows(page)).toHaveCount(7);
-  await expect(meta).toHaveText('この範囲 7 / 10件 · 同期 1時間前');
+  await expect(scopeBtn(page, 'view')).toHaveText('この範囲 7');
+  await expect(scopeBtn(page, 'view')).toHaveAttribute('aria-pressed', 'true');
+  await expect(scopeBtn(page, 'all')).toHaveText('全体 10件');
+  await expect(meta).toContainText('同期 1時間前');
   await expect(stubMap(page)).toHaveAttribute('data-count', '10');
   await expect(view(page).locator('[data-search-here]')).toHaveCount(0);
   // a category chip: the view's (its count the view's)
@@ -157,35 +165,61 @@ test('browse: no search, the list is the map’s view (the map all of them); a f
   await view(page).locator('[data-cat="麺"]')[how]();
   await expect(rows(page)).toHaveCount(3);
   await view(page).locator('[data-qchip="cat:麺:"]')[how]();
-  // the same category typed: a search, the whole list's (麺 has 3, none of them in 高尾)
+  // in 高尾, the same category typed: a search, the whole list's, the map fitted to its 3 (the view then has them)
   await bounds(page, [139.2, 35.6, 139.3, 35.7]);
   await type(page, '麺 ');
   await expect(rows(page)).toHaveCount(3);
-  await expect(meta).toHaveText('3 / 10件 · 同期 1時間前');
+  await expect(scopeBtn(page, 'all')).toHaveAttribute('aria-pressed', 'true');
+  await expect(scopeBtn(page, 'all')).toHaveText('全体 3件');
+  await expect(scopeBtn(page, 'view')).toHaveText('この範囲 3');
+  await field(page).blur();
+  // the user's pan back to 高尾: the search narrowed to the view (none of its 3 there)
+  await pan(page, 139.25, 35.65);
+  await bounds(page, [139.2, 35.6, 139.3, 35.7]);
+  await expect(scopeBtn(page, 'view')).toHaveAttribute('aria-pressed', 'true');
+  await expect(view(page).locator('[data-places-none-here]')).toBeVisible();
+  // 全体: the whole search's again
+  await scopeBtn(page, 'all')[how]();
+  await expect(rows(page)).toHaveCount(3);
   await view(page).locator('[data-qchip^="cat:麺"]').first()[how]();
   await field(page).blur();
-  // panned to 高尾
+  // the search let go: the view's again
   await bounds(page, [139.2, 35.6, 139.3, 35.7]);
   expect(await names(page)).toEqual(['サンプル山']);
-  // typed: everywhere, not the view's; cleared: the view again
+  // typed: everywhere; a pan to a corner of 渋谷: the view's of them
   await type(page, 'ためし');
   expect(new Set(await names(page))).toEqual(new Set(['ためしカフェ', 'おためし酒場']));
-  await expect(meta).toHaveText('2 / 10件 · 同期 1時間前');
-  await field(page).fill('');
-  await expect(rows(page)).toHaveCount(1);
   await field(page).blur();
-  // nothing in view: says so, 全体を見る fits them all
+  await pan(page, 139.702, 35.662);
+  await bounds(page, [139.7, 35.66, 139.705, 35.665]);
+  expect(await names(page)).toEqual(['ためしカフェ']);
+  await field(page).fill('');
+  await field(page).blur();
+  // nothing in view: says so, 全体を見る fits them all and lists them
   await bounds(page, [140.5, 36.5, 140.6, 36.6]);
   await expect(view(page).locator('[data-places-none-here]')).toContainText('この範囲に保存した場所はありません');
   await expect(rows(page)).toHaveCount(0);
-  await expect(meta).toHaveText('この範囲 0 · 全体 10件 · 同期 1時間前');
+  await expect(scopeBtn(page, 'view')).toHaveText('この範囲 0');
   await view(page).locator('[data-places-all]')[how]();
   await expect(rows(page)).toHaveCount(10);
-  await expect(meta).toHaveText('10件 · 同期 1時間前');
-  // the meta's この範囲 shows them all too
+  await expect(scopeBtn(page, 'all')).toHaveAttribute('aria-pressed', 'true');
+  // この範囲: the view's again (the fit's: all 10 in it)
+  await scopeBtn(page, 'view')[how]();
+  await expect(scopeBtn(page, 'view')).toHaveAttribute('aria-pressed', 'true');
   await bounds(page, [139.69, 35.65, 139.71, 35.67]);
-  await view(page).locator('[data-places-inview]')[how]();
-  await expect(rows(page)).toHaveCount(10);
+  await expect(rows(page)).toHaveCount(7);
+});
+
+test('scope: a chip tapped with none of its matches in view fits the map to them', async ({ page, context }, info) => {
+  const how = howOf(info.project.name);
+  await phone(page, context);
+  await openPlaces(page, how);
+  await bounds(page, [139.69, 35.65, 139.71, 35.67]);
+  await expect(rows(page)).toHaveCount(7);
+  await view(page).locator('[data-cat="自然・登山"]')[how]();
+  // (the stub's fit says the box about サンプル山: the list the view's, it in it)
+  expect(await names(page)).toEqual(['サンプル山']);
+  await expect(scopeBtn(page, 'view')).toHaveAttribute('aria-pressed', 'true');
 });
 
 test('browse: a new view waits while the full list is scrolled, then applies at the top; the card stays open whatever the view', async ({ page, context }, info) => {
@@ -237,11 +271,6 @@ test('the list and the map: a row flies there and opens the card, a marker opens
   await expect(stubMap(page)).toHaveAttribute('data-pin', '139.2550,35.6330');
   expect(await names(page)).toEqual(['サンプル山']);
   await expect(rows(page).first().locator('.sbt')).toHaveText('山 · 八王子 · 560 m'); // the distance from the point
-  // このあたりで探す after a pan
-  await page.evaluate(() => (window as unknown as { __placesMap: { pan(a: number, b: number): void } }).__placesMap.pan(139.7, 35.66));
-  await view(page).locator('[data-search-here]')[how]();
-  await expect(qchips(page)).toHaveText(['地図の中心']);
-  await expect(view(page).locator('[data-search-here]')).toHaveCount(0);
 });
 
 test('the sheet: a swipe up on the peek’s rows raises it (no row opened), a tap on a row opens its card (one ✕: the bar’s), a swipe down folds it to the card', async ({ page, context }, info) => {

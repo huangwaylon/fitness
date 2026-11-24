@@ -73,8 +73,9 @@ test('保存した場所: a search while the context is lost, then restored: no 
   expect((await st())!.features).toBe(400);
   await ctx(page, 'lose');
   await page.locator('dialog[open] [data-places] [data-places-q]').fill('テスト12');
-  await expect(page.locator('dialog[open] [data-places-meta]')).toHaveText(/^\d+ \/ 400件/);
-  const n = Number(/^(\d+)/.exec((await page.locator('dialog[open] [data-places-meta]').textContent()) ?? '')![1]);
+  const all = page.locator('dialog[open] [data-places-scope="all"]');
+  await expect(all).toHaveText(/^全体 \d+件$/);
+  const n = Number(/(\d+)/.exec((await all.textContent()) ?? '')![1]);
   expect(n).toBeLessThan(400);
   await ctx(page, 'restore');
   await ready();

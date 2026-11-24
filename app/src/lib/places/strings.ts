@@ -25,7 +25,6 @@ export const S = {
   /** The location refused: the maps' note (map/strings.ts MS.refused), then this line. */
   pickHint: { ja: '地図を長押しで地点を選べます', en: 'Long-press the map to pick a spot' },
   empty: { ja: '保存した場所はまだありません', en: 'No saved places yet' },
-  searchHere: { ja: 'このあたりで探す', en: 'Search this area' },
   searchNear: { ja: 'この周辺で探す', en: 'Search around it' },
   sort: { ja: '並べ替え', en: 'Sort' },
   filters: { ja: '並べ替えと絞り込み', en: 'Sort and filter' },

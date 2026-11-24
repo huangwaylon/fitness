@@ -61,7 +61,7 @@ test('drawn, a fresh phone: the map opens about the places (none kept, far from 
   await islandUp(page);
   await fromMenu(page, 'places', how);
   await settled(page);
-  await expect(view(page).locator('[data-places-meta]')).not.toContainText('この範囲');
+  await expect(view(page).locator('[data-places-scope="view"]')).toHaveText('この範囲 40');
   await expect(view(page).locator('[data-places-none-here]')).toHaveCount(0);
   expect((await st(page))!.z).toBeGreaterThan(11);
   // the location on: a sky icon on the card, the dot drawn

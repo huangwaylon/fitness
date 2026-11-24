@@ -121,7 +121,7 @@ test.describe('393×852', () => {
     // (the view kept a moment after the map stops: about the home, central Japan here, the most of the list in view)
     await expect.poll(async () => { const c = JSON.parse((await page.evaluate(() => localStorage.getItem('island.placesCam'))) ?? 'null') as { center: [number, number]; zoom: number } | null; return !!c && Math.abs(c.center[1] - 35.5) < 2.5 && Math.abs(c.center[0] - 138.5) < 3 && c.zoom >= 5; }).toBe(true);
     await shot(page, `B-${info.project.name}-fresh-world`);
-    await expect(meta(page)).toHaveText(/^この範囲 1,\d{3} \/ 3,400件/);
+    await expect(meta(page)).toHaveText(/^この範囲 1,\d{3}全体 3,400件/);
   });
 
   test('the card before its photos’ links: the name, the hours line and 経路 at once', async ({ page, context }, info) => {
