@@ -235,7 +235,7 @@ test('an older Worker without /gym/config (404s without CORS, so fetch throws): 
 test('the guest’s ボット: ジム read with its key as a member’s, changed never (⋯, 選択 and the day’s editor aria-disabled)', async ({ page, context }) => {
   const { calls, sheet } = await phone(page, context, 'G');
   const gym = sheet.locator('[data-gym-page]');
-  await expect(page.locator('dialog[open] [data-bots-tab]')).toHaveCount(4);
+  await expect(page.locator('dialog[open] [data-bots-tab]')).toHaveCount(3); // ジム · 保養所 · 定期処理, as a member's
   await expect(gym.locator('[data-gym-verdict="degraded"] [data-bots-word]')).toHaveText('一部不調');
   await expect(gym.locator('[data-gym-config] [data-gym-day]')).toHaveCount(25);
   expect(calls.auth[0]).toBe(`Bearer ${KEY_OF.G}`);
