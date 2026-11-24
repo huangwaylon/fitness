@@ -54,8 +54,8 @@ import { isIslandDay, mergeIslandDay } from '../../app/src/lib/contract/island.t
 import type { PersonId, Who } from '../../app/src/lib/contract/api.ts';
 import { ShareCore, SHARE_TABLES } from './share.ts';
 import { PlacesCore, PLACES_TABLES } from './places.ts';
-import { LedgerStore, LEDGER_TABLES, WHO } from './ledger.ts';
-import { emptyLedger, ledgerRefusal, ledgerStep, pocketMoves, pruneGames, tallyStep, type Ledger as Stored, type LedgerPart, type Ledgers, type FieldWire } from '../../app/src/lib/contract/ledger.ts';
+import { LedgerStore, LEDGER_TABLES, WHO, type FieldWire } from './ledger.ts';
+import { emptyLedger, ledgerRefusal, ledgerStep, pocketMoves, pruneGames, tallyStep, type Ledger as Stored, type LedgerPart, type Ledgers } from '../../app/src/lib/contract/ledger.ts';
 import { isPocketKey } from '../../app/src/lib/contract/shop.ts';
 import { isShareAction, isShareKind } from '../../app/src/lib/contract/share.ts';
 /** A share's kind as the log names it. */

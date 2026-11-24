@@ -7,7 +7,7 @@ import { t } from '#lib/i18n/index.ts';
 import { toasts } from '#lib/ui-state/toast.svelte.ts';
 import { getKey, getStoredMe, onStorageProblem, type StorageProblem } from '#lib/sync/storage.ts';
 import { ackedEvents, enqueue, enqueueAll, flush, holdEvent, keepAcked, nextRetryAt, queued, releaseHeld, replaceHeld, retryNow, unpark, unqueue, type FlushResult, type QueuedEvent } from '#lib/sync/queue.ts';
-import { addOwnRows, addWallets, addLedgers, addField, dropWallets, loadCache, refreshSnapshot, type SnapshotCache } from '#lib/sync/cache.ts';
+import { addOwnRows, addWallets, addLedgers, dropWallets, loadCache, refreshSnapshot, type SnapshotCache } from '#lib/sync/cache.ts';
 import { keyFromHash } from '#lib/sync/pairing.ts';
 import { LIVE_URL, liveRelay, type Live, type SheetChange } from '#lib/sync/live.ts';
 import type { RecordMark } from '#lib/contract/live-protocol.ts';
@@ -432,12 +432,6 @@ export class LiveBackend implements Backend {
     const withLedgers = r.ledgers ? addLedgers(r.ledgers) : null;
     if (withLedgers && withLedgers !== this.#cache) {
       this.#cache = withLedgers;
-      this.#host.changed();
-    }
-    // (and the stored field its farm ops moved)
-    const withField = r.field ? addField(r.field) : null;
-    if (withField && withField !== this.#cache) {
-      this.#cache = withField;
       this.#host.changed();
     }
     if (r.dropped.length) {

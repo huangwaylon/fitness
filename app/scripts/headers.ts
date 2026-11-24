@@ -42,15 +42,22 @@ let html = readFileSync(join(root, 'index.html'), 'utf8');
 // path under src/routes), as the preloads `html` lacks
 /** The island page's scene (routes/+page.svelte imports it lazily: the HUD first). */
 const ISLAND_SCENE = 'src/lib/components/island/IslandScene.svelte';
-function preloadsOf(page: string, html: string): string[] {
+/** The app's shell around every route but the bare pages (routes/+layout.svelte imports it lazily). */
+const APP_SHELL = 'src/routes/AppShell.svelte';
+type Chunk = { file: string; imports?: string[]; dynamicImports?: string[]; css?: string[] };
+const manifest = JSON.parse(readFileSync(join(import.meta.dirname, '..', '.svelte-kit', 'output', 'client', '.vite', 'manifest.json'), 'utf8')) as Record<string, Chunk>;
+/** The client manifest's key of Kit's node for `page` (a path under src/routes). */
+function nodeKey(page: string): string {
   const nodes = join(import.meta.dirname, '..', '.svelte-kit', 'generated', 'build', 'client-optimized', 'nodes');
   const re = new RegExp(`from "(\\.\\./)+src/routes/${page.replace(/[+.]/g, '\\$&')}"`);
   const node = readdirSync(nodes).find((f) => re.test(readFileSync(join(nodes, f), 'utf8')));
   if (!node) throw new Error(`headers: no node for src/routes/${page}`);
-  type Chunk = { file: string; imports?: string[]; dynamicImports?: string[]; css?: string[] };
-  const manifest = JSON.parse(readFileSync(join(import.meta.dirname, '..', '.svelte-kit', 'output', 'client', '.vite', 'manifest.json'), 'utf8')) as Record<string, Chunk>;
   const key = Object.keys(manifest).find((k) => k.endsWith(`client-optimized/nodes/${node}`));
   if (!key) throw new Error(`headers: ${node} not in the client manifest`);
+  return key;
+}
+function preloadsOf(page: string, html: string): string[] {
+  const key = nodeKey(page);
   const js = new Set<string>(), css = new Set<string>();
   const walk = (k: string) => {
     const c = manifest[k];
@@ -62,6 +69,12 @@ function preloadsOf(page: string, html: string): string[] {
   walk(key);
   // and the island's scene, which the page mounts lazily (its HUD first): fetched with the page's, not after it runs
   for (const k of manifest[key].dynamicImports ?? []) if (k.endsWith(ISLAND_SCENE)) walk(k);
+  // and the app's shell (routes/+layout.svelte imports it lazily, so the bare pages never load it): every app route's
+  if (page === '+page.svelte') {
+    if (!manifest[APP_SHELL]) throw new Error(`headers: no ${APP_SHELL} in the client manifest`);
+    walk(APP_SHELL);
+  // and a bare page's root error page: Kit's start awaits it with the root layout, before any route (a wave of its own)
+  } else walk(nodeKey('+error.svelte'));
   const has = (f: string) => html.includes(`"${base}/${f}"`);
   return [...[...js].filter((f) => !has(f)).map((f) => `<link href="${base}/${f}" rel="modulepreload">`), ...[...css].filter((f) => !has(f)).map((f) => `<link href="${base}/${f}" rel="preload" as="style" crossorigin>`)];
 }
@@ -72,8 +85,9 @@ function withPreloads(html: string, mark: string, links: string[]): string {
   const end = at + 'rel="modulepreload">'.length;
   return `${html.slice(0, end)}\n\t\t<!-- ${mark} (scripts/headers.ts) -->\n\t\t${links.join('\n\t\t')}${html.slice(end)}`;
 }
-/** The island page's preloads (as withPreloads put them) taken out again. */
-const ISLAND_PRELOADS = /\n\t\t<!-- data-island-preload[^>]*-->(?:\n\t\t<link href="[^"]+" rel="(?:modulepreload|preload" as="style" crossorigin)">)*/;
+/** The island page's preloads (as withPreloads put them) taken out again: its scripts and its stylesheets (until
+ *  2026-11-24 its stylesheets stayed: the bare pages fetched the island's CSS). */
+const ISLAND_PRELOADS = /\n\t\t<!-- data-island-preload[^>]*-->(?:\n\t\t<link href="[^"]+" rel="(?:modulepreload"|preload" as="style" crossorigin)>)*/;
 
 if (!html.includes('data-island-preload')) {
   const links = preloadsOf('+page.svelte', html);

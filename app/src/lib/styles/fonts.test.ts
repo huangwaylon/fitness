@@ -5,7 +5,7 @@ import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { jaStrings } from '#lib/english/i18n.ts';
-import { FONT_DIR, PARTS, WEIGHTS, cmapOf, fontFile, fullCover, joyo, shippedCover, toRanges, wanted } from '../../../scripts/font-subsets.ts';
+import { FONT_DIR, GYM_FAMILY, PARTS, WEIGHTS, cmapOf, fontFile, fullCover, gymFile, gymWanted, joyo, shippedCover, toRanges, wanted } from '../../../scripts/font-subsets.ts';
 
 const css = readFileSync(join(import.meta.dirname, 'fonts.css'), 'utf8');
 const I18N = join(import.meta.dirname, '..', 'i18n');
@@ -61,5 +61,31 @@ describe('Zen Maru Gothic, our subsets', () => {
   });
   it('a few rules, not @fontsource\'s 160 slices', () => {
     expect(css.length).toBeLessThan(12_000);
+  });
+});
+
+// ジム's page's own subset (fonts-gym.css, routes/gym only): what its text can hold, both weights, tried first
+describe("Zen Maru Gothic, ジム's page's own", () => {
+  const gymCss = readFileSync(join(import.meta.dirname, 'fonts-gym.css'), 'utf8');
+  it.each(WEIGHTS)('weight %i holds every character the page can show that the font has (else npm run fonts:subset)', (w) => {
+    const has = cmapOf(join(FONT_DIR, gymFile(w))), all = full(w);
+    const missing = [...gymWanted()].filter((cp) => all.has(cp) && !has.has(cp));
+    expect(String.fromCodePoint(...missing)).toBe('');
+  });
+  it('fonts-gym.css names its two files, each with its exact characters, its family first in --font-zmg', () => {
+    const faces = [...gymCss.matchAll(/@font-face\s*{[^}]*}/g)].map((m) => m[0]);
+    expect(faces).toHaveLength(WEIGHTS.length);
+    for (const w of WEIGHTS) {
+      const face = faces.find((f) => f.includes(`font-weight: ${w};`) && f.includes(`/${gymFile(w)})`));
+      expect(face, gymFile(w)).toContain(`font-family: '${GYM_FAMILY}';`);
+      expect(/unicode-range:\s*([^;]+);/.exec(face!)?.[1], gymFile(w)).toBe(toRanges(cmapOf(join(FONT_DIR, gymFile(w)))));
+    }
+    expect(gymCss).toContain(`--font-zmg: '${GYM_FAMILY}', 'Zen Maru Gothic';`);
+  });
+  it("the page imports it; the tokens try --font-zmg first, else the app's six", () => {
+    expect(readFileSync(join(import.meta.dirname, '..', '..', 'routes', 'gym', '+page.svelte'), 'utf8')).toContain("import '#lib/styles/fonts-gym.css';");
+    const tokens = readFileSync(join(import.meta.dirname, 'tokens.css'), 'utf8');
+    expect(tokens).toMatch(/--font-ui: var\(--font-zmg, "Zen Maru Gothic"\),/);
+    expect(tokens).toMatch(/--font-num: "Fredoka", var\(--font-zmg, "Zen Maru Gothic"\),/);
   });
 });

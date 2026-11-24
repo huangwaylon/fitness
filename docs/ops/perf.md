@@ -105,9 +105,9 @@ cache's (desktop WebKit: 50 → 7 ms; 50 + 4,000 elsewhere → 520-730). ジム'
 chunks from the worker's caches at the island's models in, offline too: e2e/launch-timeline's HUD 40-50 ms sooner
 after the paint, the menu answering 16-23 ms after the HUD (was 72-92).
 
-## Fonts as six files
-Zen Maru Gothic as our own subsets, three a weight (`scripts/font-subsets.ts`); the before/after numbers are in its
-commit (render-blocking CSS 54.8 → 26.3 KB gz, ~120 fewer cache entries).
+## Fonts
+Zen Maru Gothic as our subsets, three a weight (`scripts/font-subsets.ts`: render-blocking CSS 54.8 → 26.3 KB gz), and
+ジム's own (`fonts-gym.css`). /gym cold (slow 4G, local build): calendar 2,460 → 1,905 ms, 906 → 348 KB (11-24).
 
 ## Rooms by size
 `ios:indoor --room 120 --size 16 --varied` vs 60: calls 124 → 235, `drawMs` 0.72 → 1.45, entry 676 → 1,033 ms (R5).

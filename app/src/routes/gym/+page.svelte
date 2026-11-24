@@ -4,9 +4,13 @@
   // (lib/gym/early.ts). Served as its own shell
   // (build-pages/gym.html: scripts/headers.ts); the root layout runs bare here, as for 共有リンク (routes/s).
   import { onMount } from 'svelte';
+  // its own Zen Maru Gothic, the characters its text can hold (~65 KB a weight, where kana and 常用 were ~600 KB): tried
+  // first, any other character in the app's six (scripts/font-subsets.ts)
+  import '#lib/styles/fonts-gym.css';
   import '#lib/i18n/bots.ts';
   import { t } from '#lib/i18n/index.ts';
   import { takeLinkKey } from '#lib/gym/linkKey.ts';
+  import { getStoredMe } from '#lib/sync/storage.ts';
   import GymPage from '#lib/components/bots/GymPage.svelte';
   import NavBar from '#lib/components/ui/NavBar.svelte';
   import Phrases from '#lib/components/ui/Phrases.svelte';
@@ -21,11 +25,14 @@
   });
 </script>
 
+<svelte:head><title>{t('bots.gym')}</title></svelte:head>
+
 <main class="gym-link sheet-copy" data-gym-link={shown}>
   <NavBar title={t('bots.gym')} pad />
   <div class="body">
     {#if shown === 'page'}
-      <GymPage onlink={() => (shown = 'old')} />
+      <!-- (a guest's own pairing in this browser: week.guest's, without the store) -->
+      <GymPage viewOnly={getStoredMe() === 'G'} onlink={() => (shown = 'old')} />
     {:else if shown !== 'wait'}
       <p class="card pad none" data-gym-link-none={shown}><Phrases text={t(shown === 'old' ? 'bots.link.old' : 'bots.link.none')} /></p>
     {/if}

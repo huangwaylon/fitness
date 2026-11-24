@@ -1,14 +1,18 @@
+<script lang="ts" module>
+  import type { Component } from 'svelte';
+  import type { Who } from '#lib/types.ts';
+  /** A person's face (characters/PersonFace.svelte: the app's shell binds it, so a bare page's toasts load no looks). */
+  let personFace = $state<Component<{ person: Who; size: number }> | null>(null);
+  export const toastPersonFace = (c: Component<{ person: Who; size: number }>): void => void (personFace = c);
+</script>
+
 <script lang="ts">
   // NH-style notification banner (a floating layer, so it alone gets --sh-float; cream at every time of day). Lives in the top layer (popover).
   // ToastHost renders it inside the open sheet's <dialog> when there is one: a popover outside a modal dialog is
   // inert. Slides down below the status row, holds (the store decides how long), slides up: the store
   // sets `leaving` for the slide-out and then drops it, so it never depends on a Svelte outro.
   // Left: a 36px icon on a pebble (partner's villager for partner events, a visitor's head for their words, しずえ for system ones). Right: one official reaction icon. Tap or swipe up to dismiss.
-  import type { Who } from '#lib/types.ts';
   import Host from '../characters/Host.svelte';
-  import Villager from '../characters/Villager.svelte';
-  import Avatar from '../characters/Avatar.svelte';
-  import { lookOf } from '#lib/store/look.ts';
   import OfficialArt from '../characters/OfficialArt.svelte';
   import { t } from '#lib/i18n/index.ts';
   import Phrases from './Phrases.svelte';
@@ -113,8 +117,7 @@
       tabindex={action ? -1 : undefined} onclick={() => !action && dismiss()}
       onpointerdown={(e) => (startY = e.clientY)} onpointermove={(e) => e.buttons > 0 && (snack ? e.clientY - startY > 12 : e.clientY - startY < -12) && dismiss()}></button>{/if}
     <span class="pebble" aria-hidden="true">
-      {#if person && lookOf(person).kind === 'player'}<Avatar worn {person} size={face} />
-      {:else if person}<Villager {person} size={face} head animate={false} eager />
+      {#if person}{#if personFace}{@const Face = personFace}<Face {person} size={face} />{/if}
       {:else if npc}<img src={staticUrl(`room/npc/${npc}.webp`)} alt="" width={face} height={face} decoding="async" />
       {:else}<Host head size={face} animate={false} eager />{/if}
     </span>

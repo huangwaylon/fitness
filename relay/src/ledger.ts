@@ -5,7 +5,7 @@
 // record (store.ts) reads a person's parts, steps them by the contract's rules and writes the parts that moved, in the
 // op's transaction. The field (contract/farm.ts: each plot's plant) is one more row, `F|field`, the same way: judged
 // and stepped by each farm row, served as a reply's `field`. Free of the Workers runtime (test/ledger.test.ts).
-import { emptyLedger, LEDGER_PARTS, partInto, partJson, type FieldWire, type Ledger, type LedgerPart, type Ledgers } from '../../app/src/lib/contract/ledger.ts';
+import { emptyLedger, LEDGER_PARTS, partInto, partJson, type Ledger, type LedgerPart, type Ledgers } from '../../app/src/lib/contract/ledger.ts';
 import type { Who } from '../../app/src/lib/contract/api.ts';
 import { farmFromJson, farmJson, type Farm } from '../../app/src/lib/contract/farm.ts';
 import type { Sql } from './store.ts';
@@ -27,7 +27,8 @@ export type LedgerRow = [string, string, number, string, string];
 const isPart = (p: unknown): p is LedgerPart => (LEDGER_PARTS as readonly unknown[]).includes(p);
 /** The field's row: its `who` and `part`. */
 const FIELD = ['F', 'field'] as const;
-
+/** The field as a reply carries it (its plots: contract/farm.ts farmJson, no pocket changes), its `seq` and `at`. */
+export interface FieldWire { seq: number; at: string; v: unknown }
 
 export class LedgerStore {
   /** The parts written since the caller last cleared it (`who|part`: a request's, its ack's `ledgers`). */

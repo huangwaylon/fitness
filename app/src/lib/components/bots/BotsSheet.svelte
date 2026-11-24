@@ -21,6 +21,7 @@
   import { summaries, watch } from './summary.svelte.ts';
   import { shown } from '#lib/bots/types.ts';
   import { DEVICE, sessionKV } from '#lib/sync/storage.ts';
+  import { week } from '#lib/store/week.svelte.ts';
   import { i18n, t } from '#lib/i18n/index.ts';
   import '#lib/i18n/bots.ts';
 
@@ -95,7 +96,7 @@
     {:else if tab === 'kalori'}
       <KaloriPage />
     {:else}
-      <GymPage />
+      <GymPage viewOnly={week.guest} />
     {/if}
   </div>
   {#if tabs.length > 1}

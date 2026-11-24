@@ -1,7 +1,7 @@
 // The record's tables and API shapes (docs/backend.md#tables, #api). Shared by the record (relay/src/store.ts), the
 // model and the client: row tuples, reply shapes and the validation regexes both sides apply. Dependency-free (type
 // imports only).
-import type { FieldWire, Ledgers } from './ledger.ts';
+import type { Ledgers } from './ledger.ts';
 import type { PersonId, Who } from '../types.ts';
 import { isRec } from './guards.ts';
 
@@ -171,7 +171,7 @@ export type Fail = { ok: false; error: ApiError; detail?: string };
  * `rev` is the data revision (docs/backend.md#revision): when it differs from the one the client cached with, it
  * is another epoch (the record was rebuilt, or another backend answered), so drop the cache and fetch everything (no `since`).
  */
-export type SnapshotReply = { ok: true; me: Who; now: string; rev: string; rows: SnapshotRows; next?: string; wallets?: Wallets; ledgers?: Ledgers; field?: FieldWire } | Fail;
+export type SnapshotReply = { ok: true; me: Who; now: string; rev: string; rows: SnapshotRows; next?: string; wallets?: Wallets; ledgers?: Ledgers } | Fail;
 
 /** The かいがら wallets a reply carries (docs/backend.md#the-wallet): per person, the relay's stored balance `h` and its
  *  changes `seq` (a phone keeps each one's highest). A member's reply any of the three, the guest's only its own; a

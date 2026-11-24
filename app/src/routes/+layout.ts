@@ -1,10 +1,8 @@
 // Client-rendered PWA: the browser computes the week from the record's snapshot (lib/model).
 import { loadEnglish, setLocale } from '#lib/i18n/index.ts';
 import { DEVICE, clearRetired, getKey, localKV, readJson } from '#lib/sync/storage.ts';
-import { loadCache } from '#lib/sync/cache.ts';
 import { isBare, routeOf } from '#lib/ui-state/paths.ts';
 import { resolve } from '$app/paths';
-import { opensIsland } from '#lib/ui-state/boot.ts';
 import type { LayoutLoad } from './$types';
 import { quiet } from '#lib/quiet.ts';
 import { updated } from '$app/state';
@@ -29,8 +27,11 @@ export const prerender = false;
 export const load: LayoutLoad = async ({ url, untrack }) => {
   // a paired phone's record from IndexedDB now, while the page's chunks load and the layout mounts (store/live.ts
   // reads the same promise: its first paint comes off the cache read already done, not one started at the mount)
-  if (getKey() && !isBare(routeOf(untrack(() => url.pathname)))) void loadCache();
-  if (untrack(() => url.pathname) === resolve('/') && opensIsland()) {
+  // (imported here, not statically: the bare pages' first load holds no record; index.html modulepreloads it)
+  if (getKey() && !isBare(routeOf(untrack(() => url.pathname)))) void import('#lib/sync/cache.ts').then((m) => m.loadCache(), () => {});
+  // (boot.ts imported here, not statically: it reads the pairing and the record's URL, none of a bare page's first load)
+  if (untrack(() => url.pathname) === resolve('/')) void import('#lib/ui-state/boot.ts').then(({ opensIsland }) => {
+    if (!opensIsland()) return;
     void import('#lib/components/world3d/Island3D.svelte').catch(() => {});
     // the layout's distance fields in a worker meanwhile (the layout is in localStorage: at hand now), so the 3D
     // island finds them built as it mounts (layout/fieldsPrime.ts: one job, the mount's own call shares it, or starts
@@ -38,7 +39,7 @@ export const load: LayoutLoad = async ({ url, untrack }) => {
     void Promise.all([import('#lib/store/layout.svelte.ts'), import('#lib/layout/fieldsPrime.ts')]).then(([{ layout }, { primeFields }]) => primeFields(layout.current), () => {});
     // and NH's ground textures (world3d/groundTex.ts): in as the ground is built, its bands baked once, with them
     void import('#lib/components/world3d/groundTex.ts').then(({ primeGround }) => primeGround(), () => {});
-  }
+  }, () => {});
   if (readJson(localKV(), DEVICE.locale) !== 'en') return;
   await quiet(loadEnglish(), 'i18n.en');
   setLocale('en');

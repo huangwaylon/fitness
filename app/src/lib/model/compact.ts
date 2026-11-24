@@ -15,20 +15,20 @@ import { addDays, localDateAt, prevDay } from '#lib/contract/tokyo.ts';
  * the model would skip anyway, and the other tabs are kept as they are. Order is preserved. Pure; returns `rows` itself
  * when nothing was dropped.
  */
-export function compactRows(rows: SnapshotRows, now: number, ledgers = false, field = false): SnapshotRows {
+export function compactRows(rows: SnapshotRows, now: number, ledgers = false): SnapshotRows {
   const keep = compactKeep(rows.metrics, now, (r) => rowAt(r));
-  const events = latestFood(latestTallies(ledgers ? ledgerHistory(rows.events, now, field) : rows.events, now));
+  const events = latestFood(latestTallies(ledgers ? ledgerHistory(rows.events, now) : rows.events, now));
   if (!keep && events === rows.events) return rows;
   return { ...rows, metrics: keep ? rows.metrics.filter((_, i) => keep.has(i)) : rows.metrics, events };
 }
 
 /** With the relay's stored ledger (docs/backend.md#the-ledger, `ledgers`: the cache's): `events` without the shop's rows
- *  older than 2 days (and, with the stored field, the farm rows) and the day tallies and give-backs older than 36 days (the record lets them go: relay/src/store.ts
+ *  older than 2 days and the day tallies and give-backs older than 36 days (the record lets them go: relay/src/store.ts
  *  ledgerPrune; the model reads only the unsent ones and the days a phone may still send). `events` itself when none. */
-function ledgerHistory(events: EventRow[], now: number, field: boolean): EventRow[] {
+function ledgerHistory(events: EventRow[], now: number): EventRow[] {
   const cut = now - 2 * 86_400_000, oldest = addDays(localDateAt(now), -36);
   const out = events.filter((r) => {
-    if (SHOP_ROWS.includes(r[3]) || (field && r[3] === 'farm')) return (rowAt(r) ?? now) >= cut;
+    if (SHOP_ROWS.includes(r[3])) return (rowAt(r) ?? now) >= cut;
     if (r[3] !== 'tally' && r[3] !== 'tally_back') return true;
     try {
       const d = (JSON.parse(String(r[4])) as { date?: unknown }).date;

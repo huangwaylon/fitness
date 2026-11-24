@@ -27,15 +27,26 @@ const MANIFEST = join(APP, '.svelte-kit/output/client/.vite/manifest.json');
  *  kana, every 常用 kanji and the app's other kanji, both weights, 1.27 MB, where 58 slices held 0.7 MB; the same files
  *  deploy after deploy, copied by each install, and 52 fewer cache entries), so its cap 3.5 MB. 2026-11-23: JS 364.8 →
  *  350.6 KB with the villagers' poses out of it (villager3d/seats3d.ts names its standing uses), so its cap 400 → 360 KB
- *  (the poses back in would pass it). */
-const FIRST_JS = 360 * 1024;
+ *  (the poses back in would pass it). 2026-11-24: 355.3 → 364.5 KB, the same code in 22 more chunks (+12 KB of their
+ *  imports and exports, ~4 KB gzipped as one), the bare pages' own split (routes/AppShell.svelte lazy: /gym 225 → 145 KB):
+ *  its cap 360 → 368 KB (the island's first load is the service worker's, a bare page's the network's); the precache
+ *  3.49 → 3.50 MB with them (23 more chunks), past 3.5 MB with the day's others, so its cap 3.6 MB. */
+const FIRST_JS = 368 * 1024;
 const FIRST_CSS = 70 * 1024;
-const PRECACHE = 3.5 * 1024 * 1024;
+const PRECACHE = 3.6 * 1024 * 1024;
 /** English Study's sheet chunk with the library's index (2026-11-16: 133.7 KB with the 25 banks inside, 18.5 KB without). */
 const ENGLISH_SHEET = 80 * 1024;
 /** A 共有リンク's page (/s, build-pages/s.html): its JS before the map (a stranger's phone; its CSS is the app's, FIRST_CSS).
  *  2026-11-20: 233.7 KB once the hike cards read lib/hiking/slugs.ts, not every trail's text (520ac3857). */
 const SHARE_FIRST = 250 * 1024;
+/** ジム's page (/gym, build-pages/gym.html: the LINE menu's link, LINE's browser, cold, no service worker, often on
+ *  mobile data): its JS and CSS, and the fonts it draws with (its own Zen Maru Gothic, styles/fonts-gym.css, and
+ *  Fredoka's two), on the wire. 2026-11-24: JS 225.2 → 145.2 KB with the root layout's app shell lazy (routes/AppShell:
+ *  no week, world, sound, log nor harvest on a bare page), CSS 33 → 19 KB (the island's stylesheets no longer preloaded
+ *  there), fonts 630 → 166 KB (its own subsets, ~67 KB a weight, where both kana, 76 KB each, and 700's 常用, 442 KB, came). */
+const GYM_FIRST_JS = 150 * 1024;
+const GYM_FIRST_CSS = 21 * 1024;
+const GYM_FONTS = 170 * 1024;
 /** フレーズ's deck files (lib/english/catalog.ts SHARDS), each gzipped at most (2026-11-17: 10, ≤ 28.1 KB with the 意味, ~2,400 cards). */
 const ENGLISH_SHARD = 32 * 1024;
 /** Chunks the first load never holds (vite's manifest: a chunk's `name`, or its source). A module the lazy features import
@@ -97,6 +108,21 @@ const shareFirst = firstOf(readFileSync(join(BUILD, 's.html'), 'utf8'));
 const share = sizes(shareFirst);
 if (share.js > SHARE_FIRST) fail.push(`/s's first load's JS is ${kb(share.js)} gzipped (≤ ${kb(SHARE_FIRST)})`);
 for (const f of shareFirst) if (/\/(maplibre|three\.module)\./.test(f)) fail.push(`${f} is in /s's first load`);
+// ジム's page (build-pages/gym.html): the root layout bare and the page, no app shell, no island
+const gymFirst = firstOf(readFileSync(join(BUILD, 'gym.html'), 'utf8'));
+const gym = sizes(gymFirst);
+if (gym.js > GYM_FIRST_JS) fail.push(`/gym's first load's JS is ${kb(gym.js)} gzipped (≤ ${kb(GYM_FIRST_JS)})`);
+if (gym.css > GYM_FIRST_CSS) fail.push(`/gym's first load's CSS is ${kb(gym.css)} gzipped (≤ ${kb(GYM_FIRST_CSS)})`);
+for (const f of gymFirst) if (/\/(maplibre|three\.module|AppShell)\./.test(f)) fail.push(`${f} is in /gym's first load`);
+// its fonts: the faces its CSS draws it with, its own Zen Maru Gothic first (--font-zmg) and Fredoka's (the numbers'),
+// not the app's six (kana, 常用, extra: a character outside its own only)
+const gymCss = [...gymFirst].filter((f) => f.endsWith('.css')).map((f) => readFileSync(join(BUILD, f), 'utf8')).join('\n');
+if (!/--font-zmg:\s*["']?Zen Maru Gothic Gym["']?,/.test(gymCss)) fail.push("/gym's CSS doesn't put its own Zen Maru Gothic first (--font-zmg: styles/fonts-gym.css)");
+const gymFaces = [...gymCss.matchAll(/@font-face\s*\{([^}]*)\}/g)].map((m) => m[1]).filter((b) => /font-family:\s*["']?(Zen Maru Gothic Gym|Fredoka)["']?;/.test(b));
+const gymFonts = new Set(gymFaces.flatMap((b) => [...b.matchAll(/url\(\.\/([^)]+\.woff2)\)/g)].map((m) => m[1])));
+if (gymFonts.size !== 4) fail.push(`/gym draws with ${gymFonts.size} font files, not 4 (its own two weights, Fredoka's two)`);
+const gymFontBytes = [...gymFonts].reduce((n, f) => n + statSync(join(BUILD, '_app/immutable/assets', f)).size, 0);
+if (gymFontBytes > GYM_FONTS) fail.push(`/gym's fonts are ${kb(gymFontBytes)} (≤ ${kb(GYM_FONTS)})`);
 
 const manifest = JSON.parse(readFileSync(MANIFEST, 'utf8')) as Record<string, { file: string; name?: string; imports?: string[]; assets?: string[] }>;
 for (const name of LAZY_NAMES) {
@@ -203,7 +229,7 @@ const walk = (d: string) => {
 walk(BUILD);
 if (pre > PRECACHE) fail.push(`the precache is ${kb(pre)} on the wire (≤ ${kb(PRECACHE)})`);
 
-console.log(`first load (gzipped): JS ${kb(js)}, CSS ${kb(css)}, ${first.size} files, index.html ${kb(gzipSync(html).length)} (its import map); /s JS ${kb(share.js)}, CSS ${kb(share.css)}; precache ${preFiles} files, ${(pre / 1048576).toFixed(2)} MB on the wire; English Study's sheet ${kb(englishGz)}, ${banks.length} banks, ${deck.length} deck files ≤ ${kb(deckGz)}`);
+console.log(`first load (gzipped): JS ${kb(js)}, CSS ${kb(css)}, ${first.size} files, index.html ${kb(gzipSync(html).length)} (its import map); /s JS ${kb(share.js)}, CSS ${kb(share.css)}; /gym JS ${kb(gym.js)}, CSS ${kb(gym.css)}, fonts ${kb(gymFontBytes)}; precache ${preFiles} files, ${(pre / 1048576).toFixed(2)} MB on the wire; English Study's sheet ${kb(englishGz)}, ${banks.length} banks, ${deck.length} deck files ≤ ${kb(deckGz)}`);
 if (fail.length) {
   console.error(`load-budget: ${fail.join('; ')}`);
   process.exit(1);

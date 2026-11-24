@@ -307,9 +307,4 @@ describe('the shop’s history with the stored ledger', () => {
     expect(compactRows(rows, now, true).events.map((r) => r[2])).toEqual(['buy-2026-11-23T12:00:00.000Z', 'tally-2026-11-20T00:00:00.000Z', 'pref-2026-10-01T00:00:00.000Z']);
     expect(compactRows(rows, now).events).toBe(rows.events);
   });
-  it('with the stored field too, the farm rows past 2 days', () => {
-    const farm = { ...rows, events: [...rows.events, ev('2026-11-10T00:00:00.000Z', 'farm', { d: '2026-11-10', ops: [{ o: 'dig', p: 'fd:f.0.0' }] })] };
-    expect(compactRows(farm, now, true).events.some((r) => r[3] === 'farm')).toBe(true);
-    expect(compactRows(farm, now, true, true).events.some((r) => r[3] === 'farm')).toBe(false);
-  });
 });

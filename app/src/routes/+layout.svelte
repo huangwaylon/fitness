@@ -8,198 +8,45 @@
   import '#lib/styles/tokens.css';
   import '#lib/styles/theme.css';
   import { onMount, type Snippet } from 'svelte';
-  import type { HarvestView } from '#lib/types.ts';
-  import { page, updated } from '$app/state';
+  import { page } from '$app/state';
   import Sprites from '#lib/components/ui/Sprites.svelte';
-  import Bubble from '#lib/components/ui/Bubble.svelte';
-  import ToastHost, { hostBanner } from '#lib/components/ui/ToastHost.svelte';
-  import InviteBanner from '#lib/sugoroku/components/InviteBanner.svelte';
-  // (a room's chrome hidden for a screenshot: the toasts too)
+  import ToastHost from '#lib/components/ui/ToastHost.svelte';
   import { shot } from '#lib/components/rooms/shot.svelte.ts';
-  import NookScreen from '#lib/components/ui/NookScreen.svelte';
-  import { week } from '#lib/store/week.svelte.ts';
   import { ui } from '#lib/ui-state/ui.svelte.ts';
-  import { startTheme } from '#lib/ui-state/theme.svelte.ts';
-  import { startWeather } from '#lib/components/island/weatherNow.svelte.ts';
   import { startViewport } from '#lib/ui-state/viewport.ts';
-  import { doorTransition } from '#lib/ui-state/doorTransition.ts';
-  import { deployedInfo, isChunkError, lazy, newWorker, reloadUnlessLeaving, safeReload } from '#lib/ui-state/reload.ts';
-  import { claimed, doneFor, incompatible, markDone, takeUpdate } from '#lib/ui-state/update.ts';
-  import { replaceState } from '$app/navigation';
-  import { registerLate, releaseWorker } from '#lib/ui-state/swLate.ts';
-  import { opensIsland } from '#lib/ui-state/boot.ts';
-  import { musicNow, startSound } from '#lib/sound/sound.svelte.ts';
-  import { acked, bindStage, hear, hush, request, stage } from '#lib/sound/stage.svelte.ts';
-  import { hooksOn } from '#lib/ui-state/preview.ts';
-  import { bindLook } from '#lib/ui-state/preview.svelte.ts';
-  import { setSeasonLook } from '#lib/store/actions.ts';
-  import { world } from '#lib/store/world.svelte.ts';
-  import { startTaps } from '#lib/sound/taps.ts';
-  import { startExactTaps } from '#lib/ui-state/exactTaps.ts';
   import { startModality } from '#lib/components/ui/modality.ts';
-  import { count, noteHiddenReload, startLog } from '#lib/sync/log.ts';
-  import { logUrl } from '#lib/sync/transport.ts';
-  import { queued } from '#lib/sync/queue.ts';
-  import { version } from '$app/env';
   import { t } from '#lib/i18n/index.ts';
 
   let { children }: { children: Snippet } = $props();
 
   const route = $derived(routeOf(page.url.pathname));
-  const onPair = $derived(route.startsWith('/pair'));
   /** A 共有リンク's page (routes/s) or the LINE menu's ジム (routes/gym): bare, a phone without the app's key (no sync, no
-   *  room, no sound, no log, no service worker). */
+   *  room, no sound, no log, no service worker), so the app's shell (./AppShell.svelte: the week, the world, the sound,
+   *  the log, the harvest) is never loaded for it: a stranger's first load is the page's own chunks. index.html
+   *  modulepreloads the shell (scripts/headers.ts), so the island's import of it is no wave of its own. */
   const onShare = $derived(isBare(route));
-  const pageKind = $derived(route.startsWith('/tent') ? 'tent' : 'island');
-
-  let laterFor = $state<string | null>(null);
-  /** The harvest being finished: kept through the end card even after confirming drops it from the view. */
-  let kept = $state<HarvestView | null>(null);
-  const harvest = $derived(kept ?? week.view?.harvest ?? null);
-  const showHarvest = $derived(
-    !onPair && !page.error && !!week.view && week.view.viewer !== 'G' && !!harvest && (!!kept || (!harvest.confirmedBy.includes(week.view.me) && laterFor !== harvest.weekKey))
-  );
-  // Pages hold their toasts while the harvest is up.
-  ui.provideOverlay(() => showHarvest);
-  /** The overlay is loaded the first time a harvest opens (Sunday evening), not on every route. */
-  const loadHarvest = lazy(() => import('#lib/components/sheets/HarvestOverlay.svelte'));
-  let Harvest = $state<typeof import('#lib/components/sheets/HarvestOverlay.svelte').default | null>(null);
-  // Loaded in script, so the page goes inert only once the overlay can show; a failed load (and no reload) leaves the
-  // island usable and treats it as あとで, instead of an inert page with nothing on it.
+  let Shell = $state<typeof import('./AppShell.svelte').default | null>(null);
+  let asked = false;
   $effect(() => {
-    if (!showHarvest || Harvest) return;
-    const wk = harvest?.weekKey ?? null;
-    loadHarvest().then((m) => (Harvest = m.default), () => (laterFor = wk));
+    if (onShare || asked) return;
+    asked = true;
+    // a chunk not fetched: a stale build, reloaded once (ui-state/reload.ts, imported only then: it holds the log)
+    void import('./AppShell.svelte').then((m) => (Shell = m.default), (e: unknown) => import('#lib/ui-state/reload.ts').then((r) => {
+      if (r.isChunkError(e)) void r.reloadUnlessLeaving();
+    }));
   });
 
-  // A new deploy (Kit checks _app/version.json when the app comes back to the front): taken as the app is hidden, once
-  // the new build's service worker controls the page (newWorker: it serves the reload its own shell) and nothing is
-  // open; in front only for a build this one can't work with (ui-state/update.ts). Its install failed or can't be had
-  // now: asked again as the app comes back.
-  let workerReady = $state(false);
-  let mustReload = $state(false);
-  /** The deployed version (version.json's, as askWorker last read it): each reload's once-a-version guard. */
-  let deployedV = '?';
-  function askWorker() {
-    if (!updated.current) return;
-    if (!workerReady) void newWorker().then((ok) => (workerReady = ok));
-    if (!mustReload) void deployedInfo().then((d) => {
-      if (typeof d?.version === 'string') deployedV = d.version;
-      mustReload = incompatible(d?.compat);
-    });
-  }
-  $effect(askWorker);
-  const update = (hidden: boolean) => ({ updated: updated.current, ready: workerReady, incompatible: mustReload, busy: onPair || showHarvest || ui.sheets.length > 0, hidden });
-  /** Reloads into the deployed build for `why`, once a deployed version a session (update.ts doneFor). */
-  function take(key: string, why: 'update' | 'stale', before?: () => void) {
-    if (doneFor(key, deployedV)) return;
-    before?.();
-    if (safeReload(Date.now(), why)) markDone(key, deployedV);
-  }
-  $effect(() => {
-    if (takeUpdate(update(false))) take('island.staleFor', 'stale');
-  });
-
-  // the service worker once the island is up (ui-state/swLate.ts); a screen with no island coming releases it
-  $effect(() => {
-    if (week.status === 'unconfigured' || (!week.view && week.status === 'error')) releaseWorker();
-  });
-
-  // the log's coarse usage: which routes are opened (sync/log.ts `use`)
-  $effect(() => {
-    count(`route:${route.split('/')[1] || 'island'}`);
-  });
-
-  // 英語すごろく's online games heard on every screen once the week's in (an invitation comes wherever the phone is: the
-  // banner in ToastHost's slot, bound here so the kit imports no feature), its small part fetched then
-  hostBanner(InviteBanner);
-  let sgListening = false;
-  $effect(() => {
-    if (!week.view || onPair || sgListening) return;
-    sgListening = true;
-    void import('#lib/sugoroku/online.svelte.ts').then((m) => m.listen(true)).catch(() => {});
-  });
-
-  // 島 ⇄ テント: NH's door, a black iris on the door we go through.
-  doorTransition();
-
+  // (no scene theme here: the page is the paper, its theme-color the head's, never the island's sky)
   onMount(() => {
-    if (isBare(routeOf(location.pathname))) {
-      const stops = [startTheme(), startViewport(), startModality()];
-      return () => stops.forEach((f) => f());
-    }
-    registerLate(route === '/' && opensIsland());
-    // the island's look (設定 → 季節) is the record's: every phone's scene follows it
-    bindLook({ read: () => week.model?.state.seasonLook, write: (look) => void setSeasonLook(look) });
-    const stopTheme = startTheme();
-    const stopWeather = startWeather();
-    week.init();
-    if (!routeOf(location.pathname).startsWith('/pair')) week.refresh();
-    const onVisible = () => {
-      if (document.visibilityState === 'hidden' && takeUpdate(update(true))) take('island.updateFor', 'update', noteHiddenReload);
-      if (document.visibilityState === 'visible') askWorker();
-      if (document.visibilityState === 'visible' && !routeOf(location.pathname).startsWith('/pair')) week.refresh({ background: true });
-    };
-    document.addEventListener('visibilitychange', onVisible);
-    // a newer worker's claim before this mount (+layout.ts watchClaims): Kit asked again now it surely can
-    if (claimed()) void updated.check().catch(() => {});
-    // the boot watchdog's reload (ui-state/bootWatch.ts) came at `?shell=cache`: the param goes
-    if (new URLSearchParams(location.search).get('shell') === 'cache') {
-      const q = location.search.replace(/([?&])shell=cache(&|$)/, (_, a: string, b: string) => (b ? a : '')).replace(/^\?$/, '');
-      replaceState(location.pathname + q + location.hash, page.state);
-    }
-    // Any other chunk that fails to load (Vite's preload helper reports it): a stale build, reload once (not as we leave).
-    // Only a chunk not fetched: the helper reports every lazy import that rejects, a module that threw as it ran too
-    // (the sound's renderer, the villagers' birthdays, K.K.'s songs), which a reload doesn't cure.
-    const onStale = (e: Event) => {
-      if (isChunkError((e as Event & { payload?: unknown }).payload)) void reloadUnlessLeaving();
-    };
-    window.addEventListener('vite:preloadError', onStale);
-    const stopViewport = startViewport();
-    // a touch's click where the finger was, over the island and in the rooms (no snapping onto a door nearby)
-    const stopExactTaps = startExactTaps();
-    // Sound (all off by default): unlocks on the first tap, muffles the music under a sheet, the panel or the harvest.
-    const stopSound = startSound({ muffled: () => ui.sheets.length > 0 || showHarvest });
-    // the shared music stages (K.K., the stereos: sound/stage.svelte.ts) over the shared world's relay; the e2e's look
-    bindStage({ send: (i) => i.kind === 'music' && world.tell(i), serverNow: () => world.serverNow(), me: () => world.me });
-    const offStage = [world.hear((m) => m.kind === 'music' && hear(m)), world.onAck(acked)];
-    if (week.demo || hooksOn(new URLSearchParams(location.search))) window.__music = { now: musicNow, stage: () => $state.snapshot(stage), request, hush };
-    // every tap's sound (data-sfx) and the "can't" boop (aria-disabled): after startSound, so its unlock runs first
-    const stopTaps = startTaps();
-    // no focus ring after a touch (focus is still restored for keyboard and VoiceOver users)
-    const stopModality = startModality();
-    // the log (sync/log.ts, docs/ops/observability.md): errors, the lifecycle, the island's load and frames
-    const stopLog = startLog({
-      build: version, url: logUrl(), demo: !!week.demo, route: () => routeOf(location.pathname),
-      ready: () => !!document.querySelector('canvas[data-w3d][data-loaded]'),
-      readyOn: (changed) => {
-        const mo = new MutationObserver(changed);
-        mo.observe(document.body, { subtree: true, attributes: true, attributeFilter: ['data-loaded'] });
-        return () => mo.disconnect();
-      },
-      queue: () => {
-        const q = queued();
-        return { n: q.length, ageMs: q.length ? Date.now() - Math.min(...q.map((e) => e.queuedAt)) : 0 };
-      }
-    });
-    return () => {
-      stopLog();
-      stopModality();
-      stopTaps();
-      stopSound();
-      offStage.forEach((f) => f());
-      stopViewport();
-      stopExactTaps();
-      stopTheme();
-      stopWeather();
-      document.removeEventListener('visibilitychange', onVisible);
-      window.removeEventListener('vite:preloadError', onStale);
-    };
+    if (!isBare(routeOf(location.pathname))) return;
+    const stops = [startViewport(), startModality()];
+    return () => stops.forEach((f) => f());
   });
 </script>
 
 <svelte:head>
-  <title>{t('app.name')}</title>
+  <!-- (a bare page names itself: ジム, 共有リンク) -->
+  {#if !onShare}<title>{t('app.name')}</title>{/if}
   <meta name="theme-color" content="#FFF9E3" />
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
@@ -207,42 +54,15 @@
   <link rel="apple-touch-icon" href={asset('icons/apple-touch-icon-180.png')} />
 </svelte:head>
 
-<Sprites />
-
-<!-- The harvest is a real modal, so everything behind it is inert. -->
-<div class="page" data-page={onShare ? (route === '/gym' ? 'gym' : 'share') : onPair ? 'pair' : pageKind} inert={showHarvest && !!Harvest}>
 {#if onShare}
-  {@render children()}
-{:else if week.status === 'unconfigured'}
-  <NookScreen><h1><span lang="ja">{t('state.notSetUp', undefined, 'ja')}</span><small lang="en">{t('state.notSetUp', undefined, 'en')}</small></h1></NookScreen>
-{:else if onPair}
-  {@render children()}
-{:else if !week.view && week.status === 'error'}
-  <NookScreen>
-    <Bubble text={t('state.error')} host={false} name={t('host.nook')} />
-    <button type="button" class="btn" data-sfx="sync" onclick={() => week.refresh()}>{t('state.retry')}</button>
-  </NookScreen>
-{:else if !week.view}
-  <NookScreen busy><p>{t('state.loading')}</p></NookScreen>
-{:else}
-  {@render children()}
+  <Sprites />
+  <div class="page" data-page={route === '/gym' ? 'gym' : 'share'}>{@render children()}</div>
+  <!-- Inside the open sheet when there is one (Sheet.svelte): outside a modal dialog it would be inert. -->
+  {#if !ui.sheets.length && !shot.bare}<ToastHost />{/if}
+{:else if Shell}
+  <Shell {children} />
 {/if}
-</div>
-
-{#if showHarvest && week.view && harvest && Harvest}
-  <Harvest view={week.view} {harvest} onlater={() => (laterFor = harvest.weekKey)}
-    onkeep={() => (kept = $state.snapshot(harvest))} ondone={() => (kept = null)} />
-{/if}
-
-<!-- Inside the open sheet when there is one (Sheet.svelte): outside a modal dialog it would be inert. -->
-{#if !showHarvest && !ui.sheets.length && !shot.bare}<ToastHost />{/if}
 
 <style>
   .page { min-height: var(--vh-page); background: var(--bg); }
-  /* 島: the island floats in the flat map sea, which runs on under the dialogue box and the action. */
-  .page[data-page='island'] { background: var(--sea-flat); }
-  .page[data-page='tent'] { background: #2a1f17; }
-  /* the state screens (ui/NookScreen) but loading's, and a route's error: on the tan panel, not the sea (the soft ink
-     line is only 2.1:1 on the sea blue) */
-  .page[data-page='island']:has(> :global(.nook-screen:not([aria-busy]))) { background: var(--bg); }
 </style>

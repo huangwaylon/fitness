@@ -17,7 +17,6 @@
   // reads both and changes nothing (POST /gym/act is the members'): ⋯'s rows, 選択 and the day's editor
   // aria-disabled, bots.viewOnly said under the calendar.
   import { tick, untrack } from 'svelte';
-  import { week } from '#lib/store/week.svelte.ts';
   import { t } from '#lib/i18n/index.ts';
   import { dayKey, minuteNow } from '#lib/time/clock.ts';
   import { cue } from '#lib/sound/cues.ts';
@@ -46,16 +45,15 @@
   import Phrases from '#lib/components/ui/Phrases.svelte';
 
   /** `onlink`: the Worker refused the LINE link's key (an old card's, rotated: config.ts `link`), the kept settings
-   *  dropped; the route says what to do (routes/gym). */
-  let { onlink }: { onlink?: () => void } = $props();
+   *  dropped; the route says what to do (routes/gym). `viewOnly`: the guest's phone, shown, never changed (BotsSheet's
+   *  week.guest; /gym's stored pairing: no store here, so the bare page's first load holds no week). */
+  let { onlink, viewOnly = false }: { onlink?: () => void; viewOnly?: boolean } = $props();
 
   /** アプリで変更: the newest this many. */
   const CHANGES_SHOWN = 6;
   /** The settings shown: the last answer (gymActs.svelte.ts: it outlives the page) with the acts still queued predicted
    *  on it. */
   const cfg = $derived(shownConfig());
-  /** The guest's phone: shown, never changed. */
-  const viewOnly = $derived(week.guest);
   let cfgState = $state<'hidden' | 'ok' | 'failed'>(acts.confirmed ? 'ok' : 'hidden');
   let cfgLoading = $state(false);
   let cfgCtl: AbortController | null = null;

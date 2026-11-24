@@ -191,7 +191,7 @@ const PLAIN_P: Record<string, number> = {
   'lib/components/wedding/Notes.svelte': 3,
   'lib/components/wedding/Plan.svelte': 2,
   'lib/components/wedding/Settings.svelte': 1,
-  'routes/+layout.svelte': 1,
+  'routes/AppShell.svelte': 1,
   'routes/speech/+page.svelte': 5,
   'routes/sugoroku/+page.svelte': 1
 };

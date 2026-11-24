@@ -7,17 +7,23 @@
 //   extra: the other kanji the app shows (any in src/: catalogs, names, the English banks' Japanese) and those in the food
 //          data at least FOOD_MIN times (product and chain-menu names, 99.9 % of their kanji with joyo), ~85 KB.
 // A kanji in none (a rare one a user types in a food's name or a note) falls back to the system's rounded font.
+// And one more a weight, for ジム's page alone (/gym, the LINE menu's link: a cold phone with no service worker, on
+// mobile data): gym, the characters its text can hold (gymWanted: ASCII, the kana, and every character of the page's
+// sources, the catalog keys they name and the bot's own words), where kana and joyo were ~600 KB. fonts-gym.css
+// (imported by routes/gym/+page.svelte only) declares it as its own family, first in --font-zmg (tokens.css), so any
+// other character still falls back to the six.
 // fonts.css lists joyo by its blocks and kana and extra by their code points; extra is declared last, so it's the face
 // tried first for its own (CSS Fonts: the last rule of overlapping ranges first). ranges.json: each subset's exact
 // ranges (the maps' font faces, components/map/fonts.ts).
 // Usage (from app/): npm run fonts:subset → src/lib/styles/fonts/ and fonts.css (commit them). Needs Python's fonttools
 // with brotli (`pip install fonttools brotli`; PYTHON=<interpreter> to pick one). The source fonts (Google Fonts' TTFs,
 // SHA-256 checked) are downloaded once into .cache/zen-maru-gothic/. src/lib/styles/fonts.test.ts checks that every
-// character in src/ the font has is in a subset, so re-run this after adding copy with a new kanji outside 常用.
+// character in src/ the font has is in a subset, so re-run this after adding copy with a new kanji outside 常用 (or a
+// character new to ジム's page: the same test checks gym; the six come out byte for byte the same).
 import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 import { brotliDecompressSync } from 'node:zlib';
 
 const APP = join(import.meta.dirname, '..');
@@ -26,6 +32,10 @@ export const PKG = join(APP, 'node_modules', '@fontsource', 'zen-maru-gothic');
 const STYLES = join(APP, 'src', 'lib', 'styles');
 export const FONT_DIR = join(STYLES, 'fonts');
 const CSS = join(STYLES, 'fonts.css');
+const GYM_CSS = join(STYLES, 'fonts-gym.css');
+/** ジム's page's own family (fonts-gym.css), tried before the six (tokens.css --font-zmg). */
+export const GYM_FAMILY = 'Zen Maru Gothic Gym';
+export const gymFile = (w: number) => `zen-maru-gothic-${w}-gym.woff2`;
 export const WEIGHTS = [500, 700] as const;
 export const PARTS = ['kana', 'joyo', 'extra'] as const;
 export type Part = (typeof PARTS)[number];
@@ -149,6 +159,54 @@ export function wanted(): Set<number> {
   return cps;
 }
 
+/** Code and copy only: comments are full of kanji nobody sees. */
+const uncommented = (text: string) => text.replace(/\/\*[\s\S]*?\*\/|<!--[\s\S]*?-->|(^|[^:'"`\\])\/\/[^\n]*/g, '$1');
+
+/** ジム's page's modules: the static imports from its route and the root layout, transitively, in src/ (not a type-only
+ *  import: its module is no code of the page's). */
+function gymModules(): string[] {
+  const seen = new Set<string>(), queue = ['src/routes/gym/+page.svelte', 'src/routes/+layout.svelte'].map((f) => join(APP, f));
+  const resolve = (from: string, spec: string): string | null => {
+    const p = spec.startsWith('#lib/') ? join(APP, 'src', 'lib', spec.slice(5)) : spec.startsWith('.') ? join(dirname(from), spec) : null;
+    return (p && [p, `${p}.ts`].find((c) => existsSync(c) && statSync(c).isFile())) || null;
+  };
+  const typeOnly = (names: string) => /^\s*\{[^}]*\}\s*from\s*$/.test(names) && names.replace(/^\s*\{|\}\s*from\s*$/g, '').split(',').every((x) => !x.trim() || /^type\s/.test(x.trim()));
+  while (queue.length) {
+    const f = queue.shift()!;
+    if (seen.has(f)) continue;
+    seen.add(f);
+    if (f.endsWith('.json')) continue;
+    for (const m of uncommented(readFileSync(f, 'utf8')).matchAll(/(?:^|[\s;])import\s+(type\s)?([^'"`;]*?\sfrom\s*)?['"]([^'"]+)['"]/g)) {
+      if (m[1] || (m[2] && typeOnly(m[2]))) continue;
+      const r = resolve(f, m[3]);
+      if (r?.startsWith(join(APP, 'src'))) queue.push(r);
+    }
+  }
+  return [...seen];
+}
+
+/** The characters ジム's page can show: ASCII and the kana whole (names, the bot's words), and every character of its
+ *  modules (gymModules: code and copy, the gym and bots catalogs), of the app catalog's (i18n/ja.json) strings they
+ *  name (a key, or a `prefix.${…}` one), and of the bot's own words (gym/src/messages.ts: its replies and hints). */
+export function gymWanted(): Set<number> {
+  const cps = new Set<number>();
+  const add = (text: string) => {
+    for (const ch of text) cps.add(ch.codePointAt(0)!);
+  };
+  for (const [a, b] of [[0x20, 0x7e], [0x3041, 0x3096], [0x309b, 0x309e], [0x30a1, 0x30fa], [0x30fc, 0x30fe]]) for (let cp = a; cp <= b; cp++) cps.add(cp);
+  const ja = JSON.parse(readFileSync(join(APP, 'src', 'lib', 'i18n', 'ja.json'), 'utf8')) as Record<string, string>;
+  const keys = Object.keys(ja);
+  for (const f of gymModules()) {
+    if (f.endsWith('/i18n/ja.json')) continue;
+    const text = f.endsWith('.json') ? Object.values(JSON.parse(readFileSync(f, 'utf8')) as Record<string, string>).join('\n') : uncommented(readFileSync(f, 'utf8'));
+    add(text);
+    const prefixes = [...text.matchAll(/`([\w.]+)\.\$\{/g)].map((m) => `${m[1]}.`);
+    for (const k of keys) if (text.includes(`'${k}'`) || text.includes(`"${k}"`) || prefixes.some((p) => k.startsWith(p))) add(ja[k]);
+  }
+  add(uncommented(readFileSync(join(APP, '..', 'gym', 'src', 'messages.ts'), 'utf8')));
+  return cps;
+}
+
 /** The 常用漢字 (the 2010 list) and the other form of its four with two (叱 𠮟, 填 塡, 剥 剝, 頬 頰: the font has one
  *  of each). */
 export const joyo = (): Set<number> =>
@@ -209,6 +267,17 @@ async function main() {
       console.log(`${fontFile(w, part)}: ${parts[part].length} characters, ${(statSync(out).size / 1024).toFixed(1)} KB`);
     }
   }
+  // ジム's page's own (fonts-gym.css): what the font has of gymWanted, both weights, each declared by its file's own
+  // characters (the subsetter keeps a few more: ‹ with ›)
+  const gymCps = [...gymWanted()].filter((cp) => has.has(cp));
+  const gymBlocks: string[] = [];
+  for (const [i, w] of WEIGHTS.entries()) {
+    const out = join(FONT_DIR, gymFile(w));
+    execFileSync(PY, ['-m', 'fontTools.subset', files[i], `--unicodes=${gymCps.map(hex).join(',')}`, '--flavor=woff2', '--no-hinting', '--drop-tables+=vhea,vmtx,DSIG', `--output-file=${out}`]);
+    gymBlocks.push(`@font-face {\n  font-family: '${GYM_FAMILY}';\n  font-style: normal;\n  font-display: swap;\n  font-weight: ${w};\n  src: url(./fonts/${gymFile(w)}) format('woff2');\n  unicode-range: ${toRanges(cmapOf(out))};\n}`);
+    console.log(`${gymFile(w)}: ${gymCps.length} characters, ${(statSync(out).size / 1024).toFixed(1)} KB`);
+  }
+  writeFileSync(GYM_CSS, `/* Generated by scripts/font-subsets.ts: ジム's page's own Zen Maru Gothic (routes/gym/+page.svelte imports it), ${WEIGHTS.join(' + ')}, the characters its text can hold; tried first (tokens.css --font-zmg), any other falls back to fonts.css's. */\n${gymBlocks.join('\n')}\n:root { --font-zmg: '${GYM_FAMILY}', 'Zen Maru Gothic'; }\n`);
   writeFileSync(join(FONT_DIR, 'ranges.json'), `${JSON.stringify(Object.fromEntries(PARTS.map((p) => [p, toRanges(parts[p])])), null, 1)}\n`);
   writeFileSync(CSS, `/* Generated by scripts/font-subsets.ts: Zen Maru Gothic ${WEIGHTS.join(' + ')}, kana · 常用 · the app's other kanji (extra: last, tried first for its own). */\n${blocks.join('\n')}\n`);
 }
