@@ -4,7 +4,7 @@
 // op applied (its id, type, data and the かいがら before and after: the daily chain check's), kept LOG_KEEP_DAYS. The
 // record (store.ts) reads a person's parts, steps them by the contract's rules and writes the parts that moved, in the
 // op's transaction. Free of the Workers runtime (test/ledger.test.ts).
-import { emptyLedger, LEDGER_PARTS, partInto, partJson, type Ledger, type LedgerPart } from '../../app/src/lib/contract/ledger.ts';
+import { emptyLedger, LEDGER_PARTS, partInto, partJson, type Ledger, type LedgerPart, type Ledgers } from '../../app/src/lib/contract/ledger.ts';
 import type { Who } from '../../app/src/lib/contract/api.ts';
 import type { Sql } from './store.ts';
 
@@ -25,7 +25,20 @@ export type LedgerRow = [string, string, number, string, string];
 const isPart = (p: unknown): p is LedgerPart => (LEDGER_PARTS as readonly unknown[]).includes(p);
 
 export class LedgerStore {
+  /** The parts written since the caller last cleared it (`who|part`: a request's, its ack's `ledgers`). */
+  readonly written = new Set<string>();
+
   constructor(private readonly sql: Sql) {}
+
+  /** The parts as a reply carries them: `keys` (`who|part`), or every one changed after `since` ('' = all). */
+  wire(keys?: ReadonlySet<string>, since = ''): Ledgers {
+    const out: Ledgers = {};
+    for (const [who, part, seq, at, v] of this.rows(since)) {
+      if ((keys && !keys.has(`${who}|${part}`)) || !isPart(part)) continue;
+      ((out[who as Who] ??= {}) as Record<string, unknown>)[part] = { seq, at, v: JSON.parse(v) as unknown };
+    }
+    return out;
+  }
 
   /** `who`'s ledger (only `parts` read, the others left empty), or null when none is kept (not seeded yet: its `hp`
    *  is the mark). A part that can't be read is empty (the daily check shows it). */
@@ -55,6 +68,7 @@ export class LedgerStore {
         'INSERT INTO ledger (who, part, seq, at, v) VALUES (?, ?, 1, ?, ?) ON CONFLICT (who, part) DO UPDATE SET seq = seq + 1, at = excluded.at, v = excluded.v',
         who, part, at, JSON.stringify(partJson(l, part))
       );
+      this.written.add(`${who}|${part}`);
     }
   }
 

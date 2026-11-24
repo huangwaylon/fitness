@@ -20,7 +20,7 @@ import { isLocalDate } from './api.ts';
 import { isPocketKey, type ShopRow } from './shop.ts';
 import { pocketKey } from './pocket.ts';
 import { startKey } from './farm.ts';
-import type { LocalDate } from '../types.ts';
+import type { LocalDate, Who } from '../types.ts';
 import { addDays } from './tokyo.ts';
 
 export const LEDGER_PARTS = ['hp', 'w', 'g', 'z'] as const;
@@ -128,6 +128,12 @@ export function pocketMoves(l: Ledger, moves: Iterable<readonly [string, number]
 }
 
 // ---- the parts on the wire and in the record (JSON)
+
+/** The stored ledgers a reply carries (docs/backend.md#the-ledger): per person, each part the record changed (a
+ *  snapshot's: every part on a first fetch, else those changed after `since`; an op's ack: those its ops moved), with
+ *  its change count `seq` (a phone keeps each part's highest) and the record's time of the change. @public
+ *  (relay/src/ledger.ts) */
+export type Ledgers = Partial<Record<Who, Partial<Record<LedgerPart, { seq: number; at: string; v: unknown }>>>>;
 
 const sorted = <V>(m: ReadonlyMap<string, V>): [string, V][] => [...m].sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0));
 

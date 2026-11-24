@@ -39,9 +39,14 @@ function setup() {
   const db = memSql();
   const store = new StoreCore({ sql: db.sql, tx: db.tx, keys: { KEY_A, KEY_B, KEY_C }, now: () => (box.now += 10), notify: () => {} });
   let n = 0;
-  const send = (who: W, type: string, data: object, id = `w${++n}`) => store.handle({ key: keyOf[who], action: 'event', id, type, data }, 100) as Record<string, any>;
+  // (the acks' stored ledger parts aside: ledger.test.ts judges them)
+  const noLedgers = (r: unknown) => {
+    const { ledgers: _l, ...rest } = r as Record<string, any>;
+    return rest;
+  };
+  const send = (who: W, type: string, data: object, id = `w${++n}`) => noLedgers(store.handle({ key: keyOf[who], action: 'event', id, type, data }, 100));
   const batch = (who: W, events: { type: string; data: object }[]) =>
-    store.handle({ key: keyOf[who], action: 'events', events: events.map((e) => ({ id: `w${++n}`, ...e })) }, 100) as Record<string, any>;
+    noLedgers(store.handle({ key: keyOf[who], action: 'events', events: events.map((e) => ({ id: `w${++n}`, ...e })) }, 100));
   const snap = (who: W, since?: string) => store.handle({ key: keyOf[who], action: 'snapshot', ...(since ? { since } : {}) }, 100) as Record<string, any>;
   /** The served wallets (a member's first fetch: everyone's). */
   const served = () => snap('A').wallets as Record<W, { h: number; seq: number }>;

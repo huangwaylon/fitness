@@ -56,7 +56,7 @@ import type { PersonId, Who } from '../../app/src/lib/contract/api.ts';
 import { ShareCore, SHARE_TABLES } from './share.ts';
 import { PlacesCore, PLACES_TABLES } from './places.ts';
 import { LedgerStore, LEDGER_TABLES, WHO } from './ledger.ts';
-import { emptyLedger, ledgerStep, pocketMoves, pruneGames, tallyStep, type Ledger as Stored, type LedgerPart } from '../../app/src/lib/contract/ledger.ts';
+import { emptyLedger, ledgerStep, pocketMoves, pruneGames, tallyStep, type Ledger as Stored, type LedgerPart, type Ledgers } from '../../app/src/lib/contract/ledger.ts';
 import { isPocketKey } from '../../app/src/lib/contract/shop.ts';
 import { isShareAction, isShareKind } from '../../app/src/lib/contract/share.ts';
 /** A share's kind as the log names it. */
@@ -543,13 +543,18 @@ export class StoreCore {
     // rows only, as a wallet moves only with a row kept, so a poll with nothing new still reads nothing; read before
     // the head's rev, as an older relay's ledger read starts a new epoch: shopState)
     const wallets = (rows: SnapshotRows) => (!since || rows.metrics.length || rows.events.length ? { wallets: this.walletsFor(me) } : {});
+    // (the stored ledgers' parts changed after `since`, all on a first fetch: a paged fetch's first page; ledger.ts)
+    const ledgers = (): Rec => {
+      const l = this.ledger.wire(undefined, since);
+      return Object.keys(l).length ? { ledgers: l } : {};
+    };
     const head = () => ({ ok: true, me, now: new Date(this.io.now()).toISOString(), rev: this.rev() });
     if (!page) {
       const rows = this.rowsSince(since), w = wallets(rows);
-      return { ...head(), rows: rowsFor(me, rows), ...w };
+      return { ...head(), rows: rowsFor(me, rows), ...w, ...ledgers() };
     }
     const p = this.rowsPage(since, page.after, page.limit), w = wallets(p.rows);
-    return { ...head(), rows: rowsFor(me, p.rows), ...(p.next ? { next: p.next } : {}), ...w };
+    return { ...head(), rows: rowsFor(me, p.rows), ...(p.next ? { next: p.next } : {}), ...w, ...(page.after ? {} : ledgers()) };
   }
 
   /** Every row after `since` ('' = all), in `at` order: the `at` index, and the late rows that came in after it. */
@@ -732,11 +737,12 @@ export class StoreCore {
   // ---------------------------------------------------------------- events
 
   private event(me: Who, body: Rec): Reply {
+    this.ledger.written.clear();
     const r = this.keep(me, body);
     if (r.ok && r.at) this.io.notify({ what: 'event', who: me, at: r.at, rev: this.rev(), ...(this.sid ? { sid: this.sid } : {}), ...(calmType(body.type) ? { calm: true } : {}) });
     const { at: _at, ...reply } = r;
     const touched = walletsTouched(me, [body]);
-    return touched.size ? { ...reply, wallets: this.walletsFor(me, touched) } : reply;
+    return { ...reply, ...(touched.size ? { wallets: this.walletsFor(me, touched) } : {}), ...this.ledgersMoved() };
   }
 
   /**
@@ -750,6 +756,7 @@ export class StoreCore {
     // (one group alone may be up to GROUP_MAX: a room's whole change, all or none)
     const oneGroup = Array.isArray(list) && list.length <= GROUP_MAX && !!groupOf(list[0]) && list.every((e) => groupOf(e) === groupOf(list[0]));
     if (!Array.isArray(list) || !list.length || (list.length > EVENTS_MAX && !oneGroup)) return fail('bad_request');
+    this.ledger.written.clear();
     let last: string | null = null, calm = true;
     const results: (Reply & { id: string | null })[] = [];
     for (let i = 0; i < list.length; ) {
@@ -769,7 +776,7 @@ export class StoreCore {
     if (last) this.io.notify({ what: 'event', who: me, at: last, rev: this.rev(), ...(this.sid ? { sid: this.sid } : {}), ...(calm ? { calm: true } : {}) });
     // (the wallets the batch may have moved, kept or refused: a phone keeps each one's highest `seq`)
     const touched = walletsTouched(me, list);
-    return { ok: true, results, ...(touched.size ? { wallets: this.walletsFor(me, touched) } : {}) };
+    return { ok: true, results, ...(touched.size ? { wallets: this.walletsFor(me, touched) } : {}), ...this.ledgersMoved() };
   }
 
   /** One event of a batch kept as `keep` would; a write that throws is `unavailable` (its transaction rolled back, its
@@ -1352,6 +1359,11 @@ export class StoreCore {
       if (w && p.legacy) this.bumpRev();
     }
     this.io.sql.exec("DELETE FROM meta WHERE k = 'farm' OR k LIKE 'farm|%'");
+  }
+
+  /** The stored ledgers' parts this request wrote (an ack's `ledgers`: each its state now), or nothing. */
+  private ledgersMoved(): { ledgers?: Ledgers } {
+    return this.ledger.written.size ? { ledgers: this.ledger.wire(this.ledger.written) } : {};
   }
 
   /** The wallets a phone is told (a reply's `wallets`): `who`'s of them (all by default), each its かいがら and

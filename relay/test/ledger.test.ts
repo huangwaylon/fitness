@@ -155,4 +155,29 @@ describe('the stored ledger in shadow', () => {
     v.store.handle({ key: KEY_A, action: 'event', id: 'after-load', type: 'tally', data: { date: '2026-11-04', counts: { 'fish:koi': 3 } } }, 100);
     expect(v.read().A.hp.v).toEqual({ h: K, p: [['fish:koi', 2]] });
   });
+
+  it('an ack carries the parts its ops moved, each its seq; a snapshot every part on a first fetch, else those changed since; anyone’s, the guest’s phone too', () => {
+    const t = setup();
+    const ack = (who: W, type: string, data: object) => t.store.handle({ key: keyOf[who], action: 'events', events: [{ id: `x-${type}-${Math.random()}`, type, data }] }, 100) as Record<string, any>;
+    // (the first op of A's seeds the whole: every part, then the tally's two again)
+    expect(ack('A', 'tally', { date: '2026-11-04', counts: { 'fish:koi': 2 } }).ledgers).toEqual({
+      A: { hp: { seq: 2, at: expect.any(String), v: { h: 0, p: [['fish:koi', 2]] } }, z: { seq: 2, at: expect.any(String), v: [['fish:koi', 2]] }, w: { seq: 1, at: expect.any(String), v: [] }, g: { seq: 1, at: expect.any(String), v: [] } }
+    });
+    expect(ack('A', 'sell', { species: 'fish:koi', n: 1, v: K }).ledgers).toEqual({ A: { hp: { seq: 3, at: expect.any(String), v: { h: K, p: [['fish:koi', 1]] } } } });
+    // (refused: nothing moved, no parts)
+    expect(ack('A', 'sell', { species: 'fish:koi', n: 5, v: 5 * K }).ledgers).toBeUndefined();
+    expect(ack('A', 'pref', { key: 'moveGoal', value: 500 }).ledgers).toBeUndefined();
+    const first = t.store.handle({ key: KEY_C, action: 'snapshot' }, 100) as Record<string, any>;
+    expect(Object.keys(first.ledgers.A).sort()).toEqual(['g', 'hp', 'w', 'z']);
+    expect(first.ledgers.A.hp.v).toEqual({ h: K, p: [['fish:koi', 1]] });
+    const since = first.rows.events.at(-1)[0];
+    expect((t.store.handle({ key: KEY_B, action: 'snapshot', since }, 100) as Record<string, any>).ledgers).toBeUndefined();
+    t.send('B', 'tally', { date: '2026-11-04', counts: { 'bug:ant': 1 } });
+    const later = t.store.handle({ key: KEY_C, action: 'snapshot', since }, 100) as Record<string, any>;
+    expect(Object.keys(later.ledgers)).toEqual(['B']);
+    // (paged: on the first page only)
+    const p1 = t.store.handle({ key: KEY_A, action: 'snapshot', page: 1 }, 100) as Record<string, any>;
+    expect(Object.keys(p1.ledgers).sort()).toEqual(['A', 'B']);
+    expect((t.store.handle({ key: KEY_A, action: 'snapshot', page: 1, after: p1.next }, 100) as Record<string, any>).ledgers).toBeUndefined();
+  });
 });
