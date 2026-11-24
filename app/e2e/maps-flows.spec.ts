@@ -204,7 +204,7 @@ test.describe('IME', () => {
     await expect(field(page)).toHaveValue('渋谷');
     await field(page).press('Enter');
     await expect(view(page).locator('[data-qchip]')).toHaveText(['ラーメン', '渋谷周辺']);
-    await expect(meta(page)).toHaveText(/^\d+ \/ 3,400件/);
+    await expect(view(page).locator('[data-places-scope="all"]')).toHaveAttribute('aria-pressed', 'true');
     // Backspace mid-composition (the field's own) never takes a chip
     await field(page).focus();
     await field(page).evaluate((el: HTMLInputElement) => {
@@ -234,7 +234,7 @@ test.describe('location', () => {
     await field(page).pressSequentially('近く');
     await expect(view(page).locator('[data-qchip]')).toHaveText(['現在地周辺']);
     await expect(rows(page).first().locator('.sbt')).toHaveText(/ · \d+ m$|km$/);
-    await expect(meta(page)).toHaveText(/^\d+ \/ 3,400件/);
+    await expect(view(page).locator('[data-places-scope="all"]')).toHaveAttribute('aria-pressed', 'true');
     await shot(page, `B-${info.project.name}-near`);
     await context.setGeolocation({ latitude: 34.69, longitude: 135.5, accuracy: 20 });
     await expect(rows(page).first().locator('.sbt')).toContainText('大阪');

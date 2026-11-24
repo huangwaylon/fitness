@@ -101,16 +101,18 @@ test('the field read into chips: time words at once, a category on a space or En
   await expect(view(page).locator('[data-cat="麺"]')).toHaveAttribute('aria-pressed', 'false');
   await field(page).press('Backspace');
   await expect(qchips(page)).toHaveCount(0);
+  // (the search let go: the view's, where ラーメン's fit left the map; a pan out to all 10)
+  await field(page).blur();
+  await bounds(page, [139.2, 35.6, 139.8, 35.75]);
   await expect(rows(page)).toHaveCount(10);
   // a category chip, then its sub
-  await field(page).blur();
   await view(page).locator('[data-cat="麺"]')[how]();
   await expect(rows(page)).toHaveCount(3);
   await expect(qchips(page)).toHaveText(['麺']);
   await view(page).locator('[data-sub="うどん"]')[how]();
   await expect(rows(page)).toHaveCount(1);
   await expect(qchips(page)).toHaveText(['うどん']);
-  await expect(view(page).locator('[data-places-meta]')).toHaveText('1 / 10件 · 同期 1時間前');
+  await expect(view(page).locator('[data-places-scope="all"]')).toHaveText('全体 1件');
   // a name, a note, a fuzzy name
   await view(page).locator('[data-qchip="cat:麺:うどん"]')[how]();
   await type(page, 'クロワッサン');
@@ -124,7 +126,9 @@ test('the field read into chips: time words at once, a category on a space or En
   await view(page).locator('[data-places-clear]')[how]();
   await expect(qchips(page)).toHaveCount(0);
   await expect(field(page)).toHaveValue('');
-  await expect(rows(page)).toHaveCount(10);
+  // (the search let go: the view's, the camera where the last search's fit left it)
+  await expect(view(page).locator('[data-places-scope="view"]')).toHaveAttribute('aria-pressed', 'true');
+  await expect(view(page).locator('[data-places-scope="all"]')).toHaveText('全体 10件');
 });
 
 /** The stub map's moveend: its box as the map would say it (west, south, east, north). */
@@ -210,13 +214,15 @@ test('scope: no search, the list is the map’s view; a chip tap keeps the view;
   await expect(rows(page)).toHaveCount(7);
 });
 
-test('scope: a chip tapped with none of its matches in view fits the map to them', async ({ page, context }, info) => {
+test('scope: a category picked in 絞り込み with none of its matches in view fits the map to them', async ({ page, context }, info) => {
   const how = howOf(info.project.name);
   await phone(page, context);
   await openPlaces(page, how);
   await bounds(page, [139.69, 35.65, 139.71, 35.67]);
   await expect(rows(page)).toHaveCount(7);
-  await view(page).locator('[data-cat="自然・登山"]')[how]();
+  await view(page).locator('[data-sort]')[how]();
+  await page.locator('dialog[open] [data-cat-pick="自然・登山"]')[how]();
+  await page.locator('dialog[open] [data-places-filter-show]')[how]();
   // (the stub's fit says the box about サンプル山: the list the view's, it in it)
   expect(await names(page)).toEqual(['サンプル山']);
   await expect(scopeBtn(page, 'view')).toHaveAttribute('aria-pressed', 'true');
@@ -239,7 +245,7 @@ test('browse: a new view waits while the full list is scrolled, then applies at 
   expect(await list.evaluate((el) => el.scrollTop)).toBe(600);
   expect(await rows(page).locator('.nmt').allTextContents()).toEqual(before);
   await list.evaluate((el) => (el.scrollTop = 0));
-  await expect.poll(async () => (await view(page).locator('[data-places-meta]').textContent()) ?? '').toMatch(/^この範囲 \d+ \/ 300件/);
+  await expect.poll(async () => (await view(page).locator('[data-places-meta]').textContent()) ?? '').toMatch(/^この範囲 \d+全体 300件/);
   // a card, then a view without it: still open
   await rows(page).first()[how]();
   const id = await card(page).getAttribute('data-place-card');
