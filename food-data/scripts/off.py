@@ -34,6 +34,12 @@ DRINK_HEAD_NOT = re.compile(r'(?:ゼリー|ソフト)(?!ドリンク)')
 # フルーツ, ブルーベリー, プルーン, マッシュルーム, ビンダルー, シールウエハース, ノルウェー (katakana on either side; ・ and 。 are
 # no letters). words.ts ROUX mirrors it (the salt checks' roux)
 ROUX = re.compile(r'(?:カレー|シチュー|ハヤシ|カリー)ル[ーウゥ]|(?<![ァ-ヺー])ル[ーウゥ](?![ァ-ヺー])')
+# 用 as "for" a dish or a use (焼肉用, 炒め用, 鍋用: a seasoning's or a cooking part's), never …使用 or 不使用 (made with or
+# without), 徳用/得用/業務用 (a pack size), 生食用/加熱用/刺身用 (a fish's or oyster's use) or 製菓用 (baking chocolate).
+# plausible.ts USE_FOR mirrors it (SWEET_NOT)
+USE_FOR = r'(?<!使)(?<!徳)(?<!得)(?<!業務)(?<!生食)(?<!加熱)(?<!刺身)(?<!製菓)用'
+# めん the noodles (らーめん, そうめん, 中華めん), never もめん (木綿豆腐)
+NOODLE_KANA = r'(?<!も)めん'
 DRINK_HEAD_MAX_KCAL = 160   # a smoothie or a shake; a powder or a snack named so is far above
 
 # Pasta (not its sauce, a salad or a dish named after one: カルボナーラ風ハンバーグ); だんご but a meatball (鶏だんご,
@@ -48,7 +54,7 @@ FRUIT = re.compile(r'^(?!.*(?:味|風味|プロテイン|ホエイ|whey|protein|
                    r'ソフト|ケーキ|ゼリー)).*(?:マンゴー|ブルーベリー|バナナ|フルーツ|レーズン|'
                    r'デーツ|プルーン|いちじく|メロン|キウイ|シャインマスカット)')
 BURI_TARA = re.compile(r'(?<!あ)(?<!しゃ)(?<!が)(?<!ん)ぶり|(?<!い)(?<!ぶ)たら')   # not あぶり, しゃぶり, どんぶり, 焼いたら
-BEEF_PORK = re.compile(r'(?:ビーフ|ポーク)(?!.*(?:ルー|ルウ|ソース|たれ|タレ|シーズニング|の素|用))')   # not a roux's or sauce's
+BEEF_PORK = re.compile(r'(?:ビーフ|ポーク)(?!.*(?:ルー|ルウ|ソース|たれ|タレ|シーズニング|の素|' + USE_FOR + r'))')   # not a roux's or sauce's
 # あん the sweet bean paste, not a dish's sauce (甘酢あん, 黒酢あん, 香味あん) or あんず
 ANKO = re.compile(r'(?<!酢)(?<!味)あん(?!ず)')
 CROQUETTE = re.compile(r'(?:コロッケ|メンチ)(?!.*(?:パン|サンド|バーガー|ドッグ))')   # コロッケパン: パン
@@ -102,7 +108,8 @@ NAME_RULES = [
     (('コーンフレーク', 'シリアル', 'グラノーラ', 'オートミール'), '主食'),
     (('ビール', '発泡酒', 'alc.', 'チューハイ', 'サワー', 'ハイボール', '日本酒', '焼酎', 'ワイン', '梅酒', 'ウイスキー'), '酒'),
     (DRINK_HEAD, '飲料'),
-    (('ラーメン', 'らーめん', 'うどん', 'そば', '焼そば', '焼きそば', 'ヌードル', '麺', 'めん', 'メンマ', 'カップヌードル', 'どん兵衛',
+    (('もめん',), '大豆・豆'),   # 木綿豆腐 by its kana, before めん the noodles
+    (('ラーメン', 'らーめん', 'うどん', 'そば', '焼そば', '焼きそば', 'ヌードル', '麺', re.compile(NOODLE_KANA), 'メンマ', 'カップヌードル', 'どん兵衛',
       PASTA), '麺'),
     (('おにぎり', '寿司', 'すし', '巻き寿司', '巻寿司', '太巻', '細巻', '中巻', '手巻', '恵方巻', '海苔巻', 'のり巻', '海鮮巻',
       '鉄火巻', 'かっぱ巻', '納豆巻'), '寿司'),
@@ -253,10 +260,10 @@ SALT_CAP = {'調味料': 100.0, '飲料': 1.5, '酒': 2.0, '乳製品': 2.0, '�
 SALT_CAP_DEFAULT = 10.0
 SALTY_OK = re.compile(r'塩|漬|梅|みそ|味噌|醤|しょうゆ|醤油|だし|出汁|ふりかけ|佃煮|つくだ煮|昆布|こんぶ|わかめ|ひじき|のり|海苔|'
                       r'たらこ|明太|いくら|筋子|からすみ|つゆ|たれ|タレ|ソース|スープ|ブイヨン|コンソメ|顆粒|素|もと|ラーメン|'
-                      r'らーめん|めん|麺|うどん|そば|キムチ|(?<!パリ)ジャン(?!ボ|ゴ)|醬|チーズ|バター(?!ル)|干|ひもの|干物|さきいか|あたりめ|くさや|'
+                      r'らーめん|' + NOODLE_KANA + r'|麺|うどん|そば|キムチ|(?<!パリ)ジャン(?!ボ|ゴ)|醬|チーズ|バター(?!ル)|干|ひもの|干物|さきいか|あたりめ|くさや|'
                       r'アンチョビ|ザーサイ|搾菜|メンマ|ナンプラー|魚醤|ベーコン|生ハム|サラミ|ジャーキー|せんべい|あられ|'
                       r'珍味|しらす|ちりめん|桜えび|干しえび|いかの塩辛|かつお節|削り|鮭フレーク|ふぐ|うに|塩辛|粉末|パウダー|だれ|'
-                      r'ドレッシング|ラー油|' + ROUX.pattern + r'|用|吸い物|煮|ソルト|スパイス|シーズニング|ゴルゴンゾーラ|カマンベール|'
+                      r'ドレッシング|ラー油|' + ROUX.pattern + '|' + USE_FOR + r'|吸い物|煮|ソルト|スパイス|シーズニング|ゴルゴンゾーラ|カマンベール|'
                       r'パルメザン|ゴーダ|cheese|chedd|gouda|camembert|gorgonzola|parmesan|parmigiano|fromage|feta|brie|'
                       r'salt|soy|sauce|miso|soup|broth|dashi|shoyu|tsuyu|furikake|seasoning|ramen|noodle|bacon|ham\b|'
                       r'口$|うすくち|こいくち|こしょう|胡椒|キューブ|あさげ|ゆうげ', re.I)
@@ -277,7 +284,7 @@ PROTEIN_SALT_CAP = {'bar': 3.0, 'powder': 4.0, 'drink': 1.5}
 # that the row holds per-piece values (e.g. からあげ 45 kcal "per 100 g"). Mixes, seasonings, flavoured snacks, dishes
 # with other parts and fish/soy karaage are excluded.
 FRIED_CHICKEN_RE = re.compile(r'からあげ|唐揚|から揚|フライドチキン|チキンカツ|チキンフライ|ザンギ|ナゲット|竜田揚|ファミチキ')
-FRIED_NOT = re.compile(r'用|粉|素|もと|たれ|タレ|ソース|味(?!付)|風味|煮|弁当|丼|定食|うどん|そば|鍋|スープ|サラダ|揚げる前|'
+FRIED_NOT = re.compile(USE_FOR + r'|粉|素|もと|たれ|タレ|ソース|味(?!付)|風味|煮|弁当|丼|定食|うどん|そば|鍋|スープ|サラダ|揚げる前|'
                        r'たこ|タコ|いか|イカ|えび|エビ|海老|魚|鮭|たら|タラ|カレイ|ガレイ|あんこう|軟骨|大豆|豆腐|ソイ')
 FRIED_MIN_KCAL = 120
 
@@ -295,7 +302,7 @@ DRY_SNACK = re.compile(r'チップス|ポテチ|スナック(?!サンド)|チー
 DRY_SNACK_NOT = re.compile(r'(?i:bar)|クリーム|バニラ|豆乳|飲料|アイス|氷|フラッペ|サンデー|カップ|ソルベ|モナカ|ジェラート|パフェ|シェイク|ミルク|ドリンク|ラテ|ケーキ|'
                            r'サンド|ゼリー|プリン|ヨーグルト|ムース|豆腐|とうふ|スープ|カレー|炒め|サラダ|ソース|バー')
 RICE_BALL = re.compile(r'おにぎり|おむすび')
-FLOORS = ((DRY_SNACK, DRY_SNACK_NOT, 200, 'snack_floor'), (RICE_BALL, re.compile(r'の具|具材|ふりかけ|用'), 120, 'onigiri_floor'))
+FLOORS = ((DRY_SNACK, DRY_SNACK_NOT, 200, 'snack_floor'), (RICE_BALL, re.compile(r'の具|具材|ふりかけ|' + USE_FOR), 120, 'onigiri_floor'))
 
 # The rules app/src/lib/food/plausible.ts shares (data_src/plausible_cases.json checks both): salt copying a macro
 # (OFF's salt field holding C or P, often C x0.98), in a seasoning or salty food only when 100 g can't hold it
@@ -314,7 +321,7 @@ SWEET = re.compile(r'チョコ|ショコラ|クッキー|ケーキ|バウム|プ
                    r'ソルベ', re.I)
 SWEET_NOT = re.compile(SALTY_COPY.pattern + r'|塩|ソルト|salt|チーズ|cheese|バター|漬|プレッツェル|ポテト|チップ|スナック|'
                        r'クラッカー|プリッツ|おかき|あられ|せんべい|煎餅|ポップコーン|ピザ|カレー|パスタ|サンド|バーガー|キッシュ|'
-                       r'ミート|吸い物|わかめ|昆布|こんぶ|用', re.I)
+                       r'ミート|吸い物|わかめ|昆布|こんぶ|' + USE_FOR, re.I)
 SWEET_PROTEIN = re.compile(r'プロテイン|protein|ホエイ|whey|wp[ci]|ソイ|soy|大豆|たんぱく|タンパク|蛋白', re.I)
 
 

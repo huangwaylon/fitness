@@ -85,7 +85,8 @@ index.json's `jan` version. Keys are JAN/EAN-13 or JAN-8 with a valid check digi
 | `products.json`, `jan/` | Open Food Facts (Japan) | ODbL 1.0 / DbCL 1.0 | Label values through `off.py` `plausible` |
 | `kalori.json` | kalori.jp menus | kalori.jp 利用規約 | Per serving ([Kalori](#kalori)) |
 
-School lunches default to an adult 「1人前（目安）」 (`build.py`). A repeated dish name says what differs (`build.py`
+School lunches default to an adult 「1人前（目安）」 (`build.py`), except a side-sized noodle or rice dish (under 250 kcal
+scaled: their school serving). A repeated dish name says what differs (`build.py`
 `qualify`: エビマヨ（お店）). Aliases: Wikidata (CC0) and ja.wikipedia (CC BY-SA, short names and readings only), frozen
 in `data_src/aliases_*.json`, plus `mext_names.py` rules.
 
@@ -103,7 +104,8 @@ What ships passes three layers (`app/src/lib/food/plausible.ts`, tests `plausibl
   OFF answer; `off.py plausible` mirrors them for builds, and `data_src/plausible_cases.json` holds cases both test.
   kJ typed as kcal fixed; impossible macros, salt or 1食分 nulled; an impossible chain menu dropped. `salt_sweet`: a
   product named as a sweet or sweet drink (no salty, savoury or protein word) with salt over 2 g/100 g gets salt
-  unknown (sodium mg or a serving's salt read as per 100 g); the word list strips フルーツ first (`ルー`).
+  unknown (sodium mg or a serving's salt read as per 100 g). Salt words match as words: a roux only as カレールー or
+  ルー alone (`ROUX`, not フルーツ), 用 only as "for" (焼肉用, not 使用 or 業務用: `USE_FOR`), めん not in もめん.
 - **Fixes** (`data_src/food_fixes.json`): reviewed corrections by item id, `{"set": {fields, portions, name, cat}}`
   (`"portions": []` removes, `null` makes unknown) or `{"drop": true}`, each with `why` and `src`. Applied before the
   rules by `food-data.ts` and `off.py`. Only on solid evidence; otherwise null the field or drop the row.

@@ -637,6 +637,11 @@ class OffPlausibility(unittest.TestCase):
             self.assertEqual(self.check(300, 5, 10, 45, salt, cat, name)[1], ['salt_cap'], name)
         for name in ('カレールー', 'ハヤシルウ', 'カリールウ', 'とろけるルー 中辛', 'コチュジャン', 'ユッケジャン', 'バターロール'):
             self.assertEqual(self.check(300, 5, 10, 45, 11, 'その他', name)[1], [], name)
+        for name in ('業務用 カルビ', 'お徳用 ウインナー', '国産大豆使用 鶏だんご', '保存料不使用 ハム', '生食用 サーモン'):   # 用 as pack or make
+            self.assertEqual(self.check(250, 20, 15, 5, 4.5, '肉', name)[1], ['salt_cap'], name)
+        for name in ('焼肉用 牛カルビ', '炒め用 豚こま', '中華めん'):   # 用 "for" a use, めん the noodles
+            self.assertEqual(self.check(250, 20, 15, 5, 4.5, '肉', name)[1], [], name)
+        self.assertEqual([off.pick_cat([], n, 80) for n in ('もめん豆腐', 'もめんとうふ', '中華めん', 'そうめん')], ['大豆・豆', '大豆・豆', '麺', '麺'])
 
     def test_salt(self):
         self.assertEqual(self.check(69, 3.4, 3.9, 5, 3.34, '乳製品', '牛乳'), ((69, 3.4, 3.9, 5, None), ['salt_cap']))
