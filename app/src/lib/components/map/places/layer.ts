@@ -11,7 +11,7 @@ import { lazyImages } from '../gl-images.ts';
 import { fc, pt } from '../geojson.ts';
 import { EMPTY } from '../style.ts';
 import { C } from '../theme.ts';
-import { CAT_GLYPHS, squareId, trailBadge } from './badge.ts';
+import { CAT_GLYPHS, PLAIN_SQUARE, trailBadge } from './badge.ts';
 
 export interface MapPlace { id: string; lng: number; lat: number; cat: PlaceCat; name: string }
 
@@ -38,7 +38,7 @@ export function placesLayers(o: { small?: boolean; font?: string[]; yieldLabels?
   return [
     {
       id: SAVED.layer, type: 'symbol', source: SAVED.src, minzoom: SQUARE_Z.min,
-      layout: { 'icon-image': ['step', ['zoom'], squareId(null), SQUARE_Z.glyph, ['concat', 'tp-', ['get', 'cat']]], 'icon-size': iconSize(!!o.small), ...keep },
+      layout: { 'icon-image': ['step', ['zoom'], PLAIN_SQUARE, SQUARE_Z.glyph, ['concat', 'tp-', ['get', 'cat']]], 'icon-size': iconSize(!!o.small), ...keep },
       paint: { 'icon-opacity': 0.85 }
     } as LayerSpecification,
     {
@@ -71,7 +71,7 @@ export function placesLayer(map: GLMap, o: { before?: string; font?: string[]; y
   let ready = false, drawn = '', sized = false;
 
   const dropImages = lazyImages(map, (id) => {
-    if (id === squareId(null)) return () => trailBadge(null);
+    if (id === PLAIN_SQUARE) return () => trailBadge(null);
     const m = IMG.exec(id);
     return m && (PLACE_CAT_KEYS as string[]).includes(m[1]) ? () => trailBadge(m[1] as PlaceCat, !!m[2]) : null;
   }, CAT_GLYPHS);

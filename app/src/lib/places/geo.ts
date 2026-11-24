@@ -12,17 +12,20 @@ export function distM(a: LL, b: LL): number {
   return 2 * R * Math.asin(Math.min(1, Math.sqrt(s)));
 }
 
+/** A list's home's reach (m: homeOf). */
+const HOME_M = 300_000;
+
 /** A fresh phone's first view (保存した場所): every point, or, spread over more than 90° of longitude (a list with places
- *  abroad: the whole world can't be fitted on a phone, MapLibre's fit of it lands at sea), those within `nearM` of the
+ *  abroad: the whole world can't be fitted on a phone, MapLibre's fit of it lands at sea), those within HOME_M of the
  *  median point (the list's home). */
-export function homeOf(lls: readonly LL[], nearM = 300_000): LL[] {
+export function homeOf(lls: readonly LL[]): LL[] {
   if (!lls.length) return [];
   let w = Infinity, e = -Infinity;
   for (const [x] of lls) ((w = Math.min(w, x)), (e = Math.max(e, x)));
   if (e - w <= 90) return [...lls];
   const mid = (k: 0 | 1) => lls.map((p) => p[k]).sort((a, b) => a - b)[lls.length >> 1];
   const m: LL = [mid(0), mid(1)];
-  const near = lls.filter((p) => distM(m, p) <= nearM);
+  const near = lls.filter((p) => distM(m, p) <= HOME_M);
   return near.length ? near : [m];
 }
 

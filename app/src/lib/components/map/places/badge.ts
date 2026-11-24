@@ -19,8 +19,9 @@ export function drawGlyph(g: CanvasRenderingContext2D, ch: string, cx: number, c
   g.fillText(ch, cx, cy + px * 0.06);
 }
 
-/** The square's images by id: `tp-<cat>` (with its glyph), `tp-<cat>-sel` (ringed), `tp-sq` (plain). */
-export const squareId = (cat: PlaceCat | null, sel = false): string => (cat ? `tp-${cat}${sel ? '-sel' : ''}` : 'tp-sq');
+/** The square's images by id: `tp-<cat>` (with its glyph), `tp-<cat>-sel` (ringed: layer.ts builds both), and this,
+ *  the plain one. */
+export const PLAIN_SQUARE = 'tp-sq';
 
 /** The 16 px square (18 with its rim) about (c, c); `cat` null: no glyph. */
 function square(g: CanvasRenderingContext2D, c: number, cat: PlaceCat | null): void {

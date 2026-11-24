@@ -15,8 +15,8 @@ export const turn = (a: number, b: number): number => {
   return d > 180 ? d - 360 : d;
 };
 
-/** One low-pass step on the circle: `s` moved the fraction `k` of the shortest turn toward `raw`. */
-export const smooth = (s: number | null, raw: number, k = 0.3): number => (s === null ? norm(raw) : norm(s + k * turn(s, raw)));
+/** One low-pass step on the circle: `s` moved 0.3 of the shortest turn toward `raw`. */
+export const smooth = (s: number | null, raw: number): number => (s === null ? norm(raw) : norm(s + 0.3 * turn(s, raw)));
 
 /** Magnetic declination (degrees, east positive: true = magnetic + this), approximate (a small table by place, not a
  *  geomagnetic model): Japan's is west and grows with latitude, ~5° in Okinawa, ~7.5° in Kanto, ~9.5° in Hokkaido
