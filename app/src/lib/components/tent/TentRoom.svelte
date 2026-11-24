@@ -710,7 +710,8 @@
       if (e.lt !== undefined && e.who !== me) eng.face(e.who, centreOf(p));
     }));
     const offDoor = roomDoor(() => eng, 0, HALF - 2);
-    const fail = () => ((failed = true), doorReady());
+    // (alive only: a refused context asked again after leaving threw into a room gone, its door opened over the next)
+    const fail = () => void (alive && ((failed = true), doorReady()));
     void import('./engine.ts').then(
       async ({ createTent }) => {
         if (!alive || !canvas) return;

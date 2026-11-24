@@ -32,11 +32,13 @@ export const fruitLean = (x: number, mid: number): number => (x < mid ? -FRUIT_L
 export const FRUIT_U = 24;
 /** Villagers (the scale's reference): 80u tall. */
 export const VILLAGER = { h: 80 } as const;
+/** A character's feet and head (charInView: one array, not one a call; it runs for each figure every frame). */
+const LIFTS = [0, VILLAGER.h * 1.3] as const;
 /** A character at (x, z) on a w × h px screen or near it: its feet or its head inside, with a margin of a finger and
  *  its height round it (the bend drops the far ones: their head may show over the horizon). The 3D island poses only
  *  these (Island3D `seen`), and draws at the full rate only for these walking (IslandScene anyMoving). */
 export function charInView(p: { at(x: number, z: number, lift: number, out?: At): At }, x: number, z: number, w: number, h: number, out: At): boolean {
-  for (const lift of [0, VILLAGER.h * 1.3]) {
+  for (const lift of LIFTS) {
     const q = p.at(x, z, lift, out), m = 40 + q.k * VILLAGER.h;
     if (q.depth > 1 && q.sx > -m && q.sx < w + m && q.sy > -m && q.sy < h + m) return true;
   }

@@ -167,11 +167,37 @@ export function createLights(scene: Scene): Lights {
       halo.col.set([c.r, c.g, c.b], k * 3);
       pool.col.set([c.r, c.g * 0.92, c.b * 0.8], k * 3);
     });
+    rankX = rankZ = NaN;
     for (const a of ['aAt', 'aSize', 'aCol'] as const) {
       halo.geo.getAttribute(a).needsUpdate = true;
       pool.geo.getAttribute(a).needsUpdate = true;
     }
   }
+
+  /** The view's centre at the last ranking (NaN: none since the lamps changed or the dark went). */
+  let rankX = NaN, rankZ = NaN;
+  /** The centre moving less than this (u) keeps the ranking. */
+  const RANK_STILL = 2;
+  const dist = new Float64Array(MAX);
+  /** The `target` nearest within 700 u get want 1 (a scan per pick: no objects, no sort). */
+  function rank(cx: number, cz: number) {
+    const n = spots.length;
+    for (let k = 0; k < n; k++) {
+      const s = spots[k];
+      dist[k] = Math.hypot(s.x - cx, (s.z - cz) * 0.85) * (s.want ? 0.8 : 1);
+      s.want = 0;
+    }
+    for (let pick = 0; pick < target; pick++) {
+      let best = -1;
+      for (let k = 0; k < n; k++) if (!spots[k].want && dist[k] < 700 && (best < 0 || dist[k] < dist[best])) best = k;
+      if (best < 0) break;
+      spots[best].want = 1;
+    }
+  }
+  const hasPoint = (s: Spot) => {
+    for (const p of points) if (p.lamp === s) return true;
+    return false;
+  };
 
   /** A fire this near the view's centre (u, as the lights' ranking measures) flickers on screen. */
   const FIRE_SEEN = 650;
@@ -184,14 +210,21 @@ export function createLights(scene: Scene): Lights {
       lvl = Math.abs(lvlTo - lvl) <= step ? lvlTo : lvl + Math.sign(lvlTo - lvl) * step;
       moving = true;
     }
-    // which lights get a real one: the nearest the view's centre, a lit one counted a fifth nearer (hysteresis)
+    // which lights get a real one: the nearest the view's centre, a lit one counted a fifth nearer (hysteresis);
+    // ranked again only when the view's centre moved or the lamps changed (an idle night frame ranked all 96 anew)
     if (lvl > 0) {
-      const ranked = spots.map((s) => ({ s, d: Math.hypot(s.x - cx, (s.z - cz) * 0.85) * (s.want ? 0.8 : 1) })).sort((a, b) => a.d - b.d);
-      ranked.forEach((r, k) => (r.s.want = k < target && r.d < 700 ? 1 : 0));
-    } else for (const s of spots) s.want = 0;
+      if (!(Math.abs(cx - rankX) < RANK_STILL && Math.abs(cz - rankZ) < RANK_STILL)) {
+        rankX = cx;
+        rankZ = cz;
+        rank(cx, cz);
+      }
+    } else if (rankX === rankX) {
+      rankX = rankZ = NaN;
+      for (const s of spots) s.want = 0;
+    }
     // a fading-in light needs a free point light (one fading out keeps its own until it's dark)
     for (const s of spots) {
-      if (s.want && !points.some((p) => p.lamp === s)) {
+      if (s.want && !hasPoint(s)) {
         const free = points.find((p) => !p.lamp);
         if (free) free.lamp = s;
         else continue;

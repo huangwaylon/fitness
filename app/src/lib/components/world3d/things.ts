@@ -521,7 +521,7 @@ export function createThings(scene: Scene, height: (x: number, z: number) => num
     for (const { im, local, grey, fade, flap, part } of g.meshes) {
       for (let i = i0; i < i1; i++) {
         // (a part taken off: its spot on the instance empty)
-        if ((part && loose.has(`${g.list[i].id}|${part.name}`)) || loose.has(`${g.list[i].id}|${WHOLE}`)) im.setMatrixAt(i, ZERO);
+        if (loose.size && ((part && loose.has(`${g.list[i].id}|${part.name}`)) || loose.has(`${g.list[i].id}|${WHOLE}`))) im.setMatrixAt(i, ZERO);
         else im.setMatrixAt(i, tmpM.multiplyMatrices(g.base[i], local));
         if (grey) grey.setX(i, overs.get(g.list[i].id)?.grey ?? 0);
         if (fade) fade.setX(i, opacity(g.list[i].id));

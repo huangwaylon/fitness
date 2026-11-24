@@ -511,7 +511,8 @@
       }));
     }
     const offDoor = roomDoor(() => eng, ENTRANCE[0], ENTRANCE[1] + 10);
-    const fail = () => ((failed = true), doorReady());
+    // (alive only: a refused context asked again after leaving threw into a room gone, its door opened over the next)
+    const fail = () => void (alive && ((failed = true), doorReady()));
     void Promise.all([import('./engine.ts'), import('./plan.ts'), import('./curator.ts'), import('./visitors.ts'), import('./crowd3d.ts'), import('./spots.ts'), import('./newTags.ts')]).then(
       async ([{ createMuseum }, { walkPath }, { buildCurator }, { crowdOf }, { buildCrowd }, { VISITOR_ROOMS, VISITOR_POINTS }, { buildNewTags }]) => {
         if (!alive || !canvas) return;

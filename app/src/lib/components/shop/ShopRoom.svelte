@@ -341,7 +341,8 @@
       );
     }
     const offDoor = roomDoor(() => eng, DOOR[0], FRONT - 2);
-    const fail = () => ((failed = true), doorReady());
+    // (alive only: a refused context asked again after leaving threw into a room gone, its door opened over the next)
+    const fail = () => void (alive && ((failed = true), doorReady()));
     void import('../tent/engine.ts').then(async ({ createTent }) => {
       if (!alive || !canvas) return;
       const e = await startRoom(() => createTent(canvas!, { shell: { url: `${staticUrl('room/shop/shell.glb')}?v=${M.models.shell.v}`, rect: RECT, h: WALL_H, front: FRONT, door: DOOR, side, follow: FOLLOW } }), () => alive && !!canvas, (e) => {

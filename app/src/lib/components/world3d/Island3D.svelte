@@ -1268,6 +1268,9 @@
     fxFired = testHooks() ? fxLog() : null;
     listenFx3((kind, x, z, lift, o) => {
       fxFired?.add(kind, x, z, o.art ?? o.v, performance.now());
+      // (under a sheet no frame runs to end a flourish: the glints' timers went on adding parts, thousands in a long
+      // sheet, all dropped on the first frame back; a held one follows its source and comes back with it)
+      if (e.isPaused() && !o.held) return;
       e.fx(kind, x, z, lift, withImg(o));
     });
     // (an angler's step: a frame at once, the 「！」 popped in with the bite however idle the island was)
