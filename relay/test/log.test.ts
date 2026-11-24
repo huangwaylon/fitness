@@ -80,6 +80,11 @@ describe('the relay’s events, the query, retention', () => {
     expect(rows().map((x) => [x.src, x.role, x.rid, x.d])).toEqual([['r', 'B', 'rq12345678', { action: 'events', st: 'ok', rej: 1, why: 'buy.pocket_short', ms: 41 }]]);
   });
 
+  it("an admin op's audit keeps which secret signed it (`by: places`, PLACES_KEY's)", () => {
+    log.add([{ e: 'admin', l: 1, d: { op: 'places_ingest', st: 'ok', by: 'places' } }, { e: 'admin', l: 1, d: { op: 'counts', st: 'ok', by: 'other' } }]);
+    expect(rows().map((x) => x.d)).toEqual([{ op: 'places_ingest', st: 'ok', by: 'places' }, { op: 'counts', st: 'ok' }]);
+  });
+
   it('filters and pages (by time, level, name or prefix, role, session, request), newest first too', () => {
     log.ingestText(batch([ev('app.open'), ev('api.fail', { err: 'offline' }, 2, { r: 'rqaaaaaaaa' }), ev('js.error', {}, 3)]));
     now += 3_600_000;

@@ -244,7 +244,7 @@ export const LOG_EVENTS = {
   // doesn't chain, or a kept shop row it refused (`refused`); never fixed by itself
   "ledger.seed": { src: 'r', f: { who: ['A', 'B', 'G'], h: 'n', p: 'n', w: 'n', z: 'n' } },
   "ledger.drift": { src: 'r', f: { who: ['A', 'B', 'G'], part: ['h', 'p', 'w', 'g', 'z', 'chain', 'refused'], stored: 'n', fold: 'n', keys: 'n' } },
-  admin: { src: 'r', f: { op: 't', st: 't' } },
+  admin: { src: 'r', f: { op: 't', st: 't', by: ['places'] } },
   "log.cap": { src: 'r', f: { bucket: 't' } },
   // `POST /stt` (relay/src/sttRoute.ts): sizes and times, never the audio or its text
   stt: { src: 'r', f: { ms: 'n', inB: 'n', model: ['turbo'], ok: 'b', err: ['off', 'too_large', 'bad_request', 'capped', 'ai'] } },
