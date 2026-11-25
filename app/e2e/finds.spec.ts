@@ -287,3 +287,59 @@ test('the rare mushroom comes out of a November dig spot', async ({ page }) => {
   expect(await finds(page)).toEqual([]);
   await unchanged(page, before);
 });
+
+test.describe('at 393 × 852', () => {
+  test.use({ viewport: { width: 393, height: 852 }, hasTouch: true });
+  test('every dig spot stays drawn while the island scrolls and wherever it rests: none pops out or in (the user’s, 2026-11-26)', async ({ page }) => {
+    // (each settle measured the spots against the HUD's buttons and the island's tap areas on screen: one under them
+    // hid till the next settle, one off screen showed, so a spot came and went as the camera moved; 11-07's at the
+    // lawn's edges hid at most stops, both zooms)
+    await open(page, '&date=2026-11-07T12:00&weather=clear');
+    await quiet(page);
+    await settled(page);
+    const all = (await daySpots(page)).digs.length;
+    expect(all).toBe(4);
+    const drawn = () => findsOut(page, 'fossil').then((l) => l.map((f) => f.uid).sort());
+    await expect.poll(drawn).toHaveLength(all);
+    const want = await drawn();
+    type G = { __world: { stops(): number[]; cam(): number }; __world3d: { go(z: number, k?: number): void } };
+    const [front, back] = await page.evaluate(() => (window as unknown as G).__world.stops());
+    for (const k of [1, 2.2])
+      for (let i = 0; i <= 8; i++) {
+        await page.evaluate(([z, k]) => (window as unknown as G).__world3d.go(z, k), [front + ((back - front) * i) / 8, k]);
+        await settled(page);
+        // (three frames on: the measure that hid them ran two on)
+        await page.evaluate(() => ((window as { __f?: number }).__f = 0));
+        await page.waitForFunction(() => ++(window as { __f?: number }).__f! > 3, null, { polling: 'raf' });
+        expect(await drawn(), `at rest, zoom ${k}, stop ${i}`).toEqual(want);
+      }
+    // a finger's scroll back to the front, the spots drawn sampled every frame of it and after it
+    const cam = () => page.evaluate(() => (window as unknown as G).__world.cam()), z0 = await cam();
+    // (a step a frame: the polling's)
+    await page.evaluate(() => {
+      const el = document.elementFromPoint(innerWidth / 2, innerHeight / 2)!;
+      const ev = (type: string, y: number) => el.dispatchEvent(new PointerEvent(type, { pointerId: 7, pointerType: 'touch', isPrimary: true, clientX: innerWidth / 2, clientY: y, buttons: type === 'pointerup' ? 0 : 1, bubbles: true, cancelable: true, composed: true }));
+      const w = (window as unknown as { __world3d: W3 }).__world3d;
+      const out: string[][] = [];
+      let n = 0, y = 300;
+      ev('pointerdown', y);
+      (window as unknown as { __drag: object }).__drag = {
+        out,
+        step: () => {
+          out.push(w.finds().filter((f) => f.kind === 'fossil').map((f) => f.uid).sort());
+          n++;
+          if (n < 30) ev('pointermove', (y += 12));
+          else if (n === 30) ev('pointerup', y);
+          return n >= 80;
+        }
+      };
+    });
+    type Drag = { __drag: { out: string[][]; step(): boolean } };
+    await page.waitForFunction(() => (window as unknown as Drag).__drag.step(), null, { polling: 'raf' });
+    const seen = await page.evaluate(() => (window as unknown as Drag).__drag.out);
+    for (const [i, s] of seen.entries()) expect(s, `frame ${i} of the scroll`).toEqual(want);
+    await settled(page);
+    expect(Math.abs((await cam()) - z0)).toBeGreaterThan(100);
+    await expect.poll(drawn).toEqual(want);
+  });
+});

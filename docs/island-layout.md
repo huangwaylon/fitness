@@ -61,6 +61,7 @@ the record keeps each id's latest op (slot `decor|<sc>|<id>`). An old phone igno
   emptySpots`, re-applied by `site.bare` as the day, the hour and the snowboy's melt change).
 - **Arches over water** (`layout/height.ts` `standLift`): a gate, torii or gazebo whose way through spans water stands
   on its posts' banks (the highest), not the bed.
+- **Day spots** (`daySpots`): none till outdoor kinds load (no jump); always drawn, under the HUD too.
 - **The visitors' stage** (`layout/spots.ts` `stageOf`): the plaza mark if usable, else open grass near the middle;
   `washedUp` for Gulliver. Visitor marks (`plaza`, `beach-spot`): `markerSpot`, `spotWhy`; a retired `guest-spot` is
   dropped as a layout is read (`model.ts isRetired`).

@@ -16,8 +16,7 @@ import type { World } from './camera.svelte.ts';
 import { thing, things3 } from '../world3d/things3.ts';
 import { jst, minuteNow } from '#lib/time/clock.ts';
 import { islandDay } from './ambientClock.ts';
-import { sceneSfx, shownNow } from './sceneTaps.ts';
-import { NO_VILLAGER, clearAt, guardsU, stageGeo } from './placement.ts';
+import { sceneSfx } from './sceneTaps.ts';
 import { digSpots, findArt } from '#lib/world/beach.ts';
 import { ROCK, rockTap, weedsAt, type Weed } from '#lib/world/care.ts';
 import { weedArt } from '#lib/world/dayModels.ts';
@@ -51,7 +50,6 @@ const WEED_U = 24, SPROUT_MS = 420, PULL_MS = 650;
 /** The weeds and the rock on island `w`: their effects in a root of their own (SceneTaps loads this chunk after the
  *  first load and calls this once it's in: `stop` with the scene). */
 export function useCare(w: World, o: {
-  scene: () => HTMLElement | undefined;
   enabled: () => boolean;
   /** A bug crawls out from under the rock (the critters; the rock's world x and z). */
   rockBug?: (x: number, z: number) => void;
@@ -79,30 +77,14 @@ export function useCare(w: World, o: {
     // A weed that sprouts while the island is open pops up out of the lawn; the ones already there when it opens just stand.
     let opened = false;
     const known = new Set<string>();
-    /** Only where this screen's controls leave room (measured when the camera settles, two frames on;
-     *  one off screen stays: it's checked once in view). The villagers walk about: they don't count. */
-    let shown = $state<Weed[]>([]);
-    $effect(() => {
+    /** The weeds drawn: the day's wherever they stand, once the camera's ready (under the HUD or a tree's tap area too:
+     *  one hidden under a control, measured at each settle, came and went as the camera moved, the user's 2026-11-26). */
+    const shown = $derived.by<Weed[]>(() => {
       const list = weeds;
-      void w.rest.z;
-      void w.rest.vw;
-      if (!w.rest.ready) return;
-      let id = requestAnimationFrame(() => (id = requestAnimationFrame(() => {
-        const g = stageGeo(o.scene());
-        if (!g) return void (shown = []);
-        // (the first measure: the weeds already there as the island opened just stand; what sprouts from now on pops up)
-        if (!opened) (list.forEach((d) => known.add(d.uid)), (opened = true));
-        // flat on the lawn: clear of the controls themselves (their 6px tap padding may run over a tuft)
-        const keep = guardsU(g, -5 * g.k, (el) => !shownNow(el), NO_VILLAGER);
-        shown = list.filter((d) => {
-          // anywhere it's drawn on screen, the horizon's sinking edge too (under the HUD on a short phone)
-          const p = w.screenAt(d.x, d.y);
-          if (!p.visible || p.sx < 0 || p.sx > w.view.vw || p.sy < 0 || p.sy > w.view.vh) return true;
-          const k = w.scaleAt(d.x, d.y), [sx, sy] = w.screenU(d.x, d.y, 5);
-          return clearAt(keep, sx, sy, 6 * k, 5 * k);
-        });
-      })));
-      return () => cancelAnimationFrame(id);
+      if (!w.rest.ready) return [];
+      // (the weeds already there as the island opened just stand; what sprouts from now on pops up)
+      if (!opened) (list.forEach((d) => known.add(d.uid)), (opened = true));
+      return list;
     });
 
     let seq = 0;

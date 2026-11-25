@@ -30,8 +30,6 @@ type Keep = (kind: string, id: string) => boolean;
 let areaGuards: ((keep: Keep) => Box[]) | null = null;
 export const provideAreaGuards = (fn: typeof areaGuards): void => void (areaGuards = fn);
 const ALL = () => true, NONE = () => false, NO_BUILDING = (k: string) => k !== 'building', VILLAGERS = (k: string) => k === 'villager';
-/** The tap areas but the villagers' (they only pass by: what lies on the lawn shows under them). */
-export const NO_VILLAGER = (k: string) => k !== 'villager';
 
 /** The UI nothing of ours may cover, in client px: every control but the balloon, a tree's popup and しずえ's box,
  *  padded 6px. `skip`: leave some out; `areas`: the island's tap areas kept (areaGuards: by kind and id). */

@@ -210,7 +210,7 @@
   $effect(() => {
     const m = FindsM;
     if (!m) return;
-    const f = untrack(() => m.useFinds(w, { scene: () => scene, enabled }));
+    const f = untrack(() => m.useFinds(w, { enabled }));
     finds = f;
     return () => {
       f.stop();
@@ -220,7 +220,7 @@
   $effect(() => {
     const m = CareM;
     if (!m) return;
-    const c = untrack(() => m.useCare(w, { scene: () => scene, enabled, rockBug: (x, z) => critters?.fromRock(x, z) }));
+    const c = untrack(() => m.useCare(w, { enabled, rockBug: (x, z) => critters?.fromRock(x, z) }));
     care = c;
     return () => {
       c.stop();

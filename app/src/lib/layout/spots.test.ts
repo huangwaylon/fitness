@@ -9,6 +9,7 @@ import RECORD from './record-2026-11-03.json' with { type: 'json' };
 import { layoutOpOf, mergeLayout } from '#lib/contract/layout.ts';
 import { migratedId, migrationOps } from './migrate.ts';
 import { codeOf, tileAt, tileMid } from './grid.ts';
+import { loadOutdoor, outdoorReady } from './outdoor.ts';
 import type { LayoutEntry } from '#lib/contract/layout.ts';
 
 const l = defaultLayout();
@@ -247,5 +248,32 @@ describe('the old decorations into the layout, once (migrate.ts)', () => {
     const m = new Map<string, LayoutEntry>([[`o|${migratedId('dabc1234')}`, { ...ops[0], who: 'A' } as LayoutEntry]]);
     expect(migrationOps(m, placed, 'A')).toEqual([]);
     expect(migrationOps(new Map(), placed, 'G')).toEqual([]);
+  });
+});
+
+// (last: it loads the outdoor catalogue's table, which stays in for the rest of the file)
+describe('the day’s spots stay put whatever order things arrive in (the user’s spots coming and going, 2026-11-26)', () => {
+  const D = '2026-11-26', SEED = 'island-fund';
+  // a piece of the outdoor catalogue's on the lawn, over a tile the day's picks take while its kind is unknown
+  const [c, r] = tileAt(...daySpots(l, D, SEED).dig[0]);
+  const ops = [
+    { sc: 'o', id: 'o-bench', at: 1.8e12, k: 'nh-f12688', x: c, z: r, f: 0 },
+    { sc: 'o', id: 'o-flower', at: 1.8e12 + 1, k: 'flower', x: 3, z: 30, f: 0, s: 'c1' }
+  ].map((d) => ({ ...layoutOpOf(d)!, who: 'A' }) as LayoutEntry);
+  const merged = (list: LayoutEntry[]) => {
+    const m = new Map<string, LayoutEntry>();
+    for (const e of list) mergeLayout(m, e);
+    return layoutOf(m);
+  };
+  test('none while a piece’s kind is unknown, then the same picks however the layout’s ops came in', async () => {
+    const before = merged(ops);
+    expect(outdoorReady()).toBe(false);
+    expect(daySpots(before, D, SEED)).toEqual({ lawn: [], dig: [] });
+    await loadOutdoor();
+    const a = daySpots(merged(ops), D, SEED), b = daySpots(merged([...ops].reverse()), D, SEED);
+    expect(a.dig).toHaveLength(8);
+    expect(b).toEqual(a);
+    // (the piece in the way now: no pick on its tile)
+    for (const [x, z] of [...a.dig, ...a.lawn]) expect(tileAt(x, z)).not.toEqual([c, r]);
   });
 });

@@ -32,9 +32,8 @@ import { jst, minuteNow } from '#lib/time/clock.ts';
 import { islandDay } from './ambientClock.ts';
 import { addDays } from '#lib/time/dates.ts';
 import { recordFind, recordGoods } from '#lib/store/actions.ts';
-import { hitWorld, sceneSfx, shownNow } from './sceneTaps.ts';
+import { hitWorld, sceneSfx } from './sceneTaps.ts';
 import { loadNames } from './catchLine.ts';
-import { NO_VILLAGER, guardsU, clearAt, stageGeo } from './placement.ts';
 import { SHOWN, bareRect, drawn3, hitRect, hitSources, pick, type Seen } from './hitbox.ts';
 import { bottleAt, bottleNow, digSpots, findArt, fragmentsOn, shellsAt, type Bottle, type DigSpot, type Fragment, type Shell } from '#lib/world/beach.ts';
 import { take, takenOn, wish as addWish, wishes } from '#lib/world/sceneDay.ts';
@@ -80,7 +79,6 @@ const PRESENT_U = 30;
 /** The day's finds on island `w`: their effects in a root of their own (SceneTaps loads this chunk after the first load
  *  and calls this once it's in: `stop` with the scene). */
 export function useFinds(w: World, o: {
-  scene: () => HTMLElement | undefined;
   /** Live, not covered by a sheet, page visible. */
   enabled: () => boolean;
 }): Finds & { stop: () => void } {
@@ -132,6 +130,8 @@ export function useFinds(w: World, o: {
       const gone = goneOn(date);
       return shellsAt(date, msOfDay, seed, allFragments).filter((s) => !gone.has(s.uid));
     });
+    /** The day's dig spots, each drawn wherever it lies all day till it's dug (under the HUD or a tree's tap area too: one
+     *  hidden under a control, measured at each settle, came and went as the camera moved, the user's 2026-11-26). */
     const spots = $derived.by<DigSpot[]>(() => {
       void taken;
       void site.rev;
@@ -470,8 +470,8 @@ export function useFinds(w: World, o: {
         ...shells.map((s) => one('shell', s.id, s, `find-${s.uid}`, () => pickShell(s))),
         ...fragments.map((f) => one('fragment', f.id, f, `find-${f.uid}`, () => pickFragment(f))),
         ...(bottle ? [((b) => one('bottle', null, b, `find-${b.uid}`, () => pickBottle(b)))(bottle)] : []),
-        ...visibleSpots.map((s) => one('fossil', null, s, `dig-${s.uid}`, () => digUp(s))),
-        ...visibleMushrooms.map((m) => one('mushroom', m.id, m, `mush-${m.uid}`, () => pickMushroom(m))),
+        ...spots.map((s) => one('fossil', null, s, `dig-${s.uid}`, () => digUp(s))),
+        ...mushrooms.map((m) => one('mushroom', m.id, m, `mush-${m.uid}`, () => pickMushroom(m))),
         ...presents.map((p) => one('present', null, p, `gift-${p.uid}`, () => openPresent(p), { size: p.size, tree: p.tree }))
       ];
     }
@@ -508,65 +508,6 @@ export function useFinds(w: World, o: {
     /** The find a tap at client (px, py) is for, by its uid (no side effect: SceneTaps' claims), or null. */
     const claims = (px: number, py: number, seen: Seen = SHOWN): string | null => hit(px, py, seen)?.uid ?? null;
 
-    /** What comes and goes over the island, which a dig spot or a mushroom never gives way to: an open sheet (the island
-     *  stays mounted under it), a tree's popup, a said line, a plate, the partner's news, the villagers walking about.
-     *  Measured against these once, a spot under them hid, and stayed hidden once they'd gone (2026-11-16). */
-    const passing = (el: Element) => !!el.closest('dialog, [data-fx], .detail, .news');
-    /** Where each item lying on this screen that a control covers stands (`x,y`): one shows only where it's clear of the
-     *  controls a tap over the island would go to (the HUD's, the stage's: the trees, the board), as on the old stage.
-     *  One off screen stays (not drawn; it's checked once it's in view). `hw`, `up`, `hh`: its box around
-     *  its middle, u. No stage yet: none covered. */
-    function covered(list: { x: number; y: number }[], hw: number, up: number, hh: number, into: Set<string>): void {
-      const g = stageGeo(o.scene());
-      if (!g) return;
-      // flat on the lawn: clear of the controls themselves (their 6px tap padding may run over the crack)
-      const keep = guardsU(g, -5 * g.k, (el) => passing(el) || !shownNow(el), NO_VILLAGER);
-      for (const s of list) {
-        if (!w.inView(s.x, s.y)) continue;
-        const k = w.scaleAt(s.x, s.y), [sx, sy] = w.screenU(s.x, s.y, up);
-        if (!clearAt(keep, sx, sy, hw * k, hh * k)) into.add(`${s.x},${s.y}`);
-      }
-    }
-    /** Run `fn` two frames on (the camera's step and the 3D's frame done). */
-    function placed(fn: () => void): () => void {
-      let id = requestAnimationFrame(() => (id = requestAnimationFrame(fn)));
-      return () => cancelAnimationFrame(id);
-    }
-    let under = $state<ReadonlySet<string>>(new Set());
-    const uncovered = <T extends { x: number; y: number }>(list: T[]) => (under.size ? list.filter((s) => !under.has(`${s.x},${s.y}`)) : list);
-    const visibleSpots = $derived(uncovered(spots));
-    const visibleMushrooms = $derived(uncovered(mushrooms));
-    /** Where they lie (a world event re-derives the lists: the same places, no new measure). */
-    const lyingAt = $derived([...spots, ...mushrooms].map((s) => `${s.x},${s.y}`).join(' '));
-    /** Bumped when a control over the island comes or goes (not what's `passing`). */
-    let controls = $state(0);
-    $effect(() => {
-      const scene = o.scene();
-      if (!scene) return;
-      const SEL = 'button, [data-guard]';
-      const control = (n: Node) => n instanceof Element && !passing(n) && (n.matches(SEL) || !!n.querySelector(SEL));
-      const mo = new MutationObserver((rs) => {
-        if (rs.some((r) => [...r.addedNodes].some(control) || [...r.removedNodes].some(control))) controls++;
-      });
-      mo.observe(scene, { childList: true, subtree: true });
-      return () => mo.disconnect();
-    });
-    // measured once the camera settles (a scroll, a pinch), a control comes or goes, or the items move; never under a
-    // sheet (the last measure kept: the island's hidden), again once it's gone
-    $effect(() => {
-      void lyingAt;
-      void controls;
-      void w.rest.settles;
-      void w.rest.vw;
-      if (!w.rest.ready || !enabled()) return;
-      return placed(() => {
-        const out = new Set<string>();
-        covered(spots, 10, 0, 6, out);
-        covered(mushrooms, 7, 7, 7, out);
-        under = out;
-      });
-    });
-
     /** A wish on a shooting star (SceneTaps, a tap in the sky while one crosses; it shows the caption): one more star
      *  fragment on the beach the next morning (before dawn: this morning, from 5:00). */
     function wish(): void {
@@ -582,8 +523,8 @@ export function useFinds(w: World, o: {
     // where it lands: m3 drop; what the waves bring rides its wave in: m3 wash and the thing's live spot)
     $effect(() => {
       const offs = [
-        ...visibleSpots.map((s) => thing(w, { x: s.x, z: s.y, h: 12, m3: { key: 'finds/dig-spot', id: `dig-${s.uid}` } })()),
-        ...visibleMushrooms.map((m) => thing(w, { x: m.x, z: m.y, h: 14, m3: { key: findArt(m.id), id: `mush-${m.uid}`, yaw: m.flip ? Math.PI : 0 } })()),
+        ...spots.map((s) => thing(w, { x: s.x, z: s.y, h: 12, m3: { key: 'finds/dig-spot', id: `dig-${s.uid}` } })()),
+        ...mushrooms.map((m) => thing(w, { x: m.x, z: m.y, h: 14, m3: { key: findArt(m.id), id: `mush-${m.uid}`, yaw: m.flip ? Math.PI : 0 } })()),
         ...presents.map((p) => thing(w, { x: p.x, z: p.y, h: p.size + p.from, m3: { key: p.art, id: `gift-${p.uid}`, drop: falling.has(p.uid) ? p.from : 0, ms: 520 } })()),
         ...holes.map((h) => thing(w, { x: h.x, z: h.z, h: 12, m3: { key: 'finds/hole', id: `hole-${h.n}` } })())
       ];
