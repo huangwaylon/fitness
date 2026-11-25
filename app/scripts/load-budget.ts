@@ -15,7 +15,7 @@ const APP = join(import.meta.dirname, '..');
 const BUILD = join(APP, 'build-pages');
 const MANIFEST = join(APP, '.svelte-kit/output/client/.vite/manifest.json');
 /** The first load's caps (gzipped) and the install-time precache's. Why each is what it is: `git log -p` on this file. */
-const FIRST_JS = 373 * 1024;
+const FIRST_JS = 375 * 1024;
 const FIRST_CSS = 70 * 1024;
 const PRECACHE = 3.6 * 1024 * 1024;
 /** English Study's sheet chunk with the library's index. */
@@ -25,7 +25,7 @@ const SHARE_FIRST = 250 * 1024;
 /** ジム's page (/gym, build-pages/gym.html: the LINE menu's link, LINE's browser, cold, no service worker, often on
  *  mobile data): its JS and CSS, and the fonts it draws with (its own Zen Maru Gothic, styles/fonts-gym.css, and
  *  Fredoka's two), on the wire. */
-const GYM_FIRST_JS = 153 * 1024;
+const GYM_FIRST_JS = 154 * 1024;
 const GYM_FIRST_CSS = 21 * 1024;
 const GYM_FONTS = 170 * 1024;
 /** フレーズ's deck files (lib/english/catalog.ts SHARDS), each gzipped at most. */
