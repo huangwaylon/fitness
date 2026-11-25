@@ -6,13 +6,13 @@
   // A shared trip as its visitor sees it (`/s#<token>`, docs/travel.md "Sharing"): TripView's pages without what is
   // ours alone. 日程 (Itinerary: every day, the line we're heading to lit by the trip's clock), 地図 (AllDaysMap, its own
   // chunk, MapLibre another, made the first time 地図 shows and kept: never the saved places, the visitor isn't our
-  // user), 準備 (the logistics cards and a trip's
+  // user; 地図で見る and 日程で見る hand a stop over as TripView's do), 準備 (the logistics cards and a trip's
   // campsites). A `trips` link's trip (`shared`: the relay's snapshot of it) adds 持ち物 (PackShare: read-only, never the
   // packing store) and its note's free values in 準備's メモ card (redacted: Redacted's 🔒); a v1 `trip` link's (`shared`
   // null) has neither. `note` is null either way, so every {p:} value is 🔒 (i18n/link.ts: 非公開) and a private link a
   // locked chip. ‹ back to the list (a `trips` link's); the title bar holds the language switch. The foot: whose guide
   // it is and until when the link works.
-  import { tick } from 'svelte';
+  import { tick, untrack } from 'svelte';
   import type { Trip } from '#lib/travel/types.ts';
   import type { SharedTrip } from '#lib/contract/share.ts';
   import { privateKeys } from '#lib/travel/tokens.ts';
@@ -56,18 +56,38 @@
   const tabName = $derived(items.find((x) => x.id === tab)?.label ?? '');
 
   let scroller: HTMLElement | undefined = $state();
-  let viewDay = $state(1);
+  let list: ReturnType<typeof Itinerary> | undefined = $state();
+  /** The day at the top of 日程 (today's, during the trip, till it scrolls). */
+  let viewDay = $state(untrack(() => todayDay(trip, now) ?? trip.days[0]?.n ?? 1));
   let daysTop = $state<number | null>(null);
-  /** 地図: on the day being read (today's during the trip before 日程 scrolled), kept once made, between the bars. */
+  /** 地図 (TripView's hand-over): on the day being read or a stop's (地図で見る), kept once made, between the bars. */
   let mapDay = $state<number | null>(null);
+  let mapStop = $state<string | null>(null);
   let mapMade = $state(false);
+  const hasMap = $derived(trip.places.length > 0);
   const itin = $derived(itinerary(trip, i18n.locale));
+  function leave(id: ShareTab) {
+    if (tab === 'days' && id !== 'days' && scroller) daysTop = scroller.scrollTop;
+    if (tab === 'map' && id !== 'map') mapStop = null;
+    if (id === 'map') mapMade = true;
+    tab = id;
+  }
   function pickTab(id: ShareTab) {
     if (id === tab) return;
-    if (tab === 'days' && scroller) daysTop = scroller.scrollTop;
-    if (id === 'map') ((mapDay = daysTop === null ? (todayDay(trip, now) ?? 1) : viewDay), (mapMade = true));
-    tab = id;
+    if (id === 'map') ((mapDay = viewDay), (mapStop = null));
+    leave(id);
     if (id !== 'days') void tick().then(() => scroller?.scrollTo({ top: 0 }));
+  }
+  /** 地図で見る: 地図 on the stop. */
+  function toMap(id: string, day: number) {
+    ((mapDay = day), (mapStop = id));
+    leave('map');
+  }
+  /** 日程で見る (the map's): 日程, scrolled to the stop's line, opened. */
+  async function toList(id: string) {
+    leave('days');
+    await tick();
+    list?.show(id);
   }
 </script>
 
@@ -88,7 +108,7 @@
     <div class="scroll sheet-scroll" class:map={tab === 'map'} bind:this={scroller}>
       <div class="pane" data-pane={tab}>
         {#if tab === 'days'}
-          <Itinerary bind:viewDay {trip} {note} {now} {scroller} at={daysTop} />
+          <Itinerary bind:this={list} bind:viewDay {trip} {note} {now} {scroller} at={daysTop} onmap={hasMap ? toMap : null} />
           {@render foot()}
         {:else if tab === 'prep'}
           <div class="cards" data-prep>
@@ -114,7 +134,7 @@
 
     {#if mapMade}
       <div class="whole" class:on={tab === 'map'}>
-        <Lazy load={() => import('../travel/whole/AllDaysMap.svelte')}>{#snippet children(AllDaysMap)}<AllDaysMap {trip} itinerary={itin} day={mapDay} stop={null} active={tab === 'map'} locale={guideLocale(trip, i18n.locale)} onday={(d) => (mapDay = d)} onlist={() => (tab = 'days')} />{/snippet}</Lazy>
+        <Lazy load={() => import('../travel/whole/AllDaysMap.svelte')}>{#snippet children(AllDaysMap)}<AllDaysMap {trip} itinerary={itin} day={mapDay} stop={mapStop} active={tab === 'map'} locale={guideLocale(trip, i18n.locale)} onday={(d) => (mapDay = d)} onlist={(id) => void toList(id)} />{/snippet}</Lazy>
       </div>
     {/if}
   </div>

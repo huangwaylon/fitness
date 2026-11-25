@@ -163,6 +163,9 @@ test('Seattle (over, English only): 日程 地図 (none to show) 持ち物; a co
   await expect(line(page, 'r5-1').locator('.how')).toHaveText('Leave 8:30 · Drive 1 h');
   await expect(sheet(page).locator('[data-day-head="10"]')).toHaveText(/Sat, Jul 11\s*Day 10\s*The Enchantments/);
   await expect(day2.locator('.hike')).toContainText(' up · ');
+  // a heading with details is a button, and the button itself carries the day's name (its parts are hidden)
+  await expect(day2.locator('[data-day-head="2"]')).toHaveAccessibleName(/^Day 2 .+/);
+  await expect(day2.locator('[data-day-head="2"]')).toHaveAttribute('aria-expanded', 'false');
   await day2.locator('[data-day-head="2"]').click();
   const tip = day2.locator('[data-day-tip="2"]');
   await expect(tip.locator('img')).toHaveCount(1);
@@ -189,6 +192,8 @@ test('NZ before the trip: every day on one page, a boarding pass each; a stop’
   // the stub: ● the date, n日目, the title (the date in ink, the day's colour the dot's alone)
   const head3 = sheet(page).locator('[data-day-head="3"]');
   await expect(head3).toHaveText(/2\/13（土）\s*3日目\s*マーケット、そして南へ/);
+  // (its parts hidden from the reader: the heading carries the day's name)
+  await expect(sheet(page).locator('section[data-day="3"] h2')).toHaveAccessibleName('3日目 2/13（土） マーケット、そして南へ');
   // the day's lines: a stop's arrival and how we got there (「発」 on the first leg only), each fact once
   expect(await line(page, 3).evaluateAll((els) => els.map((e) => e.getAttribute('data-line')))).toEqual(lines(nz, nz.days[2]).map((l) => l.id));
   expect(lines(nz, nz.days[2]).map((l) => l.id)).toEqual(['s3-1', 's3-2', 's3-3']);
@@ -216,6 +221,18 @@ test('NZ before the trip: every day on one page, a boarding pass each; a stop’
   // its card's 日程で見る: back to the stop's line, opened, in view
   await map.locator('[data-map-card="s3-2"] [data-map-go]').click();
   await expect(tab(page, 'days')).toHaveAttribute('aria-current', 'page');
+  await expect(sheet(page).locator('[data-more="s3-2"]')).toBeInViewport();
+  // 地図で見る on the same stop again rings it again, after the map's own pick (and its 日程で見る) in between
+  await more.locator('[data-on-map="s3-2"]').click();
+  await expect(map).toHaveAttribute('data-selected', 's3-2');
+  await map.locator('[data-pin="s3-3"]').click();
+  await expect(map).toHaveAttribute('data-selected', 's3-3');
+  await map.locator('[data-map-card="s3-3"] [data-map-go]').click();
+  await expect(sheet(page).locator('[data-more="s3-3"]')).toBeInViewport();
+  await line(page, 's3-2').locator('.ln').click();
+  await more.locator('[data-on-map="s3-2"]').click();
+  await expect(map).toHaveAttribute('data-selected', 's3-2');
+  await map.locator('[data-map-card="s3-2"] [data-map-go]').click();
   await expect(sheet(page).locator('[data-more="s3-2"]')).toBeInViewport();
   // 準備 and back to 日程: where it was left
   await tab(page, 'prep').click();
@@ -283,13 +300,13 @@ test('NZ: the eve’s flight out (Tokyo’s 18:30) lit, 前日 over its time, th
   await expect(lit).toBeInViewport();
 });
 
-test('NZ day 4, 00:30: つぎ on the trailhead, its time to go', async ({ page }) => {
+test('NZ day 4, 00:30: 次 on the trailhead, its time to go', async ({ page }) => {
   // Feb 14, 00:30 in Auckland = Feb 13, 20:30 in Tokyo
   await gotoTrips(page, '2027-02-13T20:30');
   await expect(sheet(page).locator('[data-trip-view="nz"]')).toBeVisible();
   await expect(sheet(page).locator('[data-now]')).toHaveCount(1);
   await expect(line(page, 's4-1')).toHaveAttribute('data-now', 'next');
-  await expect(line(page, 's4-1').locator('.how')).toHaveText('つぎ · あと3時間');
+  await expect(line(page, 's4-1').locator('.how')).toHaveText('次 · あと3時間');
   await expect(line(page, 's3-3')).toHaveClass(/past/);
 });
 

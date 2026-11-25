@@ -61,7 +61,7 @@ const LAST_ROW_MS = 6 * 3_600_000;
  * The timeline row to mark: the latest timed row that has begun (`next` false), from the trip's first row (the
  * eve's flight out) on. A row is now until the next one begins; a day's last row till its day's midnight (the trip's
  * last, a while after it: the flight home). Between, on a day of the trip: that day's first row to come (`next`:
- * 「つぎ 03:10」). Null outside all that. `day` is the day's `n`, `i` the row's index in its `rows`.
+ * 「次 03:10」). Null outside all that. `day` is the day's `n`, `i` the row's index in its `rows`.
  */
 export function rowNow(trip: Clock, now: number): { day: number; i: number; next: boolean } | null {
   const rows = timed(trip);

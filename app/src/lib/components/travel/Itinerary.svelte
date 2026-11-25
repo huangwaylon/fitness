@@ -3,10 +3,11 @@
   // pass: its heading the stub (● the day's colour, the date, n日目, the title), held at the top while the day scrolls
   // under it, torn off along a stitch (a notch each side); then the day's lines (ledger.ts): a stop's arrival and
   // place, under it how we got there; 「泊」 on the night's stop (「未予約」 in bold); a tap opens a line's details (its
-  // notes, km, sunrise/sunset, 地図で見る, Googleマップ) and the heading's (the day's photo and tip, a hike's facts). During the trip
-  // the line we're heading to is lit (「いま移動中 · あと1時間40分 · 181 km」), the ones before it quiet, and the page
-  // opens scrolled to it. Its words are in the guide's language (itinerary.ts guideLocale). A day far below is `content-visibility: auto` (not one holding an open line). `scroller` is
-  // the parent's scrolling box (the heading sticks to its top); the day at its top is `viewDay`.
+  // notes, km, sunrise/sunset, 地図で見る, Googleマップ) and the heading's (the day's photo and tip, a hike's facts).
+  // During the trip the line we're heading to is lit (「いま移動中 · あと1時間40分 · 181 km」), the ones before it
+  // quiet, and the page opens scrolled to it. Its words are in the guide's language (itinerary.ts guideLocale). A day
+  // below the lit one (outside the trip, past the first two) is `content-visibility: auto`, never one holding an open
+  // line. `scroller` is the parent's scrolling box (the heading sticks to its top); the day at its top is `viewDay`.
   import { onMount, tick, untrack } from 'svelte';
   import type { Day, Trip } from '#lib/travel/types.ts';
   import { colourOf, guideLocale } from '#lib/travel/itinerary.ts';
@@ -118,8 +119,9 @@
     {@const tip = hasTip(d)}
     <section class="day" class:lazy={lazy(d.n)} data-day={d.n} style:--dc={colourOf(trip, d.n)} style:contain-intrinsic-size={lazy(d.n) ? `auto ${guess(d, ls)}px` : undefined}>
       <div class="pass">
-        <h2 class="dh" aria-label={label(d)}>
-          <svelte:element this={tip ? 'button' : 'span'} type={tip ? 'button' : undefined} class="dhb" data-sfx="page" aria-expanded={tip ? tipOpen === d.n : undefined} data-day-head={d.n} onclick={() => tip && (tipOpen = tipOpen === d.n ? null : d.n)} role={tip ? undefined : 'presentation'}>
+        <!-- (the name read out on the button when it is one: its parts are hidden, so the heading's own label would leave it nameless) -->
+        <h2 class="dh" aria-label={tip ? undefined : label(d)}>
+          <svelte:element this={tip ? 'button' : 'span'} type={tip ? 'button' : undefined} class="dhb" data-sfx="page" aria-label={tip ? label(d) : undefined} aria-expanded={tip ? tipOpen === d.n : undefined} data-day-head={d.n} onclick={() => tip && (tipOpen = tipOpen === d.n ? null : d.n)} role={tip ? undefined : 'presentation'}>
             <i class="dot" aria-hidden="true"></i>
             <span class="date" aria-hidden="true">{headDate(d.date, lang)}</span>
             <span class="ord" aria-hidden="true">{tr('travel.day', { n: d.n })}</span>
@@ -199,8 +201,9 @@
   .itin { padding: 6px 0 32px; }
   .span { margin: 0 0 2px; font: 600 var(--fs-s)/1.4 var(--font-num); color: var(--text-soft); text-align: center; }
 
-  /* a day: the pass's own side room (8px) inside the section, so a lazy section's paint box never cuts the notches */
-  .day { padding: 10px 8px 0; }
+  /* a day: the pass's own side room (8px) and its lip's (below) inside the section, so a lazy section's paint
+     containment never cuts the notches or the lip */
+  .day { padding: 8px 8px var(--lip-s); }
   .day.lazy { content-visibility: auto; }
   .pass { position: relative; padding: 0 10px 2px; border-radius: var(--r-row); background: var(--card); box-shadow: var(--sh-lip-s); }
   /* the stub: held at the top of the page while its day scrolls under it, opaque down to and with its torn edge (a

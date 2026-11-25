@@ -141,8 +141,10 @@ export function fitBox(map: GLMap, box: LngLatBoundsLike, o: { pad: { top: numbe
 
 /** The map at rest: its style in, not moving, no gesture waiting for its frame, every tile asked for answered (the specs'
  *  `settled`). (A drag's deltas wait in MapLibre's handler manager for the next frame and isMoving() is false till that
- *  frame applies them: with slow frames, loaded WebKit's, a drag was read as no move at all: maps-context.spec.) */
-const gestureQueued = (map: GLMap): boolean => (map as unknown as { _handlerManager?: { _frameId?: unknown } })._handlerManager?._frameId !== undefined;
+ *  frame applies them: with slow frames, loaded WebKit's, a drag was read as no move at all: maps-context.spec.)
+ *  MapLibre's private `_handlerManager._frameId` (6.x: a frame id while one is queued, deleted after): read only as a
+ *  number, so an upgrade that renames or reshapes it reads as nothing queued (the check before it), never as never at rest. */
+const gestureQueued = (map: GLMap): boolean => typeof (map as unknown as { _handlerManager?: { _frameId?: unknown } })._handlerManager?._frameId === 'number';
 export const settledOf = (map: GLMap, loaded: boolean): boolean => loaded && !map.isMoving() && !gestureQueued(map) && map.areTilesLoaded();
 
 /** The event came from a finger (or the mouse), not a camera call. */

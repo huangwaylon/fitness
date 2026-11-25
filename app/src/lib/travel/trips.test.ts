@@ -213,6 +213,12 @@ describe('the trip data', () => {
 const LEG_ECHO = /(?:^|[\s·、])(?:徒歩|\S+(?:から|まで))?\d+分(?:$|[\s·、])|\d+時間\d+分|渋滞なし|free-flow|\{km:|(?<![–\d])\d+ min\b|\(\S* ?h drive\)/;
 
 describe('the rows (types.ts RowKind: what 日程 and 地図 are built from)', () => {
+  it.each(TRIP_IDS)('%s: 日程’s lines: each id once in the trip (the open line, the scroll target, the keyed list), every row on exactly one', (id) => {
+    const t = TRIPS[id];
+    const ids = t.days.flatMap((d) => lines(t, d).map((l) => l.id));
+    expect(ids.filter((x, i) => ids.indexOf(x) !== i)).toEqual([]);
+    for (const d of t.days) expect([...lines(t, d).flatMap((l) => l.rows)].sort((a, b) => a - b), `day ${d.n}`).toEqual(d.rows.map((_, i) => i));
+  });
   it.each(TRIP_IDS)('%s: a colour a day, the next day’s never the same', (id) => {
     const t = TRIPS[id];
     expect(t.dayColors.length).toBe(t.days.length);

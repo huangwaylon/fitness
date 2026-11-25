@@ -4,8 +4,8 @@
 
 <script lang="ts">
   // A trip on the unified kit (docs/design.md §Trips, level 2): its pages under one TabBar, 日程 · 地図 (AllDaysMap: the
-  // whole trip; a trip without a map says so there) · 準備 · 持ち物 (frozen once the trip is over: when.ts readOnly), the title bar (‹ the place ✕) over them all. 日程 is
-  // every day on one page (Itinerary: a boarding pass a day, the line we're heading to lit during the trip, the page
+  // whole trip; a trip without a map says so there) · 準備 · 持ち物 (frozen once the trip is over: when.ts readOnly),
+  // the title bar (‹ the place ✕) over them all. 日程 is every day on one page (Itinerary: a boarding pass a day, the line we're heading to lit during the trip, the page
   // opening on it); 準備 the logistics cards (PrepCard), a trip's campsites (Okinawa's: CampList) and the guide's foot.
   // 日程 and 地図 hand each other a day and a stop (lib/travel/itinerary.ts MapTabProps): 地図 opens on the day being
   // read (the stub at the top), 地図で見る on a stop opens it on that stop, and the map's 日程で見る comes back to the
@@ -61,7 +61,7 @@
 
   /** What 地図 shows (MapTabProps): the day, the stop, and the way back to 日程. The map is made the first time 地図
    *  shows and kept (hidden on the other pages: never rebuilt), between the title bar and the tab bar. */
-  let mapDay = $state<number | null>(null);
+  let mapDay = $state<number | null>(untrack(() => viewDay));
   let mapStop = $state<string | null>(null);
   let mapMade = $state(false);
   $effect(() => {
@@ -80,6 +80,8 @@
 
   function leave(id: Tab) {
     if (tab === 'days' && id !== 'days' && scroller) daysTop = scroller.scrollTop;
+    // (the stop handed over is spent once 地図 is left: 地図で見る on the same stop again rings it again)
+    if (tab === 'map' && id !== 'map') mapStop = null;
     tab = id;
   }
   /** Another page; 地図 on the day being read, 日程 where it was left, the others from their top. */

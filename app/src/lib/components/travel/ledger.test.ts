@@ -81,7 +81,7 @@ describe('nowMark', () => {
     expect(nowMark(nz, all, at(nz, '2027-02-13', '12:40'))).toMatchObject({ id: 's3-2', state: 'here' });
     expect(nowMark(nz, all, at(nz, '2027-02-13', '12:40'))?.left).toBeUndefined();
   });
-  it('before the day’s first row: つぎ, the first stop, its time to go', () => {
+  it('before the day’s first row: 次, the first stop, its time to go', () => {
     expect(nowMark(nz, all, at(nz, '2027-02-14', '00:30'))).toMatchObject({ day: 4, id: 's4-1', state: 'next', left: 180 });
   });
   it('the eve’s flight out (Tokyo’s clock): lit on day 1; nothing outside the trip', () => {

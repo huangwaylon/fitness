@@ -96,6 +96,21 @@ test('地図: the trip map, without オフライン用に保存; 準備 holds th
   await expect(page.locator('[data-pane="prep"] [data-camp]').first()).toBeVisible();
 });
 
+test('地図で見る and 日程で見る hand a stop over as the app\'s do (the stub)', async ({ page }) => {
+  await page.addInitScript(() => localStorage.setItem('e2e.render', 'none'));
+  await open(page, () => OK('nz'));
+  const line = page.locator('[data-share-trip="nz"] [data-line="s3-2"]');
+  await line.locator('.ln').tap();
+  await line.locator('[data-on-map="s3-2"]').tap();
+  const map = page.locator('[data-travel-map]');
+  await expect(map).toHaveAttribute('data-focus', '3');
+  await expect(map).toHaveAttribute('data-selected', 's3-2');
+  await map.locator('[data-pin="s3-3"]').tap();
+  await map.locator('[data-map-card="s3-3"] [data-map-go]').tap();
+  await expect(page.locator('[data-trip-tab="days"]')).toHaveAttribute('aria-current', 'page');
+  await expect(page.locator('[data-more="s3-3"]')).toBeInViewport();
+});
+
 test('gone: turned off and an unknown token alike; expired with its date; no fragment at all', async ({ page }) => {
   let answer: ShareAnswer = { ok: false, error: 'gone', why: 'off' };
   await open(page, () => answer);

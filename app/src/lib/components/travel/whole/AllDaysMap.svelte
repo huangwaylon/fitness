@@ -6,9 +6,8 @@
   // (日程で見る: onlist). It follows the sheet's `day` and `stop` as they change. Top right: the locate button (the
   // dot; far from the trip a note, not a flight) and under it the layers button (a trip with candidates: Okinawa's
   // campsites, nature, food, off at first; in the app the saved places near the shown days, `places`, first and on:
-  // never on /s). A
-  // campsite's dot opens its card (CampSheet), another candidate's its name; a saved place's square its floating card
-  // (PlaceFloat). The maps' status (MapStatus): loading, offline (the route alone), 「保存した範囲のみ」 offline with the
+  // never on /s). A campsite's dot opens its card (CampSheet), another candidate's its name; a saved place's square its
+  // floating card (PlaceFloat). The maps' status (MapStatus): loading, offline (the route alone), 「保存した範囲のみ」 offline with the
   // trip's area saved (lib/offline), the location's notes. A trip with nothing to draw: 「この旅には地図がありません」.
   // Its life: mount it once per trip page and keep it mounted while another tab shows (`active` false: hidden, idle,
   // the location paused); the map is made the first time the tab shows (MapLibre a lazy chunk, engine.ts) and let go of
