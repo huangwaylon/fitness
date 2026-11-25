@@ -15,9 +15,10 @@ unfolded. A driver per bot (`lib/bots/types.ts`,
 - **Reads** (`useBot`): the shown page (保養所 15 s while running, else 60 s), the others while the sheet is open (5 min).
   Offline a page shows its saved copy with 「HH:MM時点」, 「オフラインのため、前回の内容を表示しています」 and もう一度
   (Jobs in English), never a stuck 更新中.
-- **Page** (`BotPage`): one `StatusCard` (dot · word · 「12:00時点」 · ⋯; the act or a sentence, never restating the word;
-  a strip of recent checks; counts and one result; 「次回 12:09ごろ」), then `AttentionCard`, sections, 設定, くわしく
-  (`FactList`). ⋯ (an `ActionSheet`) is the card's one control; only stops ask first.
+- **Page** (`BotPage`): ジム and 保養所 open with a head (空き枠の確認 / 空室の確認, the status dot inline: a tap opens the
+  bot's row in Jobs; ⋯, an `ActionSheet`, only stops ask first; an act's answer under it), then `AttentionCard` (the
+  act, or the sentence while a person must look; 保養所's holds), sections, 設定, くわしく (the page's history only).
+  Their status lives in Jobs (since 2026-11-25). Jobs keeps its `StatusCard` (dot · word · 「12:00時点」; the sentence).
 
 Calendars (`MonthCalendar`, `MonthSwitch`, `monthWeeks`): whole months from 月; past days faint, future dashed.
 
@@ -27,14 +28,17 @@ once with 取り消す). Alone at
 `/gym#<key>` (`routes/gym`, bare like `/s`): LINE's menu link opens it with `LINK_KEY` (member A's, gym only), which
 leaves the URL and is kept for the tab (`lib/gym/linkKey.ts`); `gym.html` starts both reads inline (`lib/gym/early.ts`).
 
-保養所: ⋯ 開始 / 停止; holds in the card. `ItsCalendar` (a tap a night, a weekday its column) edits a 保存 draft; 設定:
+保養所: ⋯ 開始 / 停止; holds in 確認が必要. `ItsCalendar` (a tap a night, a weekday its column) edits a 保存 draft; 設定:
 施設, 間隔と人数, 通知 (自動で確定 in the draft; the push per phone, at once).
 
 **Jobs** (English only whatever the app's language: i18n `inLocale` / `pinLocale` / `scoped`; `i18n/jobs.en.json`):
 the relay's `GET /jobs` (`relay/src/jobs.ts`) and Kalori's `status.json` side by side (`lib/jobs/status.ts`).
-Sections by purpose, trouble first: Needs attention (worst first) · Data updates · Monitoring & backups · Deploys &
-tests. Rows: Weather, Place categories, Places sync, Place details, Menu update, Gym slot check, Server health check,
-ITS health check, GitHub dispatch, Cron tick, Nightly, Backup, Deploy, Full e2e, Nightly flake hunt. Each row shows
+Sections by purpose, trouble first: Needs attention (worst first) · Services · Data updates · Monitoring & backups ·
+Deploys & tests. **Services**: Gym bot and ITS bot (`ServiceRow`, read with `useBot` while Jobs is shown: the bot's
+dot, word and as-of, its recent checks; unfolded: the act or sentence, `ScanStrip` (counts, Next), reasons, facts, a
+button to its tab), then the bots' jobs (Gym slot check, ITS health check, GitHub dispatch). Rows: Weather, Place
+categories, Places sync, Place details, Menu update, Gym slot check, Server health check, ITS health check, GitHub
+dispatch, Cron tick, Nightly, Backup, Deploy, Full e2e, Nightly flake hunt. Each row shows
 age, dot and its last 24 runs (OK, Partly failed, Failed, Nothing to do, Running, Cancelled); a tap shows 14 days and
 the runs. The dot and the state follow the latest run; history stays in the strip.
 - States: OK, Recovered (a success after a failure in the last day), First run 3:00 (not run yet: JOBS `at` and the

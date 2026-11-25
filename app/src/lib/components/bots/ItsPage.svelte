@@ -1,15 +1,15 @@
 <script lang="ts">
   // ボット's 保養所 tab (docs/bots.md): the ITS booker as its Worker reports it (lib/its: GET /its/status) and
-  // its settings, on BotPage: the status card (who stopped it in its sentence while stopped) with 直近1時間 (前回 · 次回 ·
-  // 予約) and ⋯ (an ActionSheet: 開始 at once, off without a stay; 停止 asks first), a failed 開始 / 停止 under its
-  // sentence and, under its act, the holds to finish by mail (bookingRows' action rows, their deadline and steps);
-  // 確認が必要 (a failed dispatch); 日付, never folded: the calendar
+  // its settings, on BotPage: its head (空室の確認, the status dot inline: a tap opens its row in Jobs, where the status
+  // lives, `onjobs`) with ⋯ (an ActionSheet: 開始 at once, off without a stay; 停止 asks first), a failed 開始 / 停止
+  // under it; 確認が必要 (what a person must do, the holds to finish by mail: bookingRows' action rows, their deadline
+  // and steps; a failed dispatch); 日付, never folded: the calendar
   // (ItsCalendar: this month or next, a switch beside the heading, 未保存 while the draft changed it; a tap a night, a
   // weekday's header its column) and the nights under it (any, up to 400 days ahead; ✕; tapped open to their
   // facilities by why: view.ts dateRows); 予約 (the other stays); 設定, its rows folded
   // (plain <details>, each with its summary and 未保存 while the draft changed it): 施設 (探す is the allow-list; presets,
   // then 探す · 日程に合わない · 除外, the new ones' banners above the rows, never folded), 間隔と人数 (確認の間隔, 人数),
-  // 通知 (自動で確定 first, in the draft: 保存で反映 under it; this phone's push, at once: ItsNotify, the same switch row) and 最近の操作; くわしく last, 最近の動き at its bottom. The settings are one draft
+  // 通知 (自動で確定 first, in the draft: 保存で反映 under it; this phone's push, at once: ItsNotify, the same switch row) and 最近の操作; くわしく last: 最近の動き. The settings are one draft
   // saved with 保存 (the sticky bar while it differs, with why: someone else's save, the draft note or the refusal; ✕,
   // the backdrop and Esc ask first: guardForm, a tab switch too: `leave`). Read every 15 s while the runner is on its
   // way or running, every minute otherwise, only while shown (useBot.svelte.ts); 保存 / 開始 / 停止 abort a read in
@@ -37,8 +37,8 @@
   import { GUESTS_MAX, GUESTS_MIN, INTERVALS_SEC, daysUntil, type IntervalSec, type ItsStatus, type Member, type RunInput } from '#lib/its/contract.ts';
   import { postRun, putSettings, type ItsReply } from '#lib/its/client.ts';
   import {
-    PRESETS, applyPreset, attentionLines, bookingRows, controlLine, dateRows, draftOf, eventLines, factRows, nightGrid, removeDate, toggleColumn, toggleNight,
-    changedParts, hotelHint, hotelParts, hotelRows, hotelSummary, edges, settingsSummary, minuteCells, presetOf, sameDraft, saveError, savedLine, scanStrip, setSearch,
+    PRESETS, applyPreset, attentionLines, bookingRows, controlLine, dateRows, draftOf, eventLines, nightGrid, removeDate, toggleColumn, toggleNight,
+    changedParts, hotelHint, hotelParts, hotelRows, hotelSummary, settingsSummary, presetOf, sameDraft, saveError, savedLine, setSearch,
     stopsAtBooked, toInput, toggleSearch, type Draft, type HotelRow, type ListRow
   } from '#lib/its/view.ts';
   import { driver } from '#lib/its/bot.ts';
@@ -52,8 +52,9 @@
   import { accept } from './summary.svelte.ts';
 
 
-  /** A tab switch's guard (BotsSheet): asks first while the draft holds changes. */
-  let { leave = $bindable() }: { leave?: (run: () => void) => void } = $props();
+  /** A tab switch's guard (BotsSheet): asks first while the draft holds changes. `onjobs`: the dot's tap (Jobs, this
+   *  bot's row). */
+  let { leave = $bindable(), onjobs }: { leave?: (run: () => void) => void; onjobs?: () => void } = $props();
 
   /** The draft (null: the saved settings shown as they are), what it began from and that `updatedAt`. */
   let draft = $state.raw<Draft | null>(null);
@@ -126,7 +127,6 @@
   const name = (m: Member) => (week.view ? villagerNameOf(week.view, m) : m);
   /** What the page shows: the draft, else the saved settings. */
   const shown = $derived(draft ?? (status ? draftOf(status.settings) : null));
-  const facts = $derived(status ? factRows(status, today) : []);
   const bookings = $derived(status ? bookingRows(status, today, nowMs) : []);
   /** The holds waiting for a person (in the card, under its act; expired ones too); the other stays under 予約. */
   const holds = $derived(bookings.filter((b) => b.state === 'action'));
@@ -161,12 +161,6 @@
   /** 設定's rows: each one's summary, and which a draft changed (未保存). */
   const sums = $derived(shown ? settingsSummary(shown, parts, notifyOn) : null);
   const changed = $derived(draft && start ? changedParts(draft, start) : { dates: false, hotels: false, detail: false, notify: false });
-  /** 直近1時間 by Tokyo minute (the Worker's per-minute aggregate; hidden from a Worker without it), drawn by the
-   *  shared strip. */
-  const cells = $derived(status?.recentMinutes ? minuteCells(status.recentMinutes, status.now) : []);
-  /** Running (on, not stopped): a strip with no read in it says 確認なし, not left out. */
-  const live = $derived(!!status && status.mode === 'on' && !paused);
-  const strip = $derived(status && cells.length ? { ...scanStrip(cells, live), ...edges(status, bookings, nowMs) } : null);
 
   function edit(f: (d: Draft) => Draft) {
     if (!status || !shown || viewOnly) return;
@@ -298,14 +292,13 @@
 {/snippet}
 
 
-<!-- under the verdict's act or sentence: 開始 needs a stay; 開始 / 停止 failed; the holds -->
-{#snippet cardNote()}
+<!-- under the head: 開始 needs a stay; 開始 / 停止 failed -->
+{#snippet headNote()}
   {#if runWhy}<p class="rline bad" role="alert" data-its-run-why>{runWhy}</p>{/if}
   {#if paused && noDates}<p class="rline bad" data-its-need-dates>{t('its.ctl.needDates')}</p>{/if}
-  {@render holdRows()}
 {/snippet}
 
-<!-- the holds, in the card under its act: to finish by mail (the deadline, the steps), a failed leg; the act's own
+<!-- the holds, in 確認が必要 under its act: to finish by mail (the deadline, the steps), a failed leg; the act's own
      hotel not named again -->
 {#snippet holdRows()}
   {#if holds.length}
@@ -337,12 +330,11 @@
 {/snippet}
 
 <BotPage attr="its" busy={poll.loading} {bot} onretry={() => void load()} verdict={shown ? verdict : null} vid={status?.verdict}
-  now={nowMs}
+  head={{ title: t('its.head'), bot: t('bots.its'), jump: onjobs }}
   rootAttr={status ? { 'data-its-run': paused ? 'stopped' : 'running' } : {}} menu={status ? { label: t('its.menu.label'), onopen: () => (menuOpen = true) } : null}
-  note={runWhy || (paused && noDates) || holds.length ? cardNote : undefined}
-  attention={status && { lines: attentionLines(status) }}
-  {strip}
-  {facts} more={events.length ? [{ id: 'recent', label: t('its.sec.recent'), n: events.length, body: recentRow }] : []} tail={dirty ? saveBar : undefined}>
+  note={runWhy || (paused && noDates) ? headNote : undefined}
+  attention={status && { lines: attentionLines(status) }} attn={holds.length ? holdRows : undefined}
+  more={events.length ? [{ id: 'recent', label: t('its.sec.recent'), n: events.length, body: recentRow }] : []} tail={dirty ? saveBar : undefined}>
   {#if status && shown}
     <section class="sec" aria-labelledby="its-dates" data-its-dates-sec>
       <MonthSwitch id="its-dates" title={t('its.sec.dates')} months={cal.months} bind:value={cal.value} attr="its-month" onpick={() => (addWhy = null)}>

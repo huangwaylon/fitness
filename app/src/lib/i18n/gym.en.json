@@ -134,5 +134,6 @@
   "gym.result.next": "next in {s}s",
   "gym.ctl.intervalNote": "How often the gym is checked.",
   "gym.strip.never": "Not checked yet",
-  "gym.strip.nowOpen": "{n} slots open now"
+  "gym.strip.nowOpen": "Open now: {n}",
+  "gym.head": "Slot checks"
 }

@@ -45,5 +45,7 @@
   "bots.strip.lastOk": "Last success {time}",
   "bots.viewOnly": "A guest can look. The two of them change the settings.",
   "bots.link.none": "This link doesn’t work. Open it again from 📱 in the LINE menu.",
-  "bots.link.old": "This link is out of date. Send “メニュー” in LINE for a new menu."
+  "bots.link.old": "This link is out of date. Send “メニュー” in LINE for a new menu.",
+  "bots.dot.say": "{bot} status: {word}",
+  "bots.dot.jump": ". Details in Jobs"
 }

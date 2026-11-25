@@ -63,6 +63,7 @@ test('the reads begin with the HTML, before the page’s JS (gym/early.ts), and 
   const root = page.locator('[data-gym-link="page"]');
   await expect(root.locator('[data-gym-day]')).toHaveCount(25);
   await expect(root.locator('[data-gym-verdict="degraded"]')).toBeVisible();
+  await expect(root.locator('[data-bots-dot]')).toHaveRole('img'); // alone: no Jobs to open
   expect(new URL(page.url()).hash).toBe('');
   expect([calls.status, calls.config]).toEqual([1, 1]);
   expect(await page.evaluate(() => '__gymEarly' in window)).toBe(false); // taken, the key gone with it

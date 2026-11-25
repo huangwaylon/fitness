@@ -159,7 +159,7 @@ const PLAIN_P: Record<string, number> = {
   'lib/components/bots/GymDayEditor.svelte': 3,
   'lib/components/bots/GymPage.svelte': 5,
   'lib/components/bots/ItsPage.svelte': 8,
-  'lib/components/bots/StatusCard.svelte': 1,
+  'lib/components/bots/ScanStrip.svelte': 1,
   'lib/components/editor/Editor.svelte': 1,
   'lib/components/editor/ResetConfirm.svelte': 1,
   'lib/components/food/FoodAmount.svelte': 4,

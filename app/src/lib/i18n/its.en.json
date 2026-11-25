@@ -284,5 +284,6 @@
   "its.cal.over": "20 dates at most ({n} didn't fit)",
   "its.date.removeLabel": "Remove {date}",
   "its.act.mail": "Apply for {hotel} by mail",
-  "its.strip.bookings": "{n} booked"
+  "its.strip.bookings": "{n} booked",
+  "its.head": "Room checks"
 }

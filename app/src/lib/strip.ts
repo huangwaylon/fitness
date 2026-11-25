@@ -1,4 +1,4 @@
-// The bots' history strip (components/bots/StatusCard.svelte: 保養所's 直近1時間, ジム's 24 checks, メニュー's 直近8週): a
+// The bots' history strip (components/bots/ScanStrip.svelte: 保養所's 直近1時間, ジム's 24 checks, メニュー's 直近8週): a
 // row of slots, oldest first, each ok (green), avail (green, full height: a room or a slot open), warn (yellow, capped:
 // a part failed, 保留), fail (coral, hatched: all failed), idle (a low sunk bar: ran with nothing to check) or none (a
 // low tick: nothing checked then), with its line for a tap and VoiceOver. Pure: the pages make the cells (its/view.ts,
@@ -11,7 +11,7 @@ export interface StripCell { start: number; end: number; state: CellState; label
 /** A time under the strip, at its cell's index. */
 export interface StripTick { i: number; label: string }
 
-/** The status card's strip (components/bots/StatusCard.svelte): the cells and their ticks, `last` 前回 (the newest
+/** A bot's strip (components/bots/ScanStrip.svelte): the cells and their ticks, `last` 前回 (the newest
  *  cell with something in it, its time), the states' words (the summary's swatches), its line for VoiceOver, the 成果
  *  term, `next` 次回's label (at the line's end; none while stopped or off), and `empty`, a line in its place when nothing
  *  was ever kept (sunk, or `plain`: a neutral 確認なし). */

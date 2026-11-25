@@ -134,5 +134,6 @@
   "gym.result.next": "次はあと{s}秒",
   "gym.ctl.intervalNote": "空きは間隔ごとに確認します。",
   "gym.strip.never": "まだ確認していません",
-  "gym.strip.nowOpen": "いま空き{n}枠"
+  "gym.strip.nowOpen": "いま空き{n}枠",
+  "gym.head": "空き枠の確認"
 }

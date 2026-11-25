@@ -162,7 +162,7 @@ describe('checkStrip (24 intervals)', () => {
     expect(s.cells.every((c) => c.state === 'idle')).toBe(true);
     expect(s.last).toEqual({ i: 23, label: '11:58' });
     expect(s.summary).toBe('直近6時間：確認0回、失敗0回、空き検出0回');
-    expect(s.words.idle).toBe('確認する日なし'); // (a label in the counts' row, no number: StatusCard)
+    expect(s.words.idle).toBe('確認する日なし'); // (a label in the counts' row, no number: ScanStrip)
     expect(s.empty).toBeNull();
     // a 🔎 tap beside an idle alarm: the cell is the tap's
     const mixed = checkStrip(status({ checks: [check(NOW - 2 * MIN, { by: 'tap' }), ...idle.slice(1)] }));

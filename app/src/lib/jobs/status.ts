@@ -122,11 +122,13 @@ function healthOf(s: JobsView, row: JobRow, now: number): RowHealth {
 
 const jobName_ = (id: JobId): string => t(`jobs.n.${id}`);
 
-/** The page's sections, by what a job is for (要確認 first: the rows in trouble, the worst first, out of their own). */
-export type Section = 'look' | 'data' | 'watch' | 'ship';
+/** The page's sections, by what a job is for (要確認 first: the rows in trouble, the worst first, out of their own;
+ *  Services: the bots' own jobs, under the ジム and 保養所 rows: JobsPage). */
+export type Section = 'look' | 'bots' | 'data' | 'watch' | 'ship';
 const SECTIONS: Record<Exclude<Section, 'look'>, readonly JobId[]> = {
-  data: ['wx', 'places', 'places-pull', 'places-details', MENU, 'gym'],
-  watch: ['health', 'its-health', 'dispatch', 'tick', 'nightly', 'backup'],
+  bots: ['gym', 'its-health', 'dispatch'],
+  data: ['wx', 'places', 'places-pull', 'places-details', MENU],
+  watch: ['health', 'tick', 'nightly', 'backup'],
   ship: ['pages', 'e2e-logic-full', 'e2e-flake-hunt']
 };
 export interface ViewRow { row: JobRow; h: RowHealth }
@@ -137,7 +139,7 @@ export function sections(s: JobsView, now: number): { id: Section; rows: ViewRow
   const of = (ids: readonly JobId[]) => ids.flatMap((id): ViewRow[] => ((row) => (row ? [{ row, h: healthOf(s, row, now) }] : []))(by.get(id)));
   const trouble = (x: ViewRow) => x.h.tone === 'bad' || x.h.tone === 'warn';
   const look = of(Object.values(SECTIONS).flat()).filter(trouble).sort((a, b) => Number(a.h.tone !== 'bad') - Number(b.h.tone !== 'bad'));
-  return [{ id: 'look', rows: look }, ...(['data', 'watch', 'ship'] as const).map((id) => ({ id, rows: of(SECTIONS[id]).filter((x) => !trouble(x)) }))];
+  return [{ id: 'look', rows: look }, ...(['bots', 'data', 'watch', 'ship'] as const).map((id) => ({ id, rows: of(SECTIONS[id]).filter((x) => !trouble(x)) }))];
 }
 
 /** 確認が必要's part from メニュー (as its tab's was): status.json's lines while it needs a look (保留: the step to merge by

@@ -104,8 +104,9 @@ describe('メニュー (the Kalori scraper) as a row, and the sections', () => {
     const s = all(k({}));
     expect(sections(s, NOW).map((x) => [x.id, x.rows.map((r) => r.row.id)])).toEqual([
       ['look', []],
-      ['data', ['wx', 'places', 'places-pull', 'places-details', 'kalori-scrape', 'gym']],
-      ['watch', ['health', 'its-health', 'dispatch', 'tick', 'nightly', 'backup']],
+      ['bots', ['gym', 'its-health', 'dispatch']],
+      ['data', ['wx', 'places', 'places-pull', 'places-details', 'kalori-scrape']],
+      ['watch', ['health', 'tick', 'nightly', 'backup']],
       ['ship', ['pages', 'e2e-logic-full', 'e2e-flake-hunt']]
     ]);
     expect(of(s).length).toBe(JOBS.length - 1);
@@ -121,7 +122,7 @@ describe('メニュー (the Kalori scraper) as a row, and the sections', () => {
 
   it('不調 bad; まだ: 初回 at its next run; the watchdog stopped: 見張りが停止; status.json unread: its runs', () => {
     expect(of(all(k({ verdict: 'failing', reasons: ['crash'] })))[0]).toEqual(['look', 'kalori-scrape', 'failed']);
-    expect(sections(all(k({ verdict: 'none' })), NOW)[1].rows.find((r) => r.row.id === 'kalori-scrape')!.h).toEqual({ tone: 'idle', why: 'first', next: NOW + 3 * D });
+    expect(sections(all(k({ verdict: 'none' })), NOW)[2].rows.find((r) => r.row.id === 'kalori-scrape')!.h).toEqual({ tone: 'idle', why: 'first', next: NOW + 3 * D });
     expect(of(all(k({}), [{ t: NOW - 30 * H, st: 'ok' }]))[0]).toEqual(['look', 'kalori-scrape', 'watch']);
     expect(of(all(null)).find((x) => x[1] === 'kalori-scrape')).toEqual(['data', 'kalori-scrape', 'ok']);
   });

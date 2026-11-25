@@ -45,5 +45,7 @@
   "bots.strip.lastOk": "最後の成功 {time}",
   "bots.viewOnly": "ゲストは見るだけです。設定を変えるのはふたりです。",
   "bots.link.none": "リンクが正しくありません。LINEのメニューの「📱 アプリで設定」から開き直してください。",
-  "bots.link.old": "このリンクは古くなっています。LINEで「メニュー」と送ると、新しいメニューが届きます。"
+  "bots.link.old": "このリンクは古くなっています。LINEで「メニュー」と送ると、新しいメニューが届きます。",
+  "bots.dot.say": "{bot}の状態：{word}",
+  "bots.dot.jump": "。Jobsで詳しく見る"
 }

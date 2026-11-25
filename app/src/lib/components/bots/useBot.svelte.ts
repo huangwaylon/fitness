@@ -19,8 +19,8 @@ export interface BotState<S> {
   readonly fresh: boolean;
   /** The last read's failure code, or null. */
   readonly failed: string | null;
-  /** The status shown is the kept one and a read is on its way (StatusCard's 更新中; once it fails, the card says the
-   *  kept one's 「12:00時点」 instead: never a 更新中 left up by a read that ended). */
+  /** The status shown is the kept one and a read is on its way (StatusCard's and ServiceRow's 更新中; once it fails,
+   *  they say the kept one's 「12:00時点」 instead: never a 更新中 left up by a read that ended). */
   readonly stale: boolean;
   /** When the status shown was read (this phone's clock), or null. */
   readonly readAt: number | null;

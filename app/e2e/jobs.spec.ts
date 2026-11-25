@@ -2,7 +2,8 @@
 // state checked for kana and for text cut off at 393 px: englishFits): the relay's GET /jobs and the Kalori scraper's status.json (both routed to
 // fixtures at the record's pinned time) as one tab, rightmost: the verdict over the rows by their latest state (a
 // stopped row 不調 with the tab's 「!」, a late one named; 回復 and 初回 said, never warnings; an open alert issue in
-// 確認が必要 with its link), 要確認 first (the rows in trouble), then a section per purpose (データの更新 · 見守り・
+// 確認が必要 with its link), 要確認 first (the rows in trouble), Services (the Gym bot's status, unfolded: its strip
+// and facts in English; the ITS bot's unknown; then the bots' jobs), then a section per purpose (データの更新 · 見守り・
 // バックアップ · 配信・テスト), each row its name, cadence, age (初回 for one not run yet), dot and 24-cell strip; a tap
 // unfolds its detail (14 days, the last runs, GitHub's links; one at a time), ジムのタブを開く switches tabs; メニューの更新
 // (once メニュー's own tab): 保留 in 要確認 with 「!」, its step and PRを開く in 確認が必要, its detail (直近8週, 前回の変更,
@@ -16,6 +17,7 @@ import { newRecord } from './record.ts';
 import { KEY_OF, RELAY, type Who } from './relay.ts';
 import { IPHONE, SAFARI_BAR, insets, noOverlaps, settle } from './overlap.ts';
 import { shot } from './shots.ts';
+import { STATUS as GYM_STATUS, statusPayload } from './gymbot.ts';
 
 type Tap = 'tap' | 'click';
 const howOf = (project: string): Tap => (project.startsWith('webkit') ? 'tap' : 'click');
@@ -76,8 +78,8 @@ function jobs(now: number, trouble = false) {
   };
 }
 
-/** A phone paired as `who`, /jobs answering `body()` (`'offline'`: unreachable); the other bots' Workers refused (their
- *  tabs aren't this spec's). */
+/** A phone paired as `who`, /jobs answering `body()` (`'offline'`: unreachable); the gym bot's /status answered (its
+ *  Services row: its words all English), the ITS Worker refused (its tab isn't this spec's: its row unknown). */
 async function phone(page: Page, context: BrowserContext, o: { who?: Who; trouble?: boolean; ins?: typeof IPHONE; held?: boolean; tab?: string } = {}) {
   await context.addInitScript(() => localStorage.setItem('e2e.render', 'none'));
   // (the tab a session kept: メニュー's, from before it was 定期処理's row)
@@ -98,6 +100,7 @@ async function phone(page: Page, context: BrowserContext, o: { who?: Who; troubl
   });
   await page.route(KALORI, (route) => route.fulfill({ status: 200, contentType: 'text/plain; charset=utf-8', headers: { 'Access-Control-Allow-Origin': '*' }, body: JSON.stringify(kaloriStatus(rec.now(), o.held)) }));
   await page.route(/its-bot|gym-bot/, (route) => route.abort('blockedbyclient'));
+  await page.route(GYM_STATUS, (route) => route.fulfill({ status: 200, contentType: 'application/json', headers: { 'Access-Control-Allow-Origin': '*' }, body: JSON.stringify(statusPayload(rec.now())) }));
   await page.goto('');
   await islandUp(page);
   return { rec, seen, offline: (v: boolean) => void (state = v ? 'offline' : 'up') };
@@ -153,13 +156,15 @@ for (const [h, ins] of [[852, IPHONE], [659, SAFARI_BAR]] as const) {
       await expect(alert.locator('[data-jobs-reason]')).toHaveText('Alert: Relay alert: no record backup in 30 h (opened 5 h ago)');
       await expect(alert.locator('[data-jobs-link="42"]')).toHaveAttribute('href', 'https://github.com/huangwaylon/fitness/issues/42');
       // the groups, in order, their rows
-      // 要確認 first (the worst first), then by purpose, the rows in trouble out of their own
-      await expect(page_(page).locator('[data-jobs-group] .sec-label')).toHaveText(['Needs attention', 'Data updates', 'Monitoring & backups', 'Deploys & tests']);
+      // 要確認 first (the worst first), Services (the bots, then their jobs), then by purpose, the rows in trouble out of their own
+      await expect(page_(page).locator('[data-jobs-group] .sec-label')).toHaveText(['Needs attention', 'Services', 'Data updates', 'Monitoring & backups', 'Deploys & tests']);
       await expect(page_(page).locator('[data-jobs-group="look"] [data-jobs-row]')).toHaveCount(2);
       await expect(page_(page).locator('[data-jobs-group="look"] [data-jobs-row]').first()).toHaveAttribute('data-jobs-row', 'backup');
       await expect(page_(page).locator('[data-jobs-group="look"] [data-jobs-row]').last()).toHaveAttribute('data-jobs-row', 'wx');
-      await expect(page_(page).locator('[data-jobs-group="data"] [data-jobs-row]')).toHaveCount(5);
-      await expect(page_(page).locator('[data-jobs-group="watch"] [data-jobs-row]')).toHaveCount(5);
+      await expect(page_(page).locator('[data-jobs-group="bots"] [data-jobs-svc]')).toHaveCount(2);
+      await expect(page_(page).locator('[data-jobs-group="bots"] [data-jobs-row]')).toHaveCount(3);
+      await expect(page_(page).locator('[data-jobs-group="data"] [data-jobs-row]')).toHaveCount(4);
+      await expect(page_(page).locator('[data-jobs-group="watch"] [data-jobs-row]')).toHaveCount(3);
       await expect(page_(page).locator('[data-jobs-group="ship"] [data-jobs-row]')).toHaveCount(3);
       await expect(page_(page).locator('[data-jobs-row="kalori-watch"]')).toHaveCount(0);
       // a row: its dot, name, age, cadence and why (when not 順調), its 24 cells, the newest at the right
@@ -228,6 +233,20 @@ for (const [h, ins] of [[852, IPHONE], [659, SAFARI_BAR]] as const) {
       await fd.locator('[data-jobs-open]').scrollIntoViewIfNeeded();
       await settle(page);
       await shot(page, `jobs-detail-gh-${info.project.name}-${h}`);
+      await noOverlaps(page, { insets: ins });
+      await englishFits(page);
+      // the bots' rows: Gym bot (its status, English), ITS bot (refused here: unknown)
+      const svc = page_(page).locator('[data-jobs-svc="gym"]');
+      await expect(svc).toHaveAttribute('data-gym-verdict', 'degraded');
+      await expect(svc.locator('button').first()).toHaveAccessibleName(/^Gym bot, Some trouble, as of \d+:\d\d$/);
+      await expect(page_(page).locator('[data-jobs-svc="its"] [data-bots-word]')).toHaveText('Unknown');
+      await svc.locator('button').first()[how]();
+      await expect(flake.locator('[data-jobs-detail]')).toHaveCount(0);
+      await expect(svc.locator('[data-gym-strip] [data-gym-cell]')).toHaveCount(24);
+      await expect(svc.locator('[data-gym-fact="mode"] dd')).toHaveText('Bot');
+      await svc.scrollIntoViewIfNeeded();
+      await settle(page);
+      await shot(page, `jobs-detail-svc-${info.project.name}-${h}`);
       await noOverlaps(page, { insets: ins });
       await englishFits(page);
       // the gym's row: its tab

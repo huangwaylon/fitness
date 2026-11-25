@@ -115,8 +115,8 @@ test('the menu’s ボット, right above やること (then 設定), 「!」 wh
   await expect(tab('jobs')).not.toHaveAttribute('data-look');
   await expect(tab('jobs').locator('[data-dot]')).toHaveCount(0);
   await expect(tab('gym').locator('[data-dot="bad"][data-look]')).toHaveCount(1);
-  // the card: the word, then its sentence (no act of its own)
-  await expect(sheet.locator('[data-gym-verdict] [data-bots-word]')).toHaveText('故障');
+  // the page's head: its dot says the word (the status itself is Jobs')
+  await expect(sheet.locator('[data-gym-page] [data-bots-dot]')).toHaveAccessibleName('ジムの状態：故障。Jobsで詳しく見る');
   // the keyboard: → moves the focus, Enter picks; the focus stays on the tab picked
   await tab('gym').focus();
   await page.keyboard.press('ArrowRight');
@@ -258,27 +258,29 @@ test('the menu’s 「!」 from ジム alone (保養所 unanswered, 定期処理
   await expect(dot.locator('[data-look]')).toHaveCount(1);
 });
 
-test('ジム 不調 from the site failing: no 「!」 while the bot retries on its own (the menu, the tab), its coral card all the same', async ({ page, context }) => {
+test('ジム 不調 from the site failing: no 「!」 while the bot retries on its own (the menu, the tab), its coral dot all the same', async ({ page, context }) => {
   const { calls, sheet, tab } = await phone(page, context, 'failing', { its: false });
   await unfoldMenu(page);
   await expect.poll(() => calls.gym + calls.jobs).toBe(2);
   await expect(page.locator('[data-hud-bots]')).toHaveAccessibleName('ボット');
   await expect(page.locator('[data-hud-bots-dot]')).toHaveCount(0);
   await page.locator('[data-hud-bots]').click();
-  await expect(sheet.locator('[data-gym-verdict="failing"]')).toHaveClass(/bad/);
-  await expect(sheet.locator('[data-gym-verdict] [data-bots-say]')).toHaveText('予約サイトの確認が3回続けて失敗しています。');
-  await expect(sheet.locator('[data-gym-verdict] [data-bots-act]')).toHaveCount(0);
+  const dot = sheet.locator('[data-gym-page] [data-bots-dot]');
+  await expect(dot).toHaveAttribute('data-gym-verdict', 'failing');
+  await expect(dot.locator('[data-dot]')).toHaveAttribute('data-dot', 'bad');
+  await expect(dot.locator('[data-look]')).toHaveCount(0);
+  // 確認が必要: the sentence, then what to do (no act: nothing for a person yet)
+  const alert = sheet.locator('[data-gym-alert]');
+  await expect(alert.locator('[data-bots-act]')).toHaveCount(0);
+  await expect(alert.locator('[data-gym-reason]')).toHaveText(['予約サイトの確認が3回続けて失敗しています。', '間隔をあけて自動で再試行します。長く続くときは予約サイトの変更を疑ってください。']);
   await expect(tab('gym')).toHaveAttribute('data-tab-status', 'bad');
   await expect(tab('gym')).not.toHaveAttribute('data-look');
   await expect(tab('gym')).toHaveAccessibleName('ジム、不調');
-  // the coral card's soft text (the as-of, the sentence) ≥ 4.5:1
-  const ratios = await sheet.locator('[data-gym-verdict]').evaluate((card) => {
-    const rgb = (c: string) => { const n = c.match(/[\d.]+/g)!.map(Number); return c.startsWith('color(') ? n.map((v) => v * 255) : n; };
-    const lum = (c: string) => { const [r, g, b] = rgb(c).map((v) => (v /= 255) <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4); return 0.2126 * r + 0.7152 * g + 0.0722 * b; };
-    const bg = lum(getComputedStyle(card).backgroundColor);
-    return ['[data-bots-asof]', '[data-bots-say]'].map((q) => { const l = lum(getComputedStyle(card.querySelector(q)!).color); return (Math.max(l, bg) + 0.05) / (Math.min(l, bg) + 0.05); });
-  });
-  for (const r of ratios) expect(r).toBeGreaterThanOrEqual(4.5);
+  // Jobs' row: the word and the sentence, in English
+  await dot.click();
+  const row = sheet.locator('[data-jobs-svc="gym"]');
+  await expect(row.locator('[data-bots-word]')).toHaveText('Failing');
+  await expect(row.locator('[data-bots-say]')).toHaveText('The booking site failed 3 checks in a row.');
 });
 
 test('no 「!」 on the menu while every bot is fine', async ({ page, context }) => {
@@ -304,9 +306,8 @@ test('the dots survive a reload: kept with the status, shown before any read, ke
   await page.locator('[data-hud-bots]').click();
   await expect(sheet.locator('[data-gym-error][data-offline]')).toContainText('オフラインのため、前回の内容を表示しています');
   await expect(sheet.locator('[data-gym-verdict="broken"]')).toBeVisible();
-  // (the read ended: the kept one's time, not 更新中)
-  await expect(sheet.locator('[data-bots-stale]')).toHaveCount(0);
-  await expect(sheet.locator('[data-gym-verdict] [data-bots-asof]')).toBeVisible();
+  // (the read ended: the kept one, its dot dimmed)
+  await expect(sheet.locator('[data-gym-page] [data-bots-dot]')).toHaveAccessibleName('ジムの状態：故障（古い）。Jobsで詳しく見る');
   await expect(tab('gym')).toHaveAttribute('data-tab-status', 'bad');
   await expect(tab('gym')).toHaveAttribute('data-stale', ''); // dimmed: the read failed
   await expect(tab('gym')).toHaveAccessibleName('ジム、故障、要対応（古い）');

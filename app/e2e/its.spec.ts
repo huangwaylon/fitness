@@ -1,8 +1,8 @@
 // ボット's 保養所 tab (docs/bots.md): a member's menu shows ボット with a dot while the bot needs a person
 // (要対応), and its sheet opens on 保養所, which reads the its-bot Worker's GET /its/status (lib/its/client.ts, mocked
-// here: the contract's example moved to the pinned time) and shows the status card with its strip and ⋯, the hold that
-// needs a person in the card under its act (its deadline, the mail), 直近1時間 in the card, 最近の動き in くわしく, 設定's folded rows and くわしく;
-// ジム's tab leaves it. ⋯'s 開始 goes out at once (it needs a stay), its 停止 asks first; the settings are one draft: 保存 sends one PUT (its body checked: the allow-list `search` too), ✕, Esc and a tab switch
+// here: the contract's example moved to the pinned time) and shows its head (the dot inline: it opens Jobs on the ITS
+// bot row, 直近1時間 and the facts there; ⋯), the hold that needs a person in 確認が必要 under its act (its deadline,
+// the mail), 設定's folded rows and くわしく (最近の動き); ジム's tab leaves it. ⋯'s 開始 goes out at once (it needs a stay), its 停止 asks first; the settings are one draft: 保存 sends one PUT (its body checked: the allow-list `search` too), ✕, Esc and a tab switch
 // ask before dropping it, and a 409 (the
 // bare status) or a poll seeing someone else's save says so in the save bar, with 読み込み直す, 保存 turning 上書き保存
 // (asks first); 開始 / 停止 never move the draft's base, and 保存 gives up a read in flight. 日付: a calendar (this month or
@@ -94,6 +94,14 @@ async function open(sheet: ReturnType<Page['locator']>) {
   await unfold(its, 'detail');
 }
 
+/** The head's dot tapped: Jobs, its ITS bot row unfolded (English). */
+async function svcRow(sheet: ReturnType<Page['locator']>) {
+  await sheet.locator('[data-its-page] [data-bots-dot]').click();
+  const row = sheet.locator('[data-jobs-svc="its"]');
+  await expect(row.locator('button').first()).toHaveAttribute('aria-expanded', 'true');
+  return row;
+}
+
 /** ⋯'s 開始, or its 停止 (asked first: 停止する). */
 async function runAct(page: Page, its: ReturnType<Page['locator']>, action: 'start' | 'stop') {
   await its.locator('[data-its-menu]').click();
@@ -101,46 +109,41 @@ async function runAct(page: Page, its: ReturnType<Page['locator']>, action: 'sta
   if (action === 'stop') await page.getByRole('dialog', { name: '保養所の確認を停止しますか？' }).locator('[data-action="stop"]').click();
 }
 
-test('ボット opens on 保養所 (its tab yuzu 「!」: 要対応): the card (the act, the hold to finish by mail under it, its deadline, 前回, 次回, 予約), くわしく; ジム leaves it', async ({ page, context }) => {
+test('ボット opens on 保養所 (its tab yuzu 「!」: 要対応): the head (its dot inline), 確認が必要 (the act, the hold to finish by mail, its deadline), くわしく (最近の動き); the dot opens Jobs (前回, 次回, the facts); ジム leaves it', async ({ page, context }) => {
   const { sheet, its, calls } = await phone(page, context, 'A');
   const tab = page.locator('dialog[open] [data-bots-tab="its"]');
   await expect(tab).toHaveAttribute('aria-selected', 'true');
   await expect(tab).toHaveAttribute('data-tab-status', 'warn');
   await expect(tab).toHaveAttribute('data-look', '');
   await expect(tab).toHaveAccessibleName('保養所、要対応');
-  const verdict = its.locator('[data-its-verdict="degraded"]');
-  await expect(verdict.locator('[data-bots-word]')).toHaveText('要対応'); // a hold waiting is all: 要対応, not 一部不調
-  await expect(verdict.locator('[data-bots-act]')).toHaveText('NAGU 勝浦をメールで申込'); // the act, in ink
   await expect(tab.locator('[data-dot="warn"][data-look]')).toHaveCount(1); // a person must act: the tab's 「!」
-  await expect(verdict.locator('[data-bots-say]')).toHaveCount(0); // the word and the act say it
   await expect(page.locator('dialog[open] .titlebar')).toContainText('ボット');
-  // 次回 (a live runner: its interval) and 予約, the 成果 term (no key row; no read this hour: no strip)
-  await expect(its.locator('[data-its-key]')).toHaveCount(0);
-  await expect(its.locator('[data-its-scans]')).toHaveCount(0);
-  await expect(its.locator('[data-its-empty]')).toHaveText('確認なし'); // running: a neutral line, the warning is the sentence's
+  // the head: 空室の確認, the dot (yuzu 「!」) inline, ⋯; no status card (no word, no strip)
+  const dot = its.locator('[data-bots-dot]');
+  await expect(dot).toHaveAttribute('data-its-verdict', 'degraded');
+  await expect(dot.locator('[data-dot="warn"][data-look]')).toHaveCount(1);
+  await expect(dot).toHaveAccessibleName('保養所の状態：要対応。Jobsで詳しく見る'); // a hold waiting is all: 要対応, not 一部不調
   await expect(its.locator('[data-its-menu]')).toHaveAccessibleName('保養所の操作');
+  await expect(its.locator('[data-bots-word], [data-its-scans], [data-its-empty], [data-its-strip], .status')).toHaveCount(0);
   const y = async (sel: string) => (await sheet.locator(sel).boundingBox())!.y;
-  // the hold, in the card under its act (said once: no 確認が必要, its hotel not named again): its deadline (30 min
-  // from 11:44), the mail to look for; not again under 予約
-  const hold = verdict.locator('[data-its-booking="action"]');
-  await expect(its.locator('[data-its-alert]')).toHaveCount(0);
+  // 確認が必要: the act in ink, the hold under it (its hotel not named again): its deadline (30 min from 11:44), the
+  // mail to look for; not again under 予約
+  const alert = its.locator('[data-its-alert]');
+  await expect(alert.locator('[data-bots-act]')).toHaveText('NAGU 勝浦をメールで申込');
+  await expect(alert.locator('[data-its-reason]')).toHaveCount(0); // the act says it
+  const hold = alert.locator('[data-its-booking="action"]');
   await expect(hold.locator('b')).toHaveCount(0);
   await expect(hold).toContainText('日付が近いため');
   await expect(hold.locator('[data-its-hold-left]')).toHaveText(/^あと1[45]分ほどで無効$/);
   await expect(hold.locator('[data-its-steps] li')).toHaveText(['メール『NAGU 勝浦申込手続きのご案内』→ 申込する → 確認']); // the one act numbered
   await expect(hold.locator('[data-its-hold-note]')).toHaveText(['何もしなければ自動で取り消されます。料金はかかりません。']);
   await expect(its.locator('[data-its-booking]')).toHaveCount(1);
-  expect(await y('[data-its-verdict]')).toBeLessThan(await y('[data-its-settings]'));
-  // くわしく: everything else, folded (not drawn until opened); the mode and the version, no foot
-  await expect(its.locator('[data-its-fact="phase"]')).toHaveCount(0);
+  expect(await y('[data-its-page] [data-bots-dot]')).toBeLessThan(await y('[data-its-alert]'));
+  expect(await y('[data-its-alert]')).toBeLessThan(await y('[data-its-settings]'));
+  // くわしく: the page's history only (the facts are Jobs'), folded, no foot
   await expect(its.locator('[data-its-more] summary')).toHaveText('詳しく最近の動き 2件'); // its rows named while folded
   await its.locator('[data-its-more] summary').click();
-  await expect(its.locator('[data-its-fact="phase"]')).toContainText('空室を確認中');
-  await expect(its.locator('[data-its-fact="scan"]')).toContainText('11:59（120回）');
-  await expect(its.locator('[data-its-fact="run"] a')).toHaveAttribute('href', 'https://github.com/huangwaylon/fitness/actions/runs/19283746');
-  await expect(its.locator('[data-its-fact="error"]')).toContainText('空室の確認 · 時間切れ');
-  await expect(its.locator('[data-its-fact="report"]')).toContainText('11:59');
-  await expect(its.locator('[data-its-fact="mode"] dd')).toHaveText('稼働');
+  await expect(its.locator('[data-its-fact]')).toHaveCount(0);
   await expect(its.locator('[data-its-foot]')).toHaveCount(0);
   // 最近の動き: the fold's last row, under the facts (no card of its own)
   const recent = its.locator('[data-its-more] > :last-child');
@@ -195,8 +198,8 @@ test('ボット opens on 保養所 (its tab yuzu 「!」: 要対応): the card (
   await expect(nagu.locator('[role="switch"]')).toHaveAttribute('aria-checked', 'true');
   await expect(out.locator('[data-its-hotel="ホテルハーヴェスト　スキージャム勝山"] [data-its-meta]')).toHaveText('掲載終了');
   await expect(search.locator('[data-its-hotel="トスラブ箱根ビオーレ"] [data-its-meta]')).toHaveText('箱根 · 直営 · 4日前まで');
-  // 44px targets: ⋯, the run's link, a switch, a part's fold, a night
-  for (const sel of ['[data-its-menu]', '[data-its-fact="run"] a', '[data-its-hotel="NAGU 勝浦"] [role="switch"]', '[data-its-part="unfit"] summary', '[data-its-night]']) {
+  // 44px targets: ⋯, the dot, a switch, a part's fold, a night
+  for (const sel of ['[data-its-menu]', '[data-bots-dot]', '[data-its-hotel="NAGU 勝浦"] [role="switch"]', '[data-its-part="unfit"] summary', '[data-its-night]']) {
     const b = (await its.locator(sel).first().boundingBox())!;
     expect(Math.min(b.width, b.height), sel).toBeGreaterThanOrEqual(44);
   }
@@ -213,6 +216,28 @@ test('ボット opens on 保養所 (its tab yuzu 「!」: 要対応): the card (
   expect(calls).toHaveLength(n);
 });
 
+test('保養所’s dot opens Jobs on the ITS bot row (English): the word and the act, no checks this hour, the facts; its button back', async ({ page, context }) => {
+  const { sheet, its } = await phone(page, context, 'A');
+  await expect(its.locator('[data-bots-dot]')).toHaveAttribute('data-its-verdict', 'degraded');
+  const row = await svcRow(sheet);
+  await expect(sheet).toHaveAttribute('data-tab', 'jobs');
+  await expect(row).toHaveAttribute('data-its-verdict', 'degraded');
+  await expect(row.locator('[data-bots-word]')).toHaveText('Needs you');
+  await expect(row.locator('[data-bots-act]')).toHaveText('Apply for NAGU 勝浦 by mail');
+  await expect(row.locator('[data-its-scans]')).toHaveCount(0);
+  await expect(row.locator('[data-its-empty]')).toHaveText('No checks'); // running: a neutral line
+  await expect(row.locator('[data-its-fact="phase"] dd')).toHaveText('Checking for rooms');
+  await expect(row.locator('[data-its-fact="scan"]')).toContainText('11:59 (120 checks)');
+  await expect(row.locator('[data-its-fact="run"] a')).toHaveAttribute('href', 'https://github.com/huangwaylon/fitness/actions/runs/19283746');
+  await expect(row.locator('[data-its-fact="error"]')).toContainText('Room check');
+  await expect(row.locator('[data-its-fact="report"]')).toContainText('11:59');
+  await expect(row.locator('[data-its-fact="mode"] dd')).toHaveText('On');
+  const b = (await row.locator('[data-its-fact="run"] a').boundingBox())!;
+  expect(b.height).toBeGreaterThanOrEqual(44);
+  await row.locator('[data-jobs-svc-open]').click();
+  await expect(sheet).toHaveAttribute('data-tab', 'its');
+});
+
 test('停止 goes out at once, outside the draft; the edits go in one PUT with 保存, the allow-list in it', async ({ page, context }) => {
   const { sheet, its, calls, first } = await phone(page, context, 'A');
   await open(sheet);
@@ -227,9 +252,8 @@ test('停止 goes out at once, outside the draft; the edits go in one PUT with �
   expect(calls.filter((c) => c.method === 'POST')).toHaveLength(0);
   await runAct(page, its, 'stop');
   await expect(its).toHaveAttribute('data-its-run', 'stopped');
-  // who stopped it, in the sentence (in 確認が必要 while the act has the card's row); stopped with no read: no strip
+  // who stopped it, in the sentence (in 確認が必要, under the act)
   await expect(its.locator('[data-its-alert] [data-its-reason]').first()).toHaveText(/停止（.+・12:00）$/);
-  await expect(its.locator('[data-its-empty], [data-its-scans]')).toHaveCount(0);
   expect(calls.filter((c) => c.method === 'POST')).toEqual([{ method: 'POST', path: '/its/run', auth: expect.stringMatching(/^Bearer /), rid: expect.any(String), body: { action: 'stop' } }]);
   await expect(its.locator('[data-its-save-bar]')).toHaveCount(0);
 
@@ -412,7 +436,7 @@ test('開始 needs a stay: without one it is disabled and says so', async ({ pag
     edit: (s) => ({ ...s, verdict: 'stopped', reasons: ['paused', 'no_dates'], settings: { ...s.settings, paused: true, dates: [] }, bookings: [], events: [] })
   });
   await open(sheet);
-  await expect(its.locator('[data-its-verdict] [data-its-need-dates]')).toHaveText('日付を追加してください');
+  await expect(its.locator('.pnote [data-its-need-dates]')).toHaveText('日付を追加してください'); // under the head
   await its.locator('[data-its-menu]').click();
   const start = page.locator('dialog[open] [data-action="start"]');
   await expect(start).toHaveText('開始');
@@ -639,7 +663,7 @@ test('日付: a saved stay past next month is listed and its ✕ takes it out; a
 });
 
 test('直近1時間: a cell a minute, a tap names it, the group says the hour', async ({ page, context }) => {
-  const { sheet, its } = await phone(page, context, 'A', undefined, {
+  const { sheet } = await phone(page, context, 'A', undefined, {
     edit: (s) => {
       const minute = (ago: number) => Math.floor(s.now / 60_000) * 60_000 - ago * 60_000;
       return {
@@ -651,30 +675,32 @@ test('直近1時間: a cell a minute, a tap names it, the group says the hour', 
       };
     }
   });
-  await open(sheet);
-  const strip = its.locator('[data-its-strip]');
+  const row = await svcRow(sheet);
+  const strip = row.locator('[data-its-strip]');
   await expect(strip.locator('[data-its-cell]')).toHaveCount(60);
-  await expect(strip).toHaveAttribute('aria-label', '直近1時間：確認32回、失敗1回、空き検出1分');
+  await expect(strip).toHaveAttribute('aria-label', 'Last hour: 32 reads, 1 failed, rooms in 1 minutes');
   await expect(strip.locator('[data-its-cell="fail"]')).toHaveCount(1);
   await expect(strip.locator('[data-its-cell="avail"]')).toHaveCount(1);
   await expect(strip.locator('[data-its-cell="ok"]')).toHaveCount(30);
-  // 前回 the newest minute read, its time in ink; the counts and 予約, and on their row 次回 the runner's interval
+  // (the row's own mini strip gone while unfolded: the slider says it)
+  await expect(row.locator('.head .strip')).toHaveCount(0);
+  // 前回 the newest minute read, its time in ink; the counts and the bookings, and on their row Next the runner's interval
   await expect(strip.locator('[data-its-cell][data-last]')).toHaveCount(1);
-  await expect(its.locator('[data-its-next]')).toHaveText('次回 15秒ごと');
-  await expect(its.locator('[data-its-count]')).toHaveText(['正常30', '空き検出1', '失敗1']);
-  await expect(its.locator('[data-its-outcome]')).toHaveText('予約1');
+  await expect(row.locator('[data-its-next]')).toHaveText('Next every 15 s');
+  await expect(row.locator('[data-its-count]')).toHaveText(['OK30', 'Saw rooms1', 'Failed1']);
+  await expect(row.locator('[data-its-outcome]')).toHaveText('1 booked');
   // a tap on the failed minute names it
   const cell = strip.locator('[data-its-cell="fail"]');
   await cell.click();
-  await expect(its.locator('[data-its-scan-line]')).toHaveText(/^\d\d:\d\d · 1回 · 失敗1（timeout）$/);
+  await expect(row.locator('[data-its-scan-line]')).toHaveText(/^\d\d:\d\d · 1 reads · 1 failed \(timeout\)$/);
   await expect(cell).toHaveAttribute('data-on', 'true');
   // ← walks to the minute before
   await page.keyboard.press('ArrowLeft');
-  await expect(its.locator('[data-its-scan-line]')).toHaveText(/ · 確認なし$/);
+  await expect(row.locator('[data-its-scan-line]')).toHaveText(/ · no read$/);
 });
 
 test('直近1時間 from the Worker’s per-minute aggregate: every read of the hour, however many runs', async ({ page, context }) => {
-  const { sheet, its } = await phone(page, context, 'A', undefined, {
+  const { sheet } = await phone(page, context, 'A', undefined, {
     edit: (s) => {
       const minute = (ago: number) => Math.floor(s.now / 60_000) * 60_000 - ago * 60_000;
       return {
@@ -685,12 +711,12 @@ test('直近1時間 from the Worker’s per-minute aggregate: every read of the 
       };
     }
   });
-  await open(sheet);
-  const strip = its.locator('[data-its-strip]');
-  await expect(strip).toHaveAttribute('aria-label', '直近1時間：確認328回、失敗2回、空き検出1分');
+  const row = await svcRow(sheet);
+  const strip = row.locator('[data-its-strip]');
+  await expect(strip).toHaveAttribute('aria-label', 'Last hour: 328 reads, 2 failed, rooms in 1 minutes');
   await expect(strip.locator('[data-its-cell="ok"]')).toHaveCount(40);
   await strip.locator('[data-its-cell="warn"]').click(); // 2 of 8 failed: warn, not fail
-  await expect(its.locator('[data-its-scan-line]')).toHaveText(/^\d\d:\d\d · 8回 · 失敗2（http_503） · 空き3日$/);
+  await expect(row.locator('[data-its-scan-line]')).toHaveText(/^\d\d:\d\d · 8 reads · 2 failed \(http_503\) · rooms on 3 nights$/);
 });
 
 test('demo mode has no ボット (no fixtures): no pill, and nothing asks a bot\'s Worker or メニュー\'s status', async ({ page, context }) => {

@@ -494,10 +494,9 @@ async function menuRows(page: Page, sheet: ReturnType<Page['locator']>) {
 
 test('⋯: its rows per state; stopping asks first, restarting doesn’t; 確認の間隔', async ({ page, context }) => {
   const { gym, sheet } = await phone(page, context);
-  const verdict = sheet.locator('[data-gym-verdict]');
   const menu = sheet.locator('[data-gym-menu]');
-  const [m, w] = [(await menu.boundingBox())!, (await verdict.locator('[data-bots-word]').boundingBox())!];
-  expect(Math.abs(m.y + m.height / 2 - (w.y + w.height / 2))).toBeLessThan(8); // on the word's row
+  const [m, w] = [(await menu.boundingBox())!, (await sheet.locator('[data-gym-page] [data-bots-dot]').boundingBox())!];
+  expect(Math.abs(m.y + m.height / 2 - (w.y + w.height / 2))).toBeLessThan(2); // on the head's row, with the dot
   let rows = await menuRows(page, sheet);
   await expect(rows).toHaveText(['今すぐ確認', '確認を停止', '確認の間隔 · 15分ごと ›']);
   await expect(page.locator('dialog[open]').last()).toHaveAccessibleName('ジムの操作');
@@ -531,7 +530,7 @@ test('今すぐ確認: its answer on the result line with the cooldown’s tail,
   await expect(sheet.locator('[data-gym-open]')).toHaveCount(0); // none open yet
   await menuRows(page, sheet);
   await page.locator('dialog[open] [data-action="check"]').click();
-  const result = sheet.locator('[data-gym-verdict] [data-gym-result]');
+  const result = sheet.locator('.pnote [data-gym-result]'); // under the head
   await expect(result).toContainText('12:00の確認：空き1枠');
   const open = sheet.locator('[data-gym-open]');
   await expect(open.locator('[data-gym-open-slot]')).toHaveText(['11/5（木） 12:00〜12:30トレーニング']);
@@ -576,7 +575,7 @@ test('screenshots (GYM_UI_SHOTS)', async ({ page, context }) => {
   });
   await sheet.locator('[data-gym-config]').evaluate((e) => e.scrollIntoView());
   await page.screenshot({ path: `${dir}/calendar.png` });
-  await sheet.locator('[data-gym-verdict]').screenshot({ path: `${dir}/verdict.png` });
+  await sheet.locator('.phead').screenshot({ path: `${dir}/head.png` });
   await day(2).click();
   await editor.locator('[data-gym-slot="18:00"]').waitFor();
   await page.screenshot({ path: `${dir}/editor.png` });

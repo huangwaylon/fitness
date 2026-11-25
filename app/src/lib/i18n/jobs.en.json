@@ -109,5 +109,9 @@
   "jobs.say.held": "Held: {names}.",
   "jobs.d.next": "Next run",
   "jobs.d.outcome": "Items",
-  "jobs.d.weeks": "Last 8 weeks"
+  "jobs.d.weeks": "Last 8 weeks",
+  "jobs.g.bots": "Services",
+  "jobs.svc.gym": "Gym bot",
+  "jobs.svc.its": "ITS bot",
+  "jobs.d.its": "Open the ITS tab"
 }

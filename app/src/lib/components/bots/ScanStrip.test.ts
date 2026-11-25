@@ -1,16 +1,15 @@
-// The status card (StatusCard): 次回 at the end of the counts' row only while there is a next, and nothing kept (`blank`) drawn as `empty`
+// A bot's recent checks (ScanStrip, in its Jobs row): 次回 at the end of the counts' row only while there is a next, and nothing kept (`blank`) drawn as `empty`
 // or left out.
 import { describe, expect, it } from 'vitest';
 import { render } from 'svelte/server';
-import StatusCard from './StatusCard.svelte';
+import ScanStrip from './ScanStrip.svelte';
 import type { CardStrip, CellState } from '#lib/strip.ts';
 
-const verdict = { tone: 'idle', w: 'stopped', word: '停止中', sentence: '', needsLook: false } as const;
 const strip = (state: CellState, over: Partial<CardStrip> = {}): CardStrip =>
   ({ cells: [{ start: 0, end: 1, state, label: '' }], ticks: [], last: null, words: { ok: '正常' }, summary: 's', ...over });
-const card = (s: CardStrip) => render(StatusCard, { props: { verdict, attr: {}, page: 'gym', now: 0, strip: s } }).body;
+const card = (s: CardStrip) => render(ScanStrip, { props: { page: 'gym', strip: s } }).body;
 
-describe('StatusCard', () => {
+describe('ScanStrip', () => {
   it('次回: at the end of the counts\' row (no ghost cell) with a next; none while stopped', () => {
     const next = card(strip('ok', { next: '12:10ごろ' }));
     expect(next).toMatch(/class="sline[\s\S]*data-gym-count="ok"[\s\S]*<\/p>[\s\S]*<span class="next[^>]*data-gym-next[^>]*>[^<]*12:10ごろ/);

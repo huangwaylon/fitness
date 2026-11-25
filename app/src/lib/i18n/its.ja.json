@@ -284,5 +284,6 @@
   "its.cal.over": "日付は20件までです（{n}日は入りませんでした）",
   "its.date.removeLabel": "{date}を削除",
   "its.act.mail": "{hotel}をメールで申込",
-  "its.strip.bookings": "予約{n}"
+  "its.strip.bookings": "予約{n}",
+  "its.head": "空室の確認"
 }

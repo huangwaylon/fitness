@@ -13,7 +13,7 @@ const MICRO: Record<string, number> = {
   'lib/components/bots/GymCalendar.svelte': 1,
   'lib/components/bots/GymSlots.svelte': 1,
   'lib/components/bots/ItsCalendar.svelte': 1,
-  'lib/components/bots/StatusCard.svelte': 1,
+  'lib/components/bots/ScanStrip.svelte': 1,
   'lib/components/editor/Editor.svelte': 12,
   'lib/components/health/BarChart.svelte': 1,
   'lib/components/hiking/ElevCard.svelte': 1,

@@ -1,13 +1,14 @@
 <script lang="ts">
-  // ボット's ジム tab (docs/bots.md), on BotPage: the status card with its strip (前回 · 次回 · いま空き) and its ⋯
-  // (members, with this phone's key: lib/gym/config.ts; an ActionSheet: 今すぐ確認 — a peek, its 60 s cooldown in its
-  // label — 確認を停止 (asked first) or 確認を再開 (first, while stopped), 確認の間隔 ›: a sheet), the result line under
-  // the verdict's sentence (確認中…, 「12:03の確認：空きなし · 次はあと42秒」, an act's failure), 確認が必要 (the other
-  // reasons, what to do), いま空いている枠 (the last check's open slots the days ask for, from the config: no request to the
-  // gym; 予約ページを開く, hacomono's, one tap to book; shown while any hasn't started), then 日ごとの設定 — the calendar (GymCalendar: this month or next, a switch beside
-  // the heading; a tap opens the day's editor, GymDayEditor; 選択 after the months or a long press the select mode, 完了 in 選択's place,
-  // its sticky bar one bulk act, the picks kept across months), the days not settable yet and the 3-reservation note;
-  // くわしく last, アプリで変更 (the last ones, one a day) at its bottom.
+  // ボット's ジム tab (docs/bots.md), on BotPage: its head (空き枠の確認, the status dot inline: a tap opens its row in
+  // Jobs, where the status lives, `onjobs`; none alone at /gym) with ⋯ (members, with this phone's key:
+  // lib/gym/config.ts; an ActionSheet: 今すぐ確認 — a peek, its 60 s cooldown in its label — 確認を停止 (asked first) or
+  // 確認を再開 (first, while stopped), 確認の間隔 ›: a sheet), the result line under it (確認中…, 「12:03の確認：空きなし ·
+  // 次はあと42秒」, an act's failure), 確認が必要 (what a person must do, the other reasons), いま空いている枠 (the last
+  // check's open slots the days ask for, from the config: no request to the gym; 予約ページを開く, hacomono's, one tap to
+  // book; shown while any hasn't started), then 日ごとの設定 — the calendar (GymCalendar: this month or next, a switch
+  // beside the heading; a tap opens the day's editor, GymDayEditor; 選択 after the months or a long press the select
+  // mode, 完了 in 選択's place, its sticky bar one bulk act, the picks kept across months), the days not settable yet and
+  // the 3-reservation note; くわしく last: アプリで変更 (the last ones, one a day).
   // No 設定 section: every change applies at once (no draft): the page shows it, POST
   // /gym/act sends it after the ones before it (one at a time, each with its days' bases as the last answer left them),
   // and its banner offers 取り消す for 5 s (one undo an act or bulk act: lib/gym/calendar.ts undoActs); a failure puts
@@ -22,7 +23,7 @@
   import { dayKey, minuteNow } from '#lib/time/clock.ts';
   import { cue } from '#lib/sound/cues.ts';
   import { UNDO_MS, toasts } from '#lib/ui-state/toast.svelte.ts';
-  import { checkStrip, edges, factRows, reasonLines, verdictView, type GymStatus } from '#lib/gym/status.ts';
+  import { reasonLines, verdictView, type GymStatus } from '#lib/gym/status.ts';
   import { driver } from '#lib/gym/bot.ts';
   import { fetchConfig, openAt, postAct, settle, type GymConfig } from '#lib/gym/config.ts';
   import { linkKey } from '#lib/gym/linkKey.ts';
@@ -48,8 +49,9 @@
 
   /** `onlink`: the Worker refused the LINE link's key (an old card's, rotated: config.ts `link`), the kept settings
    *  dropped; the route says what to do (routes/gym). `viewOnly`: the guest's phone, shown, never changed (BotsSheet's
-   *  week.guest; /gym's stored pairing: no store here, so the bare page's first load holds no week). */
-  let { onlink, viewOnly = false }: { onlink?: () => void; viewOnly?: boolean } = $props();
+   *  week.guest; /gym's stored pairing: no store here, so the bare page's first load holds no week). `onjobs`: the
+   *  dot's tap (BotsSheet: Jobs, this bot's row). */
+  let { onlink, onjobs, viewOnly = false }: { onlink?: () => void; onjobs?: () => void; viewOnly?: boolean } = $props();
 
   /** アプリで変更: the newest this many. */
   const CHANGES_SHOWN = 6;
@@ -144,8 +146,6 @@
   /** The verdict; 停止中 points to the page's own 再開 while it serves the settings (else to LINE's). */
   const verdict = $derived(data && { ...driver.verdict(data, Date.now()), sentence: verdictView(data, cfgState === 'ok').sentence });
   const reasons = $derived(data ? reasonLines(data) : []);
-  const facts = $derived(data ? factRows(data, nowMs) : []);
-  const strip = $derived(data && { ...checkStrip(data), ...edges(data, nowMs) });
   /** The calendar: this month or next (the Worker's today's), its days. */
   const cal = monthPick(() => twoMonths(cfg?.rows[0]?.day ?? dayKey(minuteNow())));
   const cells = $derived(cfg ? monthCells(cfg.rows, cal.value) : []);
@@ -336,7 +336,7 @@
   {/if}
 {/snippet}
 
-<!-- under the verdict's sentence: 確認中…, 今すぐ確認's answer with the cooldown's tail (gone when it ends), an act's
+<!-- under the head: 確認中…, 今すぐ確認's answer with the cooldown's tail (gone when it ends), an act's
      failure (the editor's own while it's open) -->
 {#snippet answer()}
   {#if checking || cfg?.checking}
@@ -357,12 +357,11 @@
 {/snippet}
 
 <BotPage attr="gym" busy={poll.loading} {bot} onretry={() => void poll.refresh()} {verdict} vid={data?.verdict}
-  now={nowMs}
+  head={{ title: t('gym.head'), bot: t('bots.gym'), jump: onjobs }}
   rootAttr={{ 'data-config': cfgLoading ? 'loading' : cfgState }} menu={cfg ? { label: t('gym.menu.label'), onopen: () => (menuOpen = true) } : null}
   note={result || checking || cfg?.checking || (note && !editOpen) ? answer : undefined}
   attention={reasons.length ? { lines: reasons } : null}
-  {strip}
-  {facts} more={cfg?.changes.length ? [{ id: 'changes', label: t('gym.changes.title'), n: Math.min(cfg.changes.length, CHANGES_SHOWN), body: changesRow }] : []}>
+  more={cfg?.changes.length ? [{ id: 'changes', label: t('gym.changes.title'), n: Math.min(cfg.changes.length, CHANGES_SHOWN), body: changesRow }] : []}>
   {#if cfg && open.length}
     <section class="sec" aria-labelledby="gym-open" data-gym-open>
       <h3 id="gym-open" class="sec-label">{t('gym.open.title')}</h3>
@@ -449,7 +448,7 @@
 
 <style>
 
-  /* 今すぐ確認's line under the verdict's sentence */
+  /* 今すぐ確認's line under the head */
   .rline { margin: 0; font-size: var(--fs-s); font-weight: 700; line-height: var(--lh); font-variant-numeric: tabular-nums; }
   .rline.bad { color: var(--coral-text); }
 
