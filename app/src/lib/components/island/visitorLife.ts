@@ -65,7 +65,7 @@ export const BEHAVIOUR: Record<VisitorId, Behaviour> = {
   zipper: { roam: 48, arrive: 'hop', leave: 'hop', emotes: ['glee', 'mark-heart', 'mark-note'], signature: { motion: 'hop2', fx: 'sparkles' }, hello: 'glee' },
   // Reese and Cyrus: lean toward each other (CSS), a nuzzle with hearts
   reese: { roam: 0, arrive: 'walk', leave: 'walk', emotes: ['mark-heart', 'love', 'mark-note'], signature: { motion: 'nuzzle', fx: 'hearts' }, hello: 'mark-heart' },
-  // the guests (visitorRoles.ts): Gracie poses, chic; Wardell shows off a piece of furniture, a proud nod
+  // the special characters (visitorRoles.ts): Gracie poses, chic; Wardell shows off a piece of furniture, a proud nod
   gracie: { roam: 0, arrive: 'walk', leave: 'walk', emotes: ['mark-sparkle', 'inspiration', 'glee'], signature: { motion: 'proud', fx: 'sparkles' }, hello: 'mark-sparkle' },
   wardell: { roam: 0, arrive: 'walk', leave: 'walk', emotes: ['glee', 'inspiration', 'mark-note'], signature: { motion: 'nod', fx: 'glint' }, hello: 'glee' },
   // Katrina: still, her crystal ball's glint, mysterious
@@ -185,7 +185,7 @@ const STROLL_SLOTS = 2;
 const STROLL_LINGER = [4000, 7000] as const;
 
 /** The stroll the schedule has a visitor on around `t` (the island's clock with the relay's offset), if any: from the
- *  date, its window's slot and its spot alone (`kind`: the slot's, 'visitor' or 'guest'), so every phone has them at
+ *  date, its window's slot and its spot alone (`kind`: its actor's, the seed's tag), so every phone has them at
  *  the same place at the same time, one that skipped the beats (hidden, a sheet, the slow mode) too. To a stroll spot
  *  (strollSpots) that's open ground with a way there (`walkable`, `route`), a look around, and back. */
 export function strollTrack(id: VisitorId, home: Pt, t: number, kind: string, walkable: (x: number, y: number) => boolean, route: (from: Pt, to: Pt) => Pt[] | null): Track | null {

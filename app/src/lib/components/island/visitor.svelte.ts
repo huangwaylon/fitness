@@ -9,8 +9,8 @@
 // On Halloween night (events.ts) Jack comes instead and asks for candy: 「キャンディを あげる」 delights him (joy, the
 // candy pops up over a spooky sparkle), 「なにも あげない」 earns his trick (my villager's face goes goofy for a minute:
 // `ontrick`). No inventory, no ベル.
-// SceneTaps loads this chunk when a visitor or a guest is due, calls this once per slot, and asks it about each tap
-// (`tap`); it draws the sleep talk's caption (`mumble`, an overlay) and a guest shop's sheet (`shop`). `?visitor=<id>`
+// SceneTaps loads this chunk when a visitor is due, calls this once, and asks it about each tap (`tap`); it draws the
+// sleep talk's caption (`mumble`, an overlay) and a visitor shop's sheet (`shop`). `?visitor=<id>`
 // (dev or test mode) brings one now.
 // Their life (visitorLife.ts; docs/design.md "Visitors: life"): the director's 'visitor' actor moves them (walks,
 // motions, emotes, fx, facing), as it does the villagers; its model breathes and looks about as theirs do (villager3d
@@ -46,9 +46,8 @@ import { BUILDINGS, CENTRE_STAGE } from '#lib/world/world.ts';
 import { site } from './site.svelte.ts';
 import type { World } from './camera.svelte.ts';
 import { figure, thing, things3 } from '../world3d/things3.ts';
-import { beachedAt, dayVisitor, guestNow, onBeach, visitorLine, visitorNow, type VisitorId } from '#lib/world/visitors.ts';
-import { besideStage, guestSpot } from '#lib/layout/spots.ts';
-import { ROLES, fortuneOf, giftOf, isGuest, npcIcon, type GuestId } from '#lib/world/visitorRoles.ts';
+import { beachedAt, onBeach, visitorLine, visitorNow, type VisitorId } from '#lib/world/visitors.ts';
+import { ROLES, fortuneOf, giftOf, isSpecial, npcIcon, type SpecialId } from '#lib/world/visitorRoles.ts';
 import { findKey, findsView } from '#lib/model/finds.ts';
 import { recordFind } from '#lib/store/actions.ts';
 import { week } from '#lib/store/week.svelte.ts';
@@ -73,7 +72,7 @@ import { fx3d } from '#lib/world/fx3d.ts';
 /** The day Gulliver was woken this session (he stays up for it). */
 let wokeOn: string | null = null;
 
-export type ShopSheet = Component<{ open: boolean; id: GuestId; pool: 'dear' | 'any'; name: string }>;
+export type ShopSheet = Component<{ open: boolean; id: SpecialId; pool: 'dear' | 'any'; name: string }>;
 /** Gulliver's sleep talk or an おねがい's caption over their head (SceneTaps draws it: an overlay, the wish's kind). */
 export type Mumble = { n: number; text: string; want?: true };
 /** A visitor as the e2e's hooks list it (things3 probes `visitor:<slot>`; Island3D adds `shown`): its visit's `phase`
@@ -92,12 +91,12 @@ export type Visitor = {
   /** The caption over their head now, and where its anchor is (world x, z, lift: their head's top). */
   readonly mumble: Mumble | null;
   mumbleAt(): readonly [number, number, number];
-  /** A guest shop's sheet (loaded on its first ask), what it sells, open. */
-  shop: { open: boolean; for: { id: GuestId; pool: 'dear' | 'any'; name: string } | null; Sheet: ShopSheet | null };
+  /** A visitor shop's sheet (loaded on its first ask), what it sells, open. */
+  shop: { open: boolean; for: { id: SpecialId; pool: 'dear' | 'any'; name: string } | null; Sheet: ShopSheet | null };
 };
 
-/** One visitor slot on island `w` (the day's visitor's, centre stage, or the day's guest's, at the guest spot: each its own
- *  director actor and 3D figure): its effects in a root of their own (`stop` with the scene). */
+/** The visitor on island `w` (one at a time: visitors.ts visitorNow; the director's 'visitor' actor, its 3D figure): its
+ *  effects in a root of their own (`stop` with the scene). */
 export function useVisitor(w: World, o_: {
   scene: () => HTMLElement | undefined;
   enabled: () => boolean;
@@ -105,14 +104,9 @@ export function useVisitor(w: World, o_: {
   say?: (name: string, parts: string | string[], from: SaySpeaker, o?: { colour?: string; choices?: Choice[]; ondone?: () => void }) => void;
   /** Jack's trick, when he gets no candy (IslandScene: my villager's goofy face for a while). */
   ontrick?: () => void;
-  /** Whose slot: the day's visitor's (visitors.ts visitorNow, centre stage), or the day's guest's (guestNow: the guest
-   *  spot, visitorRoles.ts). */
-  slot?: 'visitor' | 'guest';
-  /** The guest's: whether the day's visitor stands on centre stage now (no guest spot down: the guest stands beside). */
-  stageTaken?: () => boolean;
 }): Visitor & { stop: () => void } {
-  /** The slot's director actor. */
-  const A = o_.slot ?? 'visitor';
+  /** The director's actor. */
+  const A = 'visitor';
   const { enabled } = o_;
   const shop = $state<Visitor['shop']>({ open: false, for: null, Sheet: null });
   let api!: Visitor;
@@ -126,34 +120,24 @@ export function useVisitor(w: World, o_: {
     /** Floating off the ground (u). */
     const FLOAT: Partial<Record<VisitorId, number>> = { wisp: 12 };
     /** Gulliver lies washed up face down at the front beach's water's edge (NH), somewhere new each day (visitors.ts
-     *  beachedAt: the layout's sand, by the date); the rest stand on centre stage (spots.ts stageOf: the layout's plaza). */
-    const spotOf = (id: VisitorId, date: string): Pt | null => {
-      if (A === 'visitor') return onBeach(id) ? [...beachedAt(site.layout, date, islandSeed())] : null;
-      // the guest (docs/design.md "Visitors: roles"): a beach guest on Gulliver's beach (at the guest spot on a day he lies
-      // there), the rest at the guest spot; none down: centre stage, or beside it while the day's visitor stands there
-      const l = site.layout, own = l && guestSpot(l);
-      if (onBeach(id) && !(gulliverToday(date) || own)) return [...beachedAt(l, date, islandSeed())];
-      if (own) return [...own];
-      return o_.stageTaken?.() && l ? ((b) => (b ? [...b] : null))(besideStage(l)) : null;
-    };
-    /** Gulliver washes up today (the visitors' slot's: the rotation's draw). */
-    const gulliverToday = (date: string) => dayVisitor(date, new Date(`${date}T00:00:00Z`).getUTCDay(), islandSeed()) === 'gulliver';
+     *  beachedAt: the layout's sand, by the date; Gullivarrr and Wendell too); the rest stand on centre stage (spots.ts stageOf: the layout's plaza). */
+    const spotOf = (id: VisitorId, date: string): Pt | null => (onBeach(id) ? [...beachedAt(site.layout, date, islandSeed())] : null);
     /** The campsite's door: walkers arrive from it and leave into it (spec §3). */
     const camp = (): Pt => ((b) => [b.x, b.z - 16] as Pt)(BUILDINGS.find((b) => b.id === 'campsite')!);
     /** The partner comes over only to a visitor this near its home (u): never across the island to centre stage. */
     const MEET_NEAR = 600;
-    /** Visitors outside the roster (an event's guest): their name-tag colour (Jack: his robe's purple; the holiday hosts:
+    /** Visitors outside the roster (an event's host, the special characters): their name-tag colour (Jack: his robe's purple; the holiday hosts:
      *  Nookipedia's title colours). */
     const TAG: Partial<Record<VisitorId, string>> = {
       jack: '#7A4FB8', franklin: '#FF97CA', jingle: '#E10000', zipper: '#FFE20B', reese: '#FFAAD1',
-      // the guests (the ACNH data's bubble colours)
+      // the special characters (the ACNH data's bubble colours)
       gracie: '#D254C7', wardell: '#3E8FB0', katrina: '#1C2F60', wendell: '#8C99FD', gullivarrr: '#F52C2C', pete: '#44C04F', leilani: '#7DCC00',
       lottie: '#FFA6AA', chip: '#77614C', nat: '#72AA1C', rover: '#5A66D2', shrunk: '#E86A6A', tortimer: '#C9A800', phineas: '#D38856', pave: '#0A96AE'
     };
     const CYRUS_TAG = '#4DDCD9';
 
     const clock = $derived(minuteNow());
-    const who = $derived(A === 'guest' ? guestNow(clock) : visitorNow(clock));
+    const who = $derived(visitorNow(clock));
     const date = $derived(dayKey(clock));
     /** `?leave=<ms>` (dev or test mode): the visit ends after that long (the departure's hook). */
     let gone = $state(false);
@@ -361,12 +345,11 @@ export function useVisitor(w: World, o_: {
     }
     $effect(() => {
       if (!shown) return;
-      const k = A === 'guest' ? 'guestBeat' : 'beat';
-      presence[k] = beat;
-      presence.syncs[A] = sync;
+      presence.beat = beat;
+      presence.sync = sync;
       return () => {
-        if (presence[k] === beat) presence[k] = null;
-        if (presence.syncs[A] === sync) delete presence.syncs[A];
+        if (presence.beat === beat) presence.beat = null;
+        if (presence.sync === sync) presence.sync = null;
         drop(A);
       };
     });
@@ -603,7 +586,7 @@ export function useVisitor(w: World, o_: {
       if (!host) return;
       const onCatch = (e: Event) => {
         const c = (e as CustomEvent<{ kind: string; id: string }>).detail;
-        if (shown && isGuest(shown)) return guestCatch(shown, c);
+        if (shown && isSpecial(shown)) return roleCatch(shown, c);
         const fish = c?.kind === 'fish' ? c.id : undefined;
         const d = franklinDay.read(today());
         if (shown !== 'franklin' || !fish || !d.asked || d.fed) return;
@@ -639,23 +622,25 @@ export function useVisitor(w: World, o_: {
       else say(t('visitor.reese'), [t(last), count], target, { colour: TAG.reese });
     }
 
+    /** Their name tag's colour: their own NH one (the roster, loaded on the first visit's tap). */
+    const colourOf = async (id: VisitorId): Promise<string | undefined> =>
+      TAG[id] ?? ((await import('#lib/villagers/roster.ts')).ROSTER as Record<string, { colour?: string }>)[id]?.colour;
     async function talk(id: VisitorId) {
       const target = speaker;
       if (!shown) return;
       sceneSfx('visitor');
       const name = t(`visitor.${id}`);
-      if (ask && (id === 'franklin' || isGuest(id))) return vegTalk(id, ask, name, target, TAG[id]!);
+      if (ask) return vegTalk(id, ask, name, target, await colourOf(id));
       if (id === 'jack') return jack(name, target, TAG.jack!);
       if (id === 'franklin') return franklin(name, target, TAG.franklin!);
       if (id === 'reese') return couple(target);
-      // a guest: their role's (a shop's first tap is its introduction and its offer at once)
-      if (isGuest(id) && (met.has(id) || ROLES[id].kind === 'shop')) {
+      // a special character: their role's (a shop's first tap is its introduction and its offer at once)
+      if (isSpecial(id) && (met.has(id) || ROLES[id].kind === 'shop')) {
         const first = !met.has(id);
         met.add(id);
-        return guest(id, name, target, TAG[id]!, first);
+        return role(id, name, target, TAG[id]!, first);
       }
-      // their name tag in their own NH colour (the roster, loaded on the first visit's tap)
-      const colour = TAG[id] ?? ((await import('#lib/villagers/roster.ts')).ROSTER as Record<string, { colour?: string }>)[id]?.colour;
+      const colour = await colourOf(id);
       // the first tap of a visit: their introduction (a few pages, as NH's visitors open)
       if (!met.has(id)) {
         met.add(id);
@@ -668,9 +653,9 @@ export function useVisitor(w: World, o_: {
       say(name, t(last, { sign: t(`zodiac.${sign}`) }), target, { colour });
     }
 
-    // ---- the guests' roles (visitorRoles.ts): a shop, a gift, Katrina's reading, Wendell's fish, a cheer at a catch ----
+    // ---- the special characters' roles (visitorRoles.ts): a shop, a gift, Katrina's reading, Wendell's fish, a cheer at a catch ----
     const wendellDay = dayRecord(SCENE.wendell, { asked: false, fed: false });
-    function openShop(id: GuestId, name: string) {
+    function openShop(id: SpecialId, name: string) {
       void import('./VisitorShop.svelte').then((m) => {
         shop.Sheet = m.default as unknown as ShopSheet;
         shop.for = { id, pool: ROLES[id].pool ?? 'any', name };
@@ -678,7 +663,7 @@ export function useVisitor(w: World, o_: {
       }, () => {});
     }
     /** The piece a giver gives today (the same on every phone), whether the island has it already, its name. */
-    async function giftNow(id: GuestId): Promise<{ item: string; given: boolean; name: string } | null> {
+    async function giftNow(id: SpecialId): Promise<{ item: string; given: boolean; name: string } | null> {
       const m = week.model;
       if (!m) return null;
       const C = await import('./catalog.ts');
@@ -691,40 +676,40 @@ export function useVisitor(w: World, o_: {
       return { item, given: findsView(m.state).has(findKey('item', item)), name: t(C.catalogName({ kind: 'item', id: item })) };
     }
     /** Their gift handed over (a present's find: in the ずかん's みつけた, the もようがえ's), their line, a word on it. */
-    async function give(id: GuestId, name: string, target: SaySpeaker, colour: string, key = 'gift') {
+    async function give(id: SpecialId, name: string, target: SaySpeaker, colour: string, key = 'gift') {
       const g = await giftNow(id);
       if (!g) return say(name, t(`chat.sp.${id}.given`), target, { colour });
       if (g.given) return say(name, t(`chat.sp.${id}.given`), target, { colour });
       recordFind('item', g.item);
       cue('emote-joy');
-      const got = () => toasts.show(t('world.guestShop.got', { item: g.name }), 3600, { reaction: 'joy', npc: npcIcon(id) });
+      const got = () => toasts.show(t('world.visitorGift.got', { item: g.name }), 3600, { reaction: 'joy', npc: npcIcon(id) });
       // (out of view their line is a banner itself: the word on the gift after it)
       const off = !onScreenNow();
       say(name, t(`chat.sp.${id}.${key}`, { item: g.name }), target, { colour, ondone: off ? got : undefined });
       if (!off) got();
     }
-    /** A guest's tap after their introduction: their role's. */
-    function guest(id: GuestId, name: string, target: SaySpeaker, colour: string, first = false) {
-      const role = ROLES[id];
-      if (role.kind === 'shop')
+    /** A special character's tap after their introduction: their role's. */
+    function role(id: SpecialId, name: string, target: SaySpeaker, colour: string, first = false) {
+      const r = ROLES[id];
+      if (r.kind === 'shop')
         return say(name, [...(first ? [t(`chat.sp.${id}.intro`)] : []), t(`chat.sp.${id}.offer`)], target, { colour, choices: [
           { label: t('visitor.shop.open'), pick: () => openShop(id, name) },
           { label: t('visitor.shop.no'), pick: () => {} }
         ] });
-      if (role.kind === 'gift') return void give(id, name, target, colour);
-      if (role.kind === 'fortune') {
+      if (r.kind === 'gift') return void give(id, name, target, colour);
+      if (r.kind === 'fortune') {
         const f = fortuneOf(today(), week.model?.me ?? 'A', islandSeed());
         return say(name, [t('chat.sp.katrina.read'), t(`visitor.fortune.luck.${f.luck}`), t('visitor.fortune.colour', { c: t(`visitor.fortune.c.${f.colour}`) })], target, { colour });
       }
-      if (role.kind === 'fish' && !wendellDay.read(today()).fed) {
+      if (r.kind === 'fish' && !wendellDay.read(today()).fed) {
         wendellDay.patch(today(), { asked: true });
         return say(name, t('chat.sp.wendell.ask'), target, { colour });
       }
       last = visitorLine(id, Math.random, last);
       say(name, t(last), target, { colour });
     }
-    /** A catch while a guest is here: Wendell fed (his gift), Chip's or Nat's cheer for one of theirs. */
-    function guestCatch(id: GuestId, c: { kind: string; id: string } | undefined) {
+    /** A catch while a special character is here: Wendell fed (his gift), Chip's or Nat's cheer for one of theirs. */
+    function roleCatch(id: SpecialId, c: { kind: string; id: string } | undefined) {
       const role = ROLES[id], a = speaker;
       if (!c || phase !== 'here') return;
       if (role.kind === 'fish' && c.kind === 'fish') {
@@ -781,7 +766,7 @@ export function useVisitor(w: World, o_: {
     });
     /** A tap on the asker: with the vegetable, the hand-over; else the ask (their introduction first, Franklin's fish
      *  too), and asked again, a kind word. */
-    async function vegTalk(id: VisitorId, r: VegRequest, name: string, target: SaySpeaker, colour: string) {
+    async function vegTalk(id: VisitorId, r: VegRequest, name: string, target: SaySpeaker, colour: string | undefined) {
       const fr = id === 'franklin', d = today();
       const intro = !met.has(id) && !(fr && franklinDay.read(d).asked);
       met.add(id);
@@ -801,7 +786,7 @@ export function useVisitor(w: World, o_: {
     }
     /** Handed over: their joy (Franklin cooks it), the vegetable over their head, hearts, then their thanks and かいがら,
      *  and the day's piece when the ask brings one (a present's find, as a giver's: its word once the balloon closes). */
-    async function thank(id: VisitorId, r: VegRequest, name: string, target: SaySpeaker, colour: string, veg: string, v: number) {
+    async function thank(id: VisitorId, r: VegRequest, name: string, target: SaySpeaker, colour: string | undefined, veg: string, v: number) {
       cue('emote-joy');
       if (id === 'franklin') eventJingle(['turkey-cooking-start', 'turkey-cooking-done']);
       treatPop(`finds/${r.crop}`);
@@ -815,7 +800,7 @@ export function useVisitor(w: World, o_: {
       }
       // (the vegetable's pop over their head first, then their words)
       clearTimeout(thanksTimer);
-      thanksTimer = setTimeout(() => say(name, pages, target, { colour, ondone: g ? () => toasts.show(t('world.guestShop.got', { item: g.name }), 3600, { reaction: 'joy', npc: npcIcon(id) }) : undefined }), THANKS_MS);
+      thanksTimer = setTimeout(() => say(name, pages, target, { colour, ondone: g ? () => toasts.show(t('world.visitorGift.got', { item: g.name }), 3600, { reaction: 'joy', npc: npcIcon(id) }) : undefined }), THANKS_MS);
     }
     const THANKS_MS = 1100;
     /** The ask's piece today (vegRequest.ts vegGift: the same on every phone), null: none left, or the island has it. */

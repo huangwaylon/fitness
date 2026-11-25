@@ -55,8 +55,8 @@ const GROUP_COLOUR: Record<string, string> = {
 };
 const OWNER: Record<string, [string, string]> = { 'home-A': ['#8fd3ff', 'ウェイ'], 'home-B': ['#ffb8cc', 'うめ'], 'home-G': ['#cdb4f2', 'ゲスト'] };
 
+/** The visitors' derived spot (spots.ts stageOf) while no usable mark of theirs is down. */
 export interface AutoSpot {
-  k: 'plaza' | 'guest';
   label: string;
   x: number;
   z: number;
@@ -82,8 +82,7 @@ export interface Draw {
   focus?: Issue | null;
   /** A resize's new coast (しまの おおきさ: its grid codes): the land it gains or loses tinted, its outline dashed. */
   coast?: Uint8Array | null;
-  /** Where the visitors and the day's guest stand while no usable mark of theirs is down (spots.ts stageOf,
-   *  besideStage): a dashed tile and its label. */
+  /** Where the visitor stands while no usable mark of theirs is down (spots.ts stageOf): a dashed tile and its label. */
   auto?: readonly AutoSpot[];
   /** The rivers' drawn lines and their turns' arcs (layout/river.ts), marked over the tiles; none: not shown. */
   river?: readonly Stem[] | null;
@@ -209,7 +208,7 @@ function drawAuto(ctx: CanvasRenderingContext2D, v: View, a: AutoSpot): void {
   ctx.save();
   ctx.setLineDash([Math.max(3, T * 0.18), Math.max(2, T * 0.12)]);
   ctx.lineWidth = Math.max(1.5, T * 0.07);
-  ctx.strokeStyle = a.k === 'plaza' ? 'rgba(255,249,227,0.95)' : 'rgba(255,214,240,0.95)';
+  ctx.strokeStyle = 'rgba(255,249,227,0.95)';
   roundRect(ctx, mx - T / 2 + 2, my - T / 2 + 2, T - 4, T - 4, T * 0.2);
   ctx.stroke();
   ctx.setLineDash([]);

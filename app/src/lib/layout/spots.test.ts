@@ -1,7 +1,6 @@
 import { describe, expect, test } from 'vitest';
-import { defaultLayout, doorOf, extentOf, fromJson, layoutOf, objMid, objTiles, toJson, withChanges, type Layout } from './model.ts';
-import { KIND_LIST } from './catalog.ts';
-import { beachOk, besideStage, daySpots, guestOk, guestSpot, markerOf, openGrass, plazaOk, spotWhy, stageOf, washedUp } from './spots.ts';
+import { defaultLayout, extentOf, fromJson, layoutOf, objMid, objTiles, toJson, withChanges, type Layout } from './model.ts';
+import { beachOk, daySpots, markerOf, openGrass, plazaOk, spotWhy, stageOf, washedUp } from './spots.ts';
 import { validate } from './validate.ts';
 import { frontRows } from './hides.ts';
 import { tapCovered } from './clear.ts';
@@ -124,7 +123,7 @@ describe('the visitors’ spots: the members’ marks (spots.ts markerSpot)', ()
   const auto = stageOf(l)!, [ac, ar] = tileAt(auto[0], auto[1]);
   // a tile the plaza may go on, well away from the usual spot; one more for a move
   const ok = openGrass(l).filter(([c, r]) => plazaOk(l, c, r) && Math.hypot(c - ac, r - ar) > 4);
-  const [pc, pr] = ok[0], [qc, qr] = ok.find(([c, r]) => Math.hypot(c - pc, r - pr) > 4 && guestOk(l, c, r))!;
+  const [pc, pr] = ok[0], [qc, qr] = ok.find(([c, r]) => Math.hypot(c - pc, r - pr) > 4)!;
   const mark = (g: Layout, id: string, k: string, x: number, z: number) => withChanges(g, { set: [{ id, k, x, z, f: 0 }] });
   test('the plaza: they stand on it, it moves them, the day’s weeds and fossils keep off it; a mark gone, or nobody able to stand there, the usual spot', () => {
     const bad: string[] = [];
@@ -168,54 +167,23 @@ describe('the visitors’ spots: the members’ marks (spots.ts markerSpot)', ()
     if (JSON.stringify(stageOf(g)) !== JSON.stringify(auto)) bad.push('his moved the stage');
     expect([sand.length > 0, bad]).toEqual([true, []]);
   });
-  test('the guest’s: they stand on it; none down (or nobody can stand there): the fallback, centre stage or beside it', () => {
-    // none down: no guest spot (the guest at centre stage), and the stage-side spot 2-3 tiles across, usable
-    expect(guestSpot(l)).toBeNull();
-    const side = besideStage(l)!, [sc, sr] = tileAt(side[0], side[1]);
-    expect([Math.abs(sc - ac) >= 2 && Math.abs(sc - ac) <= 3, Math.abs(sr - ar) <= 1, guestOk(l, sc, sr)]).toEqual([true, true, true]);
-    // put down: there; the stage and the day's weeds unmoved by it, the weeds kept off it
-    const g = mark(l, 'o4', 'guest-spot', qc, qr);
-    expect(guestSpot(g)).toEqual(tileMid(qc, qr));
-    expect(stageOf(g)).toEqual(auto);
-    expect(daySpots(g, '2026-11-04', 'island-fund').lawn.every(([x, z]) => Math.abs(tileAt(x, z)[0] - qc) > 1 || Math.abs(tileAt(x, z)[1] - qr) > 3)).toBe(true);
-    // something put on it: the fallback, and the editor's warning
-    const walled = mark(g, 'o5', 'brick-well', qc, qr);
-    expect(guestSpot(walled)).toBeNull();
-    expect(validate(walled).filter((i) => i.code === 'visitor-spot').map((i) => i.ids)).toEqual([['o4', 'o5']]);
-    expect(layoutOpOf({ sc: 'o', id: 'o4', at: 1.8e12, k: 'guest-spot', x: 9, z: 30, f: 0 })).toMatchObject({ k: 'guest-spot' });
-  });
   test('an op of the new kinds passes the contract as it is (no relay change; an older app keeps it as a thing it doesn’t know)', () => {
     expect([layoutOpOf({ sc: 'o', id: 'o1', at: 1.8e12, k: 'plaza', x: 9, z: 30, f: 0 }), layoutOpOf({ sc: 'o', id: 'o2', at: 1.8e12, k: 'beach-spot', x: 9, z: 3, f: 0 })].map((o) => (o && 'k' in o ? o.k : null))).toEqual(['plaza', 'beach-spot']);
   });
 });
 
-describe('the guest’s and Gulliver’s rules, relaxed (2026-11-11: what they draw and where they walk), and why a spot fails (spots.ts spotWhy)', () => {
+describe('Gulliver’s rule, relaxed (2026-11-11: what he draws and where he walks), and why a spot fails (spots.ts spotWhy)', () => {
   const put = (g: Layout, ...os: [string, string, number, number][]) => withChanges(g, { set: os.map(([id, k, x, z]) => ({ id, k, x, z, f: 0 as const })) });
-  const why = (g: Layout, k: 'plaza' | 'guest-spot' | 'beach-spot', c: number, r: number) => spotWhy(g, k, c, r).map((w) => w.why);
+  const why = (g: Layout, k: 'plaza' | 'beach-spot', c: number, r: number) => spotWhy(g, k, c, r).map((w) => w.why);
   /** Gulliver's old rule: sand under him and each side, nothing a tile round his tile, three in front of a thing. */
   const oldBeachOk = (g: Layout, c: number, r: number) =>
-    [-1, 0, 1].every((i) => g.kind(c + i, r) === 'sand') && ![...g.objects.values()].some((o) => !['plaza', 'guest-spot', 'beach-spot'].includes(o.k) && objTiles(g, o).some(([a, b]) => Math.abs(a - c) <= 1 && r - b >= -3 && r - b <= 1));
-  // an open tile for the guest (grass, nothing round it for two tiles) and a beach tile for Gulliver, on the default
-  // (the guest's tile: open grass usable as the plaza, what stands within two tiles of it and three rows taken away)
-  const open = openGrass(l).find(([c, r]) => plazaOk(l, c, r) && guestOk(l, c, r))!;
+    [-1, 0, 1].every((i) => g.kind(c + i, r) === 'sand') && ![...g.objects.values()].some((o) => !['plaza', 'beach-spot'].includes(o.k) && objTiles(g, o).some(([a, b]) => Math.abs(a - c) <= 1 && r - b >= -3 && r - b <= 1));
+  // an open tile for the plaza (grass, nothing round it for two tiles) and a beach tile for Gulliver, on the default
+  // (open grass usable as the plaza, what stands within two tiles of it and three rows taken away)
+  const open = openGrass(l).find(([c, r]) => plazaOk(l, c, r))!;
   const bare = withChanges(l, { remove: [...l.objects.values()].filter((o) => o.k !== 'home' && objTiles(l, o).some(([a, b]) => Math.abs(a - open[0]) <= 2 && Math.abs(b - open[1]) <= 3)).map((o) => o.id) });
   const sand: [number, number][] = [];
   for (let r = 0; r < 60; r++) for (let c = 1; c < 19; c++) if (beachOk(l, c, r) && oldBeachOk(l, c, r) && beachOk(l, c, r + 2)) sand.push([c, r]);
-  test('the guest: next to a flower, a fence (the old 3×3 patch refused each); never on water, a building, a door, out of reach or hidden', () => {
-    const [c, r] = open;
-    const fence = KIND_LIST.find((d) => d.group === 'fence')!.k;
-    const passes = [put(bare, ['f1', 'flower', c + 1, r]), put(bare, ['f1', fence, c - 1, r]), put(bare, ['f1', 'flower', c + 1, r], ['f2', fence, c - 1, r], ['f3', 'flower', c, r - 2])];
-    expect(passes.map((g) => [guestOk(g, c, r), plazaOk(g, c, r)])).toEqual(passes.map(() => [true, false]));
-    expect(validate(put(passes[2], ['gs', 'guest-spot', c, r])).filter((i) => i.code === 'visitor-spot')).toEqual([]);
-    const wet = withChanges(bare, { tiles: [[c, r, codeOf('pond', l.tier(c, r))]] });
-    const ringed = withChanges(bare, { tiles: [-1, 0, 1].flatMap((i) => [-1, 0, 1].filter((j) => i || j).map((j) => [c + i, r + j, codeOf('pond', l.tier(c, r))] as [number, number, number])) });
-    const museum = l.objects.get('museum') ?? [...l.objects.values()].find((o) => o.k === 'home')!;
-    const [mc, mr] = objTiles(l, museum)[0];
-    expect([why(wet, 'guest-spot', c, r), why(ringed, 'guest-spot', c, r), why(bare, 'guest-spot', mc, mr), why(put(bare, ['t1', 'oak', c, r - 1]), 'guest-spot', c, r), why(put(bare, ['t1', 'flower', c, r + 1]), 'guest-spot', c, r)])
-      .toEqual([['water'], ['unreachable'], ['on'], ['hidden'], ['covers']]);
-    const home = l.objects.get('home-A')!, [dc, dr] = doorOf(l, home).tiles[0];
-    expect(why(l, 'guest-spot', dc, dr)).toEqual(['door']);
-  });
   test('Gulliver: by a palm, behind his feet or three rows before it (the old clearance refused both); never off the sand, on a thing, out of reach, hidden or under its fronds', () => {
     expect(sand.length).toBeGreaterThan(0);
     const [c, r] = sand[0];
@@ -242,7 +210,7 @@ describe('the guest’s and Gulliver’s rules, relaxed (2026-11-11: what they d
   });
 });
 
-describe('the old fixed visitors’ spot (spot variant "stage") is gone from the layout (model.ts isLegacyStage)', () => {
+describe('retired marks, the old fixed visitors’ spot (spot variant "stage") and the guest spot, are gone from the layout (model.ts isRetired)', () => {
   test('not in the default; an older record’s op of it or an export with it reads as before, without it', () => {
     const stage = { id: 'spot-stage', k: 'spot', x: 8, z: 45, f: 0 as const, s: 'stage' };
     expect([...l.objects.values()].filter((o) => o.s === 'stage')).toEqual([]);
@@ -252,6 +220,16 @@ describe('the old fixed visitors’ spot (spot variant "stage") is gone from the
     expect([g.objects.has('spot-stage'), g.objects.has('o9'), stageOf(g)]).toEqual([false, true, stageOf(withChanges(l, { set: [{ id: 'o9', k: 'flower', x: 9, z: 30, f: 0, s: 'c1' }] }))]);
     const j = toJson(l);
     expect(fromJson({ ...j, objects: [...j.objects, stage] })!.objects.has('spot-stage')).toBe(false);
+  });
+  test('a saved guest spot (until 2026-11-25): the layout loads as before without it, the visitor at the plaza’s', () => {
+    const gs = { id: 'o4', k: 'guest-spot', x: 9, z: 30, f: 0 as const };
+    const m = new Map<string, LayoutEntry>();
+    for (const r of [{ sc: 'o', ...gs, at: 1.7e12 }, { sc: 'o', id: 'o9', k: 'flower', x: 9, z: 31, f: 0, s: 'c1', at: 1.7e12 + 1 }]) mergeLayout(m, { ...layoutOpOf(r)!, who: 'A' } as LayoutEntry);
+    const g = layoutOf(m);
+    expect([g.objects.has('o4'), g.objects.has('o9'), validate(g).filter((i) => i.code === 'visitor-spot')]).toEqual([false, true, []]);
+    expect(stageOf(g)).toEqual(stageOf(withChanges(l, { set: [{ id: 'o9', k: 'flower', x: 9, z: 31, f: 0, s: 'c1' }] })));
+    const j = toJson(l), read = fromJson({ ...j, objects: [...j.objects, gs] });
+    expect([read !== null, read?.objects.has('o4'), read?.objects.size]).toEqual([true, false, l.objects.size]);
   });
 });
 

@@ -180,8 +180,9 @@ both. A change to one of these is a conscious decision: edit the line, don't let
 - **Weather from Tokyo:** the relay's cron keeps a 48 h NH-sky timeline from Open-Meteo (JMA); winter rain is snow;
   event nights stay fine ([backend](backend.md#the-real-weather)).
 - **Player speed:** run 300, action walk 360 (`world/speed.ts`).
-- **Special characters:** one a day in the visitor slot, roles from per-character data
-  ([design](design.md#visitors-roles)).
+- **One visitor at a time** (2026-11-25): the special characters joined the weekday rotation (one a day), the guest
+  spot merged into the visitors' spot; "guest" means only the third player ([design](design.md#visitors)). Roles
+  from per-character data ([design](design.md#visitors-roles)).
 - **K.K.** is a fixed layout piece: Saturday show, requests by day.
 
 ## Rooms

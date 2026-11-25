@@ -53,11 +53,10 @@ const away: { since: number; followed: Villager | null } = { since: 0, followed:
 export const presence: {
   visitor: boolean;
   beat: ((r: () => number) => void) | null;
-  guestBeat: ((r: () => number) => void) | null;
   kk: ((r: () => number) => void) | null;
-  /** Each visitor slot's stroll as the schedule has it by `now` (visitorLife.ts strollTrack; idle life's sync). */
-  syncs: Partial<Record<'visitor' | 'guest', (now: number, jump: boolean) => void>>;
-} = { visitor: false, beat: null, guestBeat: null, kk: null, syncs: {} };
+  /** The visitor's stroll as the schedule has it by `now` (visitorLife.ts strollTrack; idle life's sync). */
+  sync: ((now: number, jump: boolean) => void) | null;
+} = { visitor: false, beat: null, kk: null, sync: null };
 /** The villagers (ui-state/cast.ts): mine, the partner's and the third (the guest's on a member's phone, B's on the
  *  guest's). */
 type Villager = 'mine' | 'partner' | 'third';
@@ -151,7 +150,7 @@ const FOLLOW_RANGE = 600;
 
 export function attachAvatar(c: AvatarCtx): () => void {
   ctx = c;
-  setRouter((id) => (id === 'host' || id === 'visitor' || id === 'guest' || id === 'kk' ? null : route(c.geo(), c.where(id), restOf(id))));
+  setRouter((id) => (id === 'host' || id === 'visitor' || id === 'kk' ? null : route(c.geo(), c.where(id), restOf(id))));
   return () => {
     if (ctx === c) {
       ctx = null;

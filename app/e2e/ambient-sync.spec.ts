@@ -27,7 +27,7 @@ const hide = (p: Page, hidden: boolean) =>
 async function open(ctx: BrowserContext, as: 'B' | 'G') {
   const page = await ctx.newPage();
   // Sunday noon: Daisy Mae, who strolls; a tap's wake long enough for the test
-  await page.goto(`?demo&as=${as}&critter=none&balloon=none&stars=none&guest=none&visitor=daisy-mae&wake=900000`);
+  await page.goto(`?demo&as=${as}&critter=none&balloon=none&stars=none&visitor=daisy-mae&wake=900000`);
   await islandUp(page);
   return page;
 }

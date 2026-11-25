@@ -44,7 +44,7 @@ the 3 × 3 reads watered here until the synced field has their ops, `island/farm
 harvests come on the next sync. The shop: うる's 野菜 and 苗, かう's 苗 (a row's tap fills the free plots), 「畑の外の株」 with 苗に戻す.
 
 ## おねがい
-A visitor wants a vegetable (`world/vegRequest.ts`, `island/vegAsk.svelte.ts`): the day's chat or cheer guest, Franklin on
-Turkey Day, while the island has a field or my pocket a vegetable; at most one ask a day per person, crop seeded by date
-and person, gone when the asker leaves. A tap with it in the pocket is a `sell` of one at the shop price, plus sometimes a
+A visitor wants a vegetable (`world/vegRequest.ts`, `island/vegAsk.svelte.ts`): the day's plaza visitor or chat or cheer
+character, Franklin on Turkey Day, while the island has a field or my pocket a vegetable; at most one ask a day per
+person, crop seeded by date and person, gone when the asker leaves. A tap with it in the pocket is a `sell` of one at the shop price, plus sometimes a
 garden piece. Done is per phone (`scene-veg-ask`).

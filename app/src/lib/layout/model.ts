@@ -71,9 +71,10 @@ export function defaultLayout(): Layout {
   return base;
 }
 
-/** The old fixed visitors' spot (a `spot` of variant 'stage', the default's `spot-stage` until 2026-11-11): the stage
- *  is derived now (spots.ts stageOf), so an older record's op or export of it is dropped as it's read. */
-export const isLegacyStage = (o: { k: string; s?: string }): boolean => o.k === 'spot' && o.s === 'stage';
+/** Retired marks, dropped as an older record's op or export of them is read (the record's entry left as it is): the old
+ *  fixed visitors' spot (a `spot` of variant 'stage', the default's `spot-stage` until 2026-11-11: the stage is derived,
+ *  spots.ts stageOf) and the guest spot (`guest-spot`, until 2026-11-25: one visitor at a time, at the plaza's). */
+export const isRetired = (o: { k: string; s?: string }): boolean => (o.k === 'spot' && o.s === 'stage') || o.k === 'guest-spot';
 
 // ---- the record's ops over it ---------------------------------------------------------------------------------------
 
@@ -98,7 +99,7 @@ export function layoutOf(entries: Iterable<LayoutEntry> | Map<string, LayoutEntr
       const i = chunkIndex(e.id);
       if (i !== null) writeChunk(codes, i, e.g);
     } else if (e.sc === 'o') {
-      if (e.rm || isLegacyStage(e)) objects.delete(e.id);
+      if (e.rm || isRetired(e)) objects.delete(e.id);
       // (a home's facing is its owner's look's, never an outdoor op's: the default's until its owner turns it)
       else objects.set(e.id, { id: e.id, k: e.k, x: e.x, z: e.z, f: WHO_OF_HOME[e.id] ? (from.objects.get(e.id)?.f ?? 0) : e.f, ...(e.s ? { s: e.s } : {}), ...(e.on ? { on: e.on } : {}) });
     } else if (e.sc === 'h') {
@@ -259,7 +260,7 @@ export function fromJson(j: unknown): Layout | null {
   const objects = new Map<string, Obj>();
   const ID = /^[A-Za-z0-9][A-Za-z0-9:._-]{0,31}$/;
   for (const x of o.objects) {
-    if (x && isLegacyStage(x)) continue;
+    if (x && isRetired(x)) continue;
     if (!x || typeof x.id !== 'string' || !ID.test(x.id) || typeof x.k !== 'string' || !kindDef(x.k)) return null;
     if (![x.x, x.z, x.f].every((n) => Number.isInteger(n) && n >= 0 && n < 128) || x.f > 3) return null;
     objects.set(x.id, { id: x.id, k: x.k, x: x.x, z: x.z, f: x.f as Facing, ...(typeof x.s === 'string' && x.s ? { s: x.s } : {}), ...(typeof x.on === 'string' && ID.test(x.on) && x.on !== x.id ? { on: x.on } : {}), ...(Array.isArray(x.n) && x.n.length === 2 ? { n: [Number(x.n[0]) || 0, Number(x.n[1]) || 0] as const } : {}) });

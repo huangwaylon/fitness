@@ -194,8 +194,7 @@ export class IslandLife {
       if (undriven(input.villagers[w])) followPlan(id, tracks[w] ?? null, t, o.jump);
       else unplan(id);
     }
-    presence.syncs.visitor?.(t, o.jump);
-    presence.syncs.guest?.(t, o.jump);
+    presence.sync?.(t, o.jump);
     const ms = performance.now() - t0;
     syncStats.ms = ms;
     syncStats.max = Math.max(syncStats.max, ms);
@@ -325,7 +324,7 @@ export class IslandLife {
       sync: this.#sync,
       // (an outing of a villager nobody's phone moves is the plan's: #sync puts it on its track)
       outing: (id, stops, together) => (online(whoOf(id)) ? outing(id, stops, together) : false),
-      visitor: (r) => (presence.beat?.(r), presence.guestBeat?.(r), presence.kk?.(r)),
+      visitor: (r) => (presence.beat?.(r), presence.kk?.(r)),
       treeShake: (id) => {
         const w = whoOf(id);
         if (w !== 'G') this.shakeN[w]++;

@@ -404,15 +404,19 @@ partner's: a ハイタッチ on both phones (`world/highFives.ts`).
 
 ### Visitors
 
-`island/visitor.svelte.ts`, `world/visitors.ts`: one at a time, each NH's 3D model, seeded by date. Priority
-(`visitorAt`): an event's host, the wedding couple, Celeste, nobody on Saturday from 18:00 ([K.K.](#kk-on-his-stool)),
-Daisy Mae (Sunday mornings), the weekday visitor. They stand on centre stage; Gulliver sleeps on the front beach. No
-trading, no ベル.
+`island/visitor.svelte.ts`, `world/visitors.ts`: at most one at any time (the user, 2026-11-25; K.K. doesn't count),
+each NH's 3D model, seeded by date and island seed (every phone agrees). Priority (`visitorAt`): an event's host, the
+wedding couple, Celeste, Pavé (Festivale), nobody on Saturday from 18:00 ([K.K.](#kk-on-his-stool)), Daisy Mae (Sunday
+05–12), the day's `ROTATION` visitor (Mon–Sat): NH's weekday visitors and the special characters, each once per cycle
+of 23 weekdays, a week apart at least across cycles, Wisp never on a Saturday. Hours (`hoursOf`): Wisp 20–04, the
+beach ones 06–18, the rest 06–22. All stand at the visitors' spot (the `plaza` mark, else `stageOf`); Gulliver,
+Gullivarrr and Wendell on the beach (`washedUp`). `?visitor=<id>|none`.
 
 ### Visitors: roles
 
-`world/visitorRoles.ts`: special characters with a role, one a day at the guest spot (`layout/spots.ts`);
-`?guest=<id>|none`.
+`world/visitorRoles.ts` (`ROLES`): shops (Gracie, Wardell: `VisitorShop.svelte`), gifts (Pete, Leilani, Lottie),
+Katrina's fortune, Wendell's fish, cheers (Chip, Nat), chat. おねがい (`world/vegRequest.ts`): the plaza visitors and
+the chat/cheer characters ask for a vegetable.
 
 ### K.K. on his stool
 

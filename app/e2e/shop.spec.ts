@@ -359,7 +359,7 @@ test('全部売る keeps one of the vegetable today’s おねがい asks for (C
     localStorage.setItem('island-demo.events', JSON.stringify({ day: '2026-11-16', events: [
       { id: 'seed-0', type: 'tally', data: { date: '2026-11-16', counts: { 'goods:carrot': 3, 'fish:koi': 1 } }, queuedAt: at, tries: 0, nextAt: 0, ackedAt: at, person: 'A' }] }));
   });
-  await page.goto('shop?demo&date=2026-11-16T12:00&guest=chip');
+  await page.goto('shop?demo&date=2026-11-16T12:00&visitor=chip');
   await openList(page, 'sell');
   await expect(page.locator('[data-shop-all-row="sell"] [data-shop-all-line]')).toHaveText(/^全部で3個・/);
   await page.locator('[data-shop-all="sell"]').click();

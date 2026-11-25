@@ -1,5 +1,5 @@
-// おねがい (docs/farming.md "おねがい"): the day's chat or cheer guest wants a vegetable (Chip on Monday 2026-11-16: ウェイ's
-// carrot), Franklin on Turkey Day. Its caption over their head; a tap with it in my pocket hands it over in place (a
+// おねがい (docs/farming.md "おねがい"): the day's plaza visitor or chat or cheer character wants a vegetable (Chip on
+// 2026-11-16: ウェイ's carrot), Franklin on Turkey Day. Its caption over their head; a tap with it in my pocket hands it over in place (a
 // sell of the one at its price, the day's garden piece a find); without it, the ask, then a kind word. Wiring only:
 // who asks and for what is vegRequest.test's.
 import { expect, test, type Page } from './fixtures.ts';
@@ -32,7 +32,7 @@ async function up(page: Page, url: string, who: string) {
 test('Chip wants a carrot: his caption, and a tap with one in my pocket hands it over (one sold at 18, his garden piece a find)', async ({ page }) => {
   const D = '2026-11-16';
   await seed(page, D, [FIELD, ['tally', { date: D, counts: { 'goods:carrot': 2 } }, 'A']]);
-  await up(page, `?demo&date=${D}T12:00&guest=chip&critter=none`, 'chip');
+  await up(page, `?demo&date=${D}T12:00&visitor=chip&critter=none`, 'chip');
   const chip = () => visitorOut(page, 'chip');
   await expect.poll(async () => (await chip())?.vegAsk).toBe('carrot');
   await expect(page.locator('[data-mumble]')).toHaveText('ニンジンが たべたいなあ');
@@ -53,7 +53,7 @@ test('without the vegetable: the ask, then a kind word, nothing sent', async ({ 
   // a field of mine and no carrot (a farmer: the ask still comes)
   const D = '2026-11-16';
   await seed(page, D, [FIELD]);
-  await up(page, `?demo&date=${D}T12:00&guest=chip&critter=none`, 'chip');
+  await up(page, `?demo&date=${D}T12:00&visitor=chip&critter=none`, 'chip');
   await tapFigure(page, 'visitor', 'chip');
   await expect(talk(page)).toHaveAttribute('aria-label', /なんだか ニンジンが\nたべたいなあ…/);
   await tapFigure(page, 'visitor', 'chip');
@@ -65,7 +65,7 @@ test('without the vegetable: the ask, then a kind word, nothing sent', async ({ 
 test('Franklin on Turkey Day asks for ウェイ’s pumpkin with his fish, and cooks it when handed over', async ({ page }) => {
   const T = '2026-11-26';
   await seed(page, T, [['tally', { date: T, counts: { 'goods:pumpkin': 1 } }, 'A']]);
-  await up(page, `?demo&date=${T}T12:00&visitor=franklin&guest=none&critter=none`, 'franklin');
+  await up(page, `?demo&date=${T}T12:00&visitor=franklin&critter=none`, 'franklin');
   await expect.poll(async () => (await visitorOut(page, 'franklin'))?.vegAsk).toBe('pumpkin');
   await tapFigure(page, 'visitor', 'franklin');
   await expect(talk(page)).toHaveAttribute('aria-label', /^フランクリン: おお！ みずみずしい カボチャ！/);

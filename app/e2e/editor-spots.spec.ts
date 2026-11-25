@@ -1,10 +1,9 @@
-// The visitors' spots in the desktop editor (docs/island-layout.md "Derived, never hand-made", "The editor"): the
-// guest's spot goes down next to a flower and Gulliver's beside a palm with no warning (their rules relaxed
-// 2026-11-11); the plaza by the flower warns, naming the flower and marking its tile; the derived spots drawn dashed
-// with their labels, the old 「ステージ」 never. The plan is a canvas: its labels are read from fillText.
+// The visitors' spots in the desktop editor (docs/island-layout.md "Derived, never hand-made", "The editor"):
+// Gulliver's goes down beside a palm with no warning (his rule relaxed 2026-11-11); the plaza by a flower warns,
+// naming the flower and marking its tile; the derived spot drawn dashed with its one label, the old 「ステージ」 never. The plan is a canvas: its labels are read from fillText.
 import { expect, test, type Page } from './fixtures.ts';
 import { Layout, type Obj } from '../src/lib/layout/model.ts';
-import { beachOk, guestOk, plazaOk } from '../src/lib/layout/spots.ts';
+import { beachOk, spotWhy } from '../src/lib/layout/spots.ts';
 
 test.use({ viewport: { width: 1440, height: 900 } });
 
@@ -12,7 +11,7 @@ type E = {
   tileScreen(c: number, r: number): [number, number];
   layout(): { objects: Map<string, Obj>; codes: Uint8Array; homes: Layout['homes'] };
   issues(): { code: string; ja: string; ids: string[]; tiles: [number, number][] }[];
-  auto(): { k: string; label: string }[];
+  auto(): { label: string }[];
 };
 const ed = <R,>(page: Page, fn: (e: E) => R) => page.evaluate(`(${fn.toString()})(window.__editor)`) as Promise<R>;
 
@@ -32,7 +31,7 @@ async function place(page: Page, k: string, c: number, r: number) {
 }
 const spotIssues = (page: Page) => ed(page, (e) => e.issues().filter((i) => i.code === 'visitor-spot'));
 
-test('the guest next to a flower and Gulliver beside a palm: no warning; the plaza by the flower says why; the derived spots drawn, 「ステージ」 never', async ({ page }) => {
+test('Gulliver beside a palm: no warning; the plaza by a flower says why; the derived spot drawn with its one label, 「ステージ」 never', async ({ page }) => {
   await page.addInitScript(() => {
     const seen = ((window as unknown as { __texts: Set<string> }).__texts = new Set<string>());
     const fill = CanvasRenderingContext2D.prototype.fillText;
@@ -45,20 +44,19 @@ test('the guest next to a flower and Gulliver beside a palm: no warning; the pla
   await expect(page.locator('[data-editor]')).toBeVisible();
   await page.waitForFunction(() => (window as unknown as { __editor?: unknown }).__editor);
   const texts = () => page.evaluate(() => [...(window as unknown as { __texts: Set<string> }).__texts]);
-  // no marks down: where the visitors and the guest will stand, drawn
-  await expect.poll(() => ed(page, (e) => e.auto().map((a) => a.label))).toEqual(['お客さん（自動）', 'ゲスト（自動）']);
-  await expect.poll(texts).toEqual(expect.arrayContaining(['お客さん（自動）', 'ゲスト（自動）', 'ウェイ', 'うめ']));
+  // no marks down: where the visitor will stand, drawn (one label: the guest spot's gone, 2026-11-25)
+  await expect.poll(() => ed(page, (e) => e.auto().map((a) => a.label))).toEqual(['お客さんの場所（自動）']);
+  await expect.poll(texts).toEqual(expect.arrayContaining(['お客さんの場所（自動）', 'ウェイ', 'うめ']));
   expect(await texts()).not.toContain('ステージ');
+  expect(await texts()).not.toContain('ゲスト（自動）');
 
-  // the guest's spot right beside a flower (the old 3 × 3 rule refused it)
+  // a tile right beside a flower, the flower its one reason for the plaza
   const l = await layoutIn(page);
   const flowers = [...l.objects.values()].filter((o) => o.k === 'flower');
-  const by = flowers.flatMap((f) => [[f.x - 1, f.z], [f.x + 1, f.z]] as [number, number][]).find(([c, r]) => guestOk(l, c, r) && !plazaOk(l, c, r));
+  const by = flowers.flatMap((f) => [[f.x - 1, f.z, f.id], [f.x + 1, f.z, f.id]] as [number, number, string][])
+    .find(([c, r, id]) => JSON.stringify(spotWhy(l, 'plaza', c, r).map((w) => [w.why, w.ids])) === JSON.stringify([['beside', [id]]]));
   expect(by).toBeDefined();
   const [gc, gr] = by!;
-  await place(page, 'guest-spot', gc, gr);
-  await expect.poll(() => ed(page, (e) => e.auto().map((a) => a.k))).toEqual(['plaza']);
-  expect(await spotIssues(page)).toEqual([]);
 
   // Gulliver beside a palm: a beach tile, a palm diagonally behind his feet (put there when the island has none so near)
   const b = await layoutIn(page);
@@ -70,7 +68,7 @@ test('the guest next to a flower and Gulliver beside a palm: no warning; the pla
   await place(page, 'beach-spot', bc, br);
   expect(await spotIssues(page)).toEqual([]);
 
-  // the plaza on the guest's tile: the flower beside it is in the way, named, its tile marked
+  // the plaza on that tile: the flower beside it is in the way, named, its tile marked
   await place(page, 'plaza', gc, gr);
   const flower = flowers.find((f) => f.z === gr && Math.abs(f.x - gc) === 1)!;
   await expect.poll(async () => (await spotIssues(page)).map((i) => [i.ids.includes(flower.id), i.tiles.some(([c, r]) => c === flower.x && r === flower.z)])).toEqual([[true, true]]);

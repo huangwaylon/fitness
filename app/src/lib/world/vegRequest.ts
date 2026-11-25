@@ -1,5 +1,6 @@
-// おねがい (docs/farming.md): a visitor wants a vegetable. The day's guest asks when their role is a chat or a
-// cheer (visitorRoles.ts: about every other day), Franklin on Turkey Day instead (the guest doesn't then): at most one
+// おねがい (docs/farming.md): a visitor wants a vegetable. The day's visitor asks when they stand on the plaza to chat or
+// cheer (NH's weekday plaza visitors, the chat and cheer roles of visitorRoles.ts: about every other day), Franklin on
+// Turkey Day instead (the day's doesn't then): at most one
 // ask a day per person, its crop seeded by the date and the person (the same on every phone), one gift piece in
 // GIFT_ONE_IN (Franklin's always). No timer: once the asker's hours or the day end, it's gone. The hand-over is a
 // `sell` of the one vegetable at its price (by the visitor), the piece a find: no new rule for the record. Pure.
@@ -7,16 +8,18 @@ import { CROPS, type Crop } from '#lib/contract/farm.ts';
 import { HOLIDAYS } from '#lib/time/holidays.ts';
 import type { Who } from '#lib/types.ts';
 import { ISLAND_SEED, dayRand } from './daySeed.ts';
-import { ROLES, guestOn, isGuest } from './visitorRoles.ts';
-import type { VisitorId } from './visitors.ts';
+import { ROLES, isSpecial } from './visitorRoles.ts';
+import { dayVisitor, type VisitorId } from './visitors.ts';
 
 const turkeyDay = (date: string): boolean => HOLIDAYS['turkey-day'].on(date);
 
-/** Whether `id` asks for a vegetable on `date`: Franklin on Turkey Day, else a chat or cheer guest (never Pavé: she
- *  dances). */
+/** NH's weekday visitors on the plaza who ask (not Gulliver, asleep on the beach, nor Wisp, by night). */
+const PLAZA: readonly VisitorId[] = ['kicks', 'label', 'saharah', 'leif', 'redd', 'cj', 'flick'];
+/** Whether `id` asks for a vegetable on `date`: Franklin on Turkey Day, else a plaza visitor or a chat or cheer
+ *  special character (never Pavé: she dances). */
 export function asks(id: VisitorId, date: string): boolean {
   if (turkeyDay(date)) return id === 'franklin';
-  return isGuest(id) && id !== 'pave' && (ROLES[id].kind === 'chat' || ROLES[id].kind === 'cheer');
+  return PLAZA.includes(id) || (isSpecial(id) && id !== 'pave' && (ROLES[id].kind === 'chat' || ROLES[id].kind === 'cheer'));
 }
 
 /** One ask in this many brings a garden piece too (Franklin's every time). */
@@ -24,8 +27,8 @@ export const GIFT_ONE_IN = 3;
 
 export interface VegRequest { crop: Crop; by: VisitorId; gift: boolean }
 
-/** The day's asker by the schedule (no dev hooks): Franklin on Turkey Day, else the day's guest. */
-export const askerOn = (date: string, seed = ISLAND_SEED): VisitorId => (turkeyDay(date) ? 'franklin' : guestOn(date, seed));
+/** The day's asker by the schedule (no dev hooks): Franklin on Turkey Day, else the day's visitor (Sunday: Daisy Mae). */
+export const askerOn = (date: string, seed = ISLAND_SEED): VisitorId => (turkeyDay(date) ? 'franklin' : (dayVisitor(date, seed) ?? 'daisy-mae'));
 
 /** `who`'s ask on `date` (`by`: who stands there, the schedule's by default), or null: they don't ask. */
 export function requestOn(date: string, who: Who, seed = ISLAND_SEED, by: VisitorId = askerOn(date, seed)): VegRequest | null {

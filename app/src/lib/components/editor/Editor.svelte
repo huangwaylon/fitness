@@ -31,7 +31,7 @@
   import Phrases from '../ui/Phrases.svelte';
   import { planFingers } from './planFingers.ts';
   import { draw, fitView, tileUnder, toScreen, toWorld, zoomAt, type AutoSpot, type View } from './plan.ts';
-  import { besideStage, guestSpot, markerSpot, stageOf } from '#lib/layout/spots.ts';
+  import { markerSpot, stageOf } from '#lib/layout/spots.ts';
   import { carryTops } from '#lib/layout/tops.ts';
   import {
     brushTiles, cliff, copy, duplicate, ghostAt, inBox, move, objectAt, paint, paste, place, placeRun, remove, removable, resize, restyle, revert, rotate, runs, runTiles, sameLayout, type Clip
@@ -225,14 +225,12 @@
     draw(ctx, { layout: cur, view, w: W, h: H, grid, selected, hover, moved, ghost, brush: brushAt, box, issues, focus, auto, icon, river: riverLine ? stems : null, coast });
   });
 
-  // the issues, a moment after a change, and where the visitors and the guest stand while no usable mark of theirs is
-  // down (spots.ts stageOf; besideStage: the guest's beside the day's visitor on centre stage, else on it)
+  // the issues, a moment after a change, and where the visitor stands while no usable mark of theirs is down (spots.ts
+  // stageOf)
   let auto = $state<AutoSpot[]>([]);
   function autoSpots(l: Layout): AutoSpot[] {
-    const out: AutoSpot[] = [], st = markerSpot(l, 'plaza')?.at ? null : stageOf(l), side = guestSpot(l) ? null : besideStage(l);
-    if (st) out.push({ k: 'plaza', label: 'お客さん（自動）', x: st[0], z: st[1] });
-    if (side) out.push({ k: 'guest', label: 'ゲスト（自動）', x: side[0], z: side[1] });
-    return out;
+    const st = markerSpot(l, 'plaza')?.at ? null : stageOf(l);
+    return st ? [{ label: 'お客さんの場所（自動）', x: st[0], z: st[1] }] : [];
   }
   $effect(() => {
     const l = store.current, t = setTimeout(() => ((issues = validate(l)), (auto = autoSpots(l))), 120);

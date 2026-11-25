@@ -20,7 +20,7 @@
   //   ?shower (dev or test mode): a shower 1.5 s after the night sky shows, then every 8 s (the e2e's hook).
   // Decorative and pointer-only (aria-hidden, no focus stops).
   import { lazyModule } from '#lib/ui-state/lazyComponent.svelte.ts';
-  import { guestNow, onBeach, visitorNow } from '#lib/world/visitors.ts';
+  import { visitorNow } from '#lib/world/visitors.ts';
   import { timers } from './timers.ts';
   import { hook, islandSeed } from '#lib/world/devHooks.ts';
   import { site } from './site.svelte.ts';
@@ -142,8 +142,6 @@
   let finds = $state<Finds>();
   let care = $state<Care>();
   let visitor = $state<Visitor>();
-  /** The day's guest (visitor.svelte.ts' other slot: visitorRoles.ts, at the guest spot). */
-  let guest = $state<Visitor>();
   let kk = $state<KK>();
   let deck = $state<Prop>();
   let cakeEl = $state<Prop>();
@@ -151,9 +149,7 @@
   // the way they came), the tape deck (a fixed piece of the layout, there every day: its tap says when it plays), a
   // birthday's cake.
   const visitorM = lazyModule(() => import('./visitor.svelte.ts')), kkM = lazyModule(() => import('./kk.svelte.ts')), deckM = lazyModule(() => import('./deck.svelte.ts')), cakeM = lazyModule(() => import('./cake.svelte.ts'));
-  const VisitorM = $derived(visitorM.get(!!visitorNow(minuteNow()) || !!guestNow(minuteNow())));
-  /** Whether the day's visitor stands on centre stage now (the guest then stands beside it, with no guest spot down). */
-  const stageTaken = () => ((v) => !!v && !onBeach(v))(visitorNow(minuteNow()));
+  const VisitorM = $derived(visitorM.get(!!visitorNow(minuteNow())));
   const DeckM = $derived(deckM.get(true));
   // K.K. on his stool (a piece of the layout, there every day: kk.svelte.ts)
   const KKM = $derived(kkM.get(true));
@@ -162,14 +158,9 @@
   $effect(() => {
     const m = VisitorM;
     if (!m) return;
-    const v = untrack(() => m.useVisitor(w, { scene: () => scene, enabled, say, ontrick })), g = untrack(() => m.useVisitor(w, { scene: () => scene, enabled, say, ontrick, slot: 'guest', stageTaken }));
+    const v = untrack(() => m.useVisitor(w, { scene: () => scene, enabled, say, ontrick }));
     visitor = v;
-    guest = g;
-    return () => {
-      v.stop();
-      g.stop();
-      visitor = guest = undefined;
-    };
+    return () => (v.stop(), (visitor = undefined));
   });
   $effect(() => {
     const m = KKM;
@@ -348,7 +339,7 @@
       run ? (act() ? { kind, id: '' } : null) : ((v) => (v ? { kind, id: v === true ? '' : v } : null))(dry());
     const bug = (seen: Seen, reel: boolean): Claim | null =>
       run ? (critters?.tap(cx, cy, seen, reel) ? { kind: 'critter', id: '' } : null) : (critters?.claims(cx, cy, seen, reel) ?? null);
-    const vis = (body: boolean) => step('visitor', () => visitor?.claims(cx, cy, body) ?? guest?.claims(cx, cy, body), () => visitor?.tap(cx, cy, body) || guest?.tap(cx, cy, body));
+    const vis = (body: boolean) => step('visitor', () => visitor?.claims(cx, cy, body) ?? null, () => visitor?.tap(cx, cy, body) ?? false);
     const kk_ = () => step('kk', () => kk?.claims(cx, cy), () => kk?.tap(cx, cy));
     const plot = () => {
       const g = cy - top < w.view.horizon ? null : w.worldAtClient(cx, cy);
@@ -930,10 +921,11 @@
   const STAR = 'M12 0 C13 8 16 11 24 12 C16 13 13 16 12 24 C11 16 8 13 0 12 C8 11 11 8 12 0 Z';
 </script>
 
-{#each [visitor, guest] as v, i (i)}
-  {#if v?.shop.Sheet && v.shop.for}<v.shop.Sheet bind:open={v.shop.open} {...v.shop.for} />{/if}
+{#if visitor}
+  {@const v = visitor}
+  {#if v.shop.Sheet && v.shop.for}<v.shop.Sheet bind:open={v.shop.open} {...v.shop.for} />{/if}
   <!-- Gulliver's sleep talk, an おねがい's caption: over the head (anchored by the camera, World.at: its true size, nudged in from the sides) -->
-  {#if v?.mumble}
+  {#if v.mumble}
     {@const m = v.mumble}
     {#key m.n}
       <span class="mumble-node" aria-hidden="true" {@attach w.at({ x: v.mumbleAt()[0], z: v.mumbleAt()[1], lift: v.mumbleAt()[2], h: 20, zi: OVER, always: true, inv: true, live: () => v.mumbleAt() })}>
@@ -941,7 +933,7 @@
       </span>
     {/key}
   {/if}
-{/each}
+{/if}
 {#if kk?.caption}
   {@const c = kk.caption}
   <span class="kk-caption if-caption" class:placed={c.placed} data-fx="kk-caption" data-unheard={c.unheard || undefined} {@attach kk.captionEl} style:left="{c.x}px" style:top="{c.y}px">{c.text}</span>

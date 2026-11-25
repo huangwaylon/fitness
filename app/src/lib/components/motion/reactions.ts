@@ -31,7 +31,7 @@ export const FX_MS: Record<FxKind, number> = {
 
 /** The villagers (mine, the partner's, and a third: the guest's on a member's phone, B's on the guest's: ui-state/cast.ts),
  *  しずえ, the visitor of the day on centre stage (island/visitor.svelte.ts) and K.K. on his stool (island/kk.svelte.ts). */
-export type ActorId = 'mine' | 'partner' | 'third' | 'host' | 'visitor' | 'guest' | 'kk';
+export type ActorId = 'mine' | 'partner' | 'third' | 'host' | 'visitor' | 'kk';
 
 export interface Step {
   actor: ActorId | 'both';

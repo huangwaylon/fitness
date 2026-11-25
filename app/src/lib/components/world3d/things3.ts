@@ -16,9 +16,8 @@ export interface V3 {
   /** A second figure beside it (Reese's Cyrus): its model and how far across (u: each stands half of it off the
    *  node). */
   also?: { id: string; dx: number };
-  /** Its director's actor (default the visitor's; the day's guest's, `guest`; K.K. on his stool his own, `kk`: each drawn
-   *  beside the day's visitor). */
-  actor?: 'visitor' | 'guest' | 'kk';
+  /** Its director's actor (default the visitor's; K.K. on his stool his own, `kk`, drawn beside the visitor). */
+  actor?: 'visitor' | 'kk';
   /** Seated: how high its seat's top is over the ground (u: K.K.'s stool), and the way it faces (three's yaw). */
   seat?: number;
   yaw?: number;
@@ -154,7 +153,7 @@ export type Claim = { kind: string; id: string };
 type ClaimFn = (x: number, y: number, under: Claim | null, onHouse?: (px: number, py: number) => boolean) => Claim | null;
 export interface Registry {
   map: Map<string, Entry>;
-  /** The figures, by their actor ('visitor', 'guest', 'kk'). */
+  /** The figures, by their actor ('visitor', 'kk'). */
   figs: Map<string, Figure3>;
   /** The tap areas, by kind, id and part, in the order they came (the DOM's: a later one is on top of an equal depth). */
   taps: Map<string, Tap3>;

@@ -346,9 +346,6 @@
   let visN = 0;
   // K.K. on his stool (island/kk.svelte.ts): one more, the director's 'kk' actor, seated on it, facing its way
   const kkSpec: VSpec = { ...visSpecs[0], slot: 'kk' };
-  // the day's guest (world/visitorRoles.ts: its own slot, the director's 'guest' actor, at the guest spot)
-  const npcGuestSpec: VSpec = { ...visSpecs[0], slot: 'npc-guest' };
-  let npcGuestOn = false;
   /** K.K. is out (his node registered), and has been in view: his model loads the first time he is (never fetched for
    *  an island opened and left without a look at him), then stays, hidden while he's out of view. */
   let kkOn = false, kkLoad = false;
@@ -400,7 +397,7 @@
   const visEmoteAt: Record<string, number> = {};
   /** The e2e's log of the flourishes fired (__world3d.fxLog: fx3d's, the visitors' emotes, the held emitters'). */
   let fxFired: ReturnType<typeof fxLog> | null = null;
-  function visEmote(e: Island3, slot: string, actor: 'visitor' | 'guest' | 'kk', x: number, z: number, shown: boolean, lift: number) {
+  function visEmote(e: Island3, slot: string, actor: 'visitor' | 'kk', x: number, z: number, shown: boolean, lift: number) {
     const a = actors[actor];
     if (!a.emote || visEmoteAt[slot] === a.emoteN) return;
     visEmoteAt[slot] = a.emoteN;
@@ -416,11 +413,6 @@
     if (v.actor === 'kk') {
       visSpec(kkSpec, v.id, x, z, v, shown);
       kkOn = true;
-      return;
-    }
-    if (v.actor === 'guest') {
-      visSpec(npcGuestSpec, v.id, x, z, v, shown);
-      npcGuestOn = true;
       return;
     }
     if (visN) return; // (one visitor at a time)
@@ -467,11 +459,9 @@
     specs.length = 0;
     visN = 0;
     kkOn = false;
-    npcGuestOn = false;
     eachV3(world, onV3);
     for (let i = 0; i < visN; i++) specs.push(visSpecs[i]);
     if (kkOn && (kkLoad ||= kkSpec.shown)) specs.push(kkSpec);
-    if (npcGuestOn) specs.push(npcGuestSpec);
     const people = (castFrame = cast());
     // (the asleep guest's model only after the launch's first whole frame: guestLate)
     if (guestLate && (!boot || boot.marks().shown || boot.spoiled() || t - lateFrom > GUEST_LATE_MAX_MS)) guestLate = false;
@@ -574,7 +564,7 @@
   const CALM_FX: Partial<Record<FxKind, true>> = { sparkle: true, hearts: true, notes: true };
   /** How far toward the camera a character's sparkles start (u): clear of its head. */
   const SPARKLE_NEAR = 12;
-  const FX_ACTORS = ['mine', 'partner', 'third', 'visitor', 'guest', 'kk'] as const;
+  const FX_ACTORS = ['mine', 'partner', 'third', 'visitor', 'kk'] as const;
   function actorFx(e: Island3, t: number) {
     for (const id of FX_ACTORS) {
       const a = actors[id];
@@ -1350,7 +1340,7 @@
     };
     /** A figure kind's box from the 3D island (things3 boxes: its model's silhouette or its spot), as probe.ts' Box. */
     const box3 = (kind: string, id = '') => {
-      const b = things3(world).boxes, own = kind === 'visitor' ? (i: string) => b.get('visitor:visitor')?.(i) ?? b.get('visitor:guest')?.(i) ?? null : b.get(kind);
+      const b = things3(world).boxes, own = b.get(kind === 'visitor' ? 'visitor:visitor' : kind);
       const r = kind === 'fruit' ? fruitBox(id) : kind === 'toy' ? (toysNow().find((t) => !id || t.id3 === id)?.box ?? null) : own?.(id);
       return r ? { left: r.left, top: r.top, width: r.width, height: r.height, foot: ('foot' in r && r.foot) || null } : null;
     };
@@ -1372,7 +1362,7 @@
       return { ...s, drops: s.drops.map((d) => ({ ...d, box: ((r) => (r ? { left: r.left, top: r.top, width: r.width, height: r.height } : { left: 0, top: 0, width: 0, height: 0 }))(boxTaps(world, taps, 'drop', d.id)) })) };
     };
     /** The visitors out and K.K. (visitor.svelte.ts, kk.svelte.ts: no node), each shown by the anchor rule. */
-    const visitorsNow = () => (['visitor:visitor', 'visitor:guest', 'kk'] as const).flatMap((k) => {
+    const visitorsNow = () => (['visitor:visitor', 'kk'] as const).flatMap((k) => {
       const r = reg3.probes.get(k)?.() as (VisitorRow | KKRow | null | undefined);
       return r ? [{ ...r, shown: figShown3(world, r.slot ?? 'kk') }] : [];
     });

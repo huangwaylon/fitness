@@ -6,7 +6,9 @@
 import { expect, test, type Page } from './fixtures.ts';
 import { BUTTONS, camTo, controlsUnder, geo, islandUp, offFrom, quiet, tapAt, tapFigure, visitorOut, visitorsOut, type W3 } from './island.ts';
 import { hudBells } from './hud.ts';
-import { guestOn, ROLES } from '../src/lib/world/visitorRoles.ts';
+import { ROLES, isSpecial } from '../src/lib/world/visitorRoles.ts';
+import { dayVisitor } from '../src/lib/world/visitors.ts';
+import { addDays } from '../src/lib/time/dates.ts';
 import JA from '../src/lib/i18n/visitors.ja.json' with { type: 'json' };
 
 // the day's visitor and their life are ambient life (e2e/fixtures.ts): on here; a test pins its own with ?visitor=
@@ -160,11 +162,10 @@ test('visitors stand where NH puts them (Daisy Mae and Wisp at centre stage, Gul
   }
 });
 
-test('nobody visits on a quiet day (about one in ten of the rotation’s): the day’s guest only, in their own slot', async ({ page }) => {
+test('one visitor at a time (the user, 2026-11-25): the day’s, nobody else beside them', async ({ page }) => {
   await page.goto('?demo&date=2026-11-19T19:00');
   await islandUp(page);
-  await expect.poll(async () => (await visitorsOut(page, 'guest')).map((v) => v.id)).toEqual([guestOn('2026-11-19')]);
-  expect(await visitorsOut(page, 'visitor')).toEqual([]);
+  await expect.poll(async () => (await visitorsOut(page)).map((v) => v.id)).toEqual([dayVisitor('2026-11-19')]);
 });
 
 test('the day brings its visitor with no hook: Daisy Mae on a Sunday morning, drawn on the 3D island as her NH model, and she talks', async ({ page }) => {
@@ -180,20 +181,21 @@ test('the day brings its visitor with no hook: Daisy Mae on a Sunday morning, dr
   await expect(page.locator('[data-fx="talk"].placed .who')).toHaveText('ウリ');
 });
 
-test('the weekday rotation brings its visitor with no hook: Redd on Wednesday Nov 4 2026, at centre stage, and he talks', async ({ page }) => {
-  await page.goto('?demo&date=2026-11-04T12:00&critter=none');
+test('the weekday rotation brings its visitor with no hook: Kicks on Thursday Nov 5 2026, at centre stage, and he talks', async ({ page }) => {
+  expect(dayVisitor('2026-11-05')).toBe('kicks');
+  await page.goto('?demo&date=2026-11-05T12:00&critter=none');
   await islandUp(page);
   const { CAMS, CENTRE_STAGE } = await geo(page);
   await camTo(page, CAMS.mae, false);
-  await expect.poll(async () => (await visitorOut(page, 'redd'))?.shown).toBe(true);
-  expect(await offFrom(page, 'visitor', 'redd', ...CENTRE_STAGE)).toBeLessThan(2);
-  expect(await controlsUnder(page, 'visitor', 'redd')).toEqual([]);
-  await tapFigure(page, 'visitor', 'redd');
-  await expect(page.locator('[data-fx="talk"].placed .who')).toHaveText('つねきち');
+  await expect.poll(async () => (await visitorOut(page, 'kicks'))?.shown).toBe(true);
+  expect(await offFrom(page, 'visitor', 'kicks', ...CENTRE_STAGE)).toBeLessThan(2);
+  expect(await controlsUnder(page, 'visitor', 'kicks')).toEqual([]);
+  await tapFigure(page, 'visitor', 'kicks');
+  await expect(page.locator('[data-fx="talk"].placed .who')).toHaveText('シャンク');
 });
 
 test('a tap in a visitor’s reach (a finger’s slack beside its figure) with nothing exact under it still talks', async ({ page }) => {
-  await page.goto('?demo&date=2026-11-04T12:00&critter=none&guest=none');
+  await page.goto('?demo&date=2026-11-04T12:00&visitor=redd&critter=none');
   await islandUp(page);
   const { CAMS } = await geo(page);
   await camTo(page, CAMS.mae, false);
@@ -215,28 +217,24 @@ test('a tap in a visitor’s reach (a finger’s slack beside its figure) with n
   await expect(page.locator('[data-fx="talk"].placed .who')).toHaveText('つねきち');
 });
 
-// The guests (docs/design.md "Visitors: roles", world/visitorRoles.ts): NH's other special characters, each with a role.
-test('a guest every day with no hook: Sunday afternoon Nov 8 2026 (after Daisy Mae) the day’s guest at centre stage, Redd’s Wednesday beside him, their introduction', async ({ page }) => {
-  for (const [date, wd, beside] of [['2026-11-08', 0, false], ['2026-11-04', 3, true]] as const) {
-    const g = guestOn(date);
-    expect(ROLES[g].beach, `${date}: ${g} on the beach`).toBeFalsy();
-    await page.goto(`?demo&date=${date}T13:00&critter=none`);
-    await islandUp(page);
-    const { CAMS, CENTRE_STAGE } = await geo(page);
-    await camTo(page, CAMS.mae, false);
-    await expect.poll(async () => (await visitorOut(page, g, 'guest'))?.shown).toBe(true);
-    // (no guest spot on the demo's island: centre stage, beside it while the day's visitor stands there)
-    const off = await offFrom(page, 'visitor', g, ...CENTRE_STAGE);
-    if (beside) expect(off).toBeGreaterThan(40);
-    else expect(off).toBeLessThan(2);
-    expect((await visitorsOut(page, 'visitor')).length).toBe(wd === 0 ? 0 : 1);
-    await tapFigure(page, 'visitor', g);
-    await expect(page.locator('[data-fx="talk"].placed .who')).toHaveText((JA as Record<string, string>)[`visitor.${g}`]);
-  }
+// The special characters (docs/design.md "Visitors: roles", world/visitorRoles.ts): in the rotation, each with a role.
+test('a special character comes in the rotation with no hook: on their day at centre stage, alone, their introduction', async ({ page }) => {
+  // (the first weekday from Nov 2 2026 that brings one who stands on the plaza)
+  const date = Array.from({ length: 30 }, (_, i) => addDays('2026-11-02', i)).find((d) => ((v) => !!v && isSpecial(v) && !ROLES[v].beach)(dayVisitor(d)))!;
+  const g = dayVisitor(date)!;
+  await page.goto(`?demo&date=${date}T13:00&critter=none`);
+  await islandUp(page);
+  const { CAMS, CENTRE_STAGE } = await geo(page);
+  await camTo(page, CAMS.mae, false);
+  await expect.poll(async () => (await visitorOut(page, g))?.shown).toBe(true);
+  expect(await offFrom(page, 'visitor', g, ...CENTRE_STAGE)).toBeLessThan(2);
+  expect((await visitorsOut(page)).map((v) => v.id)).toEqual([g]);
+  await tapFigure(page, 'visitor', g);
+  await expect(page.locator('[data-fx="talk"].placed .who')).toHaveText((JA as Record<string, string>)[`visitor.${g}`]);
 });
 
 test('Chip’s node is a bare anchor: his id is no class (theme.css’s .chip once drew a cream pill by him all day)', async ({ page }) => {
-  await page.goto('?demo&date=2026-11-16T12:00&guest=chip&critter=none');
+  await page.goto('?demo&date=2026-11-16T12:00&visitor=chip&critter=none');
   await islandUp(page);
   const { CAMS } = await geo(page);
   await camTo(page, CAMS.mae, false);
@@ -260,18 +258,18 @@ test('Gracie’s shop: her offer’s choice box opens her sheet, and a piece bou
   await expect(page.locator('[data-fx="talk"].placed .who')).toHaveText('グレース');
   await readOut(page);
   await choose(page, page.locator('.choices.asking button').first());
-  const sheet = page.locator('[data-guest-shop="gracie"]');
+  const sheet = page.locator('[data-visitor-shop="gracie"]');
   await expect(sheet).toBeVisible();
-  const items = sheet.locator('[data-guest-item]');
+  const items = sheet.locator('[data-visitor-item]');
   await expect(items).toHaveCount(6);
-  const before = Number(await sheet.locator('[data-guest-shells]').getAttribute('data-guest-shells'));
+  const before = Number(await sheet.locator('[data-visitor-shells]').getAttribute('data-visitor-shells'));
   expect(before).toBe(13000);
   const first = items.first(), price = Number(await first.getAttribute('data-price'));
   expect(price).toBeGreaterThanOrEqual(500);
   await first.click();
-  await sheet.locator('[data-guest-buy]').click();
+  await sheet.locator('[data-visitor-buy]').click();
   await expect(first).toHaveAttribute('data-owned', 'true');
-  await expect(sheet.locator('[data-guest-shells]')).toHaveAttribute('data-guest-shells', String(before - price));
+  await expect(sheet.locator('[data-visitor-shells]')).toHaveAttribute('data-visitor-shells', String(before - price));
 });
 
 test('a giver’s gift: Pete’s present goes to the island once (a find in the ずかん), the same piece for whoever asks again', async ({ page }) => {

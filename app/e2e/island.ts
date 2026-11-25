@@ -68,7 +68,7 @@ export type W3 = {
   /** The visitors out (K.K.'s id `kk`): slot, phase, way, stage, asleep, motion, vegAsk, walking; K.K.'s mode and
    *  playing; shown, card, emote, fx, treat, heart, mumble (its caption's text) (visitor.svelte.ts, kk.svelte.ts). */
   visitors(): Visitor[];
-  /** The visit in `slot` (visitor, guest) ends now: they set off. */
+  /** The visit in `slot` (visitor) ends now: they set off. */
   leave(slot?: string): void;
   /** The day's props out: the cake (out), the arch, Toy Day's presents, Halloween and its pumpkins (lit), the tape deck
    *  (state, hint); each shown and its art's box. */
@@ -352,11 +352,11 @@ export const slotOf = async (page: Page, who: string): Promise<string | null> =>
 export const feetOf = async (page: Page, slot = 'mine'): Promise<[number, number] | null> =>
   (await ready3d(page), page.evaluate((s) => (window as unknown as { __world3d: W3 }).__world3d.box('villager', s)?.foot ?? null, slot));
 /** Visitor `id` (K.K.: `kk`) as the island shows it (`__world3d.visitors`: phase, asleep, motion, shown, fx, …), only
- *  in `slot` (visitor, guest) if given, or null: not out. Polled: `expect.poll(async () => (await visitorOut(page,
+ *  in `slot` (visitor) if given, or null: not out. Polled: `expect.poll(async () => (await visitorOut(page,
  *  'jack'))?.shown).toBe(true)`. */
 export const visitorOut = async (page: Page, id: string, slot?: string): Promise<Visitor | null> =>
   (await ready3d(page), page.evaluate(([id, slot]) => (window as unknown as { __world3d: W3 }).__world3d.visitors().find((v) => v.id === id && (!slot || v.slot === slot)) ?? null, [id, slot ?? null] as const));
-/** The visitors out but K.K. (the day's and its guest), only `slot`'s if given. */
+/** The visitors out but K.K. (the day's one), only `slot`'s if given. */
 export const visitorsOut = async (page: Page, slot?: string): Promise<Visitor[]> =>
   (await ready3d(page), page.evaluate((slot) => (window as unknown as { __world3d: W3 }).__world3d.visitors().filter((v) => v.id !== 'kk' && (!slot || v.slot === slot)), slot ?? null));
 /** The day's props out (`__world3d.props`: the cake, the arch, the toys, Halloween's pumpkins, the tape deck). */

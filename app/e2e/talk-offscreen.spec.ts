@@ -1,7 +1,7 @@
 // A speaker out of view (docs/design.md "Dialogue"): a speaker past the horizon had a stale box (R4: the
 // villagers' DOM node), so a balloon placed by that box stood in the sky. Chip's cheer at a catch while he's out of view is a banner with
-// his name instead; in view, the balloon by him as before. A synthetic layout: only the guest spot, on a clifftop tile far
-// back (x16/z56, the demo island's last row: the user's was x14/z67), past the horizon from まえ.
+// his name instead; in view, the balloon by him as before. A synthetic layout: only the visitors' spot, on the demo island's
+// farthest tile it may go on (x7/z48: the user's guest spot was x14/z67), past the horizon from まえ.
 import { expect, test, type Page } from './fixtures.ts';
 import { camTo, geo, islandUp, visitorOut, type W3 } from './island.ts';
 import JA from '../src/lib/i18n/visitors.ja.json' with { type: 'json' };
@@ -10,7 +10,7 @@ import CATCH from '../src/lib/i18n/catch.ja.json' with { type: 'json' };
 
 test.use({ viewport: { width: 393, height: 852 } });
 
-const SPOT = ['decor', { sc: 'o', id: 'guest-spot-far', at: 1.79e12, k: 'guest-spot', x: 16, z: 56, f: 0 }, 'A'] as const;
+const SPOT = ['decor', { sc: 'o', id: 'plaza-far', at: 1.79e12, k: 'plaza', x: 7, z: 48, f: 0 }, 'A'] as const;
 const seed = (page: Page) =>
   page.addInitScript(([day, op]) => {
     if (localStorage.getItem('island-demo.events')) return;
@@ -19,8 +19,8 @@ const seed = (page: Page) =>
     localStorage.setItem('island-demo.events', JSON.stringify({ day, events: [{ id: 'seed-0', type, data, queuedAt: at, tries: 0, nextAt: 0, ackedAt: at, person }] }));
   }, ['2026-11-16', SPOT] as const);
 
-/** Chip, the day's guest (`__world3d.visitors`), or null. */
-const chip = (page: Page) => visitorOut(page, 'chip', 'guest');
+/** Chip, the visitor (`__world3d.visitors`), or null. */
+const chip = (page: Page) => visitorOut(page, 'chip');
 const catchFish = (page: Page) =>
   page.evaluate(() => document.querySelector('.scene')!.dispatchEvent(new CustomEvent('island:catch', { detail: { kind: 'fish', id: 'sea-bass' } })));
 /** Whether Chip is drawn now (one out of view isn't). */
@@ -45,7 +45,7 @@ const closeAlone = (txt: Element) => {
 
 async function open(page: Page) {
   await seed(page);
-  await page.goto('?demo&date=2026-11-16T12:00&guest=chip&critter=none');
+  await page.goto('?demo&date=2026-11-16T12:00&visitor=chip&critter=none');
   await islandUp(page);
   await expect.poll(() => chip(page)).not.toBeNull();
   // (here: a cheer waits for his arrival)

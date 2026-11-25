@@ -7,7 +7,7 @@
   import { staticUrl } from '#lib/staticUrl.ts';
   import { t } from '#lib/i18n/index.ts';
 
-  const ORDER: readonly CastRole[] = ['shop', 'museum', 'stool', 'visit', 'guest', 'reset', 'gate', 'roster', 'none'];
+  const ORDER: readonly CastRole[] = ['shop', 'museum', 'stool', 'visit', 'reset', 'gate', 'roster', 'none'];
   const groups = ORDER.map((role) => ({ role, list: CAST.filter(([, , r]) => r === role) })).filter((g) => g.list.length);
 </script>
 

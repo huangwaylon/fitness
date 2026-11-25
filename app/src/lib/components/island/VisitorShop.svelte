@@ -1,5 +1,5 @@
 <script lang="ts">
-  // A guest's shop (docs/design.md "Visitors: roles"; visitorShop.ts): the few pieces they brought today, their prices
+  // A visitor's shop (docs/design.md "Visitors: roles"; visitorShop.ts): the few pieces they brought today, their prices
   // and 買う, as the shop's かう (its tiles: shop/PieceTile.svelte; shop/stock.ts buyPiece, one piece at a time; a bought
   // one 持っている and in my もようがえ, 取り消す for a moment). My かいがら at the top, as the shop's chip. Its own chunk: opened from their choice box.
   import Sheet from '../ui/Sheet.svelte';
@@ -8,7 +8,7 @@
   import { buyPrice } from '#lib/contract/stock.ts';
   import { buyPiece, buyRefusal, foundBefore, shortBy } from '../shop/stock.ts';
   import { offerOf } from './visitorShop.ts';
-  import type { GuestId } from '#lib/world/visitorRoles.ts';
+  import type { SpecialId } from '#lib/world/visitorRoles.ts';
   import { shopView } from '#lib/model/shop.ts';
   import { week } from '#lib/store/week.svelte.ts';
   import { undoBanner } from '#lib/store/actions.ts';
@@ -18,7 +18,7 @@
   import '#lib/i18n/rooms.ts'; // its strings, loaded with it
   import { loadTentNames } from '#lib/i18n/tent.ts';
 
-  let { open = $bindable(), id, pool, name }: { open: boolean; id: GuestId; pool: 'dear' | 'any'; name: string } = $props();
+  let { open = $bindable(), id, pool, name }: { open: boolean; id: SpecialId; pool: 'dear' | 'any'; name: string } = $props();
 
   let names = $state(0);
   $effect(() => void loadTentNames(i18n.locale).then(() => names++, () => {}));
@@ -47,13 +47,13 @@
   }
 </script>
 
-<Sheet bind:open title={t('guestShop.title', { name })} name="guestShop">
-  <div class="gs sheet-copy" data-guest-shop={id}>
-    <span class="chip s wallet" data-guest-shells={mine?.shells ?? 0}>{t('shop.wallet', { v: formatNum(mine?.shells ?? 0) })}</span>
+<Sheet bind:open title={t('visitorShop.title', { name })} name="visitorShop">
+  <div class="gs sheet-copy" data-visitor-shop={id}>
+    <span class="chip s wallet" data-visitor-shells={mine?.shells ?? 0}>{t('shop.wallet', { v: formatNum(mine?.shells ?? 0) })}</span>
     <ul class="grid">
       {#each offer as code (code)}
         {@const owned = !!mine?.owned.includes(code)}
-        <PieceTile name={itemName(code)} price={buyPrice(code) ?? 0} on={pick === code} {owned} short={owned ? 0 : shortBy(buyPrice(code) ?? 0, mine?.shells ?? 0)} data-guest-item={code} data-price={buyPrice(code)} data-owned={owned}
+        <PieceTile name={itemName(code)} price={buyPrice(code) ?? 0} on={pick === code} {owned} short={owned ? 0 : shortBy(buyPrice(code) ?? 0, mine?.shells ?? 0)} data-visitor-item={code} data-price={buyPrice(code)} data-owned={owned}
           aria-pressed={pick === code} aria-label={t(owned ? 'shop.itemOwned' : 'shop.itemLabel', { name: itemName(code), v: formatNum(buyPrice(code) ?? 0) })}
           onclick={() => choose(code)}>
           {#snippet icon()}<img src={iconUrl(code)} alt="" width="46" height="46" loading="lazy" decoding="async" />{/snippet}
@@ -63,7 +63,7 @@
     <div class="bar">
       <!-- as the shop's かう: what's picked or how many かいがら short, its price on the button -->
       <p class="sum">{!pick ? t('shop.buyHint') : why === 'wallet' ? t('shop.short', { n: formatNum(shortBy(pickPrice, mine?.shells ?? 0)) }) : itemName(pick)}</p>
-      <button type="button" class="btn small" data-guest-buy data-sfx="self" aria-disabled={!pick || !!why} onclick={buy}>
+      <button type="button" class="btn small" data-visitor-buy data-sfx="self" aria-disabled={!pick || !!why} onclick={buy}>
         {pick && why !== 'owned' ? t('shop.buyFor', { v: formatNum(pickPrice) }) : t('shop.buy')}</button>
     </div>
   </div>

@@ -57,7 +57,8 @@ the record keeps each id's latest op (slot `decor|<sc>|<id>`). An old phone igno
 - **Heights** (`layout/height.ts` `heightAt`, `fieldOf`): 40u a tier; NH's rounded corners; stairs ramp, bridges arch.
 - **Nav** (`layout/nav.ts` `navOf`): a half-tile walk grid, A*; `findPath`, `snapTap`, `reachable`, `planTap`.
 - **The visitors' stage** (`layout/spots.ts` `stageOf`): the plaza mark if usable, else open grass near the middle;
-  `washedUp` for Gulliver. Visitor marks (`plaza`, `beach-spot`, `guest-spot`): `markerSpot`, `spotWhy`.
+  `washedUp` for Gulliver. Visitor marks (`plaza`, `beach-spot`): `markerSpot`, `spotWhy`; a retired `guest-spot` is
+  dropped as a layout is read (`model.ts isRetired`).
 - **Validation** (`layout/validate.ts`): advisory issues (`error`/`warn`); the record keeps whatever is saved. A piece's
   ground (`objIssues`): on the grid, on land, one tier; an arch, a gate, a gazebo (a piece with a way through, `pa`)
   only by its posts (`nav.ts archTiles`), its way through may span a river, a pond or the sea. Overlaps (`overlap`):

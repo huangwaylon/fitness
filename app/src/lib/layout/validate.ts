@@ -196,7 +196,7 @@ export function validate(layout: Layout, nav: LayoutNav = navOf(layout)): Issue[
   }
   // the visitors' spots: where they can stand now (else the island's own spot: a warning, nothing breaks), each reason
   // with what blocks marked (spots.ts spotWhy)
-  for (const k of ['plaza', 'beach-spot', 'guest-spot'] as const) {
+  for (const k of ['plaza', 'beach-spot'] as const) {
     const m = markerSpot(layout, k), o = m && layout.objects.get(m.id);
     if (!o || m.at) continue;
     const def = kindDef(k)!, whys = spotWhy(layout, k, o.x, o.z), said = whys.map(whyText);

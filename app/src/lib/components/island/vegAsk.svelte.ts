@@ -14,7 +14,7 @@ import { layout as layoutStore } from '#lib/store/layout.svelte.ts';
 import { site } from './site.svelte.ts';
 import { islandSeed } from '#lib/world/devHooks.ts';
 import { asks, requestOn, type VegRequest } from '#lib/world/vegRequest.ts';
-import { guestNow, visitorNow, type VisitorId } from '#lib/world/visitors.ts';
+import { visitorNow, type VisitorId } from '#lib/world/visitors.ts';
 import { dayKey } from '#lib/time/clock.ts';
 
 const rec = dayRecord(SCENE.vegAsk, { asked: false, done: false });
@@ -61,7 +61,7 @@ export function handOver(r: VegRequest, date: string): number | null {
 
 /** My ask at a scene-clock moment for the shop (who stands there now, the dev hooks too), done or not; null: none. */
 export function askNow(clock: Date): (VegRequest & { done: boolean }) | null {
-  const m = week.model, date = dayKey(clock), v = visitorNow(clock), by = v === 'franklin' ? v : guestNow(clock);
+  const m = week.model, date = dayKey(clock), by = visitorNow(clock);
   if (!by || !m || !asks(by, date) || !farmer()) return null;
   const r = requestOn(date, m.me, islandSeed(), by);
   return r && { ...r, done: vegDay(date).done };
