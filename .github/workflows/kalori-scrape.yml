@@ -708,8 +708,11 @@ jobs:
           cp app/static/food/index.json "$RUNNER_TEMP/mine-index.json"
           git show HEAD:app/static/food/index.json > app/static/food/index.json
           .github/scripts/kalori-index.sh app/static/food "$RUNNER_TEMP/mine-index.json"
-          cp "$RUNNER_TEMP/mine-index.json" app/static/food/index.json
           f="$u/files/app/static/food"
+          # (`at` is when each job's food-data.ts wrote the new version: update-build's kept, the rest must match byte for byte)
+          node -e 'const fs = require("fs"), [m, b] = process.argv.slice(1).map((p) => JSON.parse(fs.readFileSync(p, "utf8")));
+            if (!Number.isSafeInteger(b.at)) process.exit(1); m.at = b.at; fs.writeFileSync("app/static/food/index.json", JSON.stringify(m));' \
+            "$RUNNER_TEMP/mine-index.json" "$f/index.json" || { echo "::error::update-build's index.json has no at"; exit 1; }
           cmp app/static/food/kalori.json "$f/kalori.json" || { echo "::error::update-build's kalori.json is not the release's conversion"; exit 1; }
           cmp app/static/food/index.json "$f/index.json" || { echo "::error::update-build's index.json is not BASE's with the new kalori.json"; exit 1; }
       - name: The gates

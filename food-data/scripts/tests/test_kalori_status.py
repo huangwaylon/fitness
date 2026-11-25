@@ -409,6 +409,15 @@ class IndexAsFoodDataTs(unittest.TestCase):
             fh.write(b' ')
         self.assertEqual(self.check(os.path.join(FOOD, 'index.json')), 1)
 
+    def test_at(self):   # a new version's `at` is its job's Date.now(): any number passes, nothing else
+        with open(os.path.join(FOOD, 'index.json'), encoding='utf-8') as fh:
+            index = json.load(fh)
+        for at, rc in ((index['at'] + 1, 0), (str(index['at']), 1)):
+            p = os.path.join(os.path.dirname(self.d), 'index.json')
+            with open(p, 'w', encoding='utf-8') as out:
+                json.dump({**index, 'at': at}, out)
+            self.assertEqual(self.check(p), rc, at)
+
     @unittest.skipUnless(shutil.which('node'), 'node')
     def test_ship(self):
         src = os.path.join(os.path.dirname(self.d), 'converted')
