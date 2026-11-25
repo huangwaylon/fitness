@@ -5,7 +5,8 @@ sheets in app/static/food-img/.
 
   python3 -I food-data/images/fi.py propose <phase>      # draft rows for a phase's items -> $RAW/work/propose-<phase>.json
   python3 -I food-data/images/fi.py refs [keys]          # candidate reference photos per row (Commons, Wikidata, Wikipedia, MAFF)
-  python3 -I food-data/images/fi.py refsheet <out> keys  # a contact sheet of a row's candidates, to vet them by eye
+  python3 -I food-data/images/fi.py refsheet <out> keys  # a contact sheet of rows' candidates, to vet them by eye
+  python3 -I food-data/images/fi.py vet <json>           # record the vetting: [{key, ok: [n, ...], why?}] -> the rows' refs
   <mflux python> food-data/images/fi.py gen [keys]       # generate what is due (a fixed seed per key and roll), cached
   python3 -I food-data/images/fi.py verify [keys]        # the vision check (qwen via ollama) against the vetted refs
   python3 -I food-data/images/fi.py checksheet <out> keys  # generated beside refs, for the second (by-eye) check
@@ -13,7 +14,7 @@ sheets in app/static/food-img/.
   python3 -I food-data/images/fi.py pack                 # paper-even, webp, sheets + index.json into app/static/food-img/
   python3 -I food-data/images/fi.py split <lines> <dest>  # items that look different get their own row (or join another's)
 
-Committed here: the table (table/*.json: rows {key, ja, desc, items, refs, why}; a row without items, `cat` instead, is
+Committed here: the table (table/*.json: rows {key, ja, desc, items, refs, vet, why}; a row without items, `cat` instead, is
 a products-only subcategory picture), the product rules (products.txt, pmatch.py: a product's picture from its name,
 brand and Open Food Facts tags; pack reads the tags from $FOOD_RAW/off), the verdict log (verdicts.jsonl) and the slots (slots.json: a key's sheet cell, append-only so a shipped sheet
 never changes). Everything else (reference
@@ -586,30 +587,93 @@ def _thumb(p, px):
     return im
 
 
+def _wrap(dr, text, font, width, lines):
+    """text cut into at most `lines` lines of at most `width` px."""
+    out, cur = [], ''
+    for ch in text:
+        if dr.textlength(cur + ch, font=font) > width:
+            out.append(cur)
+            cur = ch.lstrip()
+        else:
+            cur += ch
+    return (out + [cur])[:lines]
+
+
 def cmd_refsheet(out, *keys):
-    """Rows of candidates (c<n> labelled) for vetting: the row's ja, its items' names and the ja.wikipedia lead."""
+    """Rows of candidates for vetting (fi.py vet): the row's ja, key and items' names, then its candidates, each
+    labelled c<n> in a box at a size a vision model reads (a sheet of 12 rows is ~1,320 x 1,690 px)."""
     from PIL import Image, ImageDraw
     rows = {r['key']: r for r in table()}
+    byid = items_by_id()
     keys = [k for k in keys if k in rows]
-    PX, W = 150, 8
-    sheet = Image.new('RGB', (230 + W * (PX + 6), len(keys) * (PX + 26)), (250, 246, 236))
+    PX, W, L, RH = 128, 8, 260, 140
+    sheet = Image.new('RGB', (L + W * (PX + 4), len(keys) * RH), (250, 246, 236))
     dr = ImageDraw.Draw(sheet)
-    f, fs = _font(14), _font(11)
+    f, fk, fs, fl = _font(17), _font(12), _font(12), _font(18)
     for i, k in enumerate(keys):
-        y = i * (PX + 26)
+        y, r = i * RH, rows[k]
         m = json.loads((RAW / 'refs' / k / 'cand.json').read_text())
-        dr.text((6, y + 4), rows[k]['ja'][:14], fill=(40, 30, 20), font=f)
-        dr.text((6, y + 24), k[:28], fill=(120, 100, 80), font=fs)
+        ty = y + 4
+        for line in _wrap(dr, r['ja'], f, L - 12, 2):
+            dr.text((6, ty), line, fill=(40, 30, 20), font=f)
+            ty += 21
+        dr.text((6, ty), k, fill=(30, 70, 140), font=fk)
+        ty += 16
+        names = ' / '.join(dict.fromkeys(byid.get(it, {}).get('name', it) for it in r.get('items', []))) or r.get('cat', '')
+        for line in _wrap(dr, names, fs, L - 12, (y + RH - ty - 4) // 15):
+            dr.text((6, ty), line, fill=(110, 90, 70), font=fs)
+            ty += 15
         for j, c in enumerate(m['cand'][:W]):
-            x = 230 + j * (PX + 6)
+            x = L + j * (PX + 4)
             try:
-                sheet.paste(_thumb(RAW / 'refs' / k / f'c{c["n"]}.jpg', PX), (x, y + 20))
+                sheet.paste(_thumb(RAW / 'refs' / k / f'c{c["n"]}.jpg', PX), (x, y + 6))
             except Exception:
-                continue
-            dr.text((x, y + 3), f'c{c["n"]} {c["origin"][:14]}', fill=(150, 40, 40), font=fs)
-        dr.line((0, y + PX + 24, sheet.width, y + PX + 24), fill=(200, 190, 170))
+                pass
+            label = f'c{c["n"]}'
+            dr.rectangle((x, y + 6, x + dr.textlength(label, font=fl) + 8, y + 30), fill=(150, 30, 30))
+            dr.text((x + 4, y + 8), label, fill=(255, 255, 255), font=fl)
+        dr.line((0, y + RH - 2, sheet.width, y + RH - 2), fill=(170, 150, 120), width=2)
     sheet.save(out)
     print(out, sheet.size)
+
+
+def cmd_vet(path):
+    """Record the vetting of a row's candidates (a refsheet by eye): a JSON file [{key, ok: [n, ...], why?}] -> the row's
+    `refs` = its vetted candidates as in cand.json ({n, origin, file, page, ok: true}); `ok: []` records "none fits"
+    (refs: [], unlike an unvetted row's missing refs), `why` lands in the row's `vet`. A later answer for a key
+    replaces the earlier one (idempotent). Refused whole, nothing written, if a key isn't in the table or an n isn't
+    in its cand.json."""
+    files = {p: json.loads(p.read_text()) for p in sorted((HERE / 'table').glob('*.json'))}
+    rows = {r['key']: r for rs in files.values() for r in rs}
+    todo, bad = [], []
+    for a in json.loads(Path(path).read_text()):
+        k, ok = a.get('key'), a.get('ok')
+        meta = RAW / 'refs' / str(k) / 'cand.json'
+        if k not in rows:
+            bad.append(f'{k}: not in the table')
+        elif not isinstance(ok, list) or not all(isinstance(n, int) for n in ok):
+            bad.append(f'{k}: ok must be a list of candidate numbers')
+        elif ok and not meta.exists():
+            bad.append(f'{k}: no cand.json')
+        else:
+            cand = {c['n']: c for c in json.loads(meta.read_text())['cand']} if meta.exists() else {}
+            miss = [n for n in ok if n not in cand]
+            if miss:
+                bad.append(f'{k}: c{miss} not in cand.json')
+            else:
+                todo.append((rows[k], [{**{f: cand[n][f] for f in ('n', 'origin', 'file', 'page')}, 'ok': True}
+                                       for n in dict.fromkeys(ok)], a.get('why', '')))
+    if bad:
+        sys.exit('vet: refused, nothing written:\n  ' + '\n  '.join(bad))
+    for r, refs, why in todo:
+        r['refs'] = refs
+        if why:
+            r['vet'] = why[:200]
+        else:
+            r.pop('vet', None)
+    for p, rs in files.items():
+        p.write_text(json.dumps(rs, ensure_ascii=False, indent=1) + '\n')
+    print(f'vet: {len(todo)} rows, {sum(len(v) >= 2 for _, v, _ in todo)} with 2+ vetted references')
 
 
 def cmd_checksheet(out, *keys):
