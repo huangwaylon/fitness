@@ -3,17 +3,17 @@
 // live scene during its init (`new IslandLife(...)`); it cleans up with the component.
 import { hook, hookFlag, hooksOn } from '#lib/world/devHooks.ts';
 import { onMount, untrack } from 'svelte';
-import type { PersonId, RingFruit, WeekView, Who } from '#lib/types.ts';
+import type { PersonId, PersonWeekView, RingFruit, WeekView, Who } from '#lib/types.ts';
 import { RING_FRUITS } from '#lib/config/rules.ts';
 import { dayScore, todayPct } from '#lib/world/progress.ts';
-import { WAKE_START_MS, actors, react, resetAll, setAsleep, setSleepClock, wake } from '../motion/director.svelte.ts';
+import { AS_WRITTEN, WAKE_START_MS, actors, react, resetAll, type Cast, setAsleep, setSleepClock, wake } from '../motion/director.svelte.ts';
 import { startIdleLife } from '../motion/idleLife.svelte.ts';
 import { ambientPois, ambientRoute, ambientVillager, followPlan, goalWalk, isInside, meetUp, myLastMove, outing, presence, restPoint, steered, unplan } from './avatar.ts';
 import { planAt, undriven, worldAt, type PlanInput, type PlanVillager } from './ambientPlan.ts';
 import { DECIDE_MS, SLOT_MS, settledDay, slotAt, slotStart, type DayLatch } from './ambient.ts';
 import { goalMoves } from '#lib/world/wander.ts';
 import { relayOffset } from './ambientClock.ts';
-import { actorOf, awake, guestPhone, online, setEveryoneAwake, setSpans, sleepIn, wakeMs, whoOf, wokeAt, type VillagerActor } from '#lib/ui-state/cast.ts';
+import { actorOf, awake, online, setEveryoneAwake, setSpans, sleepIn, wakeMs, whoOf, wokeAt, type VillagerActor } from '#lib/ui-state/cast.ts';
 import { on } from '#lib/ui-state/bus.svelte.ts';
 import { dayKey, jst, now } from '#lib/time/clock.ts';
 import type { ReactionId } from '../motion/reactions.ts';
@@ -227,38 +227,31 @@ export class IslandLife {
   }
 
   #diff(p: WeekView, v: WeekView): void {
-    // the guest's phone: the members' fruit ripens on their trees, and ふたりでぜんぶ brings everyone to the middle, the
-    // guest's villager too (their villagers' walks to a tree and the reactions are their own phones' moments)
-    if (guestPhone()) {
-      if (goalMoves(p, v).meet) meetUp();
-      for (const pid of ['A', 'B'] as const) {
-        const a = p.people[pid].rings, b = v.people[pid].rings;
-        const newlyRipe = RING_FRUITS.filter((f) => todayPct(b[f]) >= 100 && todayPct(a[f]) < 100);
-        if (newlyRipe.length) this.celebrate[pid] = { fruit: newlyRipe[0], n: ++this.#celebrateN };
-      }
-      return;
-    }
-    // the villagers go to it (avatar.ts): ふたりでぜんぶ brings both to the middle for a high-five; a fruit met walks that
-    // person's villager to their tree, and its reaction plays there
+    // the villagers go to it (avatar.ts): ふたりでぜんぶ brings everyone to the middle for a high-five; a fruit met walks
+    // that member's villager to their tree, and its reaction plays there. Every phone alike, the guest's too (the user,
+    // 2026-11-25: there A's and B's villagers are its partner and third)
     const moves = goalMoves(p, v);
     if (moves.meet && meetUp()) return;
-    const walk = moves.walk ? goalWalk(moves.walk) : 0;
-    for (const who of ['mine', 'partner'] as const) {
-      const pid = who === 'mine' ? v.me : v.partner;
+    const walk = moves.walk ? goalWalk(actorOf(moves.walk)) : 0;
+    for (const pid of [v.me, v.partner]) {
+      const id = actorOf(pid);
+      // their reaction's own part theirs (on mine: as written)
+      const as: Cast = id === 'mine' ? AS_WRITTEN : { mine: id, partner: 'mine' };
       const a = p.people[pid].rings, b = v.people[pid].rings;
       const ripeNow = RING_FRUITS.filter((f) => todayPct(b[f]) >= 100);
       const newlyRipe = RING_FRUITS.filter((f) => todayPct(b[f]) >= 100 && todayPct(a[f]) < 100);
       const stagedUp = RING_FRUITS.filter((f) => stage(todayPct(b[f])) !== stage(todayPct(a[f])) && todayPct(b[f]) > todayPct(a[f]));
-      const swap = who === 'partner';
-      const at = (r: ReactionId) => (walk ? this.later(() => react(r, swap), walk) : react(r, swap));
+      const at = (r: ReactionId) => (walk ? this.later(() => react(r, as), walk) : react(r, as));
       if (newlyRipe.length && ripeNow.length === RING_FRUITS.length) return at('R8');
       if (newlyRipe.length) {
         this.celebrate[pid] = { fruit: newlyRipe[0], n: ++this.#celebrateN };
         return at('R6');
       }
-      if (stagedUp.length) return react('R7', swap);
+      if (stagedUp.length) return react('R7', as);
     }
-    if (dayScore(v.people[v.partner]) > dayScore(p.people[v.partner])) react('R3');
+    // another member's data came in: their villager perks up, mine nods
+    const other = ([v.me, v.partner] as const).find((pid) => pid !== v.viewer && dayScore(v.people[pid]) > dayScore(p.people[pid]));
+    if (other) react('R3', { mine: 'mine', partner: actorOf(other) });
   }
 
   #start(): () => void {
@@ -287,12 +280,12 @@ export class IslandLife {
     const d = now();
     const { hour: h, weekday: wd } = jst(d);
     const view = ctx.view();
-    const me = view.people[view.me];
+    /** This phone's own day (the guest's: none, it has no Health data). */
+    const me = (view.people as Partial<Record<Who, PersonWeekView>>)[view.viewer];
     const beats: ReactionId[] = [];
     if (once('open')) beats.push('R1');
-    // (the rest are about this phone's own day: the guest has none)
-    if (!guestPhone()) {
-      if (h >= 5 && h < 9 && once('morning')) beats.push('R11');
+    if (h >= 5 && h < 9 && once('morning')) beats.push('R11');
+    if (me) {
       // evening: my partner turns to me while my day is still under half (a nudge to move, not to report in)
       if (h >= 18 && h < 22 && dayScore(me) < 50 && once('evening')) beats.push('R12');
       if (wd >= 4 && wd <= 6 && me.weekBells < LOW_WEEK_BELLS && once('lowweek')) beats.push('R15');

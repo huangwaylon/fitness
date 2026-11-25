@@ -114,7 +114,7 @@ export interface AmbientWorld {
    *  meet-up at the bench (both 100: every goal met). */
   scores: Record<Who, number>;
   /** Each person's exercise goal (🍑) met today: their villager may go do a pull-up. */
-  exercise?: Record<Who, boolean>;
+  exercise?: Partial<Record<Islander, boolean>>;
 }
 
 // ---------- what a slot holds ----------
@@ -257,8 +257,8 @@ export function villagerBeats(w: AmbientWorld, date: LocalDate, slot: number): P
   const v = (p: Islander) => (p === 'G' ? w.villagers.G! : w.villagers[p]);
   const free = (p: Islander) => v(p).free && !held(v(p), start);
   const { r, outing: o, who, pool, first } = roll(date, slot, w.phase, guest);
-  // one villager out at a time, from home (the members': the guest's stands wherever its taps put it)
-  const nobodyOut = PEOPLE.every((p) => atHome(w.villagers[p]));
+  // one villager out at a time, from home (the guest's as a member's: the user, 2026-11-25)
+  const nobodyOut = everyone.every((p) => atHome(v(p)));
   const hour = Math.floor(slot / 360);
   // both met every goal today: at dusk they meet on the front bench, side by side (each phone sends its own villager)
   if (w.phase === 'day' && hour >= MEET_HOURS[0] && hour < MEET_HOURS[1] && slot % MEET_EVERY === 0 && nobodyOut && free('A') && free('B') && w.scores.A >= 100 && w.scores.B >= 100) {
@@ -267,9 +267,8 @@ export function villagerBeats(w: AmbientWorld, date: LocalDate, slot: number): P
     const by = guest && free('G') ? nearBench(w.pois) : null;
     return { A: go('seatMaeL'), B: go('seatMaeR'), ...(by ? { G: go(by) } : {}) };
   }
-  const goers = PEOPLE.filter((p) => free(p) && !w.villagers[p].present && nobodyOut);
+  const goers = everyone.filter((p) => free(p) && !v(p).present && nobodyOut);
   if (goers.length && o < OUTING_ODDS) {
-    // (the guest's turn: a member's outing all the same, theirs never: its villager is always present)
     const p = goers.find((g) => g === who) ?? goers[slot % goers.length];
     const special = r();
     // the evening: to the campfire's stool; an exercise day: a pull-up at the bar
@@ -278,7 +277,7 @@ export function villagerBeats(w: AmbientWorld, date: LocalDate, slot: number): P
     // now and then a sit on the pond's bench (its own seat each)
     if (w.phase === 'day' && special > 1 - POND_ODDS) return { [p]: { kind: 'outing', stops: [{ node: p === 'A' ? 'seatPondL' : 'seatPondR', linger: between(r, SIT_LINGER) }] } };
     const pois = [...w.pois].sort((a, b) => (a.node < b.node ? -1 : a.node > b.node ? 1 : 0)).filter((q) => !SPECIAL.has(q.node));
-    const beat = outing(w.villagers[p], pois, r);
+    const beat = outing(v(p), pois, r);
     if (beat) return { [p]: beat };
   }
   if (!free(who) || !first) return {};

@@ -65,8 +65,8 @@ describe('goal reactions', () => {
     return { me: 'A', partner: 'B', people: { A: person(met.A), B: person(met.B) } } as unknown as WeekView;
   };
   it('a fruit met walks that person’s villager to the tree (mine first)', () => {
-    expect(goalMoves(view({ A: 1, B: 0 }), view({ A: 2, B: 0 }))).toEqual({ meet: false, walk: 'mine' });
-    expect(goalMoves(view({ A: 1, B: 0 }), view({ A: 1, B: 1 }))).toEqual({ meet: false, walk: 'partner' });
+    expect(goalMoves(view({ A: 1, B: 0 }), view({ A: 2, B: 0 }))).toEqual({ meet: false, walk: 'A' });
+    expect(goalMoves(view({ A: 1, B: 0 }), view({ A: 1, B: 1 }))).toEqual({ meet: false, walk: 'B' });
     expect(goalMoves(view({ A: 1, B: 1 }), view({ A: 1, B: 1 }))).toEqual({ meet: false, walk: null });
   });
   it('ふたりでぜんぶ: both all four for the first time → they meet in the middle', () => {

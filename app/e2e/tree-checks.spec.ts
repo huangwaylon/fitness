@@ -4,9 +4,8 @@
 // tick sparkles and pays RULES.checks = 0 ベル; the partner's tree and the guest's phone show the row read-only. Taps,
 // not clicks (iPhone Safari).
 import { expect, test, type Browser, type Page } from './fixtures.ts';
-import { camTo, islandUp, tapOn } from './island.ts';
+import { islandUp, tapOn } from './island.ts';
 import { hudBells } from './hud.ts';
-import { GOAL_TREES } from '../src/lib/world/world.ts';
 import { newRecord } from './record.ts';
 import { FACE_VIDEO } from '../src/lib/model/checks.ts';
 
@@ -125,7 +124,6 @@ test('the partner’s tree and the guest’s phone: the row read-only, each pers
   await expect(row(a).locator('button')).toHaveCount(0);
 
   const g = await phone(browser, rec, 'G');
-  await camTo(g, GOAL_TREES.A[1]); // (the guest's phone opens at its own villager)
   await tapOn(g, 'goal', 'A');
   expect(await states(g)).toEqual([['face', false], ['hiit', true], ['core', false]]);
   await expect(row(g).locator('button')).toHaveCount(0);

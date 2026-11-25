@@ -6,8 +6,7 @@
 // it, a tap outside does. The demo's 2026-11-03 at 22:00: ウェイ ate three meals, set protein 110 g, no fat or carbs goal;
 // うめ set none. Taps, not clicks (iPhone Safari).
 import { expect, test, type Locator, type Page } from './fixtures.ts';
-import { camTo, islandUp, lawnTap, tapOn, w3, walking } from './island.ts';
-import { GOAL_TREES } from '../src/lib/world/world.ts';
+import { islandUp, lawnTap, tapOn, w3, walking } from './island.ts';
 import { lowContrast } from './contrast.ts';
 
 test.use({ viewport: { width: 393, height: 852 }, hasTouch: true });
@@ -16,7 +15,6 @@ const pop = (page: Page) => page.locator('.detail');
 async function open(page: Page, q = '') {
   await page.goto(`?demo&date=2026-11-03T22:00${q}`);
   await islandUp(page);
-  if (q.includes('as=G')) await camTo(page, GOAL_TREES.A[1]); // (the guest's phone opens at its own villager)
   await tapOn(page, 'goal', 'A');
   await settle(page);
 }

@@ -78,14 +78,14 @@ export const MEET: { readonly A: Pt; readonly B: Pt; readonly G: Pt } = {
 
 const allMet = (v: WeekView, pid: PersonId) => RING_FRUITS.every((f) => todayPct(v.people[pid].rings[f]) >= 100);
 
-/** What the villagers do about goals between two views: both people all four for the first time (ふたりでぜんぶ) → they
- *  meet in the middle; else a fruit newly met → that person's villager walks to their tree (mine first). */
-export function goalMoves(p: WeekView, v: WeekView): { meet: boolean; walk: 'mine' | 'partner' | null } {
+/** What the villagers do about goals between two views: both members all four for the first time (ふたりでぜんぶ) →
+ *  they meet in the middle; else a fruit newly met → that member's villager walks to their tree (`v.me`'s first: mine
+ *  on a member's phone, A's on the guest's). */
+export function goalMoves(p: WeekView, v: WeekView): { meet: boolean; walk: PersonId | null } {
   const both = (w: WeekView) => allMet(w, w.me) && allMet(w, w.partner);
   if (both(v) && !both(p)) return { meet: true, walk: null };
-  for (const who of ['mine', 'partner'] as const) {
-    const pid = who === 'mine' ? v.me : v.partner;
-    if (RING_FRUITS.some((f) => todayPct(v.people[pid].rings[f]) >= 100 && todayPct(p.people[pid].rings[f]) < 100)) return { meet: false, walk: who };
+  for (const pid of [v.me, v.partner]) {
+    if (RING_FRUITS.some((f) => todayPct(v.people[pid].rings[f]) >= 100 && todayPct(p.people[pid].rings[f]) < 100)) return { meet: false, walk: pid };
   }
   return { meet: false, walk: null };
 }

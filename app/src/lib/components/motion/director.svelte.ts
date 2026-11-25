@@ -233,7 +233,7 @@ export function applyStep(id: ActorId, s: Step) {
 // touch feedback (tapping a villager, the high-five a tap on the partner starts, the jar, waking a sleeper) never waits.
 const IMMEDIATE = new Set<ReactionId>(['R4', 'R9', 'R14', 'R18']);
 const EVENT_GAP_MS = 400;
-const queue: { rid: ReactionId; swap: boolean }[] = [];
+const queue: { rid: ReactionId; as: Cast }[] = [];
 let eventUntil = 0;
 let drainTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -264,28 +264,33 @@ function drainLater() {
   drainTimer = setTimeout(() => {
     drainTimer = null;
     const next = queue.shift();
-    if (next) play(next.rid, next.swap);
+    if (next) play(next.rid, next.as);
     if (queue.length) drainLater();
   }, Math.max(0, eventUntil - Date.now()));
 }
 
+/** Who plays a reaction's `mine` and `partner` parts. */
+export type Cast = { mine: 'mine' | 'partner' | 'third'; partner: 'mine' | 'partner' | 'third' };
+/** As written: mine's part mine, the partner's the partner's. */
+export const AS_WRITTEN: Cast = { mine: 'mine', partner: 'partner' };
+
 /** Play a catalogue reaction, or queue it behind the event that is playing. Preempts idle life
- *  on every actor it touches. `swap` plays the 'mine' part on the partner (e.g. the partner's fruit
- *  ripened). */
-export function react(rid: ReactionId, swap = false) {
+ *  on every actor it touches. `as`: who plays its parts (the partner's fruit ripened: mine's part the partner's,
+ *  the partner's mine; on the guest's phone, B's: the third's). */
+export function react(rid: ReactionId, as: Cast = AS_WRITTEN) {
   if (!IMMEDIATE.has(rid) && Date.now() < eventUntil) {
-    if (queue.length < 3 && !queue.some((q) => q.rid === rid && q.swap === swap)) queue.push({ rid, swap });
+    if (queue.length < 3 && !queue.some((q) => q.rid === rid && q.as.mine === as.mine && q.as.partner === as.partner)) queue.push({ rid, as });
     drainLater();
     return;
   }
-  play(rid, swap);
+  play(rid, as);
 }
 
-function play(rid: ReactionId, swap: boolean) {
+function play(rid: ReactionId, as: Cast) {
   const r = REACTIONS[rid];
   if (!IMMEDIATE.has(rid)) eventUntil = Date.now() + r.ms + EVENT_GAP_MS;
   const who = (a: Step['actor']): ActorId[] =>
-    a === 'both' ? ['mine', 'partner'] : swap && a === 'mine' ? ['partner'] : swap && a === 'partner' ? ['mine'] : [a];
+    a === 'both' ? [as.mine, as.partner] : a === 'mine' || a === 'partner' ? [as[a]] : [a];
   const ids = new Set<ActorId>();
   for (const s of r.steps) for (const id of who(s.actor)) ids.add(id);
   for (const id of ids) {

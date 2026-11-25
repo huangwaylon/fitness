@@ -21,7 +21,7 @@ import { walkNav } from '#lib/world/nav.ts';
 import { worldGen } from '#lib/world/world.ts';
 import { planTap, standAt, type TapPlan } from './tapWalk.ts';
 import { localKV, readJson, remove, writeJson } from '#lib/sync/storage.ts';
-import { actorOf, castMe, guestPhone, islandActors, othersOf, whoOf } from '#lib/ui-state/cast.ts';
+import { actorOf, castMe, islandActors, othersOf, whoOf } from '#lib/ui-state/cast.ts';
 import type { Who } from '#lib/types.ts';
 import { relayOffset } from './ambientClock.ts';
 import { slotAt, slotRand } from './ambient.ts';
@@ -63,10 +63,9 @@ type Villager = 'mine' | 'partner' | 'third';
 /** When each villager's person last steered it (device ms): my taps here, the partner's walks over the relay. Ambient
  *  life leaves it alone a while after (ambient.ts held). */
 export const steered: Partial<Record<Villager, number>> = {};
-/** The guest's villager here (it stands where its taps put it: no phone's life sends it off on its own). */
+/** The guest's villager here (ふたりでぜんぶ is the members' two goals: it comes along between them). Otherwise its life is
+ *  a member's (the user, 2026-11-25). */
 const guests = (id: Villager): boolean => whoOf(id) === 'G';
-/** The members' villagers besides `id` (one of theirs is out at a time). */
-const otherMembers = (id: Villager): Villager[] => othersOf(id).filter((o) => !guests(o));
 const rand = (a: number, b: number) => a + Math.random() * (b - a);
 /** When the partner's change on the relay (`t`, the relay's ms) was, on this device's clock (steered's): the same instant
  *  on both phones, not each one's arrival time (ambient.ts held()'s window then differed per phone). */
@@ -273,13 +272,13 @@ export function partnerTurnTo(tx: number, who?: Who, t?: number): void {
 
 /** After `ms`, wander home (90 u/s), unless something else took the villager by then (then a little later). */
 function goHomeLater(id: Villager, ms: number): void {
-  if ((guests(id) && id !== 'mine') || planned[id]) return; // (ambient life's plan has it: followPlan) // the guest's villager is its phone's to move (back to where its taps put it)
+  if (planned[id]) return; // (ambient life's plan has it: followPlan)
   clearTimeout(homeTimers[id]);
   homeTimers[id] = setTimeout(() => goHome(id), ms);
 }
 
 function goHome(id: Villager): void {
-  if (inside[id] || (guests(id) && id !== 'mine') || planned[id]) return;
+  if (inside[id] || planned[id]) return;
   const c = ctx;
   const home = restOf(id), at = c?.where(id);
   if (!c || !at || Math.hypot(at[0] - home[0], at[1] - home[1]) <= 2) return id === 'mine' ? backHome() : undefined;
@@ -308,13 +307,12 @@ export function setInside(id: Villager, on: boolean): void {
 /** Free to set off on its own: awake, not busy, standing still, on the island. */
 const free = (id: Villager) => !inside[id] && !actors[id].asleep && !busy(id) && !actors[id].walking;
 
-/** Mine has been away FOLLOW_MS: a member's villager comes over and stands beside it (then they chat): the partner's
- *  on a member's phone; on the guest's, A's or B's, whichever is free. */
+/** Mine has been away FOLLOW_MS: another villager comes over and stands beside it (then they chat), whichever is free. */
 function checkFollow() {
   const c = ctx;
   if (!c || !c.enabled() || !awayFromHome('mine')) return;
-  // (a villager whose person is here is theirs to move: villagerSync; the guest's always is)
-  const by = otherMembers('mine').find((o) => !isRemote(o) && free(o));
+  // (a villager whose person is here is theirs to move: villagerSync)
+  const by = othersOf('mine').find((o) => !isRemote(o) && free(o));
   if (!shouldFollow(away.since, Date.now(), !!by && !away.followed)) return;
   if (actors.mine.walking) return void (followTimer = setTimeout(checkFollow, 1000));
   const id = by!, g = c.geo(), at = c.where('mine'), from = c.where(id);
@@ -333,8 +331,8 @@ function checkFollow() {
 /** Idle life: send a villager off to a point of interest or a few (one walker leaves home at a time). */
 export function wander(id: Villager, stops = 1 + Math.floor(Math.random() * MAX_HOPS)): boolean {
   const c = ctx;
-  if (!c || !c.enabled() || guests(id) || !free(id) || awayFromHome(id) || isRemote(id)) return false;
-  if (otherMembers(id).some((o) => actors[o].walking || awayFromHome(o))) return false;
+  if (!c || !c.enabled() || !free(id) || awayFromHome(id) || isRemote(id)) return false;
+  if (othersOf(id).some((o) => actors[o].walking || awayFromHome(o))) return false;
   return hop(id, stops);
 }
 
@@ -343,7 +341,7 @@ export function wander(id: Villager, stops = 1 + Math.floor(Math.random() * MAX_
 export function outing(id: Villager, stops: readonly Stop[], together = false): boolean {
   const c = ctx;
   if (!c || !c.enabled() || !free(id) || awayFromHome(id) || !stops.length) return false;
-  if (!together && otherMembers(id).some((o) => actors[o].walking || awayFromHome(o))) return false;
+  if (!together && othersOf(id).some((o) => actors[o].walking || awayFromHome(o))) return false;
   return hop(id, stops.length, stops);
 }
 type Stop = { node: string; linger: number };
@@ -484,8 +482,8 @@ export function thaw(): void {
 export function snapHome(): void {
   for (const id of ['mine', 'partner', 'third'] as const) {
     clearTimeout(homeTimers[id]);
-    // (where the guest put it: its phone comes back to it, or it left; one ambient life's plan has: put there by it)
-    if (guests(id) || planned[id]) continue;
+    // (one ambient life's plan has: put there by it)
+    if (planned[id]) continue;
     const [x, y] = restOf(id);
     place(id, x, y);
   }
@@ -571,8 +569,7 @@ export const visitorWalkable = (x: number, y: number): boolean => walkable(open(
 
 /** A villager is free to go over to the visitor: the partner, both villagers home, nobody walking. */
 export function villagerFree(): boolean {
-  // (the guest's phone: A and B are the members' phones' to send over)
-  if (!ctx?.enabled() || guestPhone() || isRemote('partner') || actors.mine.walking || actors.partner.walking || awayFromHome('mine') || awayFromHome('partner')) return false;
+  if (!ctx?.enabled() || isRemote('partner') || actors.mine.walking || actors.partner.walking || awayFromHome('mine') || awayFromHome('partner')) return false;
   return free('partner');
 }
 
