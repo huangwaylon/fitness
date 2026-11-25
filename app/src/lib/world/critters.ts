@@ -9,8 +9,8 @@ import { SPIDER_HOURS, inHours, perches, sameWater, waterAt, type Water } from '
 import type { SeaId } from './sea.ts';
 import type { Sky } from './weather.ts';
 import {
-  BEACH_BOX, BRIDGE, CAMPSITE, CLIFF, FLOWERS, FALLS_POOL, HEDGE_XS, HEDGE_Z, POND, RIVER, ROCK, SCENERY, SEA_BOX, SHORE_Z,
-  LAWN_SPOTS, PONDS, RIVER_BEND, onLayout, riverNS, worldGen, type FreshWhere
+  BEACH_BOX, CAMPSITE, FLOWERS, HEDGE_XS, HEDGE_Z, POND, RIVER, ROCK, SCENERY, SEA_BOX, SHORE_Z,
+  LAWN_SPOTS, PONDS, RIVER_BEND, freshWhere, onBridge, onLayout, riverNS, worldGen, type FreshWhere
 } from './world.ts';
 
 /** NH months (1–12) a critter is about, and its hours [from, to) in Tokyo time (to < from wraps past midnight). */
@@ -407,18 +407,17 @@ function reaches(i0: number, i1: number, step: number, keep: (x: number, z: numb
   }
   return out;
 }
-/** Where a fresh water's shadows swim (world): the pond's open middle; the stream's reaches below the falls' pool (not
- *  under the bridge); the
- *  mouth's wide reach on the west beach; the falls' pool (NH's clifftop: the upper tier is beyond the horizon). */
+/** Where a fresh water's shadows swim (world): the pond's open middle; the stream's reaches below the falls' pools (not
+ *  under a bridge); the mouth's wide reach on the west beach; NH's clifftop (an upper tier's river, a falls' pool:
+ *  freshWhere's, each tile by its own tier). */
 export function freshAreas(where: FreshWhere): Swim[] {
   // (each patch's middle on that water's own tiles, clear of its edge: never one over a bank or out at sea; a layout
   // without a painted pond has POND far off the island, layoutWorld.ts FAR_OVAL)
   const on = (x: number, z: number) => waterAt(x, z, -4) === where;
   if (where === 'pond') return [POND, ...PONDS].filter((o) => on(o.x, o.z)).map((o) => ({ cx: o.x, cz: o.z, ux: 1, uz: 0, L: o.rx * 0.55, W: o.rz * 0.4 }));
-  if (where === 'clifftop')
-    return reaches(0, RIVER.length - 1, 24, (x, z) => z > CLIFF.z0 - FALLS_POOL && z < CLIFF.z0 - 6 && on(x, z));
+  if (where === 'clifftop') return reaches(0, RIVER.length - 1, 24, on);
   if (where === 'mouth') return reaches(0, RIVER.length - 1, 44, on);
-  return reaches(0, RIVER.length - 1, 80, (x, z) => z < CLIFF.z0 - FALLS_POOL - 8 && on(x, z) && Math.abs(x - BRIDGE.x) > BRIDGE.w / 2 + 24);
+  return reaches(0, RIVER.length - 1, 80, (x, z) => on(x, z) && !onBridge(x, z, -24));
 }
 
 /** A patch a bug keeps to (world): x0…x1 across, z0…z1 deep, l0…l1 units above the ground. */
@@ -498,13 +497,14 @@ export function patches(place: BugPlace): Patch[] {
     case 'water-air':
       return [
         patch(POND.x, POND.z, POND.rx, POND.rz, 10, 36),
-        ...reaches(3, RIVER.length - 1, 100, (x, z) => z < CLIFF.z0 - 40 && x > -10).map((a) => patch(a.cx, a.cz, Math.abs(a.uz) > 0.7 ? a.W * 2 + 8 : 30, Math.abs(a.uz) > 0.7 ? 40 : a.W * 2 + 6, 10, 34))
+        ...reaches(3, RIVER.length - 1, 100, (x, z) => freshWhere(x, z) !== 'clifftop' && x > -10).map((a) => patch(a.cx, a.cz, Math.abs(a.uz) > 0.7 ? a.W * 2 + 8 : 30, Math.abs(a.uz) > 0.7 ? 40 : a.W * 2 + 6, 10, 34))
       ];
     case 'water':
       return [
         { x0: POND.x - POND.rx * 0.6, x1: POND.x + POND.rx * 0.6, z0: POND.z - POND.rz * 0.5, z1: POND.z + POND.rz * 0.5, l0: 0, l1: 0 },
         // four along the reach between its bend and the falls' pool
-        ...[0, 1, 2, 3].map((k) => RIVER_BEND + 20 + (k / 3) * (CLIFF.z0 - 40 - RIVER_BEND - 20)).flatMap((z) => { const r = riverNS(z); return r ? [patch(r.x, z, r.hw * 0.45, 26)] : []; })
+        ...((top) => [0, 1, 2, 3].map((k) => RIVER_BEND + 20 + (k / 3) * (top - RIVER_BEND - 20)))(Math.max(RIVER_BEND + 20, ...RIVER.filter((p) => p[1] > RIVER_BEND && freshWhere(p[0], p[1]) !== 'clifftop').map((p) => p[1] - 6)))
+          .flatMap((z) => { const r = riverNS(z); return r ? [patch(r.x, z, r.hw * 0.45, 26)] : []; })
       ];
     case 'beach': return [{ x0: BEACH_BOX.x0 - 40, x1: BEACH_BOX.x1, z0: BEACH_BOX.z0, z1: BEACH_BOX.z1 - 10, l0: 0, l1: 0 }];
     case 'rock': return [{ x0: ROCK[0] - 18, x1: ROCK[0] + 20, z0: ROCK[1] - 14, z1: ROCK[1] - 6, l0: 0, l1: 0 }];

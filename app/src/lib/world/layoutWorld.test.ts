@@ -75,6 +75,35 @@ describe('worldOf: world.ts from the layout', () => {
   });
 });
 
+describe('every bridge and every stairs; each tile by its own tier (the user, 2026-11-25)', () => {
+  // a second bridge across the north–south reach (column 15, turned: its deck along x) and a second stairs
+  const two = withChanges(l, { set: [{ id: 'bridge-2', k: 'bridge', x: 14, z: 40, f: 1, s: 'wood' }, { id: 'stairs-2', k: 'stairs', x: 10, z: 49, f: 0, s: 'stone' }] });
+  const g2 = worldOf(two);
+  test('a bridge’s deck is no river, and stone underfoot, on each of them; the stairs stone on each', () => {
+    const [d1, d2] = [tileMid(9, 24), tileMid(15, 40)];
+    for (const [x, z] of [d1, d2]) {
+      expect(g2.inRiver(x, z), `${x},${z}`).toBe(false);
+      expect(g2.surfaceAt(x, z), `${x},${z}`).toBe('stone');
+      expect(g2.onBridge(x, z), `${x},${z}`).toBe(true);
+    }
+    // (beside the second deck, up or down the river: water)
+    expect(g2.inRiver(...tileMid(15, 42))).toBe(true);
+    expect(g.inRiver(...tileMid(15, 40))).toBe(true);
+    for (const c of [4, 10]) expect(g2.surfaceAt(...tileMid(c, 50)), `${c}`).toBe('stone');
+  });
+  test('NH’s clifftop: the upper tier’s river and the falls’ pool at its foot, by the tiles’ own tiers', () => {
+    expect(g.freshWhere(...tileMid(15, 54))).toBe('clifftop');
+    expect(g.freshWhere(...tileMid(15, 52))).toBe('clifftop');
+    expect(g.freshWhere(...tileMid(15, 45))).toBe('river');
+    // the upper tier lowered to the lawn's east of column 9: its river there no clifftop (it was, by the first upper row)
+    const lowered: [number, number, number][] = [];
+    for (let r = 53; r < 58; r++) for (let c = 9; c < 20; c++) if (l.tier(c, r) === 1) lowered.push([c, r, l.code(c, r) - 1]);
+    const flat = worldOf(withChanges(l, { tiles: lowered }));
+    expect(flat.freshWhere(...tileMid(15, 54))).not.toBe('clifftop');
+    expect(flat.freshWhere(...tileMid(15, 52))).not.toBe('clifftop');
+  });
+});
+
 describe('a pond put down (kind pond): a fresh water as the painted pond’s', () => {
   afterEach(() => W.setWorld(null));
   // on the first open grass it fits on, turned a quarter too

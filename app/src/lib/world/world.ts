@@ -55,7 +55,8 @@ export let RIVER_BEND = 768;
 export let BRIDGE: { readonly x: number; readonly z0: number; readonly z1: number; readonly w: number } = { x: 195, z0: 622, z1: 670, w: 35.5 };
 export const BRIDGE_RAIL = 5;
 /** Whether (x, z) is on the bridge's deck (`inset` in from its sides, e.g. the rails). */
-export const onBridge = (x: number, z: number, inset = 0): boolean => Math.abs(x - BRIDGE.x) <= BRIDGE.w / 2 - inset && z >= BRIDGE.z0 && z <= BRIDGE.z1;
+export const onBridge = (x: number, z: number, inset = 0): boolean =>
+  geo ? geo.onBridge(x, z, inset) : Math.abs(x - BRIDGE.x) <= BRIDGE.w / 2 - inset && z >= BRIDGE.z0 && z <= BRIDGE.z1;
 /** The spring on the upper tier the stream rises from. */
 export let SPRING: Oval = { x: 364, z: 1152, rx: 28, rz: 16 };
 /** The pond (an oval of water), with lily pads: west of the path to the campsite. */
@@ -385,11 +386,13 @@ export interface WorldGeo {
   CENTRE_STAGE: Pt; ARCH: Pt; CAKE: Pt; SCENERY: readonly Scenery[]; DECOR_SLOTS: readonly DecorSlot[]; SEATS: Readonly<Record<string, Pt>>;
   PULLUP_AT: Pt; FLOWERS: readonly Flower[]; PONDS: readonly Oval[];
   inRiver(x: number, z: number): boolean; freshWhere(x: number, z: number): FreshWhere; onLand(x: number, z: number): boolean;
+  /** On a bridge's deck (any of them), `inset` in from its rails. */
+  onBridge(x: number, z: number, inset?: number): boolean;
   onGrass(x: number, z: number): boolean; surfaceAt(x: number, z: number): Surface;
   /** The layout's walk grid (layout/nav.ts navOf): the walk's, in place of nav.ts's and walkGraph.ts's. */
   nav: LayoutNav;
 }
-type Values = Omit<WorldGeo, 'inRiver' | 'freshWhere' | 'onLand' | 'onGrass' | 'surfaceAt' | 'nav'>;
+type Values = Omit<WorldGeo, 'inRiver' | 'freshWhere' | 'onLand' | 'onGrass' | 'onBridge' | 'surfaceAt' | 'nav'>;
 const snapshot = (): Values => ({
   LAND, SHORE_Z, GRASS, CAMS, RIVER, RIVER_BEND, BRIDGE, SPRING, POND, CLIFF, BUILDINGS, HOMES, GOAL_TREES, TAPE_DECK, ROCK, DIG_SPOTS,
   LAWN_SPOTS, HEDGE_Z, HEDGE_XS, BEACH_BOX, SEA_BOX, CENTRE_STAGE, ARCH, CAKE, SCENERY, DECOR_SLOTS, SEATS, PULLUP_AT, FLOWERS, PONDS

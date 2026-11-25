@@ -366,8 +366,9 @@ describe('the waters (world units): the sea, the pond, the river, its mouth, the
     const river = freshAreas('river');
     expect(river.some((a) => a.cz > 900 && a.cx > 350)).toBe(true);
     expect(river.some((a) => a.cz < 800)).toBe(true);
-    // the clifftop's shadows swim in the falls' pool, in view (the upper tier is beyond the horizon)
-    for (const a of freshAreas('clifftop')) expect(a.cz).toBeLessThan(CLIFF.z0);
+    // the clifftop's shadows swim in the falls' pool and up the river above it (the 3D island shows the upper tier)
+    expect(freshAreas('clifftop').some((a) => a.cz < CLIFF.z0)).toBe(true);
+    expect(freshAreas('clifftop').some((a) => a.cz > CLIFF.z1)).toBe(true);
     // the sea's water is in front of the front beach
     const p = swimAt(SEA_SWIM, 0, 1);
     expect(p.z).toBeLessThan(-10);

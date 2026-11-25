@@ -157,17 +157,18 @@ export function worldOf(l: Layout, nav: LayoutNav = navOf(l)): WorldGeo {
   const inPonds = (x: number, z: number) => PONDS.some((o) => inOval(o, x, z));
   // the spring: the upper tier's pond, else the river's source
   const SPRING = springs[0] ? ovalOf(springs[0]) : RIVER[0] ? { x: RIVER[0][0], z: RIVER[0][1], rx: 14, rz: 10 } : FAR_OVAL;
-  const bridge = byKind('bridge')[0];
-  let BRIDGE = { x: -1e5, z0: -1e5, z1: -1e5, w: 0 };
-  if (bridge) {
-    const [w, d] = footOf(l, bridge), [x0, z0] = originOf(l, bridge);
-    BRIDGE = { x: tileX(x0) + (w * TILE) / 2, z0: tileZ(z0), z1: tileZ(z0 + d), w: w * TILE };
-  }
+  // every bridge's and every stairs' footprint (u); world.ts's BRIDGE and CLIFF.stair the first's
+  const boxOf = (o: Obj) => {
+    const [w, d] = footOf(l, o), [x0, z0] = originOf(l, o);
+    return { x0: tileX(x0), x1: tileX(x0 + w), z0: tileZ(z0), z1: tileZ(z0 + d) };
+  };
+  const bridges = byKind('bridge').map(boxOf), stairs = byKind('stairs').map(boxOf);
+  const b0 = bridges[0];
+  const BRIDGE = b0 ? { x: (b0.x0 + b0.x1) / 2, z0: b0.z0, z1: b0.z1, w: b0.x1 - b0.x0 } : { x: -1e5, z0: -1e5, z1: -1e5, w: 0 };
   // the cliff: the first row of an upper tier
   let cliffZ = Infinity;
   for (let r = 0; r < GRID.rows && cliffZ === Infinity; r++) for (let c = 0; c < GRID.cols; c++) if (l.tier(c, r) > 0 && l.kind(c, r) !== 'sea') { cliffZ = tileZ(r); break; }
-  const stairs = byKind('stairs')[0];
-  const stairX: Pt = stairs ? (() => { const [w] = footOf(l, stairs), [x0] = originOf(l, stairs); return [tileX(x0), tileX(x0 + w)] as Pt; })() : [-1e5, -1e5];
+  const stairX: Pt = stairs[0] ? [stairs[0].x0, stairs[0].x1] : [-1e5, -1e5];
   const fallTiles = [...steps.keys()].map((k) => [k % GRID.cols, Math.floor(k / GRID.cols)]).filter(([c, r]) => l.tier(c, r) > 0 && l.tier(c, r - 1) < l.tier(c, r));
   const fallX: Pt = fallTiles.length ? [Math.min(...fallTiles.map(([c]) => tileX(c))), Math.max(...fallTiles.map(([c]) => tileX(c + 1)))] : [-1e5, -1e5];
   const CLIFF = { z0: cliffZ === Infinity ? 1e5 : cliffZ, z1: cliffZ === Infinity ? 1e5 : cliffZ + 10, x0: land.x0, x1: land.x1, stair: stairX, fall: fallX };
@@ -238,12 +239,13 @@ export function worldOf(l: Layout, nav: LayoutNav = navOf(l)): WorldGeo {
   const grass = openGrass(l).map(([c, r]) => tileMid(c, r) as Pt);
   const dig = daySpots(l, 'world', 'island').dig;
 
-  const onBridgeAt = (x: number, z: number) => Math.abs(x - BRIDGE.x) <= BRIDGE.w / 2 && z >= BRIDGE.z0 && z <= BRIDGE.z1;
-  const onStairs = (x: number, z: number) => {
-    if (!stairs) return false;
-    const [w, d] = footOf(l, stairs), [x0, z0] = originOf(l, stairs);
-    return x >= tileX(x0) && x <= tileX(x0 + w) && z >= tileZ(z0) && z <= tileZ(z0 + d);
-  };
+  // (a bridge's deck runs across its water: its rails inset across it, world.ts onBridge's `inset`)
+  const onBridgeAt = (x: number, z: number, inset = 0) =>
+    bridges.some((b) => {
+      const along = b.z1 - b.z0 >= b.x1 - b.x0;
+      return along ? x >= b.x0 + inset && x <= b.x1 - inset && z >= b.z0 && z <= b.z1 : x >= b.x0 && x <= b.x1 && z >= b.z0 + inset && z <= b.z1 - inset;
+    });
+  const onStairs = (x: number, z: number) => stairs.some((b) => x >= b.x0 && x <= b.x1 && z >= b.z0 && z <= b.z1);
   const riverStep = (x: number, z: number): number | null => {
     const [c, r] = tileAt(x, z);
     return onGrid(c, r) ? (steps.get(idx(c, r)) ?? null) : null;
@@ -259,7 +261,13 @@ export function worldOf(l: Layout, nav: LayoutNav = navOf(l)): WorldGeo {
   };
   const tierAt = (x: number, z: number) => {
     const [c, r] = tileAt(x, z);
-    return l.tier(c, r);
+    return onGrid(c, r) ? l.tier(c, r) : 0;
+  };
+  /** NH's clifftop at (x, z): on an upper tier, or in a falls' pool, FALLS_POOL at the foot of a higher tier (the tile's
+   *  own tier, wherever its cliff runs). */
+  const clifftop = (x: number, z: number) => {
+    const t = tierAt(x, z);
+    return t > 0 || ([[0, 1], [0, -1], [1, 0], [-1, 0]] as const).some(([dx, dz]) => tierAt(x + dx * FALLS_POOL, z + dz * FALLS_POOL) > t);
   };
 
   return {
@@ -281,10 +289,11 @@ export function worldOf(l: Layout, nav: LayoutNav = navOf(l)): WorldGeo {
     },
     freshWhere: (x, z): FreshWhere => {
       if ((kindAt(l, x, z) === 'pond' ? tierAt(x, z) === 0 : inOval(POND, x, z, 12)) || PONDS.some((o) => inOval(o, x, z, 12))) return 'pond';
-      if (tierAt(x, z) > 0 || z > CLIFF.z0 - FALLS_POOL) return 'clifftop';
+      if (clifftop(x, z)) return 'clifftop';
       const s = nearRiverStep(x, z);
       return s !== null && s <= 1 ? 'mouth' : 'river';
     },
+    onBridge: onBridgeAt,
     nav,
     surfaceAt: (x, z): Surface => {
       if (onBridgeAt(x, z) || onStairs(x, z)) return 'stone';

@@ -1,7 +1,7 @@
 // Petals or maple leaves riding the stream in their weeks (NH's season/* models on the water): one every 90u along it
 // from below the falls' pool down to the mouth (13 on the layout's river), each drifting 36u downstream over 15 s, turning slowly, then the next lap from its spot (out
 // of step); and a few afloat on the pond (docs/design.md "Pond"), circling it slowly. Pure positions; Island3D draws them as instances (quiet: no shadow map).
-import { CLIFF, FALLS_POOL, POND, RIVER, onBridge, onLand, worldGen } from '#lib/world/world.ts';
+import { POND, RIVER, freshWhere, onBridge, onLand, worldGen } from '#lib/world/world.ts';
 
 export interface Float {
   id: string;
@@ -32,7 +32,7 @@ function build(): Float[] {
     const ux = (bx - ax) / (len || 1), uz = (bz - az) / (len || 1);
     for (; at < run + len; at += SPACING_U) {
       const cx = ax + ux * (at - run), cz = az + uz * (at - run);
-      if (cz > CLIFF.z0 - FALLS_POOL) continue;
+      if (freshWhere(cx, cz) === 'clifftop') continue;
       if ((sea = !onLand(cx, cz))) break;
       const side = (((k * 7) % 5) - 2) * 2.4, x = cx - uz * side, z = cz + ux * side;
       if (!onBridge(x, z, -20)) out.push({ id: `float-${k}`, x, z, dx: ux, dz: uz, d: (k * 3.7) % 15, spin: k % 2 ? 1 : -1 });
