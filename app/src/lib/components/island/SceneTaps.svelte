@@ -6,7 +6,7 @@
   // sun glints; the moon bobs and twinkles; a tap in the night sky lights a star; the sea (the pond, the river) rings and
   // splashes (rarely a fish shadow darts off); sand takes two footprints and a puff, grass a dust puff (snow in winter).
   // On a clear night (NH: 7 pm – 4 am) a shower of shooting stars crosses the sky every few minutes (stars.ts), never
-  // over the UI; a tap in the sky while one streaks across is a wish (a sparkle, a chime, a caption: finds.svelte.ts wish). A popped balloon's
+  // over the UI or the island (the sky above the horizon only); a tap in the sky while one streaks across is a wish (a sparkle, a chime, a caption: finds.svelte.ts wish). A popped balloon's
   // present (balloon.svelte.ts sends `island:present`) falls to the open spot in front it chose, sparkles and lies there.
   // The critters (critters.svelte.ts: fish shadows to fish, bugs to net) get each tap first; a shaken bush can let a bug out.
   //   <SceneTaps scene={el} {season} {tod} enabled={() => live && !covered} />   (inside .stage)
@@ -774,8 +774,9 @@
   }
 
   /** NH's shooting star: a quick white streak falling to the lower left through the night sky, its whole path inside
-   *  the fixed sky (under the status bar, above the horizon: the camera's, data-horizon) and clear of every control (the
-   *  dumbbell, the bowl, the leaf menu, the sync chip). */
+   *  the sky (under the status bar, above the camera's live horizon, data-horizon) and clear of every control (the
+   *  dumbbell, the bowl, the leaf menu, the sync chip). It stays in the background: never over the island (the user,
+   *  2026-11-25), so a view with only a sliver of sky has none (streakPath: null; the shower's next simply comes). */
   function shootingStar() {
     const g = stageGeo(scene);
     const band = scene?.querySelector('.band')?.getBoundingClientRect();
@@ -783,9 +784,6 @@
     const r = g.r, s = scene!.getBoundingClientRect();
     // in stage px (the stage is the whole viewport: the sky is its top, down to the horizon)
     const sky = { x0: s.left - r.left + 8, x1: s.right - r.left - 8, y0: band.top - r.top + 6, y1: w.view.horizon - 14 };
-    // the 3D island's whole-island view leaves the sky a sliver under the HUD on a short screen: there a streak may
-    // cross on down over the island's far end (the forest's tops: NH's sky seen past them)
-    if (w.three) sky.y1 = Math.max(sky.y1, sky.y0 + 150);
     const avoid = guardsU(g, 4).map((b) => ({ x0: b.x0 / g.k, x1: b.x1 / g.k, y0: b.y0 / g.k, y1: b.y1 / g.k }));
     const path = streakPath(sky, avoid, Math.random);
     if (!path) return;
@@ -886,7 +884,8 @@
 
   // The night sky's shooting stars (stars.ts): on a clear night (no rain or snow: weatherNow.svelte.ts) (NH's star hours) a shower every 3–8 minutes of
   // on-screen night, the first soon after the night sky shows; on a meteor shower's night (meteor.ts, Celeste's) one
-  // every 3–8 s. Not while covered or hidden (the countdown holds).
+  // every 3–8 s. Not while covered or hidden (the countdown holds). A star with no sky to fall in (a view that's nearly
+  // all island) is skipped, not saved up: the next comes on its own time.
   const seed = islandSeed();
   const shower = $derived.by(() => {
     const c = minuteNow(), date = dayKey(c);

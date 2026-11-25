@@ -445,7 +445,8 @@ turns one off; Feb 29 → Feb 28); hats and a cake whose tap plays ハッピー�
 
 ### Shooting stars
 
-`world/stars.ts`: clear nights 19:00–04:00; a sky tap while one crosses is a wish (`scene-wish`), a star fragment the
+`world/stars.ts`: clear nights 19:00–04:00; a streak stays in the sky above the horizon, never over the island or the
+UI (too little sky in view: none that time); a sky tap while one crosses is a wish (`scene-wish`), a star fragment the
 next morning. <a id="celeste-and-meteor-showers"></a>**Celeste and meteor showers** (`world/meteor.ts`): about one
 night in ten, at most one a week, a star every 3–8 s.
 

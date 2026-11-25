@@ -1,7 +1,7 @@
 import type { Box } from './geom.ts';
 import { describe, expect, it } from 'vitest';
 import {
-  BIG_ODDS, MAX_FRAGMENTS, STREAK_MS, WISH_MS, addWish, fragmentsDue, wishDays, inStarHours, nextShowerMs, showerPlan,
+  BIG_ODDS, MAX_FRAGMENTS, MIN_SKY_PX, STREAK_MS, WISH_MS, addWish, fragmentsDue, wishDays, inStarHours, nextShowerMs, showerPlan,
   streakPath, type Streak
 } from './stars.ts';
 import { addDays } from '#lib/time/dates.ts';
@@ -84,6 +84,21 @@ describe('a streak keeps to the sky and off the UI', () => {
   });
   it('no room, no streak', () => {
     expect(streakPath(sky, [{ x0: -1000, x1: 1000, y0: -1000, y1: 1000 }], mulberry32(2))).toBeNull();
+  });
+  it('never below the horizon: a sky of any height down to it keeps the whole streak above it (the user, 2026-11-25)', () => {
+    const r = mulberry32(5), fails: string[] = [];
+    for (let h = MIN_SKY_PX; h <= 400; h += 7) {
+      const s = streakPath({ x0: 8, x1: 382, y0: 0, y1: h }, [], r);
+      if (!s) continue;
+      const end = along(s, s.len);
+      if (Math.max(s.y, end.y) > h + 0.01) fails.push(`sky ${h}: down to ${Math.max(s.y, end.y).toFixed(2)}`);
+    }
+    expect(fails).toEqual([]);
+  });
+  it('a sliver of sky (the whole-island view on a short screen): no streak, not one over the island', () => {
+    const r = mulberry32(6);
+    for (const h of [0, 10, MIN_SKY_PX - 1]) for (let i = 0; i < 50; i++) expect(streakPath({ x0: 8, x1: 382, y0: 100, y1: 100 + h }, [], r)).toBeNull();
+    expect(streakPath({ x0: 8, x1: 382, y0: 100, y1: 90 }, [], r)).toBeNull(); // the horizon above the HUD's foot
   });
 });
 

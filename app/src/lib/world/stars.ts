@@ -49,11 +49,15 @@ function clearOf(s: Streak, b: Box): boolean {
   return false;
 }
 
+/** Under this much sky (px) a streak has no room to fall (only a flat dash would fit): none. */
+export const MIN_SKY_PX = 40;
+
 /** Where a streak may run: inside the night sky `sky` (px), its whole path clear of every box in `avoid` (the HUD's
  *  dumbbell, bowl and leaf menu, the sync chip: every control). 40 tries at random, each a little shorter and flatter than the last (a short
- *  sky beside a wide HUD leaves a narrow lane above or below it), else none. */
+ *  sky beside a wide HUD leaves a narrow lane above or below it), else none (and none in a sky under MIN_SKY_PX). */
 export function streakPath(sky: Box, avoid: readonly Box[], r: () => number): Streak | null {
   const w = sky.x1 - sky.x0, h = sky.y1 - sky.y0;
+  if (h < MIN_SKY_PX) return null;
   const longest = Math.min(150, w * 0.42);
   for (let i = 0; i < 40; i++) {
     const k = i / 39;
