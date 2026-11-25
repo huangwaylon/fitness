@@ -156,7 +156,7 @@ test('a trail’s chart and plan read at night (the elevation line, the start/go
   expect(await low(page)).toEqual([]);
 });
 
-test('a trip’s 日程 reads at night: the day number and the row on now', async ({ page }, info) => {
+test('a trip’s 日程 reads at night: the day heading’s date and the row on now', async ({ page }, info) => {
   const how = howOf(info.project.name);
   // Feb 12, 19:30 in Tokyo (night) = 23:30 in Auckland: NZ's day 2, the pill opens into it
   await page.goto('?demo&date=2027-02-12T19:30');
@@ -166,7 +166,7 @@ test('a trip’s 日程 reads at night: the day number and the row on now', asyn
   await expect(day.locator('[data-now]')).toHaveCount(1);
   await day.locator('[data-now]').scrollIntoViewIfNeeded();
   expect(await low(page)).toEqual([]);
-  await day.locator('.dn').scrollIntoViewIfNeeded();
+  await day.locator('[data-day-head] .date').scrollIntoViewIfNeeded();
   expect(await low(page)).toEqual([]);
 });
 
