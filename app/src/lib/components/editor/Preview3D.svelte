@@ -108,6 +108,7 @@
           return previewDay(cur, { season, foliage, month: d.getMonth() + 1, date: dayKey(d), hour: jst(d).hour, seed: islandSeed() });
         };
         const ground = buildGround(cur, { renderer, look: lk, stairs: false, bands: Infinity });
+        let liftOf: Layout | null = null, lift = (_z: number) => 0;
         scene.add(ground.group);
         const things = createThings(scene, ground.heightAt, kick);
         things.tod(0, 0.32);
@@ -218,12 +219,14 @@
             bendU.uBendR.value = 1300;
             bendU.uBendZ.value = -camZ;
             I.dropPivot(camera, cw, ch);
-            I.pose(camera, camX, 0, camZ, I.backAt(camera.aspect) / zoom, I.pitchAt(zoom));
+            // (backed off with the terrain under the view, as the phone's: islandCam.ts liftProfile, again for an edit)
+            if (liftOf !== cur) (liftOf = cur), (lift = I.liftProfile(ground.heightAt, extentOf(cur).land));
+            I.pose(camera, camX, 0, camZ, I.backFor(I.backAt(camera.aspect), zoom, lift(camZ), I.pitchAt(zoom)), I.pitchAt(zoom));
             I.haze(fog, camera, camZ);
             I.cullBands(ground.chunks(), camZ);
             // (the day's sun on the island's shadow box: redrawn only as it moves on; zoomed out past the phone's widest,
             // as wide as the view)
-            const b = shadowBox(lit === 'orbit' ? null : lit, camZ, camX, zoom, I.DAY_SUN, I.VIEW_W, Math.min(I.ZOOM.min, zoom), gesturing);
+            const b = shadowBox(lit === 'orbit' ? null : lit, camZ, camX, zoom, I.DAY_SUN, I.VIEW_W, Math.min(I.ZOOM.def, zoom), gesturing);
             if (b) (sunOn(sun, (lit = b), I.DAY_SUN), (shade = true));
           }
           // (untracked: a mover writes IslandEdit's state, and aim runs inside the prop effects below; read there, it

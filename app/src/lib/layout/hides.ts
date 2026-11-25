@@ -1,5 +1,5 @@
 // What a tall thing hides on screen (docs/design.md "Tap targets"): the island's camera looks down the island toward +z,
-// PITCH.def at the default zoom, lower zoomed in (PITCH.near) and higher zoomed out (world3d/engine.ts), so a thing h
+// PITCH.def at the default zoom and wider, lower zoomed in (PITCH.near: world3d/islandCam.ts pitchAt), so a thing h
 // tall covers the ground behind it out to behindOf(h, pitch). One model for the three rules that ask:
 //   - a building's model hides the strip behind it from finds (clear.ts buildingZones: BUILDING_HIDES)
 //   - a figure standing behind a thing is hidden by it (spots.ts's visitors' stage: FIGURE_HIDES)
@@ -9,8 +9,8 @@
 import { TILE } from './grid.ts';
 import { kindDef } from './catalog.ts';
 
-/** The island camera's pitch (degrees): at the default zoom, fully zoomed in, fully out (world3d/engine.ts). */
-export const PITCH = { def: 58, near: 40, far: 63 } as const;
+/** The island camera's pitch (degrees): at the default zoom (and out past it), fully zoomed in (world3d/islandCam.ts). */
+export const PITCH = { def: 58, near: 40 } as const;
 
 /** How far behind it (u) a thing `h` tall covers the ground on screen at `pitch` (degrees). */
 const behindOf = (h: number, pitch: number): number => h / Math.tan((pitch * Math.PI) / 180);

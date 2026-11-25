@@ -2,9 +2,10 @@
 // under the island's DOM (IslandScene: its World places every DOM node through this camera, and the DOM
 // keeps the taps, the popups, the balloons and the marks; their art goes invisible where a model or a card draws it).
 //   The camera: NH's fixed, high island camera with a long lens, the rolling log bending the world away (bend.ts, every
-//   material). One finger scrolls along the island (z) with a free fling and soft ends; two pinch the zoom (clamped,
-//   eased back at the limits, the pitch lowering as it zooms in, as NH's does). Its x is always the island's middle;
-//   it never rotates, and nothing but the finger moves it.
+//   material). One finger scrolls along the island (z) with a free fling and soft ends; two pinch the zoom (out to the
+//   whole land's width, in to 3.2, eased back past those, the pitch lowering as it zooms in, as NH's does). Its x is the
+//   island's middle at the default zoom or wider; it backs off with the terrain's height under the view (islandCam.ts
+//   liftProfile); it never rotates, and nothing but the finger moves it.
 //   The ground: the layout's (terrain.ts buildGround: its land, cliffs and water, bent here).
 //   The things: NH's models (things.ts); the villagers and what has no model yet: cards (cards.ts).
 //   The lights: lights.ts (always-on emissive and halos, faded point lights). Shadows on by default.
@@ -23,7 +24,7 @@ import { bendTree, bendU, unbendRay } from './bend.ts';
 import { waterFog, waterU } from './water.ts';
 import { createThings, type Things } from './things.ts';
 import { shadowBox, sunOn, type ShadowBox } from './shadowBox.ts';
-import { DAY_SUN, FOV, PIVOT_DROP, VIEW_W, ZOOM, backAt, cullBands, dropPivot, focalOf, haze, horizonAt, pitchAt, pose } from './islandCam.ts';
+import { DAY_SUN, FOV, PIVOT_DROP, VIEW_W, ZOOM, backAt, backFor, liftProfile, stretchZoom, zoomOutOf, cullBands, dropPivot, focalOf, haze, horizonAt, pitchAt, pose } from './islandCam.ts';
 import { createCards, type Cards } from './cards.ts';
 import { createEffects, type FxKind, type FxOpts } from './effects.ts';
 import { createBiteMarks, type MarkState } from './biteMark.ts';
@@ -141,10 +142,7 @@ interface Stats {
   island: boolean;
 }
 
-/** How far past a limit a pinch may go (eased back on release), as a factor: in past the end ZOOM_OVER, out past the
- *  default ZOOM_UNDER (further, a felt stretch). */
-const ZOOM_OVER = 1.12, ZOOM_UNDER = 1.2;
-/** A pinch released zoomed out past the default goes back to it over this, eased out (the user's approved move). */
+/** A pinch released zoomed out past the widest goes back to it over this, eased out (the user's approved move). */
 const ZOOM_BACK_MS = 350;
 /** Zoomed in past the default, the view may pan sideways over the land and SEA_X (model.ts) of sea either side, the
  *  sideways room growing in over this much zoom past the default (so it's exactly centred at the default). */
@@ -230,8 +228,8 @@ export interface Island3 {
   go(camZ: number, zoom?: number, free?: boolean, x?: number): void;
   /** How far the camera's x may be from the middle at this zoom (u): 0 at the default or wider. */
   xRoom(zoom?: number): number;
-  /** The zoom's range (the default, fully in). */
-  zoomRange(): { min: number; max: number };
+  /** The zoom's range (the widest: the land's width; the default; fully in). */
+  zoomRange(): { min: number; def: number; max: number };
   limits(): { min: number; max: number };
   /** The test hook's (docs/ops/testing.md): what's drawn now with a NaN in its bounds, or reaching far off the island
    *  (`reach` u past the ground's plan): a stray vertex (a quantized mesh baked wrong) draws a line across the screen. */
@@ -399,13 +397,20 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
    *  pitch, height and pivot drop, eased in (k 0 … 1) over the finger's camera. */
   /** The island's middle (the camera's x at the default zoom): its land's (model.ts midXOf), followed as it grows. */
   const midX = () => midXOf(ground.land);
+  /** The widest zoom: the land's width and a little sea (islandCam.ts zoomOutOf), followed as it grows. */
+  const kMin = () => zoomOutOf(ground.land.x1 - ground.land.x0);
+  /** The terrain's lift under a pivot z (islandCam.ts liftProfile), built for the layout's ground (again after a
+   *  layout's change: setLimits). */
+  let lift: ((z: number) => number) | null = null;
+  const liftAt = () => (lift ??= liftProfile(src.height, ground.land));
   let camX = midX(), fx = camX, fy = 0, fpitch = 0, fk = 0, fdrop = 0, drop = PIVOT_DROP;
   function aim() {
     pitch = pitchAt(zoomK);
     if (fk > 0) pitch += (fpitch - pitch) * fk;
     const d = PIVOT_DROP + (fdrop - PIVOT_DROP) * fk;
     if (d !== drop) dropPivot(camera, W, H, (drop = d));
-    pose(camera, camX + (fx - camX) * fk, fy * fk, camZ, D0 / zoomK, pitch);
+    // (backed off with the terrain's lift under the pivot, the focus's own framing taking over as it eases in)
+    pose(camera, camX + (fx - camX) * fk, fy * fk, camZ, backFor(D0, zoomK, liftAt()(camZ) * (1 - fk), pitch), pitch);
     things.camera(camera.quaternion);
     bendU.uBendZ.value = -camZ;
     haze(fog, camera, camZ);
@@ -413,7 +418,7 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
     lampFog.near.value = fog.near;
     lampFog.far.value = fog.far;
     // the shadow's box follows the pivot (shadowBox.ts): the map redraws only when it moves on, mid-gesture less
-    const box = shadowBox(shadowAim, camZ, camX, zoomK, todLook.sunAt, VIEW_W, ZOOM.min, touch || rushing());
+    const box = shadowBox(shadowAim, camZ, camX, zoomK, todLook.sunAt, VIEW_W, kMin(), touch || rushing());
     if (box) {
       sunOn(sun, (shadowAim = box), todLook.sunAt);
       shadowed();
@@ -575,9 +580,9 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
   /** The sideways room at a zoom (u either side of the middle): none at the default or wider; zoomed in, as far as
    *  keeps the view over the land and SEA_X of sea, growing in over X_RAMP of zoom. */
   function xRoom(k = zoomK): number {
-    if (k <= ZOOM.min) return 0;
+    if (k <= ZOOM.def) return 0;
     const L = ground.land, half = (L.x1 - L.x0) / 2 + SEA_X, view = VIEW_W / (2 * k);
-    return Math.max(0, half - view) * Math.min(1, (k - ZOOM.min) / X_RAMP);
+    return Math.max(0, half - view) * Math.min(1, (k - ZOOM.def) / X_RAMP);
   }
   const clampX = (x: number) => {
     const r = xRoom(zoomK);
@@ -598,12 +603,6 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
     activity('pan');
   }
   let rawK = zoomK;
-  const clampK = (k: number) => {
-    const lo = ZOOM.min, hi = ZOOM.max;
-    if (k < lo) return lo / (1 + (ZOOM_UNDER - 1) * (1 - 1 / ((lo / k - 1) * 4 + 1)));
-    if (k > hi) return hi * (1 + (ZOOM_OVER - 1) * (1 - 1 / ((k / hi - 1) * 4 + 1)));
-    return k;
-  };
   function zoom(f: number, sy = H * (0.5 + PIVOT_DROP), sx = W / 2) {
     lastInput = now();
     if (focus) return;
@@ -613,7 +612,7 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
     zoomBack = null;
     const before = groundAt(sx, sy);
     rawK *= f;
-    zoomK = clampK(rawK);
+    zoomK = stretchZoom(rawK, kMin());
     // (toward the default the sideways room shrinks: x eases to the middle, exactly there at the default)
     camX = clampX(camX);
     aim();
@@ -637,22 +636,22 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
     lastT = now();
     activity('fling');
   }
-  /** The spring back to the default zoom after a pinch released zoomed out past it (eased out over ZOOM_BACK_MS). */
+  /** The spring back to the widest zoom after a pinch released zoomed out past it (eased out over ZOOM_BACK_MS). */
   let zoomBack: { t0: number; k0: number } | null = null;
   /** Back inside the limits (a released rubber band, the zoom past its end), eased. */
   function settle(dt: number): boolean {
     let more = false;
-    const zt = Math.max(lim.min, Math.min(lim.max, camZ)), kt = Math.max(ZOOM.min, Math.min(ZOOM.max, zoomK));
+    const lo = kMin(), zt = Math.max(lim.min, Math.min(lim.max, camZ)), kt = Math.max(lo, Math.min(ZOOM.max, zoomK));
     const e = 1 - Math.exp(-dt / 90);
     if (Math.abs(zt - camZ) > 0.05) {
       camZ += (zt - camZ) * e;
       more = true;
     } else camZ = zt;
-    // zoomed out past the default: back to it over ZOOM_BACK_MS, eased out (x is centred all the while)
-    if (!zoomBack && zoomK < ZOOM.min - 0.0005) zoomBack = { t0: now(), k0: zoomK };
+    // zoomed out past the widest: back to it over ZOOM_BACK_MS, eased out (x is centred all the while)
+    if (!zoomBack && zoomK < lo - 0.0005) zoomBack = { t0: now(), k0: zoomK };
     if (zoomBack) {
       const k = Math.min(1, (now() - zoomBack.t0) / ZOOM_BACK_MS);
-      zoomK = zoomBack.k0 + (ZOOM.min - zoomBack.k0) * cubicOut(k);
+      zoomK = zoomBack.k0 + (lo - zoomBack.k0) * cubicOut(k);
       if (k >= 1) zoomBack = null;
       else more = true;
     } else if (Math.abs(kt - zoomK) > 0.0005) {
@@ -1196,7 +1195,7 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
       want(true, 'fling');
     }
     if (!touch && !vel && !velX && !focus && !move) {
-      if (settling || zoomBack || camZ < lim.min || camZ > lim.max || zoomK < ZOOM.min || zoomK > ZOOM.max) {
+      if (settling || zoomBack || camZ < lim.min || camZ > lim.max || zoomK < kMin() || zoomK > ZOOM.max) {
         settling = settle(dt);
         want(settling, 'settle');
       }
@@ -1324,14 +1323,14 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
     rushing,
     view: () => ({ camZ, zoom: zoomK, pitch, camX }),
     xRoom,
-    zoomRange: () => ({ ...ZOOM }),
+    zoomRange: () => ({ min: kMin(), def: ZOOM.def, max: ZOOM.max }),
     go(z, k, free, x) {
       if (free) {
         lim.min = Math.min(lim.min, z);
         lim.max = Math.max(lim.max, z);
       }
       camZ = rawZ = Math.max(lim.min, Math.min(lim.max, z));
-      if (k) zoomK = rawK = Math.max(ZOOM.min, Math.min(ZOOM.max, k));
+      if (k) zoomK = rawK = Math.max(kMin(), Math.min(ZOOM.max, k));
       camX = clampX(x ?? camX);
       vel = velX = 0;
       zoomBack = null;
@@ -1376,6 +1375,7 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
     setLimits(min, max) {
       lim.min = min;
       lim.max = Math.max(min, max);
+      lift = null;
       camZ = rawZ = Math.max(lim.min, Math.min(lim.max, camZ));
       // (the ends follow a layout change: the island's middle across too, its land's)
       camX = clampX(camX);

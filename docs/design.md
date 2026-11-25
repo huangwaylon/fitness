@@ -222,8 +222,11 @@ sheet: the 3D island draws nothing). Nothing on the island pays ベル. Dev URL 
 ([island-layout.md](island-layout.md)); an 80u villager, z into the island. **No WebGL:** a line (`[data-no3d]`); the
 rest works. **In 3D** ([decisions](decisions.md) "The island in 3D"): no island DOM; things from `world3d/things3.ts`.
 
-- **The camera** (`world3d/islandCam.ts`; `camera.svelte.ts` `World`, `world.at(…)` for overlays): widest by default, x
-  centred; one finger scrolls (no snap, no automatic move); a pinch zooms to 3.2.
+- **The camera** (`world3d/islandCam.ts`; `camera.svelte.ts` `World`, `world.at(…)` for overlays): opens at zoom 1;
+  a pinch zooms in to 3.2 and out to the whole land's width and a little sea (`zoomOutOf`, from the layout), resting
+  anywhere between, springing back only past the ends; x centred at 1 or wider; one finger scrolls (no snap, no
+  automatic move). It backs off along its line of sight with the land's height under the view (`liftProfile`: blurred
+  ±150 u, a function of the scroll only), so a cliff top shows as wide as the beach.
 - **Layout** (`layout/default.json`, `npm run layout`): home A left, B right, never mirrored. **The sea's wash**:
   `layout/swash.ts`.
 - **Decor** (`world/fixedDecor.ts`): obstacles that answer a tap in place; their life in `island/ambient.ts`.

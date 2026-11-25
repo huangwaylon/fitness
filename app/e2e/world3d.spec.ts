@@ -7,7 +7,7 @@ import { fxSince, islandUp, islandURL, lawnTap, loaded3d, pageNow, tapOn, type W
 
 type W3 = {
   xRoom(k?: number): number;
-  zoomRange(): { min: number; max: number };
+  zoomRange(): { min: number; def: number; max: number };
   ground(cx: number, cy: number): { x: number; z: number } | null;
   stats(): { frames: number; calls: number; tris: number; dpr: number; loading: number; fps: number };
   loaded(): boolean;
@@ -108,7 +108,7 @@ test('the 3D camera: at the default zoom one finger scrolls along the island onl
   expect((await w3(page, (w) => w.view())).camZ).toBeCloseTo(pinched.camZ, 1);
 });
 
-test('the 3D camera zoomed in: one finger pans sideways too, held over the island; a pinch past the default springs back, centred', async ({ page }) => {
+test('the 3D camera zoomed in: one finger pans sideways too, held over the island; out past the default it rests, centred, springing back only past the whole land', async ({ page }) => {
   test.setTimeout(60_000);
   await page.goto(`?${Q}`);
   await ready(page);
@@ -128,28 +128,35 @@ test('the 3D camera zoomed in: one finger pans sideways too, held over the islan
   const edge = await w3(page, (w) => ({ ...w.view(), room: w.xRoom() }));
   expect(edge.camX).toBeCloseTo(195 + edge.room, 1);
 
-  // a pinch together past the default: it gives (zoomed out under 1 while held), x centred; let go, it springs back
-  // to exactly the default, centred
+  // the widest: the whole land (450 u, the demo's) and a little sea (the user, 2026-11-25)
+  const range = await w3(page, (w) => w.zoomRange());
+  expect(range.min).toBeCloseTo(420 / (450 + 48), 4);
+  expect([range.def, range.max]).toEqual([1, 3.2]);
+  // a pinch together far past the widest: it gives (under it while held), x centred; let go, it springs back to the
+  // widest, centred
   await touches(page, line(5, (i) => [[60 + i * 24, 420], [330 - i * 24, 440]]), false);
   const held = await w3(page, (w) => w.view());
-  expect(held.zoom).toBeLessThan(1);
-  // (out past the default it stretches further than in past the end: 1 / 1.2 at most, past 1 / 1.12 for a pinch this far)
-  expect(held.zoom).toBeLessThan(1 / 1.12);
-  expect(held.zoom).toBeGreaterThan(1 / 1.2);
+  expect(held.zoom).toBeLessThan(range.min);
+  expect(held.zoom).toBeGreaterThan(range.min / 1.1);
   expect(held.camX).toBeCloseTo(195, 3);
   await lift(page);
   await idle(page);
   const back = await w3(page, (w) => w.view());
-  expect(back.zoom).toBeCloseTo(1, 4);
+  expect(back.zoom).toBeCloseTo(range.min, 4);
   expect(back.camX).toBeCloseTo(195, 4);
-  // and at the default a sideways drag moves nothing sideways
+  // a little apart from there: it rests where it's let go (the camera still: no spring back under way), between the
+  // widest and the default
+  await touches(page, line(4, (i) => [[140 - i, 430], [260 + i, 430]]), true, true);
+  await idle(page);
+  const rest = await w3(page, (w) => w.view());
+  expect(rest.zoom).toBeGreaterThan(range.min + 0.02);
+  expect(rest.zoom).toBeLessThan(1);
+  // and there (as at the default) a sideways drag moves nothing sideways
   await drag(300, -30, 4);
   expect((await w3(page, (w) => w.view())).camX).toBeCloseTo(195, 4);
 
   // fully in (the user: "increase the maximum zoom level"): 3.2, about 1.8× closer than the old 1.8; the pitch lower
   // still, more room sideways but the view still over the island, and a tap's ground point where it is
-  const range = await w3(page, (w) => w.zoomRange());
-  expect(range).toEqual({ min: 1, max: 3.2 });
   const at15 = await w3(page, (w) => (w.go(400, 1.5), { ...w.view(), room: w.xRoom() }));
   const close = await w3(page, (w) => (w.go(400, 10), { ...w.view(), room: w.xRoom() }));
   expect(close.zoom).toBeCloseTo(3.2, 4);
@@ -160,6 +167,22 @@ test('the 3D camera zoomed in: one finger pans sideways too, held over the islan
   await w3(page, (w) => w.go(400, 3.2, 1000));
   const side = await w3(page, (w) => ({ ...w.view(), room: w.xRoom() }));
   expect(side.camX).toBeCloseTo(195 + side.room, 1);
+});
+
+test('the 3D camera backs off with the terrain: the pivot’s row as wide on the upper tier as below it', async ({ page }) => {
+  await page.goto(`?${Q}`);
+  await ready(page);
+  // (zoomed fully in, where the 40 u tier is ~10 % of the camera's distance; the pivot PIVOT_DROP below the middle)
+  const across = (z: number) => page.evaluate((z) => {
+    const w = (window as unknown as { __world3d: W3 }).__world3d;
+    w.go(z, 3.2, 195);
+    const r = document.querySelector('canvas[data-w3d]')!.getBoundingClientRect(), y = r.top + r.height * 0.66;
+    const a = w.ground(r.left + 2, y), b = w.ground(r.right - 2, y);
+    return a && b ? Math.hypot(b.x - a.x, b.z - a.z) : NaN;
+  }, z);
+  // (the demo's upper tier is short, z 1470…1650, its blurred lift 34 of 43 at its middle: within ~2 %; ~10 % unlifted)
+  const low = await across(300), high = await across(1570);
+  expect(Math.abs(high / low - 1)).toBeLessThan(0.03);
 });
 
 test('/world3d, the POC\'s address, opens the island', async ({ page }) => {
