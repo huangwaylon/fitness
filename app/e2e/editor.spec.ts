@@ -99,6 +99,12 @@ test('place from the palette; the check shows a tree in the river', async ({ pag
 test('the side panels in Japanese: the check, its badge, my home; the palette’s 4th column in view', async ({ page }) => {
   await openEditor(page);
   const check = page.locator('[data-issues]');
+  // (the default has no issues: an oak on the beach's sand, a warning)
+  await page.locator('[data-kind="oak"]').click();
+  const [gx, gy] = await page.evaluate(() => (window as unknown as { __editor: E }).__editor.tileScreen(16, 20));
+  await page.mouse.move(gx, gy);
+  await page.mouse.click(gx, gy);
+  await page.keyboard.press('Escape');
   await expect.poll(() => page.evaluate(() => (window as unknown as { __editor: E }).__editor.issues().length)).toBeGreaterThan(0);
   const { errors, warns } = await page.evaluate(() => {
     const is = (window as unknown as { __editor: E }).__editor.issues();
@@ -309,7 +315,7 @@ test('しまの おおきさ: a pull blocked by a home lists what’s in the way
   await expect(list).toHaveCount(0);
   await page.keyboard.press('Meta+z');
   await expect.poll(() => objAt(page, 'home-B')).toEqual(home);
-  // the front pulled in: the sandcastle (summer's, never deleted) in the way, moved in by うごかす; one ⌘Z undoes both
+  // the front pulled in: the sandcastle (summer's) in the way, moved in by うごかす; one ⌘Z undoes both
   const castle = (await objAt(page, 'sandcastle'))!;
   await page.locator('[data-resize="front"][data-by="-1"]').click();
   await expect(list.locator('[data-blocker="sandcastle"]')).toBeVisible();

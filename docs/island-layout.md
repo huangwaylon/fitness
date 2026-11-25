@@ -58,7 +58,11 @@ the record keeps each id's latest op (slot `decor|<sc>|<id>`). An old phone igno
 - **Nav** (`layout/nav.ts` `navOf`): a half-tile walk grid, A*; `findPath`, `snapTap`, `reachable`, `planTap`.
 - **The visitors' stage** (`layout/spots.ts` `stageOf`): the plaza mark if usable, else open grass near the middle;
   `washedUp` for Gulliver. Visitor marks (`plaza`, `beach-spot`, `guest-spot`): `markerSpot`, `spotWhy`.
-- **Validation** (`layout/validate.ts`): advisory issues (`error`/`warn`); the record keeps whatever is saved.
+- **Validation** (`layout/validate.ts`): advisory issues (`error`/`warn`); the record keeps whatever is saved. A piece's
+  ground (`objIssues`): on the grid, on land, one tier; an arch, a gate, a gazebo (a piece with a way through, `pa`)
+  only by its posts (`nav.ts archTiles`), its way through may span a river, a pond or the sea. Overlaps (`overlap`):
+  solid things never share ground, nothing stands on stairs or a bridge's deck, a flower or a deck under an arch's way
+  through is fine. The default has no issues at all (layout.test.ts).
 - **Diff** (`layout/diff.ts` `diffLayouts`): chunks, objects and homes changed.
 - **The day's spots** (`layout/spots.ts` `daySpots`): 15 weed and 8 dig spots on open grass (`layout/clear.ts`),
   seeded by date and island seed; `beach.ts` buries `DIGS_A_DAY` (4) fossils on them.
@@ -83,8 +87,11 @@ the record keeps each id's latest op (slot `decor|<sc>|<id>`). An old phone igno
 `/editor/` (`routes/editor/+page.svelte`, `components/editor/`: `Editor.svelte`, `plan.ts`, `edits.ts`,
 `Preview3D.svelte`): unlinked, noindex, for anyone paired (A, B, guest). `?demo` runs it on the made-up island.
 - **Plan and tools**: top-down map, select/drag, terrain brush, cliff tier, palette (`Palette.svelte`); Delete never
-  takes a goal tree, home, named spot or one-off. ⌘Z reverts one action. Each action goes out as ops at once; a drag
-  streams `drag`. The selection's 回す · 複製 (`edits.ts duplicate`: beside it) · 削除 are buttons too.
+  takes a goal tree, home, named spot or one-off (the seasonal pieces go and come back from the 季節 tab, their ids
+  their kinds'). ⌘Z reverts one action. Each action goes out as ops at once; a drag streams `drag`. The selection's
+  回す · 複製 (`edits.ts duplicate`: right, left, below or above it, where every copy fits; never a bridge or stairs) ·
+  削除 are buttons too. The placing ghost is green only where validation passes the piece (`ghostAt`: `placeErrors`);
+  ⌘V pastes all of a copy where it fits, or nothing.
 - **Two layouts, one editor**: a desktop window gets three columns (palette | plan | 3D, selection, `IslandSize`,
   `IssueList`, files) and the shortcuts. ≤ 760 px (iPhone 15/16 Safari) the plan is full-bleed under a top bar (↶ ↷,
   3D: the orbit preview in the plan's place, off by default), a dock (選択 置く 塗る 崖 川 島), a card over it (the

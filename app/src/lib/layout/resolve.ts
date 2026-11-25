@@ -9,8 +9,7 @@ import type { LayoutEntry } from '#lib/contract/layout.ts';
 import type { Who } from '#lib/contract/live-protocol.ts';
 import { kindDef } from './catalog.ts';
 import { doorOf, objTiles, withChanges, type Layout, type Obj } from './model.ts';
-import { isWater } from './grid.ts';
-import { overlap, validate, type Issue } from './validate.ts';
+import { objIssues, overlap, validate, type Issue } from './validate.ts';
 
 /** How far (tiles, ring by ring) a piece looks for a clear tile, and how many candidates get the full check. */
 const RINGS = 8;
@@ -44,10 +43,8 @@ export function clearTile(l: Layout, id: string): [number, number] | null {
     for (const [dx, dz] of ring) {
       const at: Obj = { ...o, x: o.x + dx, z: o.z + dz };
       if (at.x < 0 || at.z < 0) continue;
-      const tiles = objTiles(l, at);
-      if (tiles.some(([c, rr]) => isWater(l.kind(c, rr)))) continue;
-      if (new Set(tiles.map(([c, rr]) => l.tier(c, rr))).size > 1) continue;
-      if (def.on === 'grass' && tiles.some(([c, rr]) => l.kind(c, rr) !== 'grass')) continue;
+      // (its own ground and overlaps as the editor's ghost has them: an arch's way through may span water)
+      if (objIssues(l, at).length) continue;
       const next = withChanges(l, { set: [at] });
       if (clashesWith(next, at).length) continue;
       base ??= errors(withChanges(l, { remove: [id] }));

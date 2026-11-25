@@ -1,4 +1,4 @@
-import { describe, expect, test } from 'vitest';
+import { beforeAll, describe, expect, test } from 'vitest';
 import { CHUNKS_X, CHUNKS_Z, GRID, chunkIndex, chunkOf, chunkString, codeOf, codeOfChar, charOf, kindOf, tierOf, writeChunk, KINDS, TIERS, tileAt, tileMid } from './grid.ts';
 import { LONG_GROW, LONG_SPLIT } from './migrate.ts';
 import { defaultLayout, doorOf, extentOf, layoutOf, objMid, objTiles, opsBetween, toJson, fromJson, withChanges, footOf, type Obj } from './model.ts';
@@ -11,6 +11,7 @@ import { riverStems } from './river.ts';
 import { navOf, findPath, snapTap, reachable, walkable } from './nav.ts';
 import { validate } from './validate.ts';
 import { KIND_LIST } from './catalog.ts';
+import { loadOutdoor } from './outdoor.ts';
 import { planTap } from '../components/island/tapWalk.ts';
 import type { LayoutEntry, LayoutOp } from '#lib/contract/layout.ts';
 import { fieldOf as fieldDef, fieldS } from './field.ts';
@@ -94,10 +95,9 @@ describe('the default layout (today island on the grid)', () => {
       expect(((z + 90) * 2) % 30, o.id).toBe(0);
     }
   });
-  test('has the three homes, both goal trees and no errors', () => {
+  test('has the three homes, both goal trees and no issues (no warnings either)', () => {
     for (const id of ['home-A', 'home-B', 'home-G']) expect(l.objects.get(id)?.k).toBe('home');
-    const errors = validate(l).filter((i) => i.level === 'error');
-    expect(errors).toEqual([]);
+    expect(validate(l)).toEqual([]);
   });
   test('its terrain: the sea round it, the stream, the pond, the cliff a tier up', () => {
     expect(l.tile(0, 0).kind).toBe('sea');
@@ -381,6 +381,45 @@ describe('validation', () => {
     expect(codes(validate(withChanges(l, { set: [{ id: 'o4', k: 'oak', x: tape.x, z: tape.z, f: 0 }] })))).toContain('overlap');
     expect(codes(validate(withChanges(l, { set: [{ id: 'o5', k: 'stairs', x: 5, z: 15, f: 0 }] })))).toContain('stairs');
     expect(codes(validate(withChanges(l, { set: [{ ...l.objects.get('bridge')!, z: 12 }] })))).toContain('bridge');
+  });
+  test('nothing stands on stairs or a bridge (a flower too: buried in the ramp, the deck)', () => {
+    for (const [x, z] of [[4, 50], [9, 23]]) {
+      const v = validate(withChanges(l, { set: [{ id: 'fl', k: 'flower', x, z, f: 0, s: 'c0' }] }));
+      expect(codes(v.filter((i) => i.ids.includes('fl'))), `${x},${z}`).toEqual(['overlap']);
+    }
+  });
+  describe('an arch, a gazebo over water (the user, 2026-11-25: only its posts need land, of one tier)', () => {
+    beforeAll(() => loadOutdoor());
+    const mine = (lx: typeof l, id = 'g') => validate(lx).filter((i) => i.ids.includes(id)).map((i) => i.code);
+    const torii = (x: number, z: number, f: Obj['f'] = 0): Obj => ({ id: 'g', k: 'nh-f13631', x, z, f });
+    test('a torii across the 1-tile stream: fine; a post in it, or a post off the grid: an error', () => {
+      expect(l.kind(15, 30)).toBe('river');
+      expect(mine(withChanges(l, { set: [torii(14, 30)] }))).toEqual([]);
+      expect(mine(withChanges(l, { set: [torii(13, 30)] }))).toEqual(['on-water']);
+      expect(mine(withChanges(l, { set: [torii(18, 30)] }))).toContain('off-land');
+      // (off the land the other checks go on: its posts in the sea, the stream)
+      expect(mine(withChanges(l, { set: [torii(-1, 30)] }))).toContain('off-land');
+    });
+    test('its posts on two tiers: split; its way through over the sea: fine', () => {
+      const up = withChanges(l, { tiles: [[14, 30, codeOf('grass', 1)]] });
+      expect(mine(withChanges(up, { set: [torii(14, 30)] }))).toEqual(['split']);
+      const sea = withChanges(l, { tiles: [[15, 30, codeOf('sea', 0)]] });
+      expect(mine(withChanges(sea, { set: [torii(14, 30)] }))).toEqual([]);
+    });
+    test('a torii framing the bridge’s end (its deck under its way through); a flower under it; not a bench', () => {
+      expect(mine(withChanges(l, { set: [torii(8, 25)] }))).toEqual([]);
+      const fl: Obj = { id: 'fl', k: 'flower', x: 11, z: 12, f: 0, s: 'c0' };
+      expect(mine(withChanges(l, { set: [torii(10, 12), fl] }))).toEqual([]);
+      expect(mine(withChanges(l, { set: [torii(9, 12), fl] }))).toEqual(['overlap']);
+      expect(mine(withChanges(l, { set: [torii(10, 12), { id: 'b', k: 'garden-rock', x: 11, z: 12, f: 0 }] }))).toEqual(['overlap']);
+    });
+    test('a gazebo over a pond (its cross), its corners on the lawn; a corner in it: an error', () => {
+      const pond = withChanges(l, { tiles: [[12, 11], [11, 12], [12, 12], [13, 12], [12, 13]].map(([c, r]) => [c, r, codeOf('pond', 0)] as [number, number, number]) });
+      for (const k of ['nh-f14106', 'nh-f14108', 'nh-f14184']) {
+        expect(mine(withChanges(pond, { set: [{ id: 'g', k, x: 11, z: 11, f: 0 }] })), k).toEqual([]);
+        expect(mine(withChanges(pond, { set: [{ id: 'g', k, x: 12, z: 11, f: 0 }] })), k).toEqual(['on-water']);
+      }
+    });
   });
   test('a home walled in: its door is an error', () => {
     const h = l.objects.get('home-A')!;

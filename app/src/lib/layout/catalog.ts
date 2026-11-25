@@ -35,7 +35,8 @@ export interface KindDef {
   turns?: boolean;
   /** One per variant on the island, never deleted (the goal trees, the homes, the named spots); moved freely. */
   fixed?: boolean;
-  /** One on the island at most, but it may be taken away: placing another moves the one there (the visitors' spots). */
+  /** One on the island at most, but it may be taken away: placing another moves the one there (the visitors' spots, the
+   *  seasonal pieces). */
   one?: boolean;
   /** Not on the palette (only the default places it). */
   hidden?: boolean;
@@ -219,10 +220,11 @@ const LIST: KindDef[] = [
   ...PACKED_GYM,
   // NH's bulletin board (けいじばん): one on the island, used from the tile in front of it
   k({ k: 'board', group: 'furniture', ja: '掲示板', en: 'Bulletin board', w: 2, d: 1, block: true, foot: [54, 14], on: 'land', h: 44, icon: 'deco/bulletin-board', turns: true, fixed: true, front: true }),
-  // the seasonal spots (fixedDecor.ts: the season's piece stands there in its weeks)
-  k({ k: 'beach-chair', group: 'season', ja: 'ビーチチェア（夏）', en: 'Beach chair (summer)', w: 2, d: 1, block: true, foot: [56, 22], on: 'land', h: 30, icon: 'deco/beach-chair', turns: true, fixed: true }),
-  k({ k: 'sandcastle', group: 'season', ja: 'すなのおしろ（夏）', en: 'Sandcastle (summer)', w: 1, d: 1, block: true, foot: [26, 18], on: 'land', h: 30, icon: 'deco/sandcastle', fixed: true }),
-  k({ k: 'snowboy', group: 'season', ja: 'ゆきだるま（冬）', en: 'Snowboy (winter)', w: 1, d: 1, block: true, foot: [30, 20], on: 'land', h: 40, icon: 'deco/snowboy-0', fixed: true }),
+  // the seasonal spots (fixedDecor.ts: the season's piece stands there in its weeks, by its id: one each, its id its
+  // kind's, edits.ts place), taken away and put back in the editor as anything else (the user, 2026-11-25)
+  k({ k: 'beach-chair', group: 'season', ja: 'ビーチチェア（夏）', en: 'Beach chair (summer)', w: 2, d: 1, block: true, foot: [56, 22], on: 'land', h: 30, icon: 'deco/beach-chair', turns: true, one: true }),
+  k({ k: 'sandcastle', group: 'season', ja: 'すなのおしろ（夏）', en: 'Sandcastle (summer)', w: 1, d: 1, block: true, foot: [26, 18], on: 'land', h: 30, icon: 'deco/sandcastle', one: true }),
+  k({ k: 'snowboy', group: 'season', ja: 'ゆきだるま（冬）', en: 'Snowboy (winter)', w: 1, d: 1, block: true, foot: [30, 20], on: 'land', h: 40, icon: 'deco/snowboy-0', one: true }),
   // structures that join terrain: a bridge over water (its deck walkable), stairs up a cliff (f 0: rising away)
   k({ k: 'bridge', group: 'structure', ja: '橋', en: 'Bridge', w: 1, d: 3, block: false, on: 'span', h: 12, icon: 'bridges/stone-front', turns: true, variants: ['stone', 'wood', 'log', 'brick', 'red', 'iron', 'japanese', 'suspension'] }),
   // a pond to put down (the old 3D island's: its water rippling, lily pads and a lily on it, stones round its edge), on
@@ -257,9 +259,9 @@ export const kindDef = (k: string): KindDef | undefined => KINDS[k];
 export function addKinds(defs: readonly KindDef[]): void {
   for (const d of defs) if (!KINDS[d.k]) LIST.push((KINDS[d.k] = d));
 }
-/** Whether one goes into it at its door: a home, or a building of the island's (the museum, the shop). */
 /** A visitors' spot (a mark, never drawn in play, standing on nothing: nothing's ground is taken by it). */
 export const isMarker = (k: string): boolean => KINDS[k]?.group === 'visitor';
+/** Whether one goes into it at its door: a home, or a building of the island's (the museum, the shop). */
 export const goesIn = (k: string): boolean => k === 'home' || !!KINDS[k]?.door;
 
 /** A kind's footprint (tiles) in a facing: [across, deep]. */

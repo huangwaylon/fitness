@@ -1,8 +1,11 @@
 import { describe, expect, test } from 'vitest';
 import { defaultLayout, doorOf, withChanges } from '#lib/layout/model.ts';
+import { validate } from '#lib/layout/validate.ts';
 
 import { brushTiles, cliff, copy, duplicate, ghostAt, ghostFoot, inBox, move, objectAt, paint, paste, place, remove, resize, revert, rotate, sameLayout } from './edits.ts';
-import { opsBetween } from '#lib/layout/model.ts';
+import { layoutOf, opsBetween } from '#lib/layout/model.ts';
+import { loadOutdoor } from '#lib/layout/outdoor.ts';
+import type { LayoutEntry } from '#lib/contract/layout.ts';
 
 const T0 = 1_800_000_000_000;
 const l = defaultLayout();
@@ -102,17 +105,69 @@ describe('turning a home', () => {
     const museum = resize(l, 'back', -2, true);
     expect([museum.layout, museum.stuck]).toEqual([null, ['museum']]);
   });
-  test('a duplicate goes beside its pieces (right, else left), new ids, the fixed ones never copied', () => {
+  test('a duplicate goes beside its pieces (right, else left, below, above: where it fits whole), new ids; never a fixed one, a bridge or stairs', () => {
     const p = place(l, 'park-bench', 6, 15, 0, undefined, T0)!;
     const w = p.layout.objects.get(p.id)!, [fw] = ghostFoot('park-bench', 0);
-    const d = duplicate(p.layout, [p.id, 'sandcastle'], T0 + 1)!;
+    const d = duplicate(p.layout, [p.id, 'tape-deck'], T0 + 1);
+    if ('why' in d) throw new Error(d.why);
     expect(d.ids).toHaveLength(1);
     expect(d.layout.objects.get(d.ids[0])).toMatchObject({ k: 'park-bench', x: w.x + fw, z: w.z, f: 0 });
-    // at the grid's right edge: to the left
-    const edge = place(l, 'bush', 19, 15, 0, undefined, T0)!;
-    const e = duplicate(edge.layout, [edge.id], T0 + 1)!;
-    expect(e.layout.objects.get(e.ids[0])).toMatchObject({ k: 'bush', x: 18 });
-    expect(duplicate(l, ['sandcastle'], T0)).toBeNull();
+    // at the lawn's right edge (the beach beside it: no bush there): to the left
+    const edge = place(l, 'bush', 15, 15, 0, undefined, T0)!;
+    const e = duplicate(edge.layout, [edge.id], T0 + 1);
+    if ('why' in e) throw new Error(e.why);
+    expect(e.layout.objects.get(e.ids[0])).toMatchObject({ k: 'bush', x: 14, z: 15 });
+    // hemmed in right and left (the beach, a tree): below
+    const hem = place(edge.layout, 'oak', 14, 15, 0, undefined, T0 + 2)!;
+    const b = duplicate(hem.layout, [edge.id], T0 + 3);
+    if ('why' in b) throw new Error(b.why);
+    expect(b.layout.objects.get(b.ids[0])).toMatchObject({ k: 'bush', x: 15, z: 16 });
+    expect(duplicate(l, ['tape-deck'], T0)).toEqual({ why: 'これは複製できません' });
+    for (const id of ['bridge', 'stairs']) expect(duplicate(l, [id], T0)).toEqual({ why: expect.stringContaining('橋と坂は複製できません') });
+    expect(copy(l, ['bridge', 'stairs'])).toBeNull();
+  });
+  test("a duplicate of any of the default's pieces never makes an issue (or isn't made)", () => {
+    const had = new Set(validate(l).map((i) => `${i.code}|${[...i.ids].sort().join(',')}`));
+    for (const o of l.objects.values()) {
+      const d = duplicate(l, [o.id], T0);
+      if ('why' in d) continue;
+      const fresh = validate(d.layout).filter((i) => !had.has(`${i.code}|${[...i.ids].sort().join(',')}`));
+      expect(fresh, o.id).toEqual([]);
+    }
+  });
+  test('a paste goes down whole where it fits, else not at all', () => {
+    const p = place(l, 'park-bench', 6, 15, 0, undefined, T0)!, clip = copy(p.layout, [p.id])!;
+    expect(paste(p.layout, clip, 6, 17, T0 + 1).ids).toHaveLength(1);
+    // on itself, on the sea: nothing
+    for (const [c, r] of [[6, 15], [0, 0]]) expect(paste(p.layout, clip, c, r, T0 + 1)).toEqual({ layout: p.layout, ids: [] });
+  });
+  test('a ghost is green only where validate passes the piece: never on another, across a cliff, on stairs; an arch over the stream', async () => {
+    await loadOutdoor();
+    const tape = l.objects.get('tape-deck')!;
+    expect(ghostAt(l, 'oak', 0, [tape.x, tape.z]).ok).toBe(false);
+    expect(ghostAt(l, 'flower', 0, [4, 50]).ok).toBe(false); // the stairs
+    expect(ghostAt(l, 'flower', 0, [9, 23]).ok).toBe(false); // the bridge's deck
+    expect(ghostAt(l, 'park-bench', 1, [10, 52]).ok).toBe(false); // rows 52 and 53: the cliff
+    expect(ghostAt(l, 'park-bench', 1, [14, 44]).ok).toBe(true);
+    expect(ghostAt(l, 'nh-f13631', 0, [15, 30])).toMatchObject({ x: 14, ok: true }); // a torii across the stream
+    expect(ghostAt(l, 'nh-f13631', 0, [14, 30]).ok).toBe(false); // a post in it
+    expect(ghostAt(l, 'bridge', 0, [9, 12]).ok).toBe(false); // a bridge over no water
+    expect(ghostAt(l, 'bridge', 0, [9, 24]).ok).toBe(false); // on the bridge there
+  });
+  test('a seasonal piece (the beach chair, the sandcastle, the snowboy) is deleted for good and put back from the palette', () => {
+    const at = (ops: ReturnType<typeof opsBetween>) => ops.map((o) => ({ ...o, who: 'A' }) as LayoutEntry);
+    for (const k of ['beach-chair', 'sandcastle', 'snowboy']) {
+      const gone = remove(l, [k]);
+      expect(gone.objects.has(k), k).toBe(false);
+      const rm = at(opsBetween(l, gone, T0));
+      // (the record's op over the default: it stays gone)
+      expect(layoutOf(rm).objects.has(k), k).toBe(false);
+      const back = place(gone, k, 7, 13, 0, undefined, T0 + 1)!;
+      expect(back.id, k).toBe(k); // its season's id (world/fixedDecor.ts)
+      expect(layoutOf([...rm, ...at(opsBetween(gone, back.layout, T0 + 1))]).objects.get(k), k).toMatchObject({ k, x: 7, z: 13 });
+      // a second moves the one there
+      expect(place(back.layout, k, 7, 16, 0, undefined, T0 + 2)!.layout.objects.get(k)).toMatchObject({ x: 7, z: 16 });
+    }
   });
   test("a ghost centres the footprint on the tile; never on water, the sea or off the grid (but a bridge)", () => {
     expect(ghostAt(l, 'bush', 0, [8, 15])).toEqual({ k: 'bush', x: 8, z: 15, f: 0, ok: true });

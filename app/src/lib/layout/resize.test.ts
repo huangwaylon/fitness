@@ -97,8 +97,8 @@ describe('the island’s size (layout/resize.ts)', () => {
   });
 
   it('pulled in: what the sea takes and what goes wrong is in the way, the fixed pieces marked', () => {
-    // the front a row in: the sandcastle (summer's, fixed) on the beach's front row
-    expect(resizeEdge(l0, 'front', -1).blocked).toEqual([{ id: 'sandcastle', k: 'sandcastle', fixed: true }]);
+    // the front a row in: the sandcastle (summer's, deletable since 2026-11-25) on the beach's front row
+    expect(resizeEdge(l0, 'front', -1).blocked).toEqual([{ id: 'sandcastle', k: 'sandcastle', fixed: false }]);
     // the back two rows in: the museum (fixed) and a cedar by it
     const back = resizeEdge(l0, 'back', -2).blocked;
     expect(back).toContainEqual({ id: 'museum', k: 'museum', fixed: true });

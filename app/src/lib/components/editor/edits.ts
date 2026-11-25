@@ -7,7 +7,7 @@ import { footprintOf, kindDef } from '#lib/layout/catalog.ts';
 import { footOf, newObjId, originOf, withChanges, type Layout, type Obj } from '#lib/layout/model.ts';
 import { diffLayouts } from '#lib/layout/diff.ts';
 import { HOME_IDS, WHO_OF_HOME, type HomeStyle, type Who } from '#lib/layout/homes.ts';
-import { validate } from '#lib/layout/validate.ts';
+import { placeErrors, validate, type Issue } from '#lib/layout/validate.ts';
 import { isSmallKind, seat } from '#lib/layout/tops.ts';
 import { moveInside, resizeEdge, withTiles, type Blocker, type Edge } from '#lib/layout/resize.ts';
 import { isCrop, isFence } from '#lib/layout/garden.ts';
@@ -53,8 +53,9 @@ export function cliff(l: Layout, tiles: Iterable<[number, number]>, dir: 1 | -1)
 export function place(l: Layout, k: string, c: number, r: number, f: Facing, s: string | undefined, at: number): { layout: Layout; id: string } | null {
   const def = kindDef(k);
   if (!def) return null;
-  // (the latest of its kind: the one in force, should two phones each have put one down)
-  const id = (def.one && [...l.objects.values()].filter((o) => o.k === k).map((o) => o.id).sort().pop()) || newObjId(at);
+  // (the latest of its kind: the one in force, should two phones each have put one down; a seasonal piece put back
+  // takes its kind's id, the one its season looks for: world/fixedDecor.ts)
+  const id = (def.one && [...l.objects.values()].filter((o) => o.k === k).map((o) => o.id).sort().pop()) || (def.group === 'season' ? k : newObjId(at));
   const o: Obj = { id, k, x: c, z: r, f: def.turns ? f : (f % 2) as Facing, ...((s ?? def.variants?.[0]) ? { s: s ?? def.variants![0] } : {}) };
   if (!inGrid(l, o)) return null;
   // (a small thing over a table: on its top, layout/tops.ts)
@@ -95,7 +96,6 @@ function settle(l: Layout, ids: readonly string[]): Layout {
   return set.length ? withChanges(l, { set }) : l;
 }
 
-/** Turn objects a quarter (clockwise seen from above: f + 1), each about its footprint's back-left tile. */
 /** Turn objects a quarter (f + 1), each about its footprint's back-left tile; a home about its door, and only `me`'s
  *  own (its facing is its owner's look: model.ts layoutOf), and never so its door or footprint goes wrong. */
 export function rotate(l: Layout, ids: Iterable<string>, by = 1, me?: Who): Layout {
@@ -151,33 +151,45 @@ export function remove(l: Layout, ids: Iterable<string>): Layout {
 export interface Clip {
   items: { k: string; s?: string; f: Facing; dx: number; dz: number }[];
 }
+/** Whether a piece may be copied: not a fixed one, nor a bridge or stairs (each fits one place: its water, its cliff). */
+const copyable = (o: Obj): boolean => removable(o) && o.k !== 'bridge' && o.k !== 'stairs';
 export function copy(l: Layout, ids: Iterable<string>): Clip | null {
-  const os = [...ids].map((id) => l.objects.get(id)).filter((o): o is Obj => !!o && removable(o));
+  const os = [...ids].map((id) => l.objects.get(id)).filter((o): o is Obj => !!o && copyable(o));
   if (!os.length) return null;
   const x0 = Math.min(...os.map((o) => o.x)), z0 = Math.min(...os.map((o) => o.z));
   return { items: os.map((o) => ({ k: o.k, ...(o.s ? { s: o.s } : {}), f: o.f, dx: o.x - x0, dz: o.z - z0 })) };
 }
-/** Paste a copy with its back-left at (c, r): new objects (new ids), those that fit on the grid. */
+
+/** An issue's identity (its code and pieces), to tell a new one from the island's own. */
+const issueKey = (i: Issue): string => `${i.code}|${[...i.ids].sort().join(',')}`;
+/** A copy put down with its back-left at (c, r): the new layout and ids if every piece of it fits (on the grid, each
+ *  as a ghost passes: ghostAt) and the island gains no issue by it (a door, a walk, a warning), else null. */
+function fit(l: Layout, clip: Clip, c: number, r: number, at: number, had: ReadonlySet<string>): { layout: Layout; ids: string[] } | null {
+  const set: Obj[] = clip.items.map((it, i) => ({ id: newObjId(at + i), k: it.k, x: c + it.dx, z: r + it.dz, f: it.f, ...(it.s ? { s: it.s } : {}) }));
+  if (!set.every((o) => inGrid(l, o))) return null;
+  const ids = set.map((o) => o.id), next = settle(withChanges(l, { set }), ids);
+  if (ids.some((id) => placeErrors(next, next.objects.get(id)!).length)) return null;
+  return validate(next).every((i) => had.has(issueKey(i))) ? { layout: next, ids } : null;
+}
+/** Paste a copy with its back-left at (c, r): new objects (new ids), all of it, or nothing where it doesn't fit (fit). */
 export function paste(l: Layout, clip: Clip, c: number, r: number, at: number): { layout: Layout; ids: string[] } {
-  const set: Obj[] = [];
-  clip.items.forEach((it, i) => {
-    const o: Obj = { id: newObjId(at + i), k: it.k, x: c + it.dx, z: r + it.dz, f: it.f, ...(it.s ? { s: it.s } : {}) };
-    if (inGrid(l, o)) set.push(o);
-  });
-  const ids = set.map((o) => o.id);
-  return { layout: set.length ? settle(withChanges(l, { set }), ids) : l, ids };
+  return fit(l, clip, c, r, at, new Set(validate(l).map(issueKey))) ?? { layout: l, ids: [] };
 }
 
-/** A copy of the pieces beside them (right of their box, else left), the copies' ids; null with nothing to copy. */
-export function duplicate(l: Layout, ids: Iterable<string>, at: number): { layout: Layout; ids: string[] } | null {
-  const os = [...ids].map((id) => l.objects.get(id)).filter((o): o is Obj => !!o && removable(o));
-  const clip = copy(l, os.map((o) => o.id));
-  if (!clip) return null;
-  const x0 = Math.min(...os.map((o) => o.x)), z0 = Math.min(...os.map((o) => o.z)), w = Math.max(...os.map((o) => o.x + footOf(l, o)[0])) - x0;
-  const right = paste(l, clip, x0 + w, z0, at);
-  if (right.ids.length === clip.items.length) return right;
-  const left = paste(l, clip, x0 - w, z0, at);
-  return left.ids.length > right.ids.length ? left : right;
+/** A copy of the pieces beside them (right of their box, else left, below, above: the first spot it fits whole), the
+ *  copies' ids; or why not (nothing to copy; no room; a bridge's or stairs' one place). */
+export function duplicate(l: Layout, ids: Iterable<string>, at: number): { layout: Layout; ids: string[] } | { why: string } {
+  const all = [...ids].map((id) => l.objects.get(id)).filter((o): o is Obj => !!o && removable(o));
+  const os = all.filter(copyable), clip = copy(l, os.map((o) => o.id));
+  if (!clip) return { why: all.length ? '橋と坂は複製できません（1か所にしか合いません）' : 'これは複製できません' };
+  const x0 = Math.min(...os.map((o) => o.x)), z0 = Math.min(...os.map((o) => o.z));
+  const w = Math.max(...os.map((o) => o.x + footOf(l, o)[0])) - x0, d = Math.max(...os.map((o) => o.z + footOf(l, o)[1])) - z0;
+  const had = new Set(validate(l).map(issueKey));
+  for (const [c, r] of [[x0 + w, z0], [x0 - w, z0], [x0, z0 + d], [x0, z0 - d]]) {
+    const f = fit(l, clip, c, r, at, had);
+    if (f) return f;
+  }
+  return { why: '置ける場所がありません' };
 }
 
 /** The objects whose footprints a tile box (inclusive) touches. */
@@ -252,23 +264,23 @@ export function sameLayout(a: Layout, b: Layout): boolean {
   return !d.objects.add.length && !d.objects.move.length && !d.objects.remove.length && !d.homes.length;
 }
 
-/** A tile is water (for a ghost's quick check). */
-const wetAt = (l: Layout, c: number, r: number): boolean => isWater(l.kind(c, r));
 /** A kind's footprint in a facing (for a ghost). */
 export const ghostFoot = (k: string, f: number): [number, number] => {
   const def = kindDef(k);
   return def ? footprintOf(def, f) : [1, 1];
 };
 
-/** Where a kind put down at a tile goes (its footprint about the tile) and whether it may (on the grid, never on water
- *  or the sea but a bridge). */
+/** Where a kind put down at a tile goes (its footprint about the tile) and whether it may: on the grid, and nothing
+ *  validate would call wrong with it there on its own (validate.ts placeErrors: its ground, an overlap), so a green
+ *  ghost is a piece the check passes. */
 export function ghostAt(l: Layout, k: string, f: Facing, [c, r]: readonly [number, number]): { k: string; x: number; z: number; f: Facing; ok: boolean } {
   const [w, d] = ghostFoot(k, f);
   const x = c - Math.floor((w - 1) / 2), z = r - Math.floor((d - 1) / 2);
-  let ok = x >= 0 && z >= 0 && x + w <= GRID.cols && z + d <= GRID.rows;
-  for (let j = 0; j < d && ok; j++) for (let i = 0; i < w && ok; i++) if (k !== 'bridge' && (wetAt(l, x + i, z + j) || l.kind(x + i, z + j) === 'sea')) ok = false;
-  return { k, x, z, f, ok };
+  const o: Obj = { id: GHOST, k, x, z, f };
+  return { k, x, z, f, ok: inGrid(l, o) && !placeErrors(l, seat(l, o)).length };
 }
+/** The ghost's id (no piece's). */
+const GHOST = 'ghost';
 
 /** A kind put down in a run, a drag across tiles (the garden's: a fence, a crop; layout/garden.ts): one tile at a time. */
 export const runs = (k: string): boolean => isFence(k) || isCrop(k);

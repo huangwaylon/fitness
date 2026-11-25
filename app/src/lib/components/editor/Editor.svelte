@@ -511,6 +511,7 @@
     if (cmd && e.key.toLowerCase() === 'v') {
       if (!clip || !hover) return;
       const r = paste(store.current, clip, hover[0], hover[1], store.stamp());
+      if (!r.ids.length) return say('そこには貼り付けられません');
       commit(r.layout, `${r.ids.length}個貼り付けた`);
       selected = new Set(r.ids);
       return;
@@ -590,7 +591,7 @@
   /** 複製: a copy of the selection beside it, selected (desktop: ⌘C ⌘V at the pointer). */
   function duplicateSel() {
     const r = duplicate(store.current, selected, store.stamp());
-    if (!r?.ids.length) return say(r ? '置ける場所がありません' : 'これは複製できません');
+    if ('why' in r) return say(r.why);
     commit(r.layout, `${r.ids.length}個複製した`);
     selected = new Set(r.ids);
   }

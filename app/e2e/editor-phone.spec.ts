@@ -50,10 +50,10 @@ test("the editor's move, placement, paste and undo show the same on a phone, eve
   const bush = (await objs(editor)).find((o) => !before.has(o.id))!;
   expect(bush.k).toBe('bush');
 
-  // copied and pasted beside it, then the paste taken back
+  // copied and pasted beside it (a free tile: a paste goes only where it fits), then the paste taken back
   await clickTile(editor, bush.x, bush.z);
   await editor.keyboard.press('Meta+c');
-  const [px, py] = await editor.evaluate(() => (window as unknown as { __editor: E }).__editor.tileScreen(6, 20));
+  const [px, py] = await editor.evaluate(() => (window as unknown as { __editor: E }).__editor.tileScreen(5, 20));
   await editor.mouse.move(px, py);
   await editor.keyboard.press('Meta+v');
   await expect.poll(async () => (await objs(editor)).length).toBe(before.size + 2);

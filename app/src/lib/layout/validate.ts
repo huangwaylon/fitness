@@ -6,7 +6,7 @@ import { doorOf, footOf, objMid, objTiles, originOf, type Layout, type Obj } fro
 import { isMarker, kindDef } from './catalog.ts';
 import { markerSpot, spotWhy, type SpotWhy } from './spots.ts';
 import { HOME_IDS } from './homes.ts';
-import { blockBox, navOf, reachable, type LayoutNav } from './nav.ts';
+import { archTiles, blockBox, navOf, reachable, type Box, type LayoutNav } from './nav.ts';
 
 type IssueCode =
   | 'off-land' | 'on-water' | 'overlap' | 'not-grass' | 'split' | 'stairs' | 'bridge' | 'door' | 'goal' | 'home' | 'unreachable' | 'pocket' | 'water-diagonal' | 'water-edge' | 'visitor-spot';
@@ -23,18 +23,29 @@ export interface Issue {
 const kindAt = (l: Layout, c: number, r: number): Kind => (onGrid(c, r) ? kindOf(l.codes[idx(c, r)]) : 'sea');
 const tierAt = (l: Layout, c: number, r: number): number => (onGrid(c, r) ? tierOf(l.codes[idx(c, r)]) : 0);
 
-/** The box an object stands in for an overlap (u): a default one's (it stands off the grid) its block box or a small
- *  box round its middle, else its whole footprint (a hair in). */
-function standBox(l: Layout, o: Obj): { x0: number; x1: number; y0: number; y1: number } {
+/** The tiles an object stands on: an arch's posts (a torii, a gate, a gazebo: its way through may span water, the
+ *  user's 2026-11-25), else its whole footprint. */
+const groundTiles = (l: Layout, o: Obj): [number, number][] => archTiles(l, o)?.posts ?? objTiles(l, o);
+
+/** A tile box (u), a hair in. */
+const tileBox = (c: number, r: number, w = 1, d = 1): Box => {
+  const x0 = GRID.x0 + c * 30, y0 = GRID.z0 + r * 30;
+  return { x0: x0 + 1, x1: x0 + w * 30 - 1, y0: y0 + 1, y1: y0 + d * 30 - 1 };
+};
+/** The boxes an object stands in for an overlap with `by` (u): a default one's (it stands off the grid) its block box
+ *  or a small box round its middle; an arch's by what doesn't block (a bridge's deck, a path's flower: under it) its
+ *  posts' tiles; else its whole footprint (a hair in). */
+function standBoxes(l: Layout, o: Obj, by: Obj): Box[] {
   if (o.n) {
     const b = blockBox(l, o);
-    if (b) return b;
+    if (b) return [b];
     const [x, z] = objMid(l, o);
-    return { x0: x - 6, x1: x + 6, y0: z - 4, y1: z + 4 };
+    return [{ x0: x - 6, x1: x + 6, y0: z - 4, y1: z + 4 }];
   }
+  const a = !kindDef(by.k)?.block && archTiles(l, o);
+  if (a) return a.posts.map(([c, r]) => tileBox(c, r));
   const [w, d] = footOf(l, o), [ox, oz] = originOf(l, o);
-  const x0 = GRID.x0 + ox * 30, y0 = GRID.z0 + oz * 30;
-  return { x0: x0 + 1, x1: x0 + w * 30 - 1, y0: y0 + 1, y1: y0 + d * 30 - 1 };
+  return [tileBox(ox, oz, w, d)];
 }
 const solid = (o: Obj) => {
   const d = kindDef(o.k);
@@ -42,17 +53,72 @@ const solid = (o: Obj) => {
 };
 
 /** Whether two objects overlap as validate's `overlap` has it: solid things never share ground, a flower never stands
- *  in a solid thing, a structure (stairs, a bridge) clashes only with what blocks or another structure; the spots, the
- *  markers and the things on a table's top with nothing. */
+ *  in a solid thing, nothing stands on stairs or a bridge's deck (it'd be buried in the ramp, the deck), an arch takes
+ *  only its posts' ground but from a blocking thing; the spots, the markers and the things on a table's top with nothing. */
 export function overlap(layout: Layout, a: Obj, b: Obj): boolean {
   if (a.k === 'spot' || isMarker(a.k) || b.k === 'spot' || isMarker(b.k) || (!solid(a) && !solid(b))) return false;
   // (a thing on a table's top shares its table's ground: tops.ts)
   if (a.on || b.on) return false;
-  // a flower may grow by stairs or a bridge's end
-  const sa = a.k === 'bridge' || a.k === 'stairs', sb = b.k === 'bridge' || b.k === 'stairs';
-  if ((sa && !sb && !kindDef(b.k)?.block) || (sb && !sa && !kindDef(a.k)?.block)) return false;
-  const ba = standBox(layout, a), bb = standBox(layout, b);
-  return ba.x0 < bb.x1 && bb.x0 < ba.x1 && ba.y0 < bb.y1 && bb.y0 < ba.y1;
+  const ba = standBoxes(layout, a, b), bb = standBoxes(layout, b, a);
+  return ba.some((p) => bb.some((q) => p.x0 < q.x1 && q.x0 < p.x1 && p.y0 < q.y1 && q.y0 < p.y1));
+}
+
+/** What's wrong with one object where it stands, on its own (its ground: the grid, the land, one tier, a bridge's span,
+ *  the stairs' cliff); the overlaps, the doors and the walks are the island's (validate). The editor's ghost asks it
+ *  too (edits.ts ghostAt), so a green ghost is a piece validate passes. */
+export function objIssues(layout: Layout, o: Obj): Issue[] {
+  const def = kindDef(o.k);
+  if (!def) return [];
+  const out: Issue[] = [];
+  const tiles = objTiles(layout, o), ground = groundTiles(layout, o);
+  const add = (code: IssueCode, level: Issue['level'], t: [number, number][], ja: string, en: string) => out.push({ code, level, tiles: t, ids: [o.id], ja, en });
+  const kinds = ground.map(([c, r]) => kindAt(layout, c, r));
+  // (an arch's way through may span the sea or a river, but never off the grid)
+  if (tiles.some(([c, r]) => !onGrid(c, r)) || kinds.some((k) => k === 'sea')) add('off-land', 'error', tiles, `${def.ja}が海の上`, `${def.en} is off the land`);
+  if (o.k === 'bridge') {
+    const [w, d] = footOf(layout, o);
+    const ends = o.f % 2 ? [[o.x, o.z], [o.x + w - 1, o.z]] : [[o.x, o.z], [o.x, o.z + d - 1]];
+    const mid = tiles.filter(([c, r]) => !ends.some(([ec, er]) => ec === c && er === r));
+    if (!mid.some(([c, r]) => isWater(kindAt(layout, c, r))) || ends.some(([c, r]) => isWater(kindAt(layout, c, r))) || tierAt(layout, ends[0][0], ends[0][1]) !== tierAt(layout, ends[1][0], ends[1][1]))
+      add('bridge', 'error', tiles, '橋は水の上に、両端を同じ高さの陸に', 'A bridge spans water, both ends on land of one tier');
+    return out;
+  }
+  if (kinds.some((k) => k === 'river' || k === 'pond')) add('on-water', 'error', tiles, `${def.ja}が水の上`, `${def.en} stands in water`);
+  const tiers = new Set(ground.map(([c, r]) => tierAt(layout, c, r)));
+  if (tiers.size > 1 && o.k !== 'stairs') add('split', 'error', tiles, `${def.ja}が崖をまたいでいる`, `${def.en} straddles a cliff`);
+  if (def.on === 'grass' && kinds.some((k) => k !== 'grass')) add('not-grass', 'warn', tiles, `${def.ja}は草の上に`, `${def.en} belongs on grass`);
+  if (o.k === 'stairs') {
+    const [w, d] = footOf(layout, o);
+    const t = tierAt(layout, o.x, o.z);
+    // the tiles beyond its top (f 0: behind it) one tier up, before its foot the same tier
+    const top: [number, number][] = [], foot: [number, number][] = [];
+    if (o.f % 2 === 0) for (let i = 0; i < w; i++) {
+      top.push(o.f === 0 ? [o.x + i, o.z + d] : [o.x + i, o.z - 1]);
+      foot.push(o.f === 0 ? [o.x + i, o.z - 1] : [o.x + i, o.z + d]);
+    }
+    else for (let j = 0; j < d; j++) {
+      top.push(o.f === 1 ? [o.x - 1, o.z + j] : [o.x + w, o.z + j]);
+      foot.push(o.f === 1 ? [o.x + w, o.z + j] : [o.x - 1, o.z + j]);
+    }
+    const land = (p: [number, number]) => !isWater(kindAt(layout, p[0], p[1]));
+    if (tiers.size > 1 || !top.every((p) => land(p) && tierAt(layout, p[0], p[1]) === t + 1) || !foot.every((p) => land(p) && tierAt(layout, p[0], p[1]) === t))
+      add('stairs', 'error', [...tiles, ...top], '坂が崖につながっていない', 'The stairs join no cliff (their top one tier up, their foot level)');
+  }
+  return out;
+}
+
+/** The overlap issue of two objects. */
+const overlapIssue = (l: Layout, a: Obj, b: Obj): Issue => ({
+  code: 'overlap', level: 'error', tiles: [...objTiles(l, a), ...objTiles(l, b)], ids: [a.id, b.id],
+  ja: `${kindDef(a.k)?.ja}と${kindDef(b.k)?.ja}が重なっている`, en: `${kindDef(a.k)?.en} and ${kindDef(b.k)?.en} overlap`
+});
+
+/** A piece's own errors where it stands on `l` (objIssues, and an overlap with anything else there but `skip`'s): the
+ *  editor's ghost (edits.ts ghostAt), a copy's spot (duplicate, paste). */
+export function placeErrors(l: Layout, o: Obj, skip: ReadonlySet<string> = new Set()): Issue[] {
+  const out = objIssues(l, o).filter((i) => i.level === 'error');
+  for (const b of l.objects.values()) if (b.id !== o.id && !skip.has(b.id) && overlap(l, o, b)) out.push(overlapIssue(l, o, b));
+  return out;
 }
 
 /** A visitors' spot's reason in words (the editor's sheets: kanji; and English). */
@@ -78,52 +144,13 @@ export function validate(layout: Layout, nav: LayoutNav = navOf(layout)): Issue[
   const out: Issue[] = [];
   const add = (code: IssueCode, level: Issue['level'], tiles: [number, number][], ids: string[], ja: string, en: string) => out.push({ code, level, tiles, ids, ja, en });
   const objs = [...layout.objects.values()];
-  for (const o of objs) {
-    const def = kindDef(o.k);
-    if (!def) continue;
-    const tiles = objTiles(layout, o);
-    const kinds = tiles.map(([c, r]) => kindAt(layout, c, r));
-    if (tiles.some(([c, r]) => !onGrid(c, r)) || kinds.some((k) => k === 'sea')) {
-      if (o.k !== 'bridge') add('off-land', 'error', tiles, [o.id], `${def.ja}が海の上`, `${def.en} is off the land`);
-      continue;
-    }
-    if (o.k === 'bridge') {
-      const [w, d] = footOf(layout, o);
-      const ends = o.f % 2 ? [[o.x, o.z], [o.x + w - 1, o.z]] : [[o.x, o.z], [o.x, o.z + d - 1]];
-      const mid = tiles.filter(([c, r]) => !ends.some(([ec, er]) => ec === c && er === r));
-      if (!mid.some(([c, r]) => isWater(kindAt(layout, c, r))) || ends.some(([c, r]) => isWater(kindAt(layout, c, r))) || tierAt(layout, ends[0][0], ends[0][1]) !== tierAt(layout, ends[1][0], ends[1][1]))
-        add('bridge', 'error', tiles, [o.id], '橋は水の上に、両端を同じ高さの陸に', 'A bridge spans water, both ends on land of one tier');
-      continue;
-    }
-    if (kinds.some((k) => isWater(k))) add('on-water', 'error', tiles, [o.id], `${def.ja}が水の上`, `${def.en} stands in water`);
-    const tiers = new Set(tiles.map(([c, r]) => tierAt(layout, c, r)));
-    if (tiers.size > 1 && o.k !== 'stairs') add('split', 'error', tiles, [o.id], `${def.ja}が崖をまたいでいる`, `${def.en} straddles a cliff`);
-    if (def.on === 'grass' && kinds.some((k) => k !== 'grass')) add('not-grass', 'warn', tiles, [o.id], `${def.ja}は草の上に`, `${def.en} belongs on grass`);
-    if (o.k === 'stairs') {
-      const [w, d] = footOf(layout, o);
-      const t = tierAt(layout, o.x, o.z);
-      // the tiles beyond its top (f 0: behind it) one tier up, before its foot the same tier
-      const top: [number, number][] = [], foot: [number, number][] = [];
-      if (o.f % 2 === 0) for (let i = 0; i < w; i++) {
-        top.push(o.f === 0 ? [o.x + i, o.z + d] : [o.x + i, o.z - 1]);
-        foot.push(o.f === 0 ? [o.x + i, o.z - 1] : [o.x + i, o.z + d]);
-      }
-      else for (let j = 0; j < d; j++) {
-        top.push(o.f === 1 ? [o.x - 1, o.z + j] : [o.x + w, o.z + j]);
-        foot.push(o.f === 1 ? [o.x + w, o.z + j] : [o.x - 1, o.z + j]);
-      }
-      const land = (p: [number, number]) => !isWater(kindAt(layout, p[0], p[1]));
-      if (tiers.size > 1 || !top.every((p) => land(p) && tierAt(layout, p[0], p[1]) === t + 1) || !foot.every((p) => land(p) && tierAt(layout, p[0], p[1]) === t))
-        add('stairs', 'error', [...tiles, ...top], [o.id], '坂が崖につながっていない', 'The stairs join no cliff (their top one tier up, their foot level)');
-    }
-  }
-  // overlaps: solid things never share ground; a flower never stands in a solid thing
+  for (const o of objs) out.push(...objIssues(layout, o));
+  // overlaps (overlap's rule)
   for (let i = 0; i < objs.length; i++) {
     const a = objs[i];
     for (let k = i + 1; k < objs.length; k++) {
       const b = objs[k];
-      if (overlap(layout, a, b))
-        add('overlap', 'error', [...objTiles(layout, a), ...objTiles(layout, b)], [a.id, b.id], `${kindDef(a.k)?.ja}と${kindDef(b.k)?.ja}が重なっている`, `${kindDef(a.k)?.en} and ${kindDef(b.k)?.en} overlap`);
+      if (overlap(layout, a, b)) out.push(overlapIssue(layout, a, b));
     }
   }
   // the homes: all three, each with a clear door
