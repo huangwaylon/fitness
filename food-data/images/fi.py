@@ -28,7 +28,7 @@ border's median), webp sheets: thumbnails T_COLS x T_COLS cells of T_PX (q T_QUA
 (FAMILY, else the category), details D_COLS x D_COLS of D_PX (q QUALITY) per category, popular items first; a product
 uses its picture's cell in its own neighbourhood, else a cell in a product sheet (p-*); names carry the content hash.
 """
-import binascii, hashlib, io, json, os, re, subprocess, sys, time, unicodedata, urllib.parse, zlib
+import binascii, hashlib, io, json, os, re, subprocess, sys, threading, time, unicodedata, urllib.parse, zlib
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
@@ -43,7 +43,7 @@ RAW = Path(os.environ.get('FOOD_IMG_RAW', '~/food-images-raw')).expanduser()
 MAIN = Path(os.environ.get('FOOD_MAIN', '/Users/waylonhuang/Documents/other/fitness'))  # the main checkout's raw/ (MAFF photos)
 VERDICTS = HERE / 'verdicts.jsonl'
 SLOTS = HERE / 'slots.json'
-UA = 'island-fund-food-refs/1.0 (private app; look-only reference photos)'
+UA = 'island-fund-food-refs/1.1 (https://github.com/huangwaylon/fitness; look-only reference photos for a private app) curl/8'  # with a contact: Wikimedia throttles anonymous UAs hard
 
 # The prompt (style "cw": coloured pencil and watercolour on the app's paper). Changing it changes every image: bump
 # PROMPT_V, which is part of the seed's cache path and of every verdict.
@@ -249,20 +249,304 @@ def cmd_propose(phase):
 
 # ---------- references
 
+# Wikimedia's API etiquette: our UA, a call started at most every API_GAP (maxlag), up to 50 ids / titles a call; a
+# refusal (429 / 503 / maxlag) waits its Retry-After, else backs off. Answers are cached in $RAW/refs/_cache (a re-run
+# asks nothing twice). Thumbnails come from upload.wikimedia.org (thumb.wikimedia.org, imageinfo's host since 2026-11,
+# is blocked here: the same path is served by upload.), one started every DL_GAP: a thumbnail not in their cache is
+# rendered, and they allow an address ~10 at once, then ~1 every 2 s (measured 2026-11-25).
+API_GAP = float(os.environ.get('FI_API_GAP', 0.5))
+DL_GAP = float(os.environ.get('FI_DL_GAP', 2.0))
+DL_PAR, NCAND, MIN_FOUND, CHUNK = 4, 8, 4, 200  # thumbnails in flight; candidates a row (its `ncand` overrides); rows a pass
+CACHE = RAW / 'refs' / '_cache'
+_last_api, _api_lock, _last_dl, _dl_lock = [0.0], threading.Lock(), [0.0], threading.Lock()
+API_PAR = 2  # list calls (one a category / search) in flight: at most one started every API_GAP
+
+
 def _get(url, tries=5, binary=False):
     for t in range(tries):
-        time.sleep(1.0 + 2.0 * t)  # Wikimedia rate-limits bursts: space requests, back off on a refusal
-        r = subprocess.run(['curl', '-sS', '-L', '-m', '40', '-A', UA, '-w', '\n%{http_code}', url], capture_output=True)
-        body, _, code = r.stdout.rpartition(b'\n')
-        if code == b'200' and body:
-            return body if binary else json.loads(body)
-        if code in (b'404', b'400'):
-            break
+        r = subprocess.run(['curl', '-sS', '-L', '-m', '40', '-A', UA, '-w', '\n%{http_code} %header{retry-after}', url], capture_output=True)
+        body, _, tail = r.stdout.rpartition(b'\n')
+        code, _, after = tail.decode(errors='replace').partition(' ')
+        if code == '200' and body:
+            if binary:
+                return body
+            j = json.loads(body)
+            if j.get('error', {}).get('code') != 'maxlag':
+                return j
+        elif code.startswith('4') and code != '429':
+            return None
+        print(f'refs: {code or "no answer"}, waiting: {url[:100]}', file=sys.stderr, flush=True)
+        time.sleep(min(60.0, float(after) if after.strip().isdigit() else 2.0 * 2 ** t))
     return None
 
 
+def _pace(last, lock, gap):
+    with lock:
+        time.sleep(max(0.0, last[0] + gap - time.time()))
+        last[0] = time.time()
+
+
 def _api(host, **params):
-    return _get(f'https://{host}/w/api.php?' + urllib.parse.urlencode({'format': 'json', 'formatversion': 2, **params})) or {}
+    _pace(_last_api, _api_lock, API_GAP)
+    return _get(f'https://{host}/w/api.php?' + urllib.parse.urlencode({'format': 'json', 'formatversion': 2, 'maxlag': 5, **params})) or {}
+
+
+def _api_all(host, **params):
+    """Every continuation of a query: the responses' `query` parts, in order."""
+    cont = {}
+    while True:
+        j = _api(host, **params, **cont)
+        yield j.get('query', {})
+        if 'continue' not in j:
+            return
+        cont = j['continue']
+
+
+def _resolved(q, asked):
+    """asked title -> the title it resolved to (normalized, then redirects)."""
+    m = {}
+    for k in ('normalized', 'redirects'):
+        for x in q.get(k, []):
+            m[x['from']] = x['to']
+    out = {}
+    for t in asked:
+        r = t
+        for _ in range(3):
+            r = m.get(r, r)
+        out[t] = r
+    return out
+
+
+def thumb_url(u):
+    return re.sub(r'^https://thumb\.wikimedia\.org/', 'https://upload.wikimedia.org/', u).split('?')[0]
+
+
+class _Cache:
+    """One JSON dict a kind (entities, pages-<host>, cats, search, imageinfo), saved after each pass."""
+    def __init__(self, kind):
+        self.p = CACHE / f'{kind}.json'
+        self.d = json.loads(self.p.read_text()) if self.p.exists() else {}
+
+    def missing(self, keys):
+        return [k for k in dict.fromkeys(keys) if k not in self.d]
+
+    def save(self):
+        CACHE.mkdir(parents=True, exist_ok=True)
+        tmp = self.p.with_suffix('.tmp')
+        tmp.write_text(json.dumps(self.d, ensure_ascii=False))
+        tmp.rename(self.p)
+
+
+def _fill_entities(c, qids):
+    """qid -> {p18, p373, jawiki, enwiki}."""
+    want = c.missing(qids)
+    for i in range(0, len(want), 50):
+        part = want[i:i + 50]
+        ents = _api('www.wikidata.org', action='wbgetentities', ids='|'.join(part), props='claims|sitelinks',
+                    sitefilter='jawiki|enwiki').get('entities')
+        if ents is None:
+            continue  # refused: asked again next run
+        for q in part:
+            e, cl = ents.get(q, {}), ents.get(q, {}).get('claims', {})
+            val = lambda p, n: [x['mainsnak']['datavalue']['value'] for x in cl.get(p, [])[:n] if 'datavalue' in x['mainsnak']]
+            c.d[q] = {'p18': val('P18', 2), 'p373': val('P373', 1),
+                      **{s: e.get('sitelinks', {}).get(s, {}).get('title') for s in ('jawiki', 'enwiki')}}
+
+
+def _fill_pages(c, host, titles):
+    """title -> {img: its page image, ext: its lead (ja only), ims: its other files (the first 12 by name)}."""
+    want = c.missing(titles)
+    ja = host.startswith('ja')
+    for i in range(0, len(want), 20):  # extracts: at most 20 pages a call
+        part = want[i:i + 20]
+        got, res = {}, {}
+        params = dict(action='query', titles='|'.join(part), redirects=1, prop='pageimages|images' + ('|extracts' if ja else ''),
+                      piprop='name', imlimit='max')
+        if ja:
+            params.update(exintro=1, explaintext=1, exsentences=3, exlimit=20)
+        ok = False
+        for q in _api_all(host, **params):
+            ok = ok or bool(q)
+            res.update(_resolved(q, part))
+            for pg in q.get('pages', []):
+                g = got.setdefault(pg['title'], {'img': None, 'ext': '', 'ims': []})
+                g['img'] = g['img'] or pg.get('pageimage')
+                g['ext'] = g['ext'] or pg.get('extract', '')[:400]
+                g['ims'] += [im['title'] for im in pg.get('images', [])]
+        if not ok:
+            continue
+        for t in part:
+            g = got.get(res.get(t, t), {'img': None, 'ext': '', 'ims': []})
+            c.d[t] = {**g, 'ims': sorted(set(g['ims']))[:12]}
+
+
+def _fill_lists(c, keys, **params):
+    """a category or a search -> its files' titles (list=categorymembers / search)."""
+    from concurrent.futures import ThreadPoolExecutor
+    ask = lambda k: _api('commons.wikimedia.org', action='query', **{kk: v.format(k) if isinstance(v, str) else v for kk, v in params.items()})
+    want = c.missing(keys)
+    with ThreadPoolExecutor(API_PAR) as pool:
+        for k, q in zip(want, pool.map(ask, want)):
+            if 'query' in q:
+                c.d[k] = [m['title'] for m in q['query'].get(params['list'], [])]
+
+
+def _fill_imageinfo(c, files):
+    """Commons file title (underscored) -> [thumbnail url, description page] or None (not on Commons)."""
+    want = c.missing(files)
+    for i in range(0, len(want), 50):
+        part = want[i:i + 50]
+        q = _api('commons.wikimedia.org', action='query', prop='imageinfo', iiprop='url', iiurlwidth=330, titles='|'.join(part)).get('query')
+        if q is None:
+            continue
+        res = _resolved(q, part)
+        pages = {p['title']: p for p in q.get('pages', [])}
+        for f in part:
+            ii = (pages.get(res[f]) or {}).get('imageinfo', [{}])[0]
+            c.d[f] = [thumb_url(ii['thumburl']), ii.get('descriptionurl', '')] if ii.get('thumburl') else None
+
+
+def _row_files(row, qids, titles, searches, C):
+    """A row's candidate files, best first: Wikidata's image, each page's lead image and other photos, the Commons
+    category's photos, the Commons searches'; unique, at most NCAND."""
+    files = [('wikidata', 'File:' + f) for q in qids for f in C['entities'].d.get(q, {}).get('p18', [])]
+    for host, t in titles[:4]:
+        pg = C['pages-' + host].d.get(t, {})
+        wiki = host.split('.')[0] + 'wiki'
+        if pg.get('img'):
+            files.append((wiki, 'File:' + pg['img']))
+        for ti in pg.get('ims', []):
+            ti = ti.replace('ファイル:', 'File:')
+            if re.search(r'\.(jpe?g|JPE?G)$', ti) and not re.search(r'(?i)map|logo|flag|icon|symbol|commons-', ti):
+                files.append((wiki + '-page', ti))
+    for cat in _row_cats(qids, C):
+        files += [('commons-cat', m) for m in C['cats'].d.get(cat, []) if re.search(r'(?i)\.jpe?g$', m)][:6]
+    for s in searches:
+        files += [('commons-search', m) for m in C['search'].d.get(s, []) if re.search(r'(?i)\.jpe?g$', m)]
+    seen, uniq = set(), []
+    for o, f in files:
+        f = f.replace(' ', '_')
+        if f not in seen:
+            seen.add(f)
+            uniq.append((o, f))
+    return uniq[:int(row.get('ncand', NCAND))]
+
+
+def _searches(row, byid):
+    """A row's Commons searches: its `search` hints, else its name, then (asked only while the rest found under
+    MIN_FOUND photos) its English name (the first item's `en`, else the description's head when short: "Rice bran oil:
+    clear pale ..." -> "Rice bran oil") and its name's first word (MEXT's "あけび 生" -> "あけび")."""
+    if row.get('search'):
+        return row['search']
+    en = next((byid.get(i, {}).get('en') for i in row['items'] if byid.get(i, {}).get('en')), '')
+    if not en:
+        head = re.split(r'[:,]', row['desc'], maxsplit=1)[0]
+        en = head if len(head.split()) <= 6 else ''
+    en = re.sub(r'^(a|an|the) ', '', re.sub(r'\s*\(.*?\)', '', en).strip(), flags=re.I)
+    base = re.split(r'[ 　（(]', row['ja'])[0]
+    return list(dict.fromkeys([row['ja']] + [x for x in (en, base) if x]))
+
+
+def _row_cats(qids, C):
+    return [c for q in qids for c in C['entities'].d.get(q, {}).get('p373', [])]
+
+
+def _row_titles(row, qids, titles, C):
+    out = [('ja.wikipedia.org', t) for t in titles]
+    for q in qids:
+        e = C['entities'].d.get(q, {})
+        for site, host in (('jawiki', 'ja.wikipedia.org'), ('enwiki', 'en.wikipedia.org')):
+            if e.get(site):
+                out.append((host, e[site]))
+    return list(dict.fromkeys(out))
+
+
+def _download(job):
+    p, url = job
+    _pace(_last_dl, _dl_lock, DL_GAP)
+    b = _get(url, tries=6, binary=True)
+    if b and b[:3] == b'\xff\xd8\xff':
+        tmp = p.with_suffix('.part')
+        tmp.write_bytes(b)
+        tmp.rename(p)
+
+
+def cmd_refs(keys=None):
+    """Candidate photos per row -> $RAW/refs/<key>/c<n>.jpg + cand.json (resumable: a row with cand.json is done, unless
+    its table hints changed). Rows go CHUNK at a pass: the API's answers for the pass's rows (batched), then their
+    thumbnails (downloaded while the next pass asks the API), then their cand.json."""
+    from concurrent.futures import ThreadPoolExecutor, wait
+    names, wp = _wd_index()
+    byid = items_by_id()
+    C = {k: _Cache(k) for k in ('entities', 'pages-ja.wikipedia.org', 'pages-en.wikipedia.org', 'cats', 'search', 'imageinfo')}
+    hint = lambda row: json.dumps([row.get('qid'), row.get('wiki'), row.get('search'), row.get('maff')], ensure_ascii=False)
+    todo = []
+    for row in table():
+        meta = RAW / 'refs' / row['key'] / 'cand.json'
+        if (not keys or row['key'] in keys) and not (meta.exists() and json.loads(meta.read_text()).get('hint') == hint(row)):
+            todo.append(row)
+    print(f'refs: {len(todo)} rows to fetch', flush=True)
+    pool, pending, t0 = ThreadPoolExecutor(DL_PAR), None, time.time()
+
+    def finish(batch, futs):
+        wait(futs)
+        for row, d, uniq, info, qids, titles, extract in batch:
+            if any(f not in info for _, f in uniq):
+                print(row['key'], 'imageinfo refused: next run', flush=True)
+                continue
+            cand = [{'n': n, 'origin': o, 'file': f, 'page': info[f][1]} for n, (o, f) in enumerate(uniq)
+                    if info.get(f) and (d / f'c{n}.jpg').exists()]
+            for n, m in enumerate(row.get('maff', []), start=100):  # MAFF うちの郷土料理 photos (the main checkout's raw/, look-only)
+                src = MAIN / 'food-data' / 'raw' / 'maff_photos' / f'{m}.jpg'
+                if src.exists():
+                    (d / f'c{n}.jpg').write_bytes(src.read_bytes())
+                    cand.append({'n': n, 'origin': 'maff', 'file': m, 'page': f'maff:{m}'})
+            (d / 'cand.json').write_text(json.dumps({'hint': hint(row), 'qids': qids, 'titles': titles, 'extract': extract, 'cand': cand},
+                                                    ensure_ascii=False, indent=1))
+            print(row['key'], row['ja'], len(cand), 'candidates', flush=True)
+
+    for i in range(0, len(todo), CHUNK):
+        rows = todo[i:i + CHUNK]
+        look = [_lookups(r, names, wp, byid) for r in rows]
+        _fill_entities(C['entities'], [q for qs, _ in look for q in qs])
+        tl = [_row_titles(r, qs, ts, C) for r, (qs, ts) in zip(rows, look)]
+        for host in ('ja.wikipedia.org', 'en.wikipedia.org'):
+            _fill_pages(C['pages-' + host], host, [t for ts in tl for h, t in ts[:4] if h == host])
+        _fill_lists(C['cats'], [c for qs, _ in look for c in _row_cats(qs, C)], list='categorymembers', cmtitle='Category:{}',
+                    cmtype='file', cmlimit=10)
+        srs = [_searches(r, byid) for r in rows]
+        ask = lambda: _fill_lists(C['search'], [s for ss in srs for s in ss], list='search', srnamespace=6, srlimit=6,
+                                  srsearch='{} filetype:bitmap')
+        srs = [ss if r.get('search') else ss[:1] for r, ss in zip(rows, srs)]
+        ask()
+        uniqs = [_row_files(r, qs, ts, ss, C) for r, (qs, _), ts, ss in zip(rows, look, tl, srs)]
+        for n in (2, 3):  # the fallbacks, one at a time
+            full = [_searches(r, byid) for r in rows]
+            srs = [ss if r.get('search') or len(u) >= MIN_FOUND else f[:n] for r, ss, u, f in zip(rows, srs, uniqs, full)]
+            ask()
+            uniqs = [_row_files(r, qs, ts, ss, C) for r, (qs, _), ts, ss in zip(rows, look, tl, srs)]
+        _fill_imageinfo(C['imageinfo'], [f for u in uniqs for _, f in u])
+        for c in C.values():
+            c.save()
+        if os.environ.get('FI_REFS_API') == '1':  # the API's answers only (cached), e.g. on a machine the API serves faster
+            print(f'refs: pass {i // CHUNK + 1}: {i + len(rows)}/{len(todo)} rows asked, {time.time() - t0:.0f} s', flush=True)
+            continue
+        info = C['imageinfo'].d
+        batch, jobs = [], []
+        for r, (qs, _), ts, uniq in zip(rows, look, tl, uniqs):
+            d = RAW / 'refs' / r['key']
+            d.mkdir(parents=True, exist_ok=True)
+            ext = next((C['pages-ja.wikipedia.org'].d.get(t, {}).get('ext') for h, t in ts[:4] if h.startswith('ja')
+                        and C['pages-ja.wikipedia.org'].d.get(t, {}).get('ext')), '')
+            batch.append((r, d, uniq, info, qs, [list(t) for t in ts], ext))
+            jobs += [(d / f'c{n}.jpg', info[f][0]) for n, (_, f) in enumerate(uniq) if info.get(f) and not (d / f'c{n}.jpg').exists()]
+        if pending:
+            finish(*pending)
+        pending = (batch, [pool.submit(_download, j) for j in jobs])
+        print(f'refs: pass {i // CHUNK + 1}: {i + len(rows)}/{len(todo)} rows, {time.time() - t0:.0f} s', flush=True)
+    if pending:
+        finish(*pending)
+    pool.shutdown()
 
 
 def _wd_index():
@@ -286,87 +570,6 @@ def _lookups(row, names, wp, byid):
         if c in wp and wp[c]['wp'] not in titles:
             titles.append(wp[c]['wp'])
     return qids[:3], titles[:3]
-
-
-def cmd_refs(keys=None):
-    """Candidate photos per row -> $RAW/refs/<key>/c<n>.jpg + cand.json (resumable: a row with cand.json is done, unless
-    its table hints changed)."""
-    names, wp = _wd_index()
-    byid = items_by_id()
-    rows = [r for r in table() if not keys or r['key'] in keys]
-    for row in rows:
-        d = RAW / 'refs' / row['key']
-        meta = d / 'cand.json'
-        hint = json.dumps([row.get('qid'), row.get('wiki'), row.get('search'), row.get('maff')], ensure_ascii=False)
-        if meta.exists() and json.loads(meta.read_text()).get('hint') == hint:
-            continue
-        d.mkdir(parents=True, exist_ok=True)
-        qids, titles = _lookups(row, names, wp, byid)
-        files = []  # (origin, Commons file title or a MAFF photo path)
-        ents = _api('www.wikidata.org', action='wbgetentities', ids='|'.join(qids), props='claims|sitelinks').get('entities', {}) if qids else {}
-        cats = []
-        for q in qids:
-            e = ents.get(q, {})
-            for c in e.get('claims', {}).get('P18', [])[:2]:
-                files.append(('wikidata', 'File:' + c['mainsnak']['datavalue']['value']))
-            for c in e.get('claims', {}).get('P373', [])[:1]:
-                cats.append(c['mainsnak']['datavalue']['value'])
-            for site, host in (('jawiki', 'ja.wikipedia.org'), ('enwiki', 'en.wikipedia.org')):
-                t = e.get('sitelinks', {}).get(site, {}).get('title')
-                if t and (host, t) not in titles:
-                    titles.append((host, t))
-        titles = [t if isinstance(t, tuple) else ('ja.wikipedia.org', t) for t in titles]
-        extract = ''
-        for host, t in titles[:4]:
-            pg = _api(host, action='query', prop='pageimages|extracts', titles=t, piprop='name', exintro=1, explaintext=1,
-                      exsentences=3, redirects=1).get('query', {}).get('pages', [{}])[0]
-            if pg.get('pageimage'):
-                files.append((host.split('.')[0] + 'wiki', 'File:' + pg['pageimage']))
-            if host.startswith('ja') and not extract:
-                extract = pg.get('extract', '')[:400]
-            # the page's other photos (a dish article's lead image is often the only one)
-            ims = _api(host, action='query', prop='images', titles=t, imlimit=12, redirects=1).get('query', {}).get('pages', [{}])[0]
-            for im in ims.get('images', [])[:12]:
-                ti = im['title'].replace('ファイル:', 'File:')
-                if re.search(r'\.(jpe?g|JPE?G)$', ti) and not re.search(r'(?i)map|logo|flag|icon|symbol|commons-', ti):
-                    files.append((host.split('.')[0] + 'wiki-page', ti))
-        for c in cats:
-            ms = _api('commons.wikimedia.org', action='query', list='categorymembers', cmtitle='Category:' + c, cmtype='file',
-                      cmlimit=10).get('query', {}).get('categorymembers', [])
-            files += [('commons-cat', m['title']) for m in ms if re.search(r'(?i)\.jpe?g$', m['title'])][:6]
-        for q in row.get('search', [row['ja']]):
-            ps = _api('commons.wikimedia.org', action='query', list='search', srnamespace=6, srlimit=6, srsearch=q + ' filetype:bitmap').get('query', {}).get('search', [])
-            files += [('commons-search', p['title']) for p in ps if re.search(r'(?i)\.jpe?g$', p['title'])]
-        seen, uniq = set(), []
-        for o, f in files:
-            f = f.replace(' ', '_')
-            if f not in seen:
-                seen.add(f)
-                uniq.append((o, f))
-        uniq = uniq[:int(row.get('ncand', 10))]
-        cand = []
-        if uniq:
-            info = _api('commons.wikimedia.org', action='query', prop='imageinfo', iiprop='url|extmetadata', iiurlwidth=330,
-                        iiextmetadatafilter='Artist|LicenseShortName', titles='|'.join(f for _, f in uniq)).get('query', {}).get('pages', [])
-            byt = {p['title'].replace(' ', '_'): p for p in info}
-            for n, (o, f) in enumerate(uniq):
-                ii = (byt.get(f) or {}).get('imageinfo', [{}])[0]
-                if not ii.get('thumburl'):
-                    continue
-                p = d / f'c{n}.jpg'
-                if not p.exists():
-                    b = _get(ii['thumburl'], binary=True)
-                    if not b or not b[:3] == b'\xff\xd8\xff':
-                        continue
-                    p.write_bytes(b)
-                cand.append({'n': n, 'origin': o, 'file': f, 'page': ii.get('descriptionurl', '')})
-        for n, m in enumerate(row.get('maff', []), start=100):  # MAFF うちの郷土料理 photos (the main checkout's raw/, look-only)
-            src = MAIN / 'food-data' / 'raw' / 'maff_photos' / f'{m}.jpg'
-            if src.exists():
-                (d / f'c{n}.jpg').write_bytes(src.read_bytes())
-                cand.append({'n': n, 'origin': 'maff', 'file': m, 'page': f'maff:{m}'})
-        meta.write_text(json.dumps({'hint': hint, 'qids': qids, 'titles': titles, 'extract': extract, 'cand': cand}, ensure_ascii=False, indent=1))
-        print(row['key'], row['ja'], len(cand), 'candidates', flush=True)
 
 
 # ---------- contact sheets (PIL)
