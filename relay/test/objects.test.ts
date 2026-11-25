@@ -159,8 +159,9 @@ describe('IslandStore', () => {
     expect((await admin(s, { op: 'dump' })).status).toBe(200);
     // over the write guard alone (#41): the ops that write refused, the reads served
     reads = { n: 1_200_000, pct: 24, shed: true, rshed: false, logsShed: false };
-    for (const op of ['places_ingest', 'places_details', 'decorcheck']) expect([op, (await s.adminSigned(...(await sign({ op })))).status]).toEqual([op, 429]);
+    for (const op of ['places_details', 'decorcheck', 'dump']) expect([op, (await s.adminSigned(...(await sign({ op })))).status]).toEqual([op, 429]);
     for (const op of ['places_status', 'places_ids', 'logs']) expect([op, (await admin(s, { op })).status]).toEqual([op, 200]);
+    expect((await s.adminSigned(...(await sign({ op: 'places_ingest' })))).status).not.toBe(429);
     // the log down: optional ops refused
     log.reads = () => Promise.reject(new Error('Exceeded allowed rows read'));
     expect((await s.adminSigned(...(await sign({ op: 'dump' })))).status).toBe(429);

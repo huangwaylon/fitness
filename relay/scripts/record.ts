@@ -253,7 +253,13 @@ switch (cmd) {
     const rows = JSON.parse(readFileSync(arg, 'utf8')) as unknown[];
     const sum = { n: 0, changed: 0, missed: 0, skipped: 0, bad: 0 };
     for (let i = 0; i < rows.length; i += DET_BATCH) {
-      const r = (await signed({ op: 'places_details', rows: rows.slice(i, i + DET_BATCH) })) as { ok: boolean } & Partial<typeof sum>;
+      // (over the day's budget, the relay's write guard: the rest waits for tomorrow's run, not a failure)
+      const r = (await signed({ op: 'places_details', rows: rows.slice(i, i + DET_BATCH) }).catch((e: Error) => {
+        if (!/^\/admin: 429 .*"budget"/.test(e.message)) throw e;
+        console.log(`::notice::places-details: over the relay's daily budget, ${rows.length - i} rows left for tomorrow`);
+        return null;
+      })) as ({ ok: boolean } & Partial<typeof sum>) | null;
+      if (!r) break;
       if (!r.ok) throw new Error('places_details: refused');
       for (const k of Object.keys(sum) as (keyof typeof sum)[]) sum[k] += r[k] ?? 0;
     }

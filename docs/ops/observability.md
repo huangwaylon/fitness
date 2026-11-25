@@ -110,8 +110,8 @@ row per existing row**, budget a migration on a big table); the rest the record'
 - **The guard** (log.ts `writes`, `WRITE_SHED_PCT` 80; the test copy's `WRITES_SHED_PCT` 20 of its own): past that share
   of the day's rows written (the account's, Cloudflare's count asked by the log every 10 min with `CF_ANALYTICS_TOKEN`,
   plus its own since; no token: its own) the log keeps only errors (`closed` till midnight UTC, as a capped day) and
-  the optional admin ops that write are refused **429 `budget`** (places ingest/details, the checks; the read-only ops
-  and `ESSENTIAL_OPS` served); `/health/log` says `wshed`, `rowsPct` is the account's. The phones' writes go on.
+  the optional admin ops that write are refused **429 `budget`** (places-details, which leaves the rest for tomorrow;
+  the checks, dumps; the read-only ops, a places pull and `ESSENTIAL_OPS` served); `/health/log` says `wshed`, `rowsPct` is the account's. The phones' writes go on.
 
 ### Request budget
 Free plan, daily: Workers 100k requests; Durable Objects 100k requests (a WebSocket connect is one, incoming messages

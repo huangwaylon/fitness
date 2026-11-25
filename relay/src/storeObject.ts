@@ -46,6 +46,9 @@ const METER_ROWS = 1_000, METER_MS = 10 * 60_000;
 /** The signed ops that only read (no audit row when they succeed): the log's, the counts, and the places runners'
  *  (places-pull's status, places-details' ids: ~50 rows a day that said nothing). */
 const READ_OPS = new Set(['logs', 'logstats', 'counts', 'held', 'wallet', 'imgdump', 'places_status', 'places_ids']);
+/** The ops refused only over the read budget, not the write guard's (log.ts writes): those that only read, and a places
+ *  pull (a few rows a change; held back, its staleness would alert). */
+const READ_GATED: ReadonlySet<string> = new Set([...READ_OPS, 'places_ingest']);
 /** Ops whose success another line says already: places_ingest (cron.places on a change, /health/log's placesH). */
 const QUIET_OK = new Set(['places_ingest']);
 
@@ -456,7 +459,7 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
     // the repairs and a restore never are)
     if (!ESSENTIAL_OPS.has(String(o.op))) {
       const b = await this.budget();
-      if (o.op === 'logs' || o.op === 'logstats' ? b.logsShed : READ_OPS.has(String(o.op)) ? b.rshed : b.shed) return { ok: false, error: 'budget', pct: b.pct };
+      if (o.op === 'logs' || o.op === 'logstats' ? b.logsShed : READ_GATED.has(String(o.op)) ? b.rshed : b.shed) return { ok: false, error: 'budget', pct: b.pct };
     }
     switch (o.op) {
       // the real weather, the room's (index.ts wxAdmin): a fetch now, a fixture timeline, or how it is
