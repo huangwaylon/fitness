@@ -21,6 +21,8 @@ export function newRecord() {
   let events = 0;
   /** The relay out of reach (the phones' requests fail as offline's do). */
   let down = false;
+  /** Each reply as a phone gets it, changed (an older relay's or an older build's view of it), or as the record said. */
+  let tamper: ((body: Record<string, unknown>, reply: Record<string, unknown>) => Record<string, unknown>) | null = null;
   /** Every `POST /share` (a 共有リンク's visitor's read): its body and headers as sent. */
   const shareReads: { body: string; headers: Record<string, string> }[] = [];
   /** `POST /share` by the relay's own gate and read (relay/src/share.ts), the visitor at a fixed IP. */
@@ -60,7 +62,12 @@ export function newRecord() {
         if (down) return route.abort('internetdisconnected');
         if (new URL(route.request().url()).pathname === '/share') return share(route);
         const text = route.request().postData() ?? '';
-        const reply = store.handleText(text);
+        let reply = store.handleText(text);
+        if (tamper) {
+          try {
+            reply = JSON.stringify(tamper(JSON.parse(text), JSON.parse(reply)));
+          } catch { /* not JSON */ }
+        }
         try {
           const body = JSON.parse(text), r = JSON.parse(reply);
           if (body.action === 'events' && Array.isArray(body.events))
@@ -72,6 +79,10 @@ export function newRecord() {
     /** The relay out of reach (true) or back (false), for every phone on this record. */
     offline(on: boolean) {
       down = on;
+    },
+    /** Every phone's replies changed by `fn` from now on (null: as the record says them). */
+    tamper(fn: typeof tamper) {
+      tamper = fn;
     },
     /** The admin's correction of `who`'s かいがら (record.ts adjust): the record's reply. */
     adjust(who: Who, v: number) {

@@ -17,7 +17,7 @@ export interface Toast {
   /** A special character's words or gift (a visitor's line out of view): their head icon on the left (its file id: visitorRoles npcIcon). */
   npc?: string;
   /** What happened, for code that reacts to a banner (never match on the translated text; review P9). */
-  code?: 'save-failed' | 'buy-refused';
+  code?: 'save-failed' | 'buy-refused' | 'farm-refused';
   /** The banner was paused (`null`) or resumed with `ms` left: keep the action's undo window in step (returns the ms granted). */
   hold?: (ms: number | null) => number;
   /** Sliding out; dropped right after (never left to a transition). */

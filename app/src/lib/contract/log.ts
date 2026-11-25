@@ -5,6 +5,7 @@
 // keeps nothing else, whatever a phone sends: no key, no health value, no food name, no free text, no URL. Pure.
 import { EVENT_TYPES } from './api.ts';
 import { isNum } from './guards.ts';
+import { FARM_REFUSALS } from './farm.ts';
 
 /** @public (relay/src/log.ts) */
 export const LOG_V = 1;
@@ -298,6 +299,8 @@ export const LOG_EVENTS = {
   // keys), and the daily check's part that differs from the running one and the rows (`keys` how many), or a log that
   // doesn't chain, or a kept shop row it refused (`refused`); never fixed by itself
   "ledger.seed": { src: 'r', f: { who: ['A', 'B', 'G'], h: 'n', p: 'n', w: 'n', z: 'n' } },
+  // a farm batch's ops the record dropped (relay storeShop.ts farmKept): the first one's reason, how many, how many kept
+  "farm.refused": { src: 'r', f: { who: ['A', 'B', 'G'], why: FARM_REFUSALS, n: 'n', kept: 'n' } },
   "ledger.drift": { src: 'r', f: { who: ['A', 'B', 'G'], part: ['h', 'p', 'w', 'g', 'z', 'field', 'chain', 'refused'], stored: 'n', fold: 'n', keys: 'n' } },
   // a signed op's audit (storeObject.ts adminSigned): the reads only when they fail; rw, rr the record's rows written and
   // read by it, ms its time, rej a load's rows refused, via the tool that sent it (scripts/admin.ts: its script and command)

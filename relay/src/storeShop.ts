@@ -4,7 +4,7 @@ import { isId, isWho, movesWallet, type Who } from '../../app/src/lib/contract/a
 import { isRec } from '../../app/src/lib/contract/guards.ts';
 import { addDays, localDateAt, prevDay } from '../../app/src/lib/contract/tokyo.ts';
 import { adjustOf, caughtOf, isShopEvent, rewardOf, shopLedger, shopRowOf, SHOP_EVENTS, type LedgerEvent, type Ledger, type ShopRow, type TallyDay, isPocketKey } from '../../app/src/lib/contract/shop.ts';
-import { emptyFarm, farmOf, farmStep, fieldJson, type Farm, type FarmData } from '../../app/src/lib/contract/farm.ts';
+import { emptyFarm, farmOf, farmStep, fieldJson, type Farm, type FarmData, type FarmRefusal } from '../../app/src/lib/contract/farm.ts';
 import { isTally } from '../../app/src/lib/contract/tally.ts';
 import { LedgerStore, WHO } from './ledger.ts';
 import { emptyLedger, ledgerRefusal, ledgerStep, pocketMoves, pruneGames, tallyStep, type FieldWire, type Ledger as Stored, type LedgerPart, type Ledgers } from '../../app/src/lib/contract/ledger.ts';
@@ -228,11 +228,12 @@ export class StoreShop {
 
   /** The stored ledgers' parts this request wrote and the `hp` of each person its events may have moved, kept or
    *  refused (`touched`: a refused buy's ack says the かいがら as they are, as the wallets do), each its state now (an
-   *  ack's `ledgers`), or nothing. */
-  ledgersMoved(touched: ReadonlySet<Who> = new Set()): { ledgers?: Ledgers; field?: FieldWire } {
+   *  ack's `ledgers`), and the stored field as it is now after any farm event, kept or refused (`farm`: a phone whose
+   *  op was refused shows the field the record judged it on, at once), or nothing. */
+  ledgersMoved(touched: ReadonlySet<Who> = new Set(), farm = false): { ledgers?: Ledgers; field?: FieldWire } {
     const keys = new Set(this.ledger.written);
     for (const w of touched) if (this.ledger.has(w)) keys.add(`${w}|hp`);
-    const field = this.ledger.fieldWire({ written: this.ledger.written });
+    const field = farm ? this.ledger.fieldWire() : undefined;
     return { ...(keys.size ? { ledgers: this.ledger.wire(keys) } : {}), ...(field ? { field } : {}) };
   }
 
@@ -388,8 +389,9 @@ export class StoreShop {
 
   /** A farm batch of `me`'s judged at the record's next `at` (the row's: the stored field and a fold of the rows agree)
    *  against the field, their pocket (the stored ledger's) and the wet days (`wet|<date>` rows): the field after it
-   *  (its net `me`'s moves), the row as kept and its `at`, or null when no op stands. */
-  farmKept(me: Who, d: Rec): { f: Farm; data: FarmData; at: string } | null {
+   *  (its net `me`'s moves), the row as kept and its `at`; or, no op standing, why the first was refused. Each refusal
+   *  logged (`farm.refused`: the first op's reason, how many dropped, how many kept), a batch kept in part too. */
+  farmKept(me: Who, d: Rec): { ok: true; f: Farm; data: FarmData; at: string } | { ok: false; why: FarmRefusal } {
     const f = this.farmState();
     this.ledgerReady(me);
     const l = this.ledger.read(me, ['hp'])!;
@@ -399,9 +401,10 @@ export class StoreShop {
       if (w === undefined) wet.set(date, (w = this.b.slotRow(`wet|${date}`) !== null));
       return w;
     };
-    const at = this.b.nextAt();
-    const data = farmStep(f, me, farmOf(d)!, Date.parse(at), { wet: isWet, pocket: (k) => l.p.get(k) ?? 0 });
-    return data ? { f, data, at } : null;
+    const at = this.b.nextAt(), refused: FarmRefusal[] = [];
+    const data = farmStep(f, me, farmOf(d)!, Date.parse(at), { wet: isWet, pocket: (k) => l.p.get(k) ?? 0, refused: (why) => refused.push(why) });
+    if (refused.length) this.b.io.log?.('farm.refused', { who: me, why: refused[0], n: refused.length, kept: data?.ops.length ?? 0 });
+    return data ? { ok: true, f, data, at } : { ok: false, why: refused[0] ?? 'empty' };
   }
 
   /**

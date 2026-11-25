@@ -5,6 +5,7 @@
 // join it to the phone's own events. Only enums and numbers.
 import { isLogId, isToken, LOG_ACTIONS, LOG_STATUS } from '../../app/src/lib/contract/log.ts';
 import { isRec } from '../../app/src/lib/contract/guards.ts';
+import { FARM_REFUSALS } from '../../app/src/lib/contract/farm.ts';
 import type { StoreCore } from './store.ts';
 import type { Who } from '../../app/src/lib/contract/api.ts';
 
@@ -65,7 +66,9 @@ const RULES: Record<string, string> = {
   'no such spend': 'no_such_spend', 'tent full': 'tent_full', 'layout full': 'layout_full', 'decor full': 'decor_full',
   owned: 'owned', 'pocket short': 'pocket_short', 'wallet short': 'wallet_short', 'no such repeat': 'no_such_repeat',
   'pack full': 'pack_full', 'pack owner': 'pack_owner', 'wedding full': 'wedding_full', 'wedding parent': 'wedding_parent', 'profile locked': 'profile_locked',
-  'reward paid': 'reward_paid'
+  'reward paid': 'reward_paid',
+  // (a farm batch refused whole, by its first op's reason: contract/farm.ts farmRefusal)
+  ...Object.fromEntries(FARM_REFUSALS.map((w) => [`farm ${w}`, w]))
 };
 
 /** One refusal as a rule: `<type>.<rule or code>`. */

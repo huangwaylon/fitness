@@ -98,10 +98,12 @@ export const needsWater = (pl: Plot, now: number): boolean => !pl.w && !isRipe(p
 export interface Farm { plots: Map<string, Plot>; net: Partial<Record<Who, Map<string, number>>> }
 export const emptyFarm = (): Farm => ({ plots: new Map(), net: {} });
 
-/** What the record judges a new op by: the wet days and the sender's pocket before the batch. */
-interface FarmJudge { wet: WetDay; pocket(key: string): number }
+/** What the record judges a new op by: the wet days and the sender's pocket before the batch; `refused`, told each op
+ *  dropped and why (the record's log). */
+interface FarmJudge { wet: WetDay; pocket(key: string): number; refused?: (why: FarmRefusal) => void }
 
-export type FarmRefusal = 'taken' | 'seed' | 'empty' | 'ripe' | 'watered' | 'unripe';
+export const FARM_REFUSALS = ['taken', 'seed', 'empty', 'ripe', 'watered', 'unripe'] as const;
+export type FarmRefusal = (typeof FARM_REFUSALS)[number];
 
 /** Why the record refuses this op at `now`, or null: `taken` (a plant there: the first in server order keeps the
  *  plot), `seed` (none in the pocket), `empty` (no plant), `ripe` / `watered` (a watering that can't count),
@@ -130,7 +132,11 @@ export function farmStep(f: Farm, who: Who, data: FarmData, at: number, judge?: 
   const pocket = (k: string) => (judge ? judge.pocket(k) : Infinity) + (f.net[who]?.get(k) ?? 0) - (at0.get(k) ?? 0);
   for (const op of data.ops) {
     const why = farmRefusal(f, at, op, pocket);
-    if (why && (judge || why === 'taken' || why === 'empty')) continue;
+    if (why && judge) {
+      judge.refused?.(why);
+      continue;
+    }
+    if (why === 'taken' || why === 'empty') continue;
     const pl = f.plots.get(op.p);
     if (op.o === 'plant') {
       f.plots.set(op.p, { c: op.c, t: at + FARM.growMs });

@@ -367,6 +367,8 @@
   "world.farm.planted": "Planted {n} {name}",
   "world.farm.water": "Watered {n}: {k} each when ripe",
   "world.farm.dig": "Dig up",
+  "world.farm.changed": "The field had changed! Have a look at it now",
+  "world.farm.seedGone": "No start was left to plant!",
   "farm.orphans": "{n} plants off the field",
   "farm.orphansDig": "Back to starts",
   "farm.dugBack": "{n} plants back to starts",

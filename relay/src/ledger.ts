@@ -86,11 +86,12 @@ export class LedgerStore {
     return this.sql.exec('SELECT 1 AS x FROM ledger WHERE who = ? AND part = ?', ...FIELD).toArray().length > 0;
   }
 
-  /** The field as a reply carries it: when written this request (`written`), or changed after `since`; else none. */
-  fieldWire(opts: { written?: ReadonlySet<string>; since?: string }): FieldWire | undefined {
-    if (opts.written && !opts.written.has(FIELD.join('|'))) return undefined;
-    const r = this.sql.exec<{ seq: number; at: string; v: string }>('SELECT seq, at, v FROM ledger WHERE who = ? AND part = ? AND at > ?', ...FIELD, opts.since ?? '').toArray()[0];
-    return r ? { seq: r.seq, at: r.at, v: JSON.parse(r.v) as unknown } : undefined;
+  /** The field as a reply carries it: changed after `since` ('' = always), or whatever its change, when its `seq` isn't
+   *  the one the phone holds (`heldSeq`: a cache that never took the field, one from before 2026-11-25, gets it though
+   *  its `since` is past the field's last change); else none. */
+  fieldWire(since = '', heldSeq?: number): FieldWire | undefined {
+    const r = this.sql.exec<{ seq: number; at: string; v: string }>('SELECT seq, at, v FROM ledger WHERE who = ? AND part = ?', ...FIELD).toArray()[0];
+    return r && (r.at > since || (heldSeq !== undefined && r.seq !== heldSeq)) ? { seq: r.seq, at: r.at, v: JSON.parse(r.v) as unknown } : undefined;
   }
 
   /** Whether `who` has a ledger kept. */

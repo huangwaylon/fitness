@@ -337,6 +337,19 @@ describe('snapshot cache', () => {
     expect(second.ok && second.cache.rows.metrics).toHaveLength(2);
     expect((await loadCache())?.since).toBe('2026-11-02T04:00:00.000Z');
   });
+  it('a poll says the stored field\'s `seq` it holds (0: none), so a cache that never took the field gets it (2026-11-25)', async () => {
+    const field = { seq: 3, at: '2026-11-02T00:30:00.000Z', v: [['fd:f.0.0', { c: 'tomato', t: 1 }]] };
+    let withField = false;
+    handler = (b) => ({ ok: true, me: 'A', now: '2026-11-02T02:00:00.000Z', rows: b.since ? { metrics: [], events: [] } : rowsA(), ledgers: {}, ...(withField ? { field } : {}) });
+    await refreshSnapshot();
+    expect(calls[0]).not.toHaveProperty('fseq'); // a whole fetch: everything, the field too
+    await refreshSnapshot();
+    expect(calls[1]).toMatchObject({ since: '2026-11-02T01:00:00.000Z', fseq: 0 });
+    withField = true;
+    expect((await refreshSnapshot()).ok && (await loadCache())?.field).toEqual(field);
+    await refreshSnapshot();
+    expect(calls[3]).toMatchObject({ fseq: 3 });
+  });
   it('overlapping refreshes share one request, so neither merges from a stale cache', async () => {
     handler = () => ({ ok: true, me: 'A', now: '2026-11-02T02:00:00.000Z', rows: rowsA() });
     const [x, y] = await Promise.all([refreshSnapshot(), refreshSnapshot()]);

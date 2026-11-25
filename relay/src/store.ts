@@ -287,6 +287,9 @@ export class StoreCore {
       if (!isPageSize(body.page) || after === undefined) return fail('bad_request');
       page = { limit: body.page, after };
     } else if (body.after !== undefined) return fail('bad_request');
+    // the stored field's `seq` the phone holds (0: none; absent: an app from before 2026-11-25, by `since` alone)
+    if (body.fseq !== undefined && !(Number.isInteger(body.fseq) && (body.fseq as number) >= 0)) return fail('bad_request');
+    const fseq = body.fseq as number | undefined;
     // every row but, for the guest, the body data (contract/guest.ts rowsFor)
     // (and the かいがら: the relay's wallets, the phones' number since 2026-11-18, walletsFor; with a first fetch or
     // rows only, as a wallet moves only with a row kept, so a poll with nothing new still reads nothing; read before
@@ -296,8 +299,8 @@ export class StoreCore {
     // read with its rows, so a part is never older than a row the fetch brought; always there, if empty: a reply
     // without it is an older relay's, and the phones fold the rows again)
     const ledgers = (): Rec => {
-      // (and the stored field, when it changed since: ledger.ts fieldWire)
-      const field = this.ledger.fieldWire({ since });
+      // (and the stored field, when it changed since or isn't the one the phone holds, `fseq`: ledger.ts fieldWire)
+      const field = this.ledger.fieldWire(since, fseq);
       return { ledgers: this.ledger.wire(undefined, since), ...(field ? { field } : {}) };
     };
     const head = () => ({ ok: true, me, now: new Date(this.io.now()).toISOString(), rev: this.base.rev() });
@@ -426,7 +429,7 @@ export class StoreCore {
     if (r.ok && r.at) this.io.notify({ what: 'event', who: me, at: r.at, rev: this.base.rev(), ...(this.sid ? { sid: this.sid } : {}), ...(calmType(body.type) ? { calm: true } : {}) });
     const { at: _at, ...reply } = r;
     const touched = walletsTouched(me, [body]);
-    return { ...reply, ...(touched.size ? { wallets: this.shop.walletsFor(me, touched) } : {}), ...this.shop.ledgersMoved(touched) };
+    return { ...reply, ...(touched.size ? { wallets: this.shop.walletsFor(me, touched) } : {}), ...this.shop.ledgersMoved(touched, body.type === 'farm') };
   }
 
   /**
@@ -460,7 +463,7 @@ export class StoreCore {
     if (last) this.io.notify({ what: 'event', who: me, at: last, rev: this.base.rev(), ...(this.sid ? { sid: this.sid } : {}), ...(calm ? { calm: true } : {}) });
     // (the wallets the batch may have moved, kept or refused: a phone keeps each one's highest `seq`)
     const touched = walletsTouched(me, list);
-    return { ok: true, results, ...(touched.size ? { wallets: this.shop.walletsFor(me, touched) } : {}), ...this.shop.ledgersMoved(touched) };
+    return { ok: true, results, ...(touched.size ? { wallets: this.shop.walletsFor(me, touched) } : {}), ...this.shop.ledgersMoved(touched, list.some((e) => isRec(e) && e.type === 'farm')) };
   }
 
   /** One event of a batch kept as `keep` would; a write that throws is `unavailable` (its transaction rolled back, its
@@ -629,12 +632,11 @@ export class StoreCore {
       if (type === 'tally') kept = this.books.tallyKept(me, data);
       if (type === 'island') kept = this.books.islandKept(me, data);
       // the field: the ops it allows at the row's `at`, a harvest at the record's yield (contract/farm.ts farmStep); none:
-      // refused
-      const farm = type === 'farm' ? this.shop.farmKept(me, data) : null;
-      if (type === 'farm') {
-        if (!farm) return fail('bad_request', 'farm refused');
-        kept = JSON.stringify(farm.data);
-      }
+      // refused, by the first op's reason (`farm taken`: the ack carries the field as it is, ledgersMoved)
+      const judged = type === 'farm' ? this.shop.farmKept(me, data) : null;
+      if (judged && !judged.ok) return fail('bad_request', `farm ${judged.why}`);
+      const farm = judged?.ok ? judged : null;
+      if (farm) kept = JSON.stringify(farm.data);
       // what's given back of a day (a claim race lost after its tally came in): only grows, and only what that day's
       // tally holds (contract/tally.ts backCovered)
       if (type === 'tally_back') {

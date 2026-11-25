@@ -466,9 +466,11 @@ type SnapshotOk = Extract<SnapshotReply, { ok: true }>;
  * The snapshot after `since` (null: everything), every page of it (docs/backend.md#api: `page`, the reply's `next` as
  * the next `after`), as one reply: the pages' rows together, the last page's `now`. Nothing is applied until all of
  * them are in, so a fetch that fails midway leaves the cache as it was; a new epoch between two pages starts over,
- * whole. A record from before paging answers every row at once (no `next`).
+ * whole. A record from before paging answers every row at once (no `next`). `fseq`: the stored field's `seq` the cache
+ * holds (0: none), so the relay sends the field whenever it's another, whatever `since` says (a cache from before the
+ * field was served, 2026-11-25: its `since` past the field's last change, it never heard of it).
  */
-async function fetchPages(since: string | null): Promise<ApiResult<SnapshotOk & { whole: boolean }>> {
+async function fetchPages(since: string | null, fseq = 0): Promise<ApiResult<SnapshotOk & { whole: boolean }>> {
   let from = since;
   for (let attempt = 0; attempt < 2; attempt++, from = null) {
     const metrics: SnapshotRows['metrics'] = [], events: SnapshotRows['events'] = [];
@@ -476,7 +478,7 @@ async function fetchPages(since: string | null): Promise<ApiResult<SnapshotOk & 
     const seen = new Set<string>();
     let n = 0;
     for (; n < RUNAWAY_PAGES; n++) {
-      const r = await post<SnapshotOk>('snapshot', { ...(from ? { since: from } : {}), page: SNAPSHOT_PAGE, ...(after ? { after } : {}) });
+      const r = await post<SnapshotOk>('snapshot', { ...(from ? { since: from, fseq } : {}), page: SNAPSHOT_PAGE, ...(after ? { after } : {}) });
       if (!r.ok) return r;
       // a new epoch (or another person) under the fetch: over again, whole
       if (first && (r.rev !== first.rev || r.me !== first.me)) break;
@@ -506,7 +508,7 @@ async function fetchAndMerge(clientNow: () => number): Promise<ApiResult<{ cache
   const prev = await loadCache();
   const me = getStoredMe();
   const since = prev && (!me || prev.me === me) ? prev.since : null;
-  let r = await fetchPages(since);
+  let r = await fetchPages(since, prev?.field?.seq);
   // Start over when the record is in another epoch than these rows were cached in (a restore), or when the key answers for someone
   // else: a `since` page merged into nothing would pass for the whole history.
   const stale = r.ok && since && prev && (r.whole || r.rev !== prev.rev || r.me !== prev.me);

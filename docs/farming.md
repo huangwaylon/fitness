@@ -21,10 +21,14 @@ stock; pumpkin colour is visual only; no fruit trees (the goal trees' fruit mean
 - **`farm`** `{ops}` (an older build's `{d, ops}`: `d` dropped), 1–40 ops batched on the phone (2 s, 4 s for undoable
   ones): `plant {p, c, src: 'start'|'crop'}` on an empty plot, paid from the sender's pocket; `water {p}` on a growing,
   unwatered plant; `harvest {p, n}` of a ripe plant (the record reckons the yield, to the harvester); `dig {p}` (its
-  start to the digger). Time is the row's `at`. Refused ops are dropped; none left: `farm refused`.
+  start to the digger). Time is the row's `at`. Refused ops are dropped (logged `farm.refused`); none left: `farm <reason>` (`farm taken`, `farm seed`, …).
 - **Plots** `fd:<fieldId>.<col>.<row>`, a plant `{c, t, r?, w?}`: ripe-at ms, growing back, watered this growth. A plant
   off any field is kept, not drawn, until anyone's 苗に戻す in the shop digs it (never automatic: phones would race).
-- **The stored field**: the record keeps the field folded (`fieldJson`); the phones show it plus their unsent rows.
+- **The stored field**: the record keeps the field folded (`fieldJson`); the phones show it plus their unsent rows. It
+  reaches every phone: a snapshot's when it changed or isn't the `seq` the phone holds (`fseq`), and every farm ack's.
+- **A refusal** (someone's plant there, my other phone's planting): the ack's field and pocket replace the phone's at
+  once (else a fetch), and a word, はたけが かわってた (なえが もう なかった for a start gone), never the generic
+  "try again"; the next tap acts on the record's field (`e2e/farm-record.spec.ts`).
 - **Rain**: the record writes one `wet` row a wet day from the room's weather cron (`real` mode: a wet hour in the
   timeline; `game` mode: `contract/wet.ts gameWet`). Phones never write it.
 - **The pocket** folds tallies, harvests, digs, plants, buys and sells alike in the record's ledger and `model/shop.ts`.

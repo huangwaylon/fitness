@@ -24,8 +24,10 @@ describe('the shared field in the record', () => {
   let store: StoreCore;
   let db: ReturnType<typeof memSql>;
   /** The object's start (a deploy, a rollback, a wake) over the same rows. */
-  const start = () => { store = new StoreCore({ sql: db.sql, tx: db.tx, keys: { KEY_A, KEY_B, KEY_C }, now: () => (now += 10), notify: () => {} }); };
+  let logged: [string, Record<string, unknown>][] = [];
+  const start = () => { store = new StoreCore({ sql: db.sql, tx: db.tx, keys: { KEY_A, KEY_B, KEY_C }, now: () => (now += 10), notify: () => {}, log: (e, d) => void logged.push([e, d]) }); };
   beforeEach(() => {
+    logged = [];
     now = T0;
     db = memSql();
     start();
@@ -74,8 +76,8 @@ describe('the shared field in the record', () => {
 
   it('plants what the sender’s pocket holds on an empty plot; a refused op is dropped, the rest kept; ripe FARM.growMs after the row', () => {
     starts('A', 'tomato', 1);
-    expect(farm('A', plant(P1, 'carrot'))).toEqual(refused('farm refused')); // no carrot start
-    expect(farm('B', plant(P1))).toEqual(refused('farm refused')); // B has none: A's are A's
+    expect(farm('A', plant(P1, 'carrot'))).toEqual(refused('farm seed')); // no carrot start
+    expect(farm('B', plant(P1))).toEqual(refused('farm seed')); // B has none: A's are A's
     expect(farm('A', plant(P1), plant(P2))).toEqual({ ok: true }); // one start: the second refused
     expect(rows()).toEqual([{ ops: [plant(P1)] }]);
     const at = Date.parse(snap().rows.events.filter((r: unknown[]) => r[3] === 'farm')[0][0]);
@@ -89,14 +91,14 @@ describe('the shared field in the record', () => {
     starts('A', 'tomato', 1);
     expect(send('A', 'farm', { d: '2026-09-01', ops: [plant(P1)] })).toEqual({ ok: true });
     expect(rows()).toEqual([{ ops: [plant(P1)] }]);
-    expect(send('A', 'farm', { d: '2026-12-31', ops: [harvest(P1)] })).toEqual(refused('farm refused')); // unripe now
+    expect(send('A', 'farm', { d: '2026-12-31', ops: [harvest(P1)] })).toEqual(refused('farm unripe')); // unripe now
   });
 
   it('shared plots: B harvests A’s plant (the produce B’s), anyone waters, G digs it up (the start G’s)', () => {
     starts('A', 'tomato', 1);
     farm('A', plant(P1));
     expect(farm('B', water(P1))).toEqual({ ok: true });
-    expect(farm('G', water(P1))).toEqual(refused('farm refused')); // watered already
+    expect(farm('G', water(P1))).toEqual(refused('farm watered')); // watered already
     expect(plot(P1).w).toBe(true);
     now = plot(P1).t;
     expect(farm('B', harvest(P1))).toEqual({ ok: true });
@@ -109,7 +111,7 @@ describe('the shared field in the record', () => {
     expect(field().has(P1)).toBe(false);
     expect(sell('G', 'goods:tomato-start', 1)).toEqual({ ok: true });
     expect(sell('A', 'goods:tomato-start', 1)).toEqual(refused('pocket short'));
-    expect(farm('A', dig(P1))).toEqual(refused('farm refused')); // empty
+    expect(farm('A', dig(P1))).toEqual(refused('farm empty')); // empty
     expect(store.shopCheck()).toEqual({ ok: true, farm: 'same' });
     expect(store.ledgerCheck().drift).toEqual([]);
   });
@@ -118,7 +120,7 @@ describe('the shared field in the record', () => {
     starts('A', 'tomato', 1);
     starts('B', 'potato', 1);
     expect(farm('A', plant(P1))).toEqual({ ok: true });
-    expect(farm('B', plant(P1, 'potato'))).toEqual(refused('farm refused'));
+    expect(farm('B', plant(P1, 'potato'))).toEqual(refused('farm taken'));
     expect(sell('B', 'goods:potato-start', 1)).toEqual({ ok: true });
   });
 
@@ -133,7 +135,7 @@ describe('the shared field in the record', () => {
     farm('A', plant(P1));
     const t = plot(P1).t;
     now = t - 1000;
-    expect(farm('A', harvest(P1))).toEqual(refused('farm refused'));
+    expect(farm('A', harvest(P1))).toEqual(refused('farm unripe'));
     now = t;
     expect(farm('A', harvest(P1))).toEqual({ ok: true });
     expect(rows().at(-1).ops[0].n).toBe(1);
@@ -141,7 +143,7 @@ describe('the shared field in the record', () => {
     expect(t2 - now).toBeLessThanOrEqual(FARM.growMs);
     expect(t2 - now).toBeGreaterThan(FARM.growMs - 1000);
     now = t2 - 1000;
-    expect(farm('A', harvest(P1))).toEqual(refused('farm refused'));
+    expect(farm('A', harvest(P1))).toEqual(refused('farm unripe'));
     now = t2;
     expect(farm('A', harvest(P1))).toEqual({ ok: true });
     expect(sell('A', 'goods:tomato', 2)).toEqual({ ok: true });
@@ -155,7 +157,7 @@ describe('the shared field in the record', () => {
     expect(farm('A', water(P1), water(P1))).toEqual({ ok: true });
     expect(rows().at(-1)).toEqual({ ops: [water(P1)] }); // the second dropped
     now = plot(P1).t;
-    expect(farm('B', water(P2))).toEqual(refused('farm refused')); // ripe
+    expect(farm('B', water(P2))).toEqual(refused('farm ripe')); // ripe
     expect(farm('A', harvest(P1), harvest(P2), harvest(P3))).toEqual({ ok: true });
     expect(rows().at(-1).ops.map((o: { n: number }) => o.n)).toEqual([3, 1, 1]);
     // growing back: watered anew
@@ -194,7 +196,7 @@ describe('the shared field in the record', () => {
     starts('G', 'carrot', 1);
     farm('G', plant(P1, 'carrot'), water(P1));
     now = plot(P1).t;
-    expect(farm('B', plant(P2, 'carrot', 'crop'))).toEqual(refused('farm refused')); // B has no carrot
+    expect(farm('B', plant(P2, 'carrot', 'crop'))).toEqual(refused('farm seed')); // B has no carrot
     expect(farm('G', harvest(P1), plant(P2, 'carrot', 'crop'))).toEqual({ ok: true }); // the vegetable replanted
     expect(sell('G', 'goods:carrot', 2)).toEqual({ ok: true });
     expect(sell('G', 'goods:carrot', 1)).toEqual(refused('pocket short'));
@@ -224,7 +226,7 @@ describe('the shared field in the record', () => {
     expect(store.shopCheck({ fix: true })).toMatchObject({ farm: 'differs' });
     expect(store.shopCheck()).toMatchObject({ farm: 'same' });
     expect(store.ledgerCheck().drift).toEqual([]);
-    expect(farm('A', plant(P2))).toEqual(refused('farm refused')); // taken
+    expect(farm('A', plant(P2))).toEqual(refused('farm taken')); // taken
   });
 
   it('the deploy: the old relay’s field ({p, n}, day-based, owners) and its key are dropped and the rows folded at once under the new rules, each at its `at`', () => {
@@ -272,7 +274,7 @@ describe('the shared field in the record', () => {
     start();
     expect(snap().field.seq).toBe(seq + 1);
     expect(field().size).toBe(0);
-    expect(farm('A', harvest(P1))).toEqual(refused('farm refused'));
+    expect(farm('A', harvest(P1))).toEqual(refused('farm empty'));
     expect(store.shopCheck()).toMatchObject({ farm: 'same' });
   });
 
@@ -312,6 +314,44 @@ describe('the shared field in the record', () => {
     expect(after.events).toEqual(before.events.filter((r) => !gone(r)));
     expect(typed('island').map((d) => d.date)).toEqual([D1]);
     expect(store.shopCheck()).toEqual({ ok: true, farm: 'same' });
+  });
+
+  // 2026-11-25 (the user: "planted, it was removed and I was told to try again, over and over"): a phone whose cache
+  // came from before the field was served had its `since` past the field's last change, so no snapshot carried it; it
+  // showed every plot empty and planted on taken ones, and a refused op's ack carried nothing to show the truth.
+  it('a phone that never took the field gets it by its `fseq`; a refused batch says why and its ack carries the field and the pocket', () => {
+    starts('A', 'pumpkin', 2);
+    expect(farm('A', plant(P1, 'pumpkin'))).toEqual({ ok: true });
+    const sf = snap().field;
+    // (a later row moves the phone's `since` past the field's change)
+    shells('B', 1);
+    const since = snap().now as string;
+    const poll = (o: object = {}) => store.handle({ key: KEY_A, action: 'snapshot', since, ...o }, 10) as Record<string, any>;
+    expect(poll().field).toBeUndefined(); // an older app: by `since` alone, as before
+    expect(poll({ fseq: 0 }).field).toEqual(sf); // a cache without the field
+    expect(poll({ fseq: sf.seq - 1 }).field).toEqual(sf); // an older one
+    expect(poll({ fseq: sf.seq }).field).toBeUndefined(); // the one it holds: nothing to send
+    expect(store.handle({ key: KEY_A, action: 'snapshot', since, fseq: -1 }, 10)).toEqual({ ok: false, error: 'bad_request' });
+    expect(poll({ fseq: 0, page: 10 }).field).toEqual(sf); // paged: on the last page
+
+    // the plot is taken: refused whole, by its reason, logged; the ack the field and A's pocket as the record has them
+    logged = [];
+    const r = store.handle({ key: KEY_A, action: 'events', events: [{ id: 'x1', type: 'farm', data: { ops: [plant(P1, 'pumpkin')] } }] }, 100) as Record<string, any>;
+    expect(r.results).toEqual([{ id: 'x1', ok: false, error: 'bad_request', detail: 'farm taken' }]);
+    expect(r.field).toEqual(sf);
+    expect(r.ledgers.A.hp.v.p).toEqual([['goods:pumpkin-start', 1]]);
+    expect(logged).toEqual([['farm.refused', { who: 'A', why: 'taken', n: 1, kept: 0 }]]);
+    // (one `event` alike)
+    const one = store.handle({ key: KEY_A, action: 'event', id: 'x2', type: 'farm', data: { ops: [plant(P1, 'pumpkin')] } }, 100) as Record<string, any>;
+    expect([one.detail, one.field]).toEqual(['farm taken', sf]);
+    // kept in part: logged, the ack carries the new field
+    logged = [];
+    const part = store.handle({ key: KEY_A, action: 'events', events: [{ id: 'x3', type: 'farm', data: { ops: [plant(P1, 'pumpkin'), plant(P2, 'pumpkin')] } }] }, 100) as Record<string, any>;
+    expect(part.results).toEqual([{ id: 'x3', ok: true, at: expect.any(String) }]);
+    expect(part.field.seq).toBe(sf.seq + 1);
+    expect(logged).toEqual([['farm.refused', { who: 'A', why: 'taken', n: 1, kept: 1 }]]);
+    // a batch without a farm event carries no field
+    expect(store.handle({ key: KEY_A, action: 'events', events: [{ id: 'x4', type: 'tally', data: { date: D, counts: { 'bug:common-butterfly': 9 } } }] }, 100)).not.toHaveProperty('field');
   });
 
   it('an island day before yesterday is refused (the record keeps only yesterday\'s, today\'s and tomorrow\'s)', () => {

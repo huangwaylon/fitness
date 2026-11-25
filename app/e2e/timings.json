@@ -228,6 +228,8 @@
  "exact-taps.spec.ts › the tent: a tap on the room beside its back button stays in the room, a tap on the button leaves": 9668,
  "exact-taps.spec.ts › user island, the camera at its far stop: a tap on the sea beside a find by the back beach casts, a tap on it picks it up": 10994,
  "exact-taps.spec.ts › user island, the camera at its far stop: a tap on the water beside a building casts": 12262,
+ "farm-record.spec.ts › a cache that never took the field (an older build’s) gets it: うめ’s plants show, a tap waters them, never a refused plant": 12000,
+ "farm-record.spec.ts › a plot planted meanwhile: the record refuses my plant, the phone shows its field at once and says so, and the next tap waters it": 11000,
  "farm-request.spec.ts › Chip wants a carrot: his caption, and a tap with one in my pocket hands it over (one sold at 18, his garden piece a find)": 9316,
  "farm-request.spec.ts › Franklin on Turkey Day asks for ウェイ’s pumpkin with his fish, and cooks it when handed over": 4613,
  "farm-request.spec.ts › without the vegetable: the ask, then a kind word, nothing sent": 6380,

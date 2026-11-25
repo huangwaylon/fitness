@@ -75,9 +75,9 @@ preflight), `{key, action, ...}`. Always HTTP 200: `{ok:true, ...}` or `{ok:fals
 | `action` | Request | Reply |
 |---|---|---|
 | `ingest` | Shortcut fields ([Ingest](#ingest)) | `{ok, metrics, skipped?, warnings?}` |
-| `event` | `id, type, data` | `{ok, duplicate?, wallets?}` (a repeated `id` is a duplicate: retries are safe) |
-| `events` | `events: [{id, type, data, group?}]` (≤ `EVENTS_MAX`, group ≤ `GROUP_MAX`) | `{ok, results, wallets?}` |
-| `snapshot` | `since?`, `page?` (≤ `SNAPSHOT_PAGE_MAX`), `after?` | `{ok, me, now, rev, rows, next?, wallets?, ledgers?}` |
+| `event` | `id, type, data` | `{ok, duplicate?, wallets?, ledgers?, field?}` (a repeated `id` is a duplicate: retries are safe) |
+| `events` | `events: [{id, type, data, group?}]` (≤ `EVENTS_MAX`, group ≤ `GROUP_MAX`) | `{ok, results, wallets?, ledgers?, field?}` |
+| `snapshot` | `since?`, `fseq?`, `page?` (≤ `SNAPSHOT_PAGE_MAX`), `after?` | `{ok, me, now, rev, rows, next?, wallets?, ledgers?, field?}` |
 | `uploads` / `whoami` / `health` | (`health`: no key) | last 20 audit rows / `{me, build}` / `{build}` |
 
 <a id="groups"></a>A **group** (the shop's 全部, a room's change) commits all or none (`detail: 'group'`).
@@ -142,7 +142,11 @@ and tab (`dev`; 4002 replaces it). Ops merge commutatively per id.
   rows per person and part (`hp` かいがら + pocket, `w` pieces, `g` games, `z` ずかん; `F|field` plots) with `seq`,
   stepped by each op in its transaction, never below 0; `ledger_log` 60 days; `ledgercheck` at 03:00. `F|field` is
   always the fold of the `farm` rows (each at its `at`); meta `farm|t6h` marks it this relay's rules': another key at
-  the start (older rules, a rollback) refolds it at once, its `seq` rising.
+  the start (older rules, a rollback) refolds it at once, its `seq` rising. A snapshot carries it when it changed after
+  `since` or its `seq` isn't the phone's `fseq` (0: none held; a cache from before 2026-11-25 never took it); an ack
+  carries it after any `farm` event, kept or refused, with the sender's `hp` (the phone shows the field it was judged
+  on). A `farm` refused whole says its first op's reason (`farm taken` · `seed` · `empty` · `ripe` · `watered` ·
+  `unripe`: the `req` log's `why=farm.taken`); any op dropped logs `farm.refused {who, why, n, kept}`.
 - **Snapshot size:** a year of three is ~50–100k rows (3–6 MB): paged.
 - **Restore:** `/api` is `unavailable` until the restart; a new epoch. Backups: [runbook §6](ops/runbook.md#6-backups).
 

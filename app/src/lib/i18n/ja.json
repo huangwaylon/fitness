@@ -367,6 +367,8 @@
   "world.farm.planted": "{name}を {n}かぶ うえた",
   "world.farm.water": "{n}かぶに みずやり・{k}こ みのる",
   "world.farm.dig": "ほる",
+  "world.farm.changed": "はたけが かわってた！ いまの はたけを みてね",
+  "world.farm.seedGone": "なえが もう なかった！",
   "farm.orphans": "畑の外の株 {n}株",
   "farm.orphansDig": "苗に戻す",
   "farm.dugBack": "{n}株を苗に戻しました",

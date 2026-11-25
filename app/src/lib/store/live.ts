@@ -448,9 +448,17 @@ export class LiveBackend implements Backend {
       // a `listen` row refused, by a relay from before its fields: no toast;
       // a buy of a piece I have already, my other phone's: nothing lost, no toast;
       // 英語すごろく's reward of a game already paid, another phone's: nothing lost)
+      // a farm batch the record refused (the field or my pocket wasn't as this phone showed: someone's plant there, my
+      // other phone's planting): never "try again", the field as it is now instead (the ack's `field` and pocket, or a
+      // fetch for them), and its word;
       const short = (ev: (typeof r.dropped)[number]) => (ev.type === 'buy' || ev.type === 'buy_starts') && ev.detail === 'wallet short';
+      const farm = r.dropped.filter((ev) => ev.type === 'farm');
       if (r.dropped.some(short)) toasts.show(t('shop.buyRefused'), undefined, { code: 'buy-refused', reaction: 'sheepishness' });
-      if (r.dropped.some((ev) => !short(ev) && ev.type !== 'listen' && ev.type !== 'sg_reward' && !(ev.type === 'buy' && ev.detail === 'owned'))) toasts.show(t('state.saveFailed'), undefined, { code: 'save-failed', reaction: 'sheepishness' });
+      if (farm.length) {
+        toasts.show(t(farm.every((ev) => ev.detail === 'farm seed') ? 'world.farm.seedGone' : 'world.farm.changed'), undefined, { code: 'farm-refused', reaction: 'surprise' });
+        if (!r.field) void this.refresh({ fresh: true });
+      }
+      if (r.dropped.some((ev) => !short(ev) && ev.type !== 'farm' && ev.type !== 'listen' && ev.type !== 'sg_reward' && !(ev.type === 'buy' && ev.detail === 'owned'))) toasts.show(t('state.saveFailed'), undefined, { code: 'save-failed', reaction: 'sheepishness' });
       this.#host.changed();
     }
     if (r.error === 'unauthorized') {

@@ -293,6 +293,14 @@ describe('/api’s req meta', () => {
     expect(JSON.parse(a.body).results[0]).toMatchObject({ ok: false, error: 'bad_request', detail: 'reward paid' });
   });
 
+  it('a farm batch refused whole: its first op\'s reason by name (2026-11-25: logged farm.bad_request alone)', () => {
+    const s = store();
+    const call = (o: object) => apiWithMeta(s, JSON.stringify(o), roleOf);
+    const dig = call({ key: KEY_A, action: 'events', events: [{ id: 'f1', type: 'farm', data: { ops: [{ o: 'dig', p: 'fd:field.0.0' }] } }] });
+    expect(dig.meta).toMatchObject({ n: 1, rej: 1, why: 'farm.empty' });
+    expect(call({ key: KEY_A, action: 'event', id: 'f2', type: 'farm', data: { ops: [{ o: 'plant', p: 'fd:field.0.0', c: 'tomato', src: 'start' }] } }).meta).toMatchObject({ st: 'bad_request', why: 'farm.seed' });
+  });
+
   it('the rows the record wrote and read for it (the cursors\' counts, as Durable Objects give them)', () => {
     const inner = memSql().sql;
     // node:sqlite's cursors count nothing: each statement here says it wrote 2 rows and read 3
