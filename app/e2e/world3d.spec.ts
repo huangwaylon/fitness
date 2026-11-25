@@ -303,6 +303,10 @@ test("the launch's programs linked ahead: a second launch makes the first's set 
   }));
   await page.goto(`?${Q}`);
   await ready(page);
+  // (the cache is the parallel compile's: without KHR_parallel_shader_compile, CI's software GL, nothing is linked
+  // ahead or kept, by design (engine.ts `progsKept`); the phones' WebKit/Metal has it)
+  const parallel = await page.evaluate(() => !!document.createElement('canvas').getContext('webgl2')?.getExtension('KHR_parallel_shader_compile'));
+  test.skip(!parallel, 'no KHR_parallel_shader_compile (software GL): the program cache is off by design');
   await expect.poll(boot, { timeout: 30_000 }).not.toBeNull();
   expect((await boot())?.progPre).toBe(0);
   // (kept a moment after the island stood whole)

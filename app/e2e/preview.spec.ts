@@ -95,7 +95,7 @@ test('天気: 自動 (Tokyo\'s, its line and credit), ゲーム, or a forced sky
   await islandUp(page);
   await fromMenu(page, 'settings');
   await unfold(page);
-  await expect(page.locator('dialog[open] h3', { hasText: '天気' })).toHaveCount(1);
+  await expect(page.locator('dialog[open]').getByRole('heading', { name: '天気', level: 4 })).toHaveCount(1);
   const sec = page.locator('[data-weather-section]');
   await expect(sec.locator('[data-preview="weather:auto"]')).toHaveAttribute('aria-checked', 'true');
   await expect(sec.locator('[data-wx-credit]')).toBeVisible();
