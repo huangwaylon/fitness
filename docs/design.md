@@ -361,7 +361,9 @@ seeded by the date), the same on every phone; each phone greets it once (a spark
 
 ### Pond
 
-`world/pondFish.ts`: fresh-water fish by where you cast.
+`world/pondFish.ts`: fresh-water fish by where you cast, NH's waters; the rare river fish (weight ≤ 0.4: golden trout,
+stringfish, king salmon, arowana, dorado, arapaima, saddled bichir, sturgeon) also stray into the pond at half their odds
+(their own months and hours), about 1–7 % of pond shadows.
 
 ### Zukan
 

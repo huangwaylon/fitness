@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { POND_FISH, freshPool, pickFresh, type PondFishId } from './pondFish.ts';
+import { POND_FISH, RARE_W, freshPool, pickFresh, type PondFishId } from './pondFish.ts';
 import { FISH, IN_SEASON, caption, findKind, oddsAt, pick } from './critters.ts';
 import { mulberry32 } from '#lib/random.ts';
 import ja from '#lib/i18n/catch.ja.json';
@@ -29,13 +29,14 @@ describe('the pond fish (NH freshwater, northern hemisphere)', () => {
   });
   it("by where you cast, NH's locations: the pond's 12 in the pond; the river's 27 in the river, at its mouth and on the clifftop, with the mouth's and the clifftop's own", () => {
     const pond = freshPool('pond'), river = freshPool('river'), mouth = freshPool('mouth'), cliff = freshPool('clifftop');
-    expect(pond.sort()).toEqual(['carp', 'catfish', 'crawfish', 'frog', 'gar', 'giant-snakehead', 'goldfish', 'killifish', 'koi', 'pop-eyed-goldfish', 'ranchu-goldfish', 'tadpole']);
+    expect(pond.filter((id) => POND_FISH[id].water === 'pond').sort()).toEqual(['carp', 'catfish', 'crawfish', 'frog', 'gar', 'giant-snakehead', 'goldfish', 'killifish', 'koi', 'pop-eyed-goldfish', 'ranchu-goldfish', 'tadpole']);
     expect(river).toHaveLength(27);
     expect(river).toContain('crucian-carp'); // NH: a river fish
     expect(river).toContain('soft-shelled-turtle');
     expect(mouth.filter((id) => !river.includes(id)).sort()).toEqual(['king-salmon', 'salmon', 'sturgeon']);
     expect(cliff.filter((id) => !river.includes(id)).sort()).toEqual(['char', 'cherry-salmon', 'golden-trout', 'stringfish']);
-    expect(pond.some((id) => river.includes(id))).toBe(false);
+    // the pond's only river fish are the rare strays
+    expect(pond.filter((id) => river.includes(id) || mouth.includes(id) || cliff.includes(id)).sort()).toEqual(['arapaima', 'arowana', 'dorado', 'golden-trout', 'king-salmon', 'saddled-bichir', 'stringfish', 'sturgeon']);
     // a pick keeps to its water (and someone is always about)
     const r = mulberry32(4);
     for (const wh of ['pond', 'river', 'mouth', 'clifftop'] as const)
@@ -69,6 +70,25 @@ describe('the pond fish (NH freshwater, northern hemisphere)', () => {
     expect((n['crucian-carp'] ?? 0) + (n.carp ?? 0)).toBeGreaterThan(((n['golden-trout'] ?? 0) + (n.stringfish ?? 0)) * 10);
     expect(n['golden-trout']).toBeGreaterThan(0); // rare, still possible
     expect(Math.min(...Object.values(POND_FISH).map((f) => f.weight))).toBe(POND_FISH['golden-trout'].weight);
+  });
+  it('rare fish in the pond too (the user, 2026-11-25): the rare river fish stray in at half their odds, in their own months and hours', () => {
+    const pondOf = (month: number, hour: number, n: number, seed: number) => {
+      const r = mulberry32(seed), out: Partial<Record<PondFishId, number>> = {};
+      for (let i = 0; i < n; i++) { const f = pickFresh('pond', month, hour, r); out[f] = (out[f] ?? 0) + 1; }
+      return out;
+    };
+    const strays = freshPool('pond').filter((id) => POND_FISH[id].water !== 'pond');
+    for (const id of strays) expect(POND_FISH[id].weight, id).toBeLessThanOrEqual(RARE_W);
+    // September nights: the golden trout, the arowana, the sturgeon in season; still a rare few of the pond's shadows
+    const n = 40_000, sep = pondOf(9, 20, n, 11), share = strays.reduce((s, id) => s + (sep[id] ?? 0), 0) / n;
+    for (const id of ['golden-trout', 'arowana', 'sturgeon', 'dorado', 'arapaima'] as const) expect(sep[id], id).toBeGreaterThan(0);
+    expect(share).toBeGreaterThan(0.03), expect(share).toBeLessThan(0.1);
+    expect(sep.carp!).toBeGreaterThan((sep['golden-trout'] ?? 0) * 10);
+    // their hours hold: no saddled bichir (9 pm – 4 am) at noon, no dorado (4 am – 9 pm) at 3 am
+    expect(pondOf(7, 12, 20_000, 12)['saddled-bichir']).toBeUndefined();
+    expect(pondOf(7, 3, 20_000, 13).dorado).toBeUndefined();
+    // seeded: the same rolls bring the same fish on every phone
+    expect(pondOf(11, 20, 2000, 7)).toEqual(pondOf(11, 20, 2000, 7));
   });
   it('a catch is a fish find with its name in both languages', () => {
     for (const id of Object.keys(POND_FISH) as PondFishId[]) {

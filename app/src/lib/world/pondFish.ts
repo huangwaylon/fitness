@@ -1,5 +1,5 @@
 // The fresh-water fish (docs/design.md "Fishing"): NH's 46, each in the water NH keeps it in (world.ts freshWhere): the
-// pond, the river, the river mouth (the wide reach on the west beach) or the clifftop (the falls' pool, the river above the cliff and the
+// pond (with the rare river fish straying in), the river, the river mouth (the wide reach on the west beach) or the clifftop (the falls' pool, the river above the cliff and the
 // spring). Its own chunk, loaded with the first fresh-water shadow (critters.svelte.ts), so the island's first load doesn't
 // carry it; the ずかん's page imports it too. Like the sea fish (critters.ts FISH): NH's northern-hemisphere months only
 // weight the odds (×IN_SEASON), the hours still hold, a low weight is a rare fish. Months, hours, shadows and locations
@@ -62,19 +62,30 @@ export const POND_FISH: Record<PondFishId, Fish & { water: FreshWhere }> = {
   sturgeon: { months: span(9, 3), hours: ALL_DAY, size: 6, weight: 0.4, water: 'mouth' }
 };
 
-/** Who swims in a water, as in NH: the pond holds the pond fish; the river the river fish; the river mouth and the
- *  clifftop are the river too, so their own fish (the salmon, the sturgeon; the char, the golden trout) come with the
- *  river's. */
+/** The rare river fish (the lowest weights: the golden trout, the dorado, the sturgeon, ...) stray into the pond too, at
+ *  STRAY of their odds (their own months and hours), so a pond cast can bring up a rare one (the user, 2026-11-25:
+ *  "make it possible for rare fish to also spawn inside the pond"); NH keeps them to their waters. */
+export const RARE_W = 0.4;
+const STRAY = 0.5;
+const strays = (Object.keys(POND_FISH) as PondFishId[]).filter((id) => POND_FISH[id].water !== 'pond' && POND_FISH[id].weight <= RARE_W);
+
+/** Who swims in a water, as in NH: the pond holds the pond fish and the rare strays; the river the river fish; the river
+ *  mouth and the clifftop are the river too, so their own fish (the salmon, the sturgeon; the char, the golden trout)
+ *  come with the river's. */
 export function freshPool(where: FreshWhere): PondFishId[] {
   return (Object.keys(POND_FISH) as PondFishId[]).filter((id) => {
     const w = POND_FISH[id].water;
-    return w === where || (w === 'river' && (where === 'mouth' || where === 'clifftop'));
+    return w === where || (w === 'river' && (where === 'mouth' || where === 'clifftop')) || (where === 'pond' && strays.includes(id));
   });
 }
 const pools = new Map<FreshWhere, Record<string, Fish>>();
 const poolOf = (where: FreshWhere) => {
   let p = pools.get(where);
-  if (!p) pools.set(where, (p = Object.fromEntries(freshPool(where).map((id) => [id, POND_FISH[id]]))));
+  if (!p) {
+    const own = (id: PondFishId) => where !== 'pond' || POND_FISH[id].water === 'pond';
+    p = Object.fromEntries(freshPool(where).map((id) => [id, own(id) ? POND_FISH[id] : { ...POND_FISH[id], weight: POND_FISH[id].weight * STRAY }]));
+    pools.set(where, p);
+  }
   return p;
 };
 /** The fish under a new shadow in `where` (always someone: the carp and the crucian carp are about all day, all year,
