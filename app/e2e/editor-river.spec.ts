@@ -31,8 +31,9 @@ async function open(page: Page) {
   await expect(page.locator('[data-river-tool]')).toBeVisible();
   await page.waitForFunction(() => (window as unknown as { __river?: unknown }).__river);
 }
-/** A mouse drag from one screen point to another, in eight steps. */
+/** A mouse drag from one screen point to another, in eight steps; it starts on the plan, not under the tool's bars. */
 async function drag(page: Page, a: readonly [number, number], b: readonly [number, number]) {
+  expect(await page.evaluate(([x, y]) => document.elementFromPoint(x, y)?.matches('[data-river-plan]'), a), `the plan at ${a}`).toBe(true);
   await page.mouse.move(a[0], a[1]);
   await page.mouse.down();
   for (let i = 1; i <= 8; i++) await page.mouse.move(a[0] + ((b[0] - a[0]) * i) / 8, a[1] + ((b[1] - a[1]) * i) / 8);
@@ -110,6 +111,9 @@ test('✓ saves the river to the east coast: one burst, the partner has it, the 
   await open(page);
   const kind = (p: Page, c: number, r: number) => p.evaluate(([c, r]) => (window as unknown as { __layout: { kind(c: number, r: number): string } }).__layout.kind(c, r), [c, r] as const);
 
+  // the plan panned up (open ground dragged): the beach at (16, 20) clear of the bar (two rows, three with Linux's fonts)
+  const ground = await tileAt(page, 5, 40);
+  await drag(page, ground, [ground[0], ground[1] - 150]);
   // the staircase's two knots away, the end to the beach at (16, 20), and a knot from the last "+" to (15, 20)
   for (const k of [5, 4]) {
     const at = await knotAt(page, k);
