@@ -3,9 +3,11 @@
 // switch fires only visibilitychange, never pagehide), and a round of もようがえ or the wallet leaves no
 // WebGL context, listener, DOM or ArrayBuffers behind. Measured after forced GCs (e2e/memory.ts, Chromium's CDP, hence
 // @chromium); the post-deploy logic tier (not the gate's set).
-import { expect, test, type Page } from './fixtures.ts';
+import { expect, test, type Browser, type Page } from './fixtures.ts';
 import { BASE, islandUp, loaded3d, nav } from './island.ts';
-import { fromMenu, openRewards } from './hud.ts';
+import { fromMenu, hudMenu, openRewards, unfoldMenu } from './hud.ts';
+import { newIsland } from './liveRoom.ts';
+import { RELAY } from './relay.ts';
 import { roomUp } from './rooms.ts';
 import { hideAndShow, measure, watch, watched, type Probe } from './memory.ts';
 import { newRecord } from './record.ts';
@@ -275,5 +277,137 @@ test('保存した場所’s map opened, searched, a card and a pin, closed, thr
   expect(live.every((n) => n >= 1), "the map's context seen while it is open").toBe(true);
   expect([first.map, after.map], 'map contexts alive after the sheet closed').toEqual([0, 0]);
   expect(after.fonts, "the map's font faces in document.fonts").toBeLessThanOrEqual(first.fonts);
+  flat(first, after);
+});
+
+// The leaf's grid (HudMenu: the NookPhone tiles), unfolded and folded ten times, a tile's sheet opened and closed on
+// every other: its dismiss listeners and the tiles' DOM go with the fold.
+test('the menu grid unfolded and folded ten times: no listener or DOM node left behind', { tag: '@chromium' }, async ({ page }) => {
+  await watch(page);
+  await page.goto(Q);
+  await loaded3d(page);
+  const round = async (i: number) => {
+    if (i % 2) await fromMenu(page, 'settings');
+    else await unfoldMenu(page);
+    await closeAll(page);
+    if ((await hudMenu(page).getAttribute('aria-expanded')) === 'true') await hudMenu(page).click();
+    await expect(hudMenu(page)).toHaveAttribute('aria-expanded', 'false');
+  };
+  await round(0);
+  await round(1);
+  const first = await measure(page);
+  for (let i = 2; i < 10; i++) await round(i);
+  const after = await measure(page);
+  note('the menu grid ×10', first, after);
+  flat(first, after);
+});
+
+/** The page's own warm-up over (a paired phone's ~4 MB of ArrayBuffers in the 1-2 s after islandUp, the island not
+ *  drawn: before it a 5-round test measured the page's loading, not its sheet): two reads 300 ms apart within 0.1 MB. */
+async function warmedUp(page: Page) {
+  let was = -1;
+  await expect.poll(async () => {
+    const ab = (await measure(page)).ab, moved = Math.abs(ab - was);
+    was = ab;
+    return moved;
+  }, { message: 'ArrayBuffers settled', intervals: [300], timeout: 15_000 }).toBeLessThan(0.1);
+}
+
+/** A paired phone on a test island (no 3D: e2e.render none), `watch`ed; `items` on the record as A's. */
+async function todoPhone(browser: Browser, items: { text: string; due?: string }[]) {
+  const island = newIsland();
+  const context = await browser.newContext({ viewport: { width: 393, height: 852 }, locale: 'ja-JP', timezoneId: 'Asia/Tokyo', serviceWorkers: 'block' });
+  await context.addInitScript(() => localStorage.setItem('e2e.render', 'none'));
+  await island.pair(context, 'A');
+  const at = island.now();
+  items.forEach((x, i) => expect(island.event('A', 'todo', { id: `dleak001i${i}`, at: at + 1 + i, text: x.text, ord: i, done: 0, ...(x.due && { due: x.due }) })).toMatchObject({ ok: true }));
+  const page = await context.newPage();
+  await watch(page);
+  await page.goto('');
+  await islandUp(page, { timeout: 20_000 });
+  return { page, context };
+}
+
+// やること's HUD disc and its peek (TodoPeek, its own chunk): opened and shut five times (a tap on the disc, Esc, a tap
+// elsewhere, by turns): the peek's dismiss listeners and its rows go with it.
+test('the やること peek opened and shut five times: no listener or DOM node left behind', { tag: '@chromium' }, async ({ browser }) => {
+  const { page, context } = await todoPhone(browser, [
+    { text: 'ゴミ出し', due: '2026-11-04' }, { text: '区役所', due: '2026-11-02' }, { text: '歯医者', due: '2026-11-05T09:30' }, { text: '日付なし' }
+  ]);
+  const disc = page.locator('[data-hud-disc]'), peek = page.locator('[data-todo-peek]');
+  await expect(disc).toHaveAttribute('data-n', '2');
+  const round = async (i: number) => {
+    await disc.click();
+    await expect(peek.locator('[data-peek-item]')).toHaveCount(3);
+    if (i % 3 === 0) await disc.click();
+    else if (i % 3 === 1) await page.keyboard.press('Escape');
+    else await page.mouse.click(196, 600);
+    await expect(peek).toHaveCount(0);
+    await expect(disc).toHaveAttribute('aria-expanded', 'false');
+  };
+  await warmedUp(page);
+  await round(0);
+  const first = await measure(page);
+  for (let i = 1; i < 5; i++) await round(i);
+  const after = await measure(page);
+  note('the やること peek ×5', first, after);
+  flat(first, after);
+  expect(after.nodes - first.nodes, 'DOM nodes alive (no island drawn: the peek alone)').toBeLessThan(60);
+  await context.close();
+});
+
+// ボット → Jobs, polled (bots/poll.svelte.ts: a read as it mounts, the next pollMs, 60 s, on): the sheet closed stops
+// the loop: its timer cleared, its visibilitychange and online listeners gone, its read aborted. The page's 60 s
+// timeouts (the polls' delay: the app's other long timers are other lengths) counted as they're set, fire or are cleared.
+test('ボット’s Jobs tab, polling, opened and closed four times: its timer and listeners gone with it', { tag: '@chromium' }, async ({ page, context }) => {
+  await context.addInitScript(() => localStorage.setItem('e2e.render', 'none'));
+  await page.addInitScript(() => {
+    const live = new Set<unknown>();
+    const set0 = window.setTimeout, clear0 = window.clearTimeout;
+    window.setTimeout = ((f: TimerHandler, ms?: number, ...a: unknown[]) => {
+      if (ms !== 60_000) return set0(f, ms, ...a);
+      const id = set0((...x: unknown[]) => (live.delete(id), typeof f === 'function' && f(...x)), ms, ...a);
+      live.add(id);
+      return id;
+    }) as typeof setTimeout;
+    window.clearTimeout = ((id?: number) => (live.delete(id), clear0(id))) as typeof clearTimeout;
+    (window as unknown as { __polls: () => number }).__polls = () => live.size;
+  });
+  await watch(page);
+  const rec = newRecord();
+  await rec.pair(context, 'A');
+  let reads = 0;
+  await page.route(/raw\.githubusercontent\.com|gym-bot|its-bot/, (route) => route.abort('blockedbyclient'));
+  await page.route(`${RELAY}/jobs`, (route) => {
+    const req = route.request();
+    const h = { 'Access-Control-Allow-Origin': req.headers().origin ?? '*', 'Access-Control-Allow-Headers': 'Authorization, X-Request-Id' };
+    if (req.method() === 'OPTIONS') return route.fulfill({ status: 204, headers: h });
+    reads++;
+    const now = rec.now();
+    const body = { ok: true, v: 1, now, ext: { at: now, by: 'app', err: null }, jobs: [{ id: 'tick', runs: [{ t: now - 180_000, st: 'ok' }], days: [] }], alerts: [] };
+    return route.fulfill({ status: 200, contentType: 'application/json', headers: h, body: JSON.stringify(body) });
+  });
+  await page.goto('');
+  await islandUp(page);
+  await warmedUp(page);
+  const timers = () => page.evaluate(() => (window as unknown as { __polls: () => number }).__polls());
+  const base = await timers();
+  const closed: number[] = [];
+  const round = async () => {
+    const n = reads;
+    await fromMenu(page, 'bots');
+    await page.locator('dialog[open] [data-bots-tab="jobs"]').click();
+    await expect(page.locator('dialog[open] [data-bots]')).toHaveAttribute('data-tab', 'jobs');
+    await expect.poll(() => reads, { message: 'the tab read /jobs as it mounted' }).toBeGreaterThan(n);
+    await expect.poll(timers, { message: "the poll's next read scheduled" }).toBeGreaterThan(base);
+    await closeAll(page);
+    closed.push(await timers());
+  };
+  await round();
+  const first = await measure(page);
+  for (let i = 0; i < 3; i++) await round();
+  const after = await measure(page);
+  note('ボット → Jobs ×4', first, after);
+  expect([base, ...closed], '60 s timers pending before and after each close (the polls cleared)').toEqual([0, 0, 0, 0, 0]);
   flat(first, after);
 });

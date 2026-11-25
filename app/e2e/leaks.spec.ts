@@ -316,6 +316,46 @@ test.describe('the editor', () => {
   });
 });
 
+// The editor on a phone (≤ 760 px: the plan full-bleed, the top bar's 3D the full-screen preview, off by default): 3D
+// on (its first frame drawn) and off four times. Off, its renderer goes (no WebGL context alive), and its listeners
+// (the window's keys and blur) with it.
+test.describe('the editor on a phone', () => {
+  test.use({ viewport: { width: 393, height: 852 }, hasTouch: true, isMobile: true });
+  test('3D on and off four times: no WebGL context or listener left behind', { tag: '@chromium' }, async ({ page }) => {
+    await watch(page);
+    await page.goto('editor/?demo&date=2026-11-04T12:00');
+    type H = { __editor?: object; __preview3d?: { frames(): number } };
+    await page.waitForFunction(() => !!(window as unknown as H).__editor);
+    await expect(page.locator('[data-editor]')).toHaveAttribute('data-layout', 'phone');
+    const b3d = page.locator('[data-show3d]');
+    const zero = await measure(page);
+    expect(zero.gl, 'no WebGL till 3D is asked for').toBe(0);
+    const seen: number[] = [];
+    const round = async () => {
+      await b3d.click();
+      await expect(page.locator('[data-preview-full]')).toBeVisible();
+      await page.waitForFunction(() => ((window as unknown as H).__preview3d?.frames() ?? 0) > 0, null, { timeout: 60_000 });
+      seen.push((await watched(page)).gl);
+      await b3d.click();
+      await expect(page.locator('[data-preview-full]')).toHaveCount(0);
+    };
+    // (a closed preview's context may outlive it by a beat, under 500 ms, the first's as its lazy chunks settle; a held
+    // one stays: polled, not read once)
+    const none = (what: string) => expect.poll(async () => (await measure(page)).gl, { message: `WebGL contexts alive ${what}`, timeout: 10_000 }).toBe(0);
+    await round();
+    await none('after the first preview');
+    const first = await measure(page);
+    for (let i = 0; i < 3; i++) await round();
+    await none('after four');
+    const after = await measure(page);
+    note('the phone editor, 3D ×4', first, after);
+    expect(seen.every((n) => n >= 1), "the preview's context seen while it shows").toBe(true);
+    expect(after.ls, 'window and document listeners').toBeLessThanOrEqual(first.ls);
+    expect(after.ab - first.ab, 'ArrayBuffers (MB)').toBeLessThan(2);
+    expect(after.nodes - first.nodes, 'DOM nodes alive, attached or not').toBeLessThan(200);
+  });
+});
+
 // いえを かえる (docs/island-layout.md "Homes"): half the walls and roofs of a house and every door shown in its
 // preview, the picker closed and back on the island. The preview's models and colours are the island's homes' cache
 // (world3d/home.ts): the picker closed, all but the island's homes' go (before the fix every one stayed for the page's

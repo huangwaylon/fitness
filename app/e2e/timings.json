@@ -1376,5 +1376,9 @@
  "zukan.spec.ts › the picked fish stays pinned over the scrolling grid, another pick keeps the grid's scroll (320x568)": 4756,
  "zukan.spec.ts › the picked fish stays pinned over the scrolling grid, another pick keeps the grid's scroll (390x844)": 4803,
  "zukan.spec.ts › ずかん from 設定: ‹ back to 設定 where it was, ✕ to the island": 4456,
- "zukan.spec.ts › なかま: NH’s special characters by where we meet them, the ones with no role on our island in here only": 3484
+ "zukan.spec.ts › なかま: NH’s special characters by where we meet them, the ones with no role on our island in here only": 3484,
+ "leaks-sheets.spec.ts › the menu grid unfolded and folded ten times: no listener or DOM node left behind": 8000,
+ "leaks-sheets.spec.ts › the やること peek opened and shut five times: no listener or DOM node left behind": 6000,
+ "leaks-sheets.spec.ts › ボット’s Jobs tab, polling, opened and closed four times: its timer and listeners gone with it": 6000,
+ "leaks.spec.ts › the editor on a phone › 3D on and off four times: no WebGL context or listener left behind": 10000
 }

@@ -145,12 +145,13 @@ Run a new spec `--repeat-each=10` and its file `--workers=8`.
 
 ## Memory
 `e2e/leaks.spec.ts` (`@chromium`) and `e2e/leaks-sheets.spec.ts` check after round trips and a forced GC that no
-WebGL context, listener or editor buffer remains (`e2e/memory.ts`). Hunt: `npm run leak -- <flow> [cycles] --snap`.
+WebGL context, listener, poll timer or editor buffer remains (`e2e/memory.ts`); a paired phone's page warms up
+~4 MB in its first seconds, so wait it out (`warmedUp`) before the first round. Hunt: `npm run leak -- <flow> [cycles] --snap`.
 Page-wide holds keep components (clear in cleanup; vite.config.ts `preloadListenersOff`); end renderers with
 world3d/stage.ts `endRenderer`; MapLibre via components/map/gl.ts `removeMap`. Warm-up climbs ~10 trips: judge 20+.
 
 ## Load budget
-`npm run build` ends with `scripts/load-budget.ts`: first load ≤ 369 KB JS and 70 KB CSS gzipped, with no three.js,
+`npm run build` ends with `scripts/load-budget.ts`: first load ≤ 375 KB JS and 70 KB CSS gzipped, with no three.js,
 MapLibre or feature sheet; the precache ≤ 3.6 MB; plus share page, `/gym` and English caps. Over fails the build.
 Timing: [perf.md](perf.md#measuring).
 
