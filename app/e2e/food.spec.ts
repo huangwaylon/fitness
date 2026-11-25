@@ -1612,6 +1612,21 @@ test('several foods a trip: a row’s ＋ logs it at once, 追加 in place stays
   await expect(dinner.nth(n0 + 1)).toContainText('卵（全卵・生）');
 });
 
+/** `first` clicked, then さいきん's ＋ as soon as it's there (a microtask or so after the click): a double tap inside
+ *  FoodSearch's QUICK_HOLD_MS (350 ms); false when the second ＋ never came. (A frame apart was over 350 ms on a loaded
+ *  WebKit runner: the second logged too.) */
+const doubleTap = (page: Page, first: string) => dlg(page).evaluate(async (d, first) => {
+  d.querySelector<HTMLElement>(first)!.click();
+  let qa: HTMLElement | null = null;
+  // (Svelte's flush is a microtask: a few of those, then a task at a time)
+  for (let i = 0; !qa && i < 40; i++) {
+    await (i < 3 ? Promise.resolve() : new Promise((r) => setTimeout(r)));
+    qa = d.querySelector<HTMLElement>('[data-food-recent] [data-quick]');
+  }
+  qa?.click();
+  return !!qa;
+}, first);
+
 // Review 4: a row's ＋ tapped twice fast logs one food: the clear swaps in さいきん, its first row the food just added
 // with its own ＋ under the finger; anything typed meanwhile is a new tap. The ingredient trip's ✕ takes out that one
 // (each its own id, not its index).
@@ -1623,28 +1638,14 @@ test('a fast second ＋ is held (after a row’s ＋ or its 追加), a typed one
   await s.locator('[data-add=d]').click();
   await q.fill('ごはん');
   await expect(s.locator('[data-food-results] li:has([data-item="mext:01088"]) [data-quick]')).toBeVisible({ timeout: 15_000 });
-  // the two clicks a frame apart (a double tap): the second on さいきん's ＋, there by then
-  const second = await dlg(page).evaluate(async (d) => {
-    d.querySelector<HTMLElement>('[data-food-results] li:has([data-item="mext:01088"]) [data-quick]')!.click();
-    await new Promise(requestAnimationFrame);
-    const qa = d.querySelector<HTMLElement>('[data-food-recent] [data-quick]');
-    qa?.click();
-    return !!qa;
-  });
-  expect(second).toBe(true);
+  // the two clicks a moment apart (a double tap): the second on さいきん's ＋, there by then
+  expect(await doubleTap(page, '[data-food-results] li:has([data-item="mext:01088"]) [data-quick]')).toBe(true);
   await expect(added).toHaveCount(1);
   // a row opened in place: its 追加 and, a frame later, さいきん's ＋ under the finger: held the same (review 5)
   await q.fill('ごはん');
   await s.locator('[data-food-results] [data-item="mext:01088"]').click();
   await settled(page);
-  const again = await dlg(page).evaluate(async (d) => {
-    d.querySelector<HTMLElement>('[data-food-open-add]')!.click();
-    await new Promise(requestAnimationFrame);
-    const qa = d.querySelector<HTMLElement>('[data-food-recent] [data-quick]');
-    qa?.click();
-    return !!qa;
-  });
-  expect(again).toBe(true);
+  expect(await doubleTap(page, '[data-food-open-add]')).toBe(true);
   await expect(added).toHaveCount(2);
   await q.fill('みそ汁');
   await s.locator('[data-food-results] li:has([data-item="dishes:miso-tofu-wakame"]) [data-quick]').click();

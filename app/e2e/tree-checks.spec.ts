@@ -47,10 +47,10 @@ test('my checks: none tick themselves, taps flip each, the third sparkles and pa
   await expect(page.locator('.detail')).toBeVisible();
   await item(page, 'core').tap();
   await expect(page.locator('.detail')).toBeVisible();
-  expect(await states(page)).toEqual([['face', true], ['hiit', false], ['core', true]]);
+  await expect.poll(() => states(page)).toEqual([['face', true], ['hiit', false], ['core', true]]);
   await expect(row(page)).not.toHaveAttribute('data-all');
   await item(page, 'hiit').tap();
-  expect(await states(page)).toEqual([['face', true], ['hiit', true], ['core', true]]);
+  await expect.poll(() => states(page)).toEqual([['face', true], ['hiit', true], ['core', true]]);
   await expect(item(page, 'hiit')).toHaveAccessibleName('HIIT できた');
   // all three: the third tick's sparkles on its pill, no ぜんぶ button
   await expect(row(page)).toHaveAttribute('data-all', 'true');
@@ -68,7 +68,7 @@ test('my checks: none tick themselves, taps flip each, the third sparkles and pa
   // un-ticking sends null; ticking again true
   await item(page, 'hiit').tap();
   await expect(page.locator('.detail')).toBeVisible();
-  expect(await states(page)).toEqual([['face', true], ['hiit', false], ['core', true]]);
+  await expect.poll(() => states(page)).toEqual([['face', true], ['hiit', false], ['core', true]]);
   await expect(row(page)).not.toHaveAttribute('data-all');
   // (the un-tick sent before the next tap: a tap on its heels was lost 1 in 3 under the gate's repeat)
   await expect.poll(() => sentChecks(rec).at(-1)).toEqual(['A', { d: '2026-11-04', k: 'hiit', v: null }, true]);
@@ -84,14 +84,14 @@ test('my checks: none tick themselves, taps flip each, the third sparkles and pa
   await page.reload();
   await islandUp(page);
   await tapOn(page, 'goal', 'A');
-  expect(await states(page)).toEqual([['face', true], ['hiit', true], ['core', true]]);
+  await expect.poll(() => states(page)).toEqual([['face', true], ['hiit', true], ['core', true]]);
   await expect(row(page)).toHaveAttribute('data-all', 'true');
 
   // un-ticking 顔 only un-ticks: no video
   let opened = 0;
   page.context().on('page', () => opened++);
   await item(page, 'face').tap();
-  expect(await states(page)).toEqual([['face', false], ['hiit', true], ['core', true]]);
+  await expect.poll(() => states(page)).toEqual([['face', false], ['hiit', true], ['core', true]]);
   await expect.poll(() => sentChecks(rec).at(-1)).toEqual(['A', { d: '2026-11-04', k: 'face', v: null }, true]);
   expect(opened).toBe(0);
 });
@@ -106,9 +106,9 @@ test('my checks are three ≥ 44px buttons, 8px or more apart: a tap at each one
   for (let i = 1; i < 3; i++) expect(boxes[i].x - (boxes[i - 1].x + boxes[i - 1].width)).toBeGreaterThanOrEqual(8);
   // HIIT and Core, each tapped 3px in from the edge facing its neighbour (顔 opens its video: the test above)
   await page.touchscreen.tap(boxes[1].x + 3, boxes[1].y + boxes[1].height / 2);
-  expect(await states(page)).toEqual([['face', false], ['hiit', true], ['core', false]]);
+  await expect.poll(() => states(page)).toEqual([['face', false], ['hiit', true], ['core', false]]);
   await page.touchscreen.tap(boxes[2].x + 3, boxes[2].y + boxes[2].height / 2);
-  expect(await states(page)).toEqual([['face', false], ['hiit', true], ['core', true]]);
+  await expect.poll(() => states(page)).toEqual([['face', false], ['hiit', true], ['core', true]]);
   await expect(page.locator('.detail')).toBeVisible();
 });
 
@@ -120,12 +120,12 @@ test('the partner’s tree and the guest’s phone: the row read-only, each pers
   const a = await phone(browser, rec, 'A');
   await tapOn(a, 'goal', 'B');
   // B's Core was yesterday's: not today's
-  expect(await states(a)).toEqual([['face', true], ['hiit', false], ['core', false]]);
+  await expect.poll(() => states(a)).toEqual([['face', true], ['hiit', false], ['core', false]]);
   await expect(row(a).locator('button')).toHaveCount(0);
 
   const g = await phone(browser, rec, 'G');
   await tapOn(g, 'goal', 'A');
-  expect(await states(g)).toEqual([['face', false], ['hiit', true], ['core', false]]);
+  await expect.poll(() => states(g)).toEqual([['face', false], ['hiit', true], ['core', false]]);
   await expect(row(g).locator('button')).toHaveCount(0);
   expect(sentChecks(rec)).toEqual([]);
   // the guest is a full player (contract/guest.ts): the record takes its own check, A's row unchanged by it

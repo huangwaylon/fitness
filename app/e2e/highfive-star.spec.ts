@@ -10,19 +10,26 @@ const q = (who: 'A' | 'B') => `?demo&date=2026-11-04T12:00${who === 'B' ? '&as=B
 type Live = { x: number; y: number; z: number; s: number };
 type Fx3 = { live(name: string): Live[] };
 
-/** Each frame for at least `ms`: when (ms since the page's epoch: the same clock for both tabs), the zap's parts drawn
- *  (scale > 0) and where the first is. */
-const watch = (p: Page, ms: number) =>
-  p.evaluate((ms) => new Promise<{ t: number; n: number; x: number | null }[]>((done) => {
-    const fx = (window as unknown as { __fx3: Fx3 }).__fx3, out: { t: number; n: number; x: number | null }[] = [];
+/** Each frame from now till the time `until` sets (10 s at most): when (ms since the page's epoch: the same clock for
+ *  both tabs), the zap's parts drawn (scale > 0) and where the first is. (The end comes from the tap's own time: a
+ *  window counted from the watch's start ended before a tap that took long to land, its flight unseen.) */
+const watch = (p: Page) =>
+  p.evaluate(() => new Promise<{ t: number; n: number; x: number | null }[]>((done) => {
+    const w = window as unknown as { __fx3: Fx3; __watchUntil?: number };
+    const fx = w.__fx3, out: { t: number; n: number; x: number | null }[] = [];
+    delete w.__watchUntil;
     const f = () => {
       const z = fx.live('zap');
       out.push({ t: performance.timeOrigin + performance.now(), n: z.length, x: z[0]?.x ?? null });
-      if (out.length < 3 || out[out.length - 1].t - out[0].t < ms) requestAnimationFrame(f);
+      const t = out[out.length - 1].t;
+      if (out.length < 3 || (w.__watchUntil === undefined ? t - out[0].t < 10_000 : t < w.__watchUntil)) requestAnimationFrame(f);
       else done(out);
     };
     requestAnimationFrame(f);
-  }), ms);
+  }));
+const until = (p: Page, t: number) => p.evaluate((t) => ((window as unknown as { __watchUntil: number }).__watchUntil = t), t);
+/** IslandScene's FIVE_MS: a tap on the partner while their last high five is under way does nothing. */
+const FIVE_MS = 2400;
 
 test('20 high fives in a row: each flies the star from mine to the partner on both phones, the first one too, for its whole flight', { tag: '@logic', annotation: { type: 'logic', description: 'drawn: a 0.5 s flight sampled frame by frame, which a software-GL frame of 0.5–1 s can’t show' } }, async ({ browser }) => {
   test.setTimeout(150_000);
@@ -44,13 +51,14 @@ test('20 high fives in a row: each flies the star from mine to the partner on bo
   const px = () => a.evaluate(() => (window as unknown as { __world: { partner(): [number, number] } }).__world.partner()[0]);
   for (let i = 0; i < 20; i++) {
     const [m0, p0] = [await mx(), await px()];
-    const wa = watch(a, 800), wb = watch(b, 800);
+    const wa = watch(a), wb = watch(b);
     // (the tap's own time, in the page as its click comes: read before the click, Playwright's checks before it lands
     // (stable over two frames) put the flight ~0.1–0.2 s later on a loaded machine, and its first mid-flight frames
     // looked starless)
     await a.evaluate(() => document.addEventListener('click', () => ((window as unknown as { __tapAt: number }).__tapAt = performance.timeOrigin + performance.now()), { capture: true, once: true }));
     await tapOn(a, 'villager', 'partner');
     const tap = await a.evaluate(() => (window as unknown as { __tapAt: number }).__tapAt);
+    await Promise.all([until(a, tap + 800), until(b, tap + 800)]);
     const [ra, rb] = await Promise.all([wa, wb]);
     for (const [who, r] of [['A', ra], ['B', rb]] as const) {
       const on = r.filter((f) => f.n > 0);
@@ -71,8 +79,10 @@ test('20 high fives in a row: each flies the star from mine to the partner on bo
       const xs = on.map((f) => f.x!);
       if (on[on.length - 1].t - on[0].t > 300) expect(Math.abs(xs[xs.length - 1] - xs[0]), `high five ${i + 1}: the star flew on ${who}`).toBeGreaterThan(Math.abs(p0 - m0) * 0.4);
     }
-    // (one at a time: the next once this one's over on both)
-    await a.waitForTimeout(2000);
+    // (one at a time: the next once this one's over on both, by the tap's own time: a fixed pause after the watch
+    // put two taps under FIVE_MS apart when the first took long to land, the second's star never flown)
+    // (the pages' epoch is the wall clock, this process's too)
+    await expect.poll(() => Date.now(), { intervals: [100] }).toBeGreaterThan(tap + FIVE_MS + 300);
   }
   await ctx.close();
 });
