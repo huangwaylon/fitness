@@ -110,7 +110,7 @@
   import { onMount, untrack } from 'svelte';
   import type { ActorId } from '../motion/reactions.ts';
   import { dayKey, jst, minuteNow } from '#lib/time/clock.ts';
-  import { piecesOn, swapsOn } from '#lib/world/fixedDecor.ts';
+  import { emptySpots, piecesOn, swapsOn } from '#lib/world/fixedDecor.ts';
   import { islandSeed } from '#lib/world/devHooks.ts';
   import { ARCH, DECOR_SLOTS, SCENERY } from '#lib/world/world.ts';
   import { echo3d } from './echo3d.ts';
@@ -1177,6 +1177,8 @@
     return SCENERY.map((x) => (sw[x.id] ? { ...x, key: sw[x.id].key, h: sw[x.id].h } : x));
   });
   const pieces3 = $derived((void site.rev, piecesOn(today, jst(clock).hour, islandSeed(), ARCH)));
+  // (the seasonal spots empty today block no walk: the beach chair out of summer, the sandcastle after the tide, the snowboy melted)
+  $effect(() => site.bare(emptySpots(pieces3)));
   /** The seat whose spot is `name` if it's there today (sitting.ts seatOpen: a decor spot's piece of the day its own),
    *  else null. */
   function seatHere(name: string | null): string | null {

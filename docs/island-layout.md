@@ -56,6 +56,11 @@ the record keeps each id's latest op (slot `decor|<sc>|<id>`). An old phone igno
 ## Derived, never hand-made
 - **Heights** (`layout/height.ts` `heightAt`, `fieldOf`): 40u a tier; NH's rounded corners; stairs ramp, bridges arch.
 - **Nav** (`layout/nav.ts` `navOf`): a half-tile walk grid, A*; `findPath`, `snapTap`, `reachable`, `planTap`.
+  Stairs are stepped on and off only along their climb (never over a curb from the side); an arch's posts block, its
+  way through doesn't (`archTiles`); the seasonal spots empty today block nothing (`navOf(l, bare)`, `fixedDecor.ts
+  emptySpots`, re-applied by `site.bare` as the day, the hour and the snowboy's melt change).
+- **Arches over water** (`layout/height.ts` `standLift`): a gate, torii or gazebo whose way through spans water stands
+  on its posts' banks (the highest), not the bed.
 - **The visitors' stage** (`layout/spots.ts` `stageOf`): the plaza mark if usable, else open grass near the middle;
   `washedUp` for Gulliver. Visitor marks (`plaza`, `beach-spot`): `markerSpot`, `spotWhy`; a retired `guest-spot` is
   dropped as a layout is read (`model.ts isRetired`).

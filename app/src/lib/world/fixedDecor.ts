@@ -83,6 +83,10 @@ export function piecesOn(date: string, hour: number, seed?: string, arch?: reado
   return out;
 }
 
+/** The seasonal spots empty today (no piece in them: `pieces`, piecesOn's), by id: the walk goes over them
+ *  (layout/nav.ts navOf `bare`). */
+export const emptySpots = (pieces: readonly Piece[]): string[] => DECOR_SLOTS.filter((s) => !s.key && !pieces.some((p) => p.id === s.id)).map((s) => s.id);
+
 /** The scenery that takes a seasonal look today: its id → the look (and its height). */
 export function swapsOn(date: string): Record<string, { key: string; h: number }> {
   const md = mdOf(date), out: Record<string, { key: string; h: number }> = {};

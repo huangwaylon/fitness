@@ -1,5 +1,5 @@
 import { beforeAll, describe, expect, test } from 'vitest';
-import { CHUNKS_X, CHUNKS_Z, GRID, chunkIndex, chunkOf, chunkString, codeOf, codeOfChar, charOf, kindOf, tierOf, writeChunk, KINDS, TIERS, tileAt, tileMid } from './grid.ts';
+import { idx, CHUNKS_X, CHUNKS_Z, GRID, chunkIndex, chunkOf, chunkString, codeOf, codeOfChar, charOf, kindOf, tierOf, writeChunk, KINDS, TIERS, tileAt, tileMid } from './grid.ts';
 import { LONG_GROW, LONG_SPLIT } from './migrate.ts';
 import { defaultLayout, doorOf, extentOf, layoutOf, objMid, objTiles, opsBetween, toJson, fromJson, withChanges, footOf, type Obj } from './model.ts';
 import { CHUNK_COUNT, chunkMesh, stairsMesh } from './mesh.ts';
@@ -8,7 +8,7 @@ import { diffLayouts } from './diff.ts';
 import { heightAt, fieldOf, DEEP_Y, GRASS_Y } from './height.ts';
 import { Ch, fieldsOf } from './fields.ts';
 import { riverStems } from './river.ts';
-import { navOf, findPath, snapTap, reachable, walkable } from './nav.ts';
+import { clear, navOf, findPath, snapTap, reachable, walkable } from './nav.ts';
 import { validate } from './validate.ts';
 import { KIND_LIST } from './catalog.ts';
 import { loadOutdoor } from './outdoor.ts';
@@ -346,6 +346,41 @@ describe('walking on it (layout/nav.ts, planTap drop-in)', () => {
       return x >= x0 && x <= x0 + w * 30 && z >= z0 && z <= z0 + d * 30;
     }) || (q[0] >= x0 && q[0] <= x0 + w * 30 && q[1] >= z0 && q[1] <= z0 + d * 30));
     expect(onStairs).toBe(true);
+  });
+  test('stairs are walked on and off along their climb only, never over a curb from the side (the user, 2026-11-25)', () => {
+    // the default's stairs (climbing +z) and a prod-like second pair: the upper tier's east half lowered (columns 9+, the
+    // cliff along column 8's edge, the museum out of the way), stairs turned a quarter (f 1: climbing −x) up to it
+    const lowered: [number, number, number][] = [];
+    for (let r = 53; r < 58; r++) for (let c = 9; c < 20; c++) if (tierOf(l.codes[idx(c, r)]) === 1) lowered.push([c, r, l.codes[idx(c, r)] - 1]);
+    const turned = withChanges(l, { tiles: lowered, set: [{ id: 'stairs-2', k: 'stairs', x: 9, z: 54, f: 1, s: 'stone' }], remove: ['museum', 'cedar-f4', 'cedar-f5'] });
+    for (const [lay, id] of [[l, 'stairs'], [turned, 'stairs'], [turned, 'stairs-2']] as const) {
+      const g2 = navOf(lay), st = lay.objects.get(id)!, [w, d] = footOf(lay, st), x0 = -90 + st.x * 30, z0 = -90 + st.z * 30, x1 = x0 + w * 30, z1 = z0 + d * 30;
+      const alongZ = st.f % 2 === 0, inside = (q: readonly number[]) => q[0] > x0 && q[0] < x1 && q[1] > z0 && q[1] < z1;
+      // its foot (the lower end) and top, a step off each end; a side point beside its lower half, a step off its curb
+      const foot: [number, number] = alongZ ? [(x0 + x1) / 2, z0 - 10] : [x1 + 10, (z0 + z1) / 2];
+      const top: [number, number] = alongZ ? [(x0 + x1) / 2, z1 + 10] : [x0 - 10, (z0 + z1) / 2];
+      // (beside its lower half, either side, clear of what stands there; and the ramp's cell level with it)
+      const sides = [15, 30, 45].flatMap((u) => (alongZ ? [[x0 - 8, z0 + u], [x1 + 8, z0 + u]] : [[x1 - u, z0 - 8], [x1 - u, z1 + 8]]) as [number, number][]);
+      const side = sides.find((q) => walkable(g2, ...q))!;
+      const low: [number, number] = alongZ ? [(x0 + x1) / 2, side[1]] : [side[0], (z0 + z1) / 2];
+      expect(walkable(g2, ...foot) && walkable(g2, ...top) && walkable(g2, ...side), id).toBe(true);
+      expect(reachable(g2, ...top) && reachable(g2, ...foot) && reachable(g2, ...side), id).toBe(true);
+      // straight up it: clear; onto it over the curb: not
+      expect(clear(g2, foot, top), id).toBe(true);
+      expect(clear(g2, side, low), id).toBe(false);
+      // a walker beside it goes round by its foot, up, and back down the same way
+      for (const [a, b] of [[side, top], [top, side]] as const) {
+        const p = findPath(g2, a, b)!, via = [a, ...p];
+        expect(p, id).not.toBeNull();
+        for (let i = 1; i < via.length; i++)
+          for (let t = 0; t < 1; t += 1 / 64) {
+            const q = [via[i - 1][0] + (via[i][0] - via[i - 1][0]) * t, via[i - 1][1] + (via[i][1] - via[i - 1][1]) * t];
+            const n = [via[i - 1][0] + (via[i][0] - via[i - 1][0]) * (t + 1 / 64), via[i - 1][1] + (via[i][1] - via[i - 1][1]) * (t + 1 / 64)];
+            // (crossing onto or off it: through its ends, not its sides)
+            if (inside(q) !== inside(n)) expect(alongZ ? Math.min(Math.abs(n[1] - z0), Math.abs(n[1] - z1), Math.abs(q[1] - z0), Math.abs(q[1] - z1)) : Math.min(Math.abs(n[0] - x0), Math.abs(n[0] - x1), Math.abs(q[0] - x0), Math.abs(q[0] - x1)), `${id} ${q}`).toBeLessThan(3);
+          }
+      }
+    }
   });
   test('without the stairs, the upper tier is out of reach (a pocket)', () => {
     const l2 = withChanges(l, { remove: ['stairs'] });

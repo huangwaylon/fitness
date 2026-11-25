@@ -1,10 +1,13 @@
 // The fixed decor (docs/design.md "Decor"): one scale for the furniture, the plan's placement rules for every spot in
 // every season, the seasons' pieces in their windows taking their own spots (never a new one) and the snowboy melting
 // over three days.
-import { describe, expect, it } from 'vitest';
-import { CASTLE_HOURS, decorHeight, piecesOn, snowboyStage, swapsOn, WINDOWS } from './fixedDecor.ts';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { defaultLayout, objMid } from '#lib/layout/model.ts';
+import { navOf, walkable as walkableOn } from '#lib/layout/nav.ts';
+import { worldOf } from './layoutWorld.ts';
+import { CASTLE_HOURS, decorHeight, emptySpots, piecesOn, snowboyStage, swapsOn, WINDOWS } from './fixedDecor.ts';
 import {
-  ARCH, CAKE, CENTRE_STAGE, DECOR_SLOTS, DECOR_U, DIG_SPOTS, FLOWERS, GOAL_TREES, LAWN_SPOTS, PATHS, POND, PULLUP_AT, SCENERY, SEATS, SPRING, inOval, riverNear, seatAt, type Pt
+  ARCH, CAKE, CENTRE_STAGE, DECOR_SLOTS, setWorld, DECOR_U, DIG_SPOTS, FLOWERS, GOAL_TREES, LAWN_SPOTS, PATHS, POND, PULLUP_AT, SCENERY, SEATS, SPRING, inOval, riverNear, seatAt, type Pt
 } from './world.ts';
 import { route, walkGeo, walkable } from './walkGraph.ts';
 import { dayWeather } from './weather.ts';
@@ -100,5 +103,26 @@ describe('the fixed decor', () => {
     }
     expect(seatAt(...SEATS.seatPondR)).toBe('seatPondR');
     expect(seatAt(SEATS.seatPondR[0] + 6, SEATS.seatPondR[1])).toBeNull();
+  });
+});
+
+describe('the seasonal spots on the layout', () => {
+  const l = defaultLayout();
+  beforeAll(() => setWorld(worldOf(l)));
+  afterAll(() => setWorld(null));
+  it('an empty one blocks no walk; a filled one does, as the day turns (the user, 2026-11-25)', () => {
+    const at = (id: string) => objMid(l, l.objects.get(id)!);
+    // a summer noon: the chair and the castle out; after the tide, the castle's spot empty; a winter's day without snow
+    // the chair's and the castle's too (and the snowboy's, unbuilt)
+    const noon = piecesOn('2026-08-01', 12), evening = piecesOn('2026-08-01', 19), winter = piecesOn('2026-01-20', 12, 'no-snow');
+    expect(emptySpots(noon)).toEqual(['snowboy']);
+    expect(emptySpots(evening).sort()).toEqual(['sandcastle', 'snowboy']);
+    expect(emptySpots(winter)).toEqual(expect.arrayContaining(['beach-chair', 'sandcastle']));
+    for (const [pieces, open] of [[noon, ['snowboy']], [evening, ['sandcastle', 'snowboy']]] as const) {
+      const g = navOf(l, emptySpots(pieces));
+      for (const id of ['beach-chair', 'sandcastle', 'snowboy']) expect(walkableOn(g, ...at(id)), `${id}`).toBe((open as readonly string[]).includes(id));
+    }
+    // none given: everything stands (the editor's rules)
+    expect(walkableOn(navOf(l), ...at('snowboy'))).toBe(false);
   });
 });

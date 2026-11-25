@@ -4,7 +4,8 @@
 //   A cell is walkable on land (not the sea, a river or a pond, but a bridge's deck over them), off every blocking
 //   footprint (its block box, the trunk of a tree) and off the extras (things that come and go). A step between
 //   two cells keeps to one tier, but for stairs: a ramp's cells rise along it, and a step joins a cell within half a
-//   tier of it (the ramp's foot the lower tier, its top the upper).
+//   tier of it (the ramp's foot the lower tier, its top the upper); on or off a ramp only along its climb, at its foot
+//   or its top, never over its curbs from the side (the user, 2026-11-25).
 //   Snapping: a tap on walkable ground nobody can reach goes to the nearest reachable point; on a home, to its door;
 //   on water, to the nearest bank facing it; on anything else, the nearest walkable point within 40u.
 import { GRID, TILE, isWater, kindOf, tierOf, idx, onGrid, tileX, tileZ } from './grid.ts';
@@ -49,6 +50,8 @@ export interface LayoutNav {
   readonly open: Uint8Array;
   /** Each cell's level (tiers, a ramp's in between). */
   readonly level: Float32Array;
+  /** Each cell's ramp: the axis a stairs' ramp climbs along (1 across, x; 2 deep, z), 0 off one. */
+  readonly ramp: Uint8Array;
   /** Each cell's connected region (−1 blocked) and the island's main one (home's). */
   readonly comp: Int32Array;
   readonly main: number;
@@ -112,19 +115,22 @@ function walkBoxes(layout: Layout, o: Obj): Box[] {
   });
 }
 
-/** Each layout's walk grid, once (a layout is never changed in place: an edit is a new one). The launch asked for it
- *  two or three times (site.svelte.ts, spots.ts openGrass and stageOf's patch), ~5 ms each at 4x CPU. */
-const navs = new WeakMap<Layout, LayoutNav>();
-/** The walk grid of a layout. */
-export function navOf(layout: Layout): LayoutNav {
-  let n = navs.get(layout);
-  if (!n) navs.set(layout, (n = buildNav(layout)));
+/** Each layout's walk grid, once (a layout is never changed in place: an edit is a new one), by its bare spots. The
+ *  launch asked for it two or three times (site.svelte.ts, spots.ts openGrass and stageOf's patch), ~5 ms each at 4x CPU. */
+const navs = new WeakMap<Layout, Map<string, LayoutNav>>();
+/** The walk grid of a layout. `bare`: the objects not there today (a seasonal spot empty out of its season,
+ *  world/fixedDecor.ts emptySpots): they block nothing (the user, 2026-11-25); none given, everything stands. */
+export function navOf(layout: Layout, bare: readonly string[] = []): LayoutNav {
+  const key = [...bare].sort().join(' ');
+  let m = navs.get(layout), n = m?.get(key);
+  if (!m) navs.set(layout, (m = new Map()));
+  if (!n) m.set(key, (n = buildNav(layout, new Set(bare))));
   return n;
 }
-function buildNav(layout: Layout): LayoutNav {
+function buildNav(layout: Layout, bare: ReadonlySet<string>): LayoutNav {
   const t0 = now();
   const open = new Uint8Array(COLS * ROWS), level = new Float32Array(COLS * ROWS);
-  const deck = new Uint8Array(COLS * ROWS);
+  const deck = new Uint8Array(COLS * ROWS), ramp = new Uint8Array(COLS * ROWS);
   for (let j = 0; j < ROWS; j++)
     for (let i = 0; i < COLS; i++) {
       const c = i >> 1, r = j >> 1;
@@ -154,13 +160,14 @@ function buildNav(layout: Layout): LayoutNav {
           const t = fz !== 0 ? (fz < 0 ? (j - j0 + 0.5) / (j1 - j0) : (j1 - j - 0.5) / (j1 - j0)) : fx > 0 ? (i1 - i - 0.5) / (i1 - i0) : (i - i0 + 0.5) / (i1 - i0);
           open[k] = 1;
           level[k] = base + t;
+          ramp[k] = fz !== 0 ? 2 : 1;
         }
       }
   }
   // the blocking footprints, padded
   const doors: Record<string, { at: Pt; box: Box }> = {};
   for (const o of layout.objects.values()) {
-    const b = blockBox(layout, o);
+    const b = bare.has(o.id) ? null : blockBox(layout, o);
     if (!b) continue;
     const pad = goesIn(o.k) ? 0 : PAD;
     for (const wb of walkBoxes(layout, o)) {
@@ -176,7 +183,7 @@ function buildNav(layout: Layout): LayoutNav {
       doors[o.id] = { at: [dr.at[0] + fx * 16, dr.at[1] + fz * 16], box: b };
     }
   }
-  const shell = { layout, open, level, comp: new Int32Array(COLS * ROWS).fill(-1), main: 0, named: {} as Record<string, Pt>, doors, buildMs: 0 };
+  const shell = { layout, open, level, ramp, comp: new Int32Array(COLS * ROWS).fill(-1), main: 0, named: {} as Record<string, Pt>, doors, buildMs: 0 };
   // the regions (4-connected over the steps a walker may take)
   let n = 0;
   const stack: number[] = [];
@@ -190,7 +197,7 @@ function buildNav(layout: Layout): LayoutNav {
         const ni = i + di, nj = j + dj;
         if (!inCells(ni, nj)) continue;
         const q = nj * COLS + ni;
-        if (shell.comp[q] < 0 && open[q] && Math.abs(level[q] - level[k]) <= STEP) {
+        if (shell.comp[q] < 0 && stepOk(shell, k, q)) {
           shell.comp[q] = n;
           stack.push(q);
         }
@@ -337,8 +344,15 @@ export function levelAt(g: LayoutNav, x: number, z: number): number {
   return k >= 0 ? g.level[k] : NaN;
 }
 
-/** Whether a step from cell a to its neighbour b is one a walker may take. */
-const stepOk = (g: LayoutNav, a: number, b: number) => !!g.open[b] && Math.abs(g.level[a] - g.level[b]) <= STEP;
+/** Whether a step from cell a to its neighbour b is one a walker may take: level enough, and on or off a ramp only
+ *  straight along its climb (its curbs keep the sides out). */
+function stepOk(g: Pick<LayoutNav, 'open' | 'level' | 'ramp'>, a: number, b: number): boolean {
+  if (!g.open[b] || Math.abs(g.level[a] - g.level[b]) > STEP) return false;
+  const ra = g.ramp[a], rb = g.ramp[b];
+  if (!ra === !rb) return true;
+  const ai = a % COLS, bi = b % COLS, across = ai !== bi, deep = (a - ai) / COLS !== (b - bi) / COLS;
+  return (ra || rb) === 1 ? across && !deep : deep && !across;
+}
 
 /** @public (world/nav.ts's) Whether a straight walk from a to b is clear (every cell it crosses walkable, every step level enough). */
 export function clear(g: LayoutNav, a: Pt, b: Pt, extra?: Extra): boolean {

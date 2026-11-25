@@ -10,6 +10,7 @@
 //                 on the default island, moved by a lopsided resize)
 //   site.rev      bumped by each change applied (a DOM overlay reading world.ts's values reads it to follow)
 //   site.sync()   apply what's due now (IslandScene calls it as it opens)
+//   site.bare(ids) the seasonal spots empty today (fixedDecor.ts emptySpots): the walk goes over them (navOf `bare`)
 import { layout } from '#lib/store/layout.svelte.ts';
 import { navOf, type LayoutNav } from '#lib/layout/nav.ts';
 import { extentOf, midXOf, type Layout } from '#lib/layout/model.ts';
@@ -24,6 +25,8 @@ class Site {
   #extent: ReturnType<typeof extentOf> | null = null;
   #storeExtent: { of: Layout; e: ReturnType<typeof extentOf> } | null = null;
   #heard = false;
+  #bare: readonly string[] = [];
+  #bareKey = '';
   get on(): boolean {
     return true;
   }
@@ -59,8 +62,19 @@ class Site {
     }
     const want = this.on ? layout.current : null;
     if (want === this.#applied) return;
+    this.#apply(want);
+  }
+  /** The seasonal spots empty now (IslandScene's, from the day's pieces): the walk grid without them, when they change. */
+  bare(ids: readonly string[]): void {
+    const key = [...ids].sort().join(' ');
+    if (key === this.#bareKey) return;
+    this.#bare = ids;
+    this.#bareKey = key;
+    if (this.#applied) this.#apply(this.#applied);
+  }
+  #apply(want: Layout | null): void {
     this.#applied = want;
-    this.#nav = want ? navOf(want) : null;
+    this.#nav = want ? navOf(want, this.#bare) : null;
     this.#extent = null;
     setWorld(want && this.#nav ? worldOf(want, this.#nav) : null);
     // the day's weeds and fossils on the layout's open grass (beach.ts)
