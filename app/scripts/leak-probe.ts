@@ -310,8 +310,8 @@ if (flow in INFO || flow === 'info') {
 const SIM = flow === 'sim' || flow === 'days';
 if (SIM) await page.clock.install({ time: Date.now() });
 // the demo's events (as a catch writes them): sell's pocket; hours' and curator's museum full (every fish and bug found)
-const FIELD: [string, object] = ['decor', { sc: 'o', id: 'field-A', at: 1.79e12, k: 'field', x: 10, z: 17, f: 0, s: 'a-10x4' }];
-const seeds: [string, object][] = flow === 'farm' ? [FIELD, ['tally', { date: '2026-11-04', counts: { 'fish:koi': 3 } }], ['sell', { species: 'fish:koi', n: 3, v: 600 }], ['buy_starts', { crop: 'tomato', n: 20, v: 280 }], ['farm', { d: '2026-11-01', ops: Array.from({ length: 20 }, (_, k) => ({ o: 'plant', p: `fd:field-A.${k % 10}.${Math.floor(k / 10)}`, c: 'tomato', src: 'start' })) }]]
+const FIELD: [string, object] = ['decor', { sc: 'o', id: 'field-1', at: 1.79e12, k: 'field', x: 10, z: 17, f: 0, s: 'f-10x4' }];
+const seeds: [string, object][] = flow === 'farm' ? [FIELD, ['tally', { date: '2026-11-04', counts: { 'fish:koi': 3 } }], ['sell', { species: 'fish:koi', n: 3, v: 600 }], ['buy_starts', { crop: 'tomato', n: 20, v: 280 }], ['farm', { ops: Array.from({ length: 20 }, (_, k) => ({ o: 'plant', p: `fd:field-1.${k % 10}.${Math.floor(k / 10)}`, c: 'tomato', src: 'start' })) }]]
   : flow === 'sell' ? [['tally', { date: '2026-11-04', counts: { 'fish:sea-bass': 999 } }]]
   : flow === 'hours' || flow === 'curator' || flow === 'rebuild' ? [...FISH_IDS.map((id) => ['find', { kind: 'fish', id }] as [string, object]), ...BUG_IDS.map((id) => ['find', { kind: 'bug', id }] as [string, object])] : [];
 if (seeds.length) await page.addInitScript((list) => {
