@@ -16,7 +16,7 @@ export const CAP = 80;
  *  every one looked up before PICS_BEFORE (20:00 JST 11-24, just after the 10-photo scrape went in; it had asked
  *  Google for 4 and kept 3) holding OLD_PICS photos (Google had more), is refreshed REDO_CAP a run instead of the
  *  SLICE: the most opened cards first (the relay's place_opens), then the oldest look-up; then the queue as before. */
-export const REDO_BEFORE = 1_795_510_320, PICS_BEFORE = 1_795_518_000, OLD_PICS = 3, REDO_CAP = 280;
+export const REDO_BEFORE = 1_795_510_320, PICS_BEFORE = 1_795_518_000, OLD_PICS = 3, REDO_CAP = 600;
 
 export interface Pick {
   /** never looked up: the newest saves first */

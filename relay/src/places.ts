@@ -17,7 +17,7 @@ import {
 
 // ---------------------------------------------------------------- the list
 
-/** A places_details call's rows at most (the daily run's up to 280 in one). */
+/** A places_details call's rows at most (record.ts sends the daily run's up to 600 in calls of this many). */
 export const DET_BATCH = 400;
 
 /** The list's newest this many, every cron tick. */

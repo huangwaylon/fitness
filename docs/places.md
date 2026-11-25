@@ -20,8 +20,8 @@ On the relay (runbook §9): `det` in `GET /places` (`PlaceDet`), up to 10 photo 
 `places-details.yml` daily (`app/scripts/places-details.ts daily`, picks by `lib/places/refresh.ts`: new first, then the
 oldest look-ups); counts only in the log. A run skips when the last 20 h already hold a run's worth of look-ups
 (`dueToday`), so a night the relay or Google refused is made up by the next trigger. A one-time photo backfill (up
-to 10 a place) uses the 280-a-day redo slots, most-opened first (`place_opens`, relay migration 13); when done,
-`REDO_*` in `lib/places/refresh.ts` goes.
+to 10 a place) uses the 600-a-day redo slots (a 25-minute run), most-opened first (`place_opens`, relay migration
+13); when done, `REDO_*` in `lib/places/refresh.ts` goes.
 
 ## Screen
 
