@@ -7,7 +7,7 @@ import { navOf, walkable as walkableOn } from '#lib/layout/nav.ts';
 import { worldOf } from './layoutWorld.ts';
 import { CASTLE_HOURS, decorHeight, emptySpots, piecesOn, snowboyStage, swapsOn, WINDOWS } from './fixedDecor.ts';
 import {
-  ARCH, CAKE, CENTRE_STAGE, DECOR_SLOTS, setWorld, DECOR_U, DIG_SPOTS, FLOWERS, GOAL_TREES, LAWN_SPOTS, PATHS, POND, PULLUP_AT, SCENERY, SEATS, SPRING, inOval, riverNear, seatAt, type Pt
+  ARCH, CAKE, CENTRE_STAGE, DECOR_SLOTS, HOMES, setWorld, DECOR_U, DIG_SPOTS, FLOWERS, GOAL_TREES, LAWN_SPOTS, PATHS, POND, PULLUP_AT, SCENERY, SEATS, SPRING, inOval, riverNear, seatAt, type Pt
 } from './world.ts';
 import { route, walkGeo, walkable } from './walkGraph.ts';
 import { dayWeather } from './weather.ts';
@@ -93,14 +93,9 @@ describe('the fixed decor', () => {
   it('stands the park bench at its height', () => {
     expect(decorHeight('deco/park-bench')).toBeCloseTo(40, 0);
   });
-  it('has flowers round the pump to water, and every seat and the bar on walkable ground', () => {
+  it('has flowers round the pump to water', () => {
     const pump = DECOR_SLOTS.find((s) => s.id === 'pump')!;
     expect(FLOWERS.filter((f) => Math.hypot(f.x - pump.x, f.z - pump.z) <= 70).length).toBeGreaterThanOrEqual(2);
-    const g = walkGeo();
-    for (const [name, [x, z]] of [...Object.entries(SEATS), ['pullup', PULLUP_AT] as const]) {
-      expect(walkable(g, x, z), name).toBe(true);
-      expect(route(g, [132, 214], [x, z]), name).not.toBeNull();
-    }
     expect(seatAt(...SEATS.seatPondR)).toBe('seatPondR');
     expect(seatAt(SEATS.seatPondR[0] + 6, SEATS.seatPondR[1])).toBeNull();
   });
@@ -124,5 +119,12 @@ describe('the seasonal spots on the layout', () => {
     }
     // none given: everything stands (the editor's rules)
     expect(walkableOn(navOf(l), ...at('snowboy'))).toBe(false);
+  });
+  it('every seat and the bar on walkable ground, reached from home', () => {
+    const g = walkGeo();
+    for (const [name, [x, z]] of [...Object.entries(SEATS), ['pullup', PULLUP_AT] as const]) {
+      expect(walkable(g, x, z), name).toBe(true);
+      expect(route(g, HOMES.A, [x, z]), name).not.toBeNull();
+    }
   });
 });

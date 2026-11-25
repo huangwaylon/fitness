@@ -3,7 +3,13 @@ import type { WeekView } from '#lib/types.ts';
 import { RING_FRUITS } from '#lib/config/rules.ts';
 import { FOLLOW_MS, adjacent, besideSpots, goalMoves, pickPoi, pois, shouldFollow } from './wander.ts';
 import { walkGeo, walkable } from './walkGraph.ts';
-import { GOAL_TREES } from './world.ts';
+import { GOAL_TREES, setWorld } from './world.ts';
+import { worldOf } from './layoutWorld.ts';
+import { defaultLayout } from '#lib/layout/model.ts';
+
+// the island on the default layout (the walk is always the layout's grid: layout/nav.ts)
+beforeAll(() => setWorld(worldOf(defaultLayout())));
+afterAll(() => setWorld(null));
 
 describe('points of interest', () => {
   const g = walkGeo();
@@ -24,7 +30,7 @@ describe('points of interest', () => {
     expect(pois(more, false).map((p) => p.name)).toContain('lookout');
   });
   it('never the step in front of K.K.’s stool (a villager there hides him); the board’s front is one', () => {
-    const more = walkGeo({ nodes: { 'front-kk-slider': [195, 210], 'front-board': [150, 90] } });
+    const more = walkGeo({ nodes: { 'front-kk-slider': g.nodes.shoreL, 'front-board': g.nodes.centreStage } });
     const names = pois(more, false).map((p) => p.name);
     expect(names).not.toContain('front-kk-slider');
     expect(names).toContain('front-board');

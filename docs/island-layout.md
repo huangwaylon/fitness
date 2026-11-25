@@ -185,4 +185,4 @@ furniture only (/editor itself does everything on a phone too). It runs over a s
 `apply(ops)`); `buildGround(layout, { renderer, look })` and `placeObjects(layout, day)`.
 - Live changes rebuild only the changed chunks and things. Camera ends from `extentOf` (Island3D `fitEnds`).
 - Gameplay: `island/site.svelte.ts` `site.on` → `world/layoutWorld.ts worldOf(layout)` → `setWorld`.
-- Walk: `nav.ts walkNav()` for taps; walkGraph.ts for idle walks. Decorations' tap areas: island/decor.svelte.ts.
+- Walk: `nav.ts walkNav()` for taps; walkGraph.ts for idle walks (both the layout's walk grid, `layout/nav.ts`). Decorations' tap areas: island/decor.svelte.ts.
