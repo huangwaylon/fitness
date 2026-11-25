@@ -321,7 +321,7 @@ test.describe('the editor', () => {
 // (the window's keys and blur) with it.
 test.describe('the editor on a phone', () => {
   test.use({ viewport: { width: 393, height: 852 }, hasTouch: true, isMobile: true });
-  test('3D on and off four times: no WebGL context or listener left behind', { tag: '@chromium' }, async ({ page }) => {
+  test('3D on and off four times: no WebGL context or listener left behind', { tag: ['@chromium', '@render'] }, async ({ page }) => {
     await watch(page);
     await page.goto('editor/?demo&date=2026-11-04T12:00');
     type H = { __editor?: object; __preview3d?: { frames(): number } };
