@@ -85,7 +85,10 @@ test('a tap on a flower waters it (the can, a sprinkle); a watered flower can sh
   expect(await watered(page)).toEqual([]); // a new day: no glitter until watered again
   await expect.poll(async () => (await piece(page, fl.id))?.look).toMatch(/black-cosmos/);
   expect((await piece(page, other))?.look).toMatch(/pink-cosmos/);
-  await page.reload(); // it stays for the day
+  // a new hybrid is a find: a sparkle on it and a line, once on this phone
+  await expect(page.locator('.banner')).toContainText('くろい コスモスが さいた！');
+  expect(await page.evaluate(() => localStorage.getItem('scene-hybrid'))).toBe(JSON.stringify(`2026-11-04|${fl.id}|black-cosmos`));
+  await page.reload(); // it stays for the day (greeted once: sceneDay.test)
   await expect.poll(async () => (await piece(page, fl.id))?.look).toMatch(/black-cosmos/);
 });
 

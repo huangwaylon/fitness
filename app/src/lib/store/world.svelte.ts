@@ -201,6 +201,12 @@ class SharedWorld {
     return p?.day === today - 1 ? p.watered : [];
   }
 
+  /** Today's record rows are folded in (this session): `wateredYesterday` is everyone's, not only what this phone heard. */
+  get recordIn(): boolean {
+    void this.rev;
+    return this.#recordDay === this.#date();
+  }
+
   /** My part of the day goes to the sheet through `fn` (held: store/actions.ts sendIslandDay). */
   set sink(fn: ((date: string, row: DayRow) => void) | null) {
     this.#sink = fn;
@@ -267,6 +273,7 @@ class SharedWorld {
       const first = this.#recordDay !== today, me = this.#me;
       this.#recordDay = today;
       this.#recordRows = rows;
+      if (first && !changed) this.rev++; // (recordIn)
       if (this.#rowWaits || (first && me && rowLacks(latest.get(`${me}|${today}`)?.data, rowOf(d, me)))) this.#sendRow();
     }
   }

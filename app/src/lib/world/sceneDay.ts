@@ -1,6 +1,6 @@
 // This phone's own record of today's island (docs/design.md "Beach finds"): which day items it picked up, dug or pulled
 // (they derive from the date, so both phones see the same ones; each hides what it took), and the wish that brings star
-// fragments. In localStorage (sync/storage.ts SCENE): losing it only puts a shell back on the sand.
+// fragments, the flowers it watered today and the hybrid it last greeted. In localStorage (sync/storage.ts SCENE): losing it only puts a shell back on the sand.
 import { localKV, readJson, SCENE, writeJson } from '#lib/sync/storage.ts';
 import { addWish, type Wishes } from './stars.ts';
 
@@ -20,6 +20,15 @@ export function take(date: string, uid: string): void {
   if (!d.picked.includes(uid)) writeJson(localKV(), SCENE.day, { date, picked: [...d.picked.slice(-199), uid] });
 }
 
+/** Greet `key` (today's hybrid: `date|id|flower`, flowers.svelte.ts) once on this phone: `show` it unless it was
+ *  already; it counts as greeted once `show` says it was shown. True: greeted (now or before). */
+export function greetOnce(key: string, show: () => boolean): boolean {
+  if (readJson<string>(localKV(), SCENE.hybrid) === key) return true;
+  if (!show()) return false;
+  writeJson(localKV(), SCENE.hybrid, key);
+  return true;
+}
+
 /** This phone's wishes on shooting stars: the morning each brings its fragment to → how many (stars.ts). */
 export function wishes(): Wishes {
   const w = readJson<Wishes>(localKV(), SCENE.wish);
@@ -28,22 +37,14 @@ export function wishes(): Wishes {
 /** One more wish, for `day`'s morning (`today`: older mornings are dropped). */
 export const wish = (day: string, today: string): void => void writeJson(localKV(), SCENE.wish, addWish(wishes(), day, today));
 
-interface Garden { date: string; watered: string[]; hybrid?: { id: string; flower: string } | null }
+interface Garden { date: string; watered: string[] }
 
-/** Today's garden: the flowers watered today (world.ts FLOWERS ids), and the hybrid today shows (worked out once from yesterday's watering, via
- *  `grow`, and kept for the day). */
-export function garden(date: string, yesterday: string, grow: (watered: string[]) => Garden['hybrid']): Required<Garden> {
-  const g = readJson<Garden>(localKV(), SCENE.garden);
-  if (g && g.date === date) return { date, watered: g.watered ?? [], hybrid: g.hybrid ?? null };
-  const next = { date, watered: [] as string[], hybrid: (g && g.date === yesterday ? grow(g.watered ?? []) : null) ?? null };
-  writeJson(localKV(), SCENE.garden, next);
-  return next;
-}
 /** Remember a flower watered today (and tell the flowers: a watered one glitters for the day). */
 export function water(date: string, id: string): void {
   const g = readJson<Garden>(localKV(), SCENE.garden);
-  const cur = g && g.date === date ? g : { date, watered: [], hybrid: null };
-  if (!cur.watered.includes(id)) writeJson(localKV(), SCENE.garden, { ...cur, watered: [...cur.watered, id] });
+  const watered = g && g.date === date ? (g.watered ?? []) : [];
+  // (an older build's `hybrid` beside them is dropped: today's hybrid is the shared day's, IslandScene)
+  if (!watered.includes(id)) writeJson(localKV(), SCENE.garden, { date, watered: [...watered, id] });
   if (typeof document !== 'undefined') document.dispatchEvent(new CustomEvent(WATERED));
 }
 /** The event `water` sends. */

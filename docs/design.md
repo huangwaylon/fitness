@@ -352,7 +352,9 @@ fragments; seeded, shared; first finds go in the ずかん.
 
 ### Island care
 
-`island/care.svelte.ts`, `world/care.ts`: weeds, watering, the rock; fields: [farming.md](farming.md).
+`island/care.svelte.ts`, `world/care.ts`: weeds, watering, the rock; fields: [farming.md](farming.md). A flower
+watered yesterday (by anyone: the shared day's `watered` and the record's rows) is 1 in 4 a hybrid today (`hybridFor`,
+seeded by the date), the same on every phone; each phone greets it once (a sparkle, 「くろい コスモスが さいた！」).
 
 ### Pond
 

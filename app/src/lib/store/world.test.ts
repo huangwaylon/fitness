@@ -6,6 +6,7 @@ import type { Intent, Relayed } from '#lib/contract/live-protocol.ts';
 import type { Live, LiveStatus } from '#lib/sync/live.ts';
 import { caught, lying, takenIds } from '#lib/sync/world-day.ts';
 import { world } from './world.svelte.ts';
+import { hybridFor } from '#lib/world/care.ts';
 
 class Mem implements KV {
   m = new Map<string, string>();
@@ -203,6 +204,34 @@ describe('the shared island on this phone', () => {
     const rev = world.rev;
     world.rows([{ at: T0 - 3600_000, person: 'B', data: { ...base, date: '2026-11-01', taken: ['s9', 'w4'] } }]);
     expect(world.rev).toBe(rev); // nothing new: no re-derive
+  });
+
+  it('two phones grow the same hybrid: the one that watered (and heard the partner) and one that only read the record', () => {
+    const kindOf = () => 'pink-cosmos' as const, base = { taken: [], puts: [], shakes: [], wishes: {} };
+    const rows = [
+      { at: T0 - 20 * 3600_000, person: 'B' as const, data: { ...base, date: '2026-10-31', watered: ['fl:62:530'] } },
+      { at: T0 - 21 * 3600_000, person: 'A' as const, data: { ...base, date: '2026-10-31', watered: ['fl:10:724', 'fl:130:344'] } }
+    ];
+    // phone A, yesterday: watered two, heard B water one; today it has only what it kept until the record comes
+    vi.setSystemTime(T0 - 86_400_000);
+    const r = fakeRelay();
+    world.attach(r.live, 'A');
+    world.share({ kind: 'world', op: 'watered', id: 'fl:10:724' });
+    world.share({ kind: 'world', op: 'watered', id: 'fl:130:344' });
+    r.hear({ kind: 'world', op: 'watered', id: 'fl:62:530', who: 'B', t: T0 - 86_400_000 - 10 });
+    vi.setSystemTime(T0);
+    expect(world.recordIn).toBe(false);
+    world.rows(rows);
+    expect(world.recordIn).toBe(true);
+    const a = hybridFor('2026-11-01', world.wateredYesterday(), kindOf);
+    // phone B: nothing of yesterday on it (it was closed), only the record's rows
+    world.reset();
+    configureStorage({ local: new Mem() });
+    world.attach(null, 'B');
+    expect(world.wateredYesterday()).toEqual([]);
+    world.rows(rows);
+    expect(hybridFor('2026-11-01', world.wateredYesterday(), kindOf)).toEqual(a);
+    expect(a).toEqual({ id: 'fl:130:344', flower: 'orange-cosmos' }); // (the day's seed: pinned)
   });
 
   it('the demo\'s two players keep a day each (written once per burst, after it)', async () => {

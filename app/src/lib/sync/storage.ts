@@ -250,9 +250,10 @@ export const SCENE = {
   /** localStorage `fireworks-day` = the Tokyo date this phone last showed the both-of-us-met-everything volley
    *  (island/Fireworks.svelte: once a day). */
   fireworks: 'fireworks-day',
-  /** localStorage `scene-garden` = `{ date, watered: ['fl:x:z'…], hybrid }`: the flowers watered today and the hybrid
-   *  today shows (from yesterday's watering). */
+  /** localStorage `scene-garden` = `{ date, watered: ['fl:x:z'…] }`: the flowers this phone watered today. */
   garden: 'scene-garden',
+  /** localStorage `scene-hybrid` = `date|id|flower`: the last hybrid this phone greeted (a sparkle and a line, once). */
+  hybrid: 'scene-hybrid',
   /** localStorage `scene-stretch` = `{ date, morning, done }`: today's group stretching on this phone (island/stretching.ts):
    *  whether the island was opened 06:00–08:00 (the tape deck's morning) and whether it already played. */
   stretch: 'scene-stretch',

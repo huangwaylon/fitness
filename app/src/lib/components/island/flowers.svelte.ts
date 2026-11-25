@@ -3,7 +3,7 @@
 // (world3d/objects.ts: hybrids and winter's snow caps too). What's left of them here: each one's tap area for the 3D
 // pick (a tap waters it: SceneTaps, by its id), the flowers watered today (by either of us: NH's flower keeps a
 // glitter for the rest of the day, a 3D glint every 4–6 s, out of step between flowers) and their list for the
-// critters (a ladybug sits on a head) and the e2e's hooks (Island3D: scenery's look and watered, box; ?hit's overlay).
+// critters (a ladybug sits on a head), a new hybrid's greeting (a sparkle and a line, once a phone) and the e2e's hooks (Island3D: scenery's look and watered, box; ?hit's overlay).
 import type { Season } from '#lib/ui-state/theme.svelte.ts';
 import { FLOWER_U, flowerModel, flowerScale, wildFlower } from './scene.ts';
 import { FLOWERS, type Flower } from '#lib/world/world.ts';
@@ -13,7 +13,9 @@ import { flowerArt, type FlowerId } from '#lib/art.ts';
 import { tap } from '../world3d/things3.ts';
 import { islandDay } from './ambientClock.ts';
 import { week } from '#lib/store/week.svelte.ts';
-import { WATERED, wateredOn } from '#lib/world/sceneDay.ts';
+import { WATERED, greetOnce, wateredOn } from '#lib/world/sceneDay.ts';
+import { toasts } from '#lib/ui-state/toast.svelte.ts';
+import { t } from '#lib/i18n/index.ts';
 import { world as shared } from '#lib/store/world.svelte.ts';
 import { fx3d } from '#lib/world/fx3d.ts';
 
@@ -73,6 +75,27 @@ export function useFlowers(w: World, o: { season: () => Season; hybrid: () => { 
       id = setTimeout(tick, Math.max(16, soon - t));
     };
     tick();
+    return () => clearTimeout(id);
+  });
+
+  // a new hybrid is a find: the first time this phone sees today's (once the record's rows are in, so a phone that only
+  // heard part of yesterday's watering never greets one that isn't everyone's), a sparkle on it and a line
+  $effect(() => {
+    const hy = o.hybrid(), f = hy && shared.recordIn ? list.find((x) => x.id === hy.id) : undefined;
+    if (!hy || !f) return;
+    const at = hy.flower.indexOf('-');
+    const line = t('world.hybrid', { colour: t(`world.flower.${hy.flower.slice(0, at)}`), kind: t(`world.flower.${hy.flower.slice(at + 1)}`) });
+    let id: ReturnType<typeof setTimeout>;
+    const greet = (): void => {
+      const done = greetOnce(`${islandDay()}|${hy.id}|${hy.flower}`, () => {
+        // (not while the page is away or the 3D island isn't up yet: a second later)
+        if (document.hidden || !fx3d('sparkle', f.x, f.z, f.h * 0.7, { size: 1.2 })) return false;
+        toasts.show(line, 3600, { reaction: 'joy' });
+        return true;
+      });
+      if (!done) id = setTimeout(greet, 1000);
+    };
+    greet();
     return () => clearTimeout(id);
   });
 

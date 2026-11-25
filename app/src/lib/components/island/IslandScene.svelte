@@ -87,8 +87,6 @@
   import Board from '../board/Board.svelte';
   import { World, dropLive, horizonGuess, provideWorld } from './camera.svelte.ts';
   import { hybridFor, hybridsOf } from '#lib/world/care.ts';
-  import { garden } from '#lib/world/sceneDay.ts';
-  import { addDays } from '#lib/time/dates.ts';
   import { actors, addFx, applyStep, busy, eventsQuiet, inMotion, react, livePos, onMove, onStep, place, setEmote, setHome, setMotion, wake } from '../motion/director.svelte.ts';
   import { cue, hearFrom } from '#lib/sound/cues.ts';
   import { prefetchPlace } from '#lib/sound/sound.svelte.ts';
@@ -410,10 +408,8 @@
   const hybrid = $derived.by(() => {
     const kindOf = (id: string) => wildFlower(flowerById(id) ?? FLOWERS[0], season);
     if (hookFlag('hybrid')) return { id: FLOWERS[0].id, flower: hybridsOf(kindOf(FLOWERS[0].id))[0] };
-    const mine = garden(today, addDays(today, -1), (w) => hybridFor(today, w.filter(flowerById), kindOf)).hybrid;
-    // both people's waterings yesterday (the shared day's), so both phones grow the same one
-    const both = shared.wateredYesterday().filter(flowerById);
-    return both.length ? hybridFor(today, both, kindOf) : mine;
+    // everyone's waterings yesterday (the shared day's and the record's rows), so every phone grows the same one
+    return hybridFor(today, shared.wateredYesterday().filter(flowerById), kindOf);
   });
   // a wasp's sting from a shaken tree (treeShakes.svelte.ts), Jack's trick: the villagers' faces a while (faces.svelte.ts)
   const faces = new Faces();
