@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'vitest';
 import { defaultLayout, doorOf, withChanges } from '#lib/layout/model.ts';
 
-import { brushTiles, cliff, copy, inBox, move, objectAt, paint, paste, place, remove, resize, revert, rotate, sameLayout } from './edits.ts';
+import { brushTiles, cliff, copy, duplicate, ghostAt, ghostFoot, inBox, move, objectAt, paint, paste, place, remove, resize, revert, rotate, sameLayout } from './edits.ts';
 import { opsBetween } from '#lib/layout/model.ts';
 
 const T0 = 1_800_000_000_000;
@@ -101,5 +101,24 @@ describe('turning a home', () => {
     // the museum can't fit on a shallower clifftop: the pull waits
     const museum = resize(l, 'back', -2, true);
     expect([museum.layout, museum.stuck]).toEqual([null, ['museum']]);
+  });
+  test('a duplicate goes beside its pieces (right, else left), new ids, the fixed ones never copied', () => {
+    const p = place(l, 'park-bench', 6, 15, 0, undefined, T0)!;
+    const w = p.layout.objects.get(p.id)!, [fw] = ghostFoot('park-bench', 0);
+    const d = duplicate(p.layout, [p.id, 'sandcastle'], T0 + 1)!;
+    expect(d.ids).toHaveLength(1);
+    expect(d.layout.objects.get(d.ids[0])).toMatchObject({ k: 'park-bench', x: w.x + fw, z: w.z, f: 0 });
+    // at the grid's right edge: to the left
+    const edge = place(l, 'bush', 19, 15, 0, undefined, T0)!;
+    const e = duplicate(edge.layout, [edge.id], T0 + 1)!;
+    expect(e.layout.objects.get(e.ids[0])).toMatchObject({ k: 'bush', x: 18 });
+    expect(duplicate(l, ['sandcastle'], T0)).toBeNull();
+  });
+  test("a ghost centres the footprint on the tile; never on water, the sea or off the grid (but a bridge)", () => {
+    expect(ghostAt(l, 'bush', 0, [8, 15])).toEqual({ k: 'bush', x: 8, z: 15, f: 0, ok: true });
+    expect(ghostAt(l, 'bush', 0, [0, 0]).ok).toBe(false);
+    expect(ghostAt(l, 'bush', 0, [-1, 5]).ok).toBe(false);
+    const [w, d] = ghostFoot('museum', 0), g = ghostAt(l, 'museum', 0, [8, 15]);
+    expect([g.x, g.z]).toEqual([8 - Math.floor((w - 1) / 2), 15 - Math.floor((d - 1) / 2)]);
   });
 });

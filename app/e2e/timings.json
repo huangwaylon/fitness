@@ -1394,5 +1394,9 @@
  "zukan.spec.ts › the picked fish stays pinned over the scrolling grid, another pick keeps the grid's scroll (320x568)": 4351,
  "zukan.spec.ts › the picked fish stays pinned over the scrolling grid, another pick keeps the grid's scroll (390x844)": 3659,
  "zukan.spec.ts › ずかん from 設定: ‹ back to 設定 where it was, ✕ to the island": 3620,
- "zukan.spec.ts › なかま: NH’s special characters by where we meet them, the ones with no role on our island in here only": 3353
+ "zukan.spec.ts › なかま: NH’s special characters by where we meet them, the ones with no role on our island in here only": 3353,
+ "editor-touch.spec.ts › the phone layout: the plan full-bleed, the bar, the dock, every control a finger wide, nothing past 393 px": 3100,
+ "editor-touch.spec.ts › a tap selects, a finger drags it, 回す, 複製, 削除, 取り消す; the move kept after a reload": 3900,
+ "editor-touch.spec.ts › 置く: picked from the sheet, a tap puts it down; 塗る: one finger paints; two fingers pinch and paint nothing": 3400,
+ "editor-touch.spec.ts › 川: a tap on a knot picks it and 点を消す takes it away; a finger drags a knot a tile at a time; ✕ leaves the river as it was": 3400
 }

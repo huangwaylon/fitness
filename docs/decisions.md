@@ -147,8 +147,8 @@ both. A change to one of these is a conscious decision: edit the line, don't let
 - **Always animated.** No reduced-motion variants. Why: one code path.
 - **No launch snapshot;** startup is cut with async shaders and fewer materials instead
   ([perf](ops/perf.md)).
-- **The island is arranged only in /editor** (terraforming on a desktop; a phone places pieces); the game draws at most 30 fps (12 when idle). Why: fewer controls, a
-  cooler phone.
+- **The island is arranged only in /editor** (every tool, on a desktop or an iPhone); the game draws at most 30 fps (12 when idle). Why:
+  fewer controls, a cooler phone.
 
 ## The island world
 - <a id="the-island-in-3d-threejs-only"></a>**The island in 3D: three.js only.** `components/world3d/`, NH's models on

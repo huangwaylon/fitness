@@ -39,7 +39,7 @@ describe('the outdoor catalogue (outdoor.json)', () => {
     for (const c of Object.keys(PIECES)) expect(text.split(`"${c}": {`).length - 1, c).toBe(1);
     expect(Object.keys(PIECES).length).toBeGreaterThan(380);
     const edit = readFileSync(join(APP, 'src', 'lib', 'components', 'layoutEdit', 'IslandEdit.svelte'), 'utf8');
-    const desk = readFileSync(join(APP, 'src', 'lib', 'components', 'editor', 'Editor.svelte'), 'utf8');
+    const desk = readFileSync(join(APP, 'src', 'lib', 'components', 'editor', 'Palette.svelte'), 'utf8');
     for (const t of O.tabs) {
       expect(Object.values(PIECES).some((p) => p.t === t), t).toBe(true);
       expect(edit, t).toContain(`'${t}'`);

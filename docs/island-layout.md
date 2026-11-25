@@ -17,7 +17,7 @@ no island editing: the island is arranged in /editor only.
 outermost land a tile out or in (reversible). The land keeps `MARGIN` (2) tiles of sea round it and is at least `MIN`
 (6) across and along; the default 15 × 57 can grow back to 152 rows. What's in the way moves to its nearest clear tile
 (`moveInside`, resolve.ts `clearTile`), `fixed` and biggest first; a stuck fixed one blocks the resize. The camera
-centres on the land box (`model.ts midXOf`). Desktop editor only; one action (⌘Z), one burst.
+centres on the land box (`model.ts midXOf`). In the editor's 島 panel; one action (⌘Z), one burst.
 
 ## The layout is data
 `layout/model.ts` `Layout` (`codes`, `objects`, `homes`):
@@ -82,8 +82,18 @@ the record keeps each id's latest op (slot `decor|<sc>|<id>`). An old phone igno
 ## The editor
 `/editor/` (`routes/editor/+page.svelte`, `components/editor/`: `Editor.svelte`, `plan.ts`, `edits.ts`,
 `Preview3D.svelte`): unlinked, noindex, for anyone paired (A, B, guest). `?demo` runs it on the made-up island.
-- **Plan and tools**: top-down map, select/drag, terrain brush, cliff tier, palette; Delete never takes a goal tree,
-  home, named spot or one-off. ⌘Z reverts one action. Each action goes out as ops at once; a drag streams `drag`.
+- **Plan and tools**: top-down map, select/drag, terrain brush, cliff tier, palette (`Palette.svelte`); Delete never
+  takes a goal tree, home, named spot or one-off. ⌘Z reverts one action. Each action goes out as ops at once; a drag
+  streams `drag`. The selection's 回す · 複製 (`edits.ts duplicate`: beside it) · 削除 are buttons too.
+- **Two layouts, one editor**: a desktop window gets three columns (palette | plan | 3D, selection, `IslandSize`,
+  `IssueList`, files) and the shortcuts. ≤ 760 px (iPhone 15/16 Safari) the plan is full-bleed under a top bar (↶ ↷,
+  3D: the orbit preview in the plan's place, off by default), a dock (選択 置く 塗る 崖 川 島), a card over it (the
+  selection's actions, the piece being placed, the brush) and the palette and 島 as sheets; insets via `--safe-*`,
+  controls 44 px.
+- **Fingers** (`planFingers.ts`, the rooms' `gestures` rule, the plan's and the river tool's): a tap selects (複数:
+  adds), places or dabs; one finger drags a *selected* piece, a brush stroke, a fence/crop run or a knot, else pans;
+  two pinch the zoom and pan, cancelling a stroke or move in progress. No long press, no hover. The mouse path is the
+  desktop's as before.
 - **3D preview** (`?view=orbit` with `&eye=x,y,z&at=x,y,z`, or `?view=phone` with `world3d/islandCam.ts`): the island's
   own builders (`world3d/built.ts`); `world3d/previewDraw.test.ts` fails for an undrawn catalog kind; ≤ 30 fps.
 - **`?check`** (`world3d/drawCheck.ts`): objects the phones' 3D island can't draw, and why.
@@ -103,10 +113,10 @@ scope, so old builds, the partner's phone and the island's caches (the fields/me
   the mouth or clifftop fish lost.
 - `applyPath`: old tiles back to the commonest of grass/sand/dirt around them, the bridges that crossed the old river
   re-placed across a straight run of the new one (turned to span it).
-- **The tool** (`editor/RiverTool.svelte`, imported when it opens; `plan.ts` `drawRiverHandles`/`riverHit`): desktop
-  only, like the other terrain tools. 川の道 or R with nothing selected. Drag a knot (the end is pulled to the coast,
-  the start to a pond). Click a segment or its "+" to add a knot. Delete/Backspace or right-click removes one (a fall's
-  pair together). ⌘Z / ⇧⌘Z step the tool's own history. 開いた時に戻す, 最初の川 (the default's knots over today's
+- **The tool** (`editor/RiverTool.svelte`, imported when it opens; `plan.ts` `drawRiverHandles`/`riverHit`). 川の道
+  (a phone's 川) or R with nothing selected. Drag a knot (the end is pulled to the coast, the start to a pond). Click
+  or tap a segment or its "+" to add a knot. Delete/Backspace, right-click or 点を消す (a tapped knot) removes one (a
+  fall's pair together); two fingers pinch. ⌘Z / ⇧⌘Z step the tool's own history. 開いた時に戻す, 最初の川 (the default's knots over today's
   island). The chip shows OK, 注意 n or the first red reason, and its list pans to an issue. ✓ is off while anything is
   red. Moves and bridges show as amber arrows, and the 3D preview gets the save 300 ms after the pointer lifts. ✓ is one
   editor action (「川の道を変えた」, one ⌘Z). 「相手が川を変えました」 offers 読み直す.
@@ -148,7 +158,7 @@ a table carries its things (`carryTops`).
 ## Phone editing
 `components/layoutEdit/IslandEdit.svelte`: the island's もようがえ in the editor's phone view, the tent's tray/bar way
 (tabs: IslandEdit `TABS`, `decor.tab.*`). Place, drag, ↻, ✕, ✓, 片付ける; others see `drag`. Anyone, guest too;
-terraforming is desktop only. It runs over a stage `{ host, toScreen, toGround, size, moved, hide }`:
+furniture only (/editor itself does everything on a phone too). It runs over a stage `{ host, toScreen, toGround, size, moved, hide }`:
 `/editor/?view=phone&edit` (`&cam=<z>`; `&preview=0` a flat plan for e2e).
 
 ## How the 3D island reads it

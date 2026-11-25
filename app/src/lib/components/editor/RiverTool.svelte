@@ -1,9 +1,10 @@
 <script lang="ts">
-  // 川の道 (docs/island-layout.md "The river tool"): the editor's tool for the main river's path, over the plan, for a
-  // mouse or a trackpad. Its knots (layout/riverPath.ts pathOf: from the tiles each time it opens) are dragged a tile at
-  // a time, the end pulled to the coast or a pond's edge, the start to a pond (the spring); a click on a segment or its
-  // "+" adds a knot there (and holds it), Delete/Backspace or a right-click takes one away (a fall's pair together);
-  // ⌘Z / ⇧⌘Z step its own history; a drag on open ground pans, the wheel zooms. Every move routes the path, paints it
+  // 川の道 (docs/island-layout.md "The river tool"): the editor's tool for the main river's path, over the plan. Its
+  // knots (layout/riverPath.ts pathOf: from the tiles each time it opens) are dragged a tile at a time, the end pulled to
+  // the coast or a pond's edge, the start to a pond (the spring); a click on a segment or its "+" adds a knot there (and
+  // holds it), Delete/Backspace, a right-click or 点を消す takes one away (a fall's pair together); ⌘Z / ⇧⌘Z step its
+  // own history; a drag on open ground pans, the wheel zooms. A finger (planFingers.ts): a tap picks a knot or adds one,
+  // a drag moves a knot or pans, two pinch. Every move routes the path, paints it
   // (the tiles only) and checks it (red holds ✓, amber is a note); a moment after the pointer lifts, the whole save is
   // worked out (what moves aside, the bridges: amber arrows) and handed to the 3D preview. ✓ sends it as one action
   // (the editor's commit: one burst of chunk and object ops, one ⌘Z). The editor imports it when the tool opens.
@@ -15,6 +16,7 @@
   import type { Issue } from '#lib/layout/validate.ts';
   import { applyPath, paintPath, pathOf, pullEnd, pullStart, route, sameKnots, tileOf, type Applied, type Knot, type RiverIssue, type RiverPath } from '#lib/layout/riverPath.ts';
   import { testHooks } from '#lib/ui-state/testMode.ts';
+  import { planFingers } from './planFingers.ts';
   import { draw, drawRiverHandles, plusTile, riverHit, tileUnder, toScreen, zoomAt, type RiverHit, type View } from './plan.ts';
 
   interface Props {
@@ -184,8 +186,35 @@
     else if (k === 0) [c, r] = pullStart(layout, c, r, was);
     return knots.map((q, i) => (i === k ? { c, r } : q));
   }
+  const fingers = planFingers({
+    local: (x, y) => local({ clientX: x, clientY: y }),
+    view: () => view,
+    setView: (v) => (view = v),
+    // a tap: a knot picked (点を消す takes it away), one added on a segment, open ground lets go
+    tap: (px, py) => {
+      const hit = riverHit(view, knots, px, py);
+      if (hit?.kind === 'knot') selected = hit.k;
+      else if (hit) (grab(hit, px, py), lift());
+      else selected = null;
+    },
+    grab: (px, py) => {
+      const hit = riverHit(view, knots, px, py);
+      return !!hit && grab(hit, px, py);
+    },
+    drag: (px, py) => dragTo(tileUnder(view, px, py)),
+    release: (done) => {
+      if (done) return lift();
+      // (a pinch took it: the knots as they were)
+      if (drag?.before) knots = drag.before;
+      drag = null;
+      held = null;
+      pending = null;
+    }
+  });
   function onDown(e: PointerEvent) {
     if (!canvas) return;
+    // (a finger is the canvas's till it lifts without asking)
+    if (e.pointerType !== 'mouse') return fingers.down(e);
     canvas.setPointerCapture(e.pointerId);
     const [px, py] = local(e);
     const hit = riverHit(view, knots, px, py);
@@ -199,23 +228,28 @@
       panning = true;
       return;
     }
+    grab(hit, px, py);
+  }
+  /** A knot held (a segment or its "+": a knot added there, held); false for a fall's (the cliff places it). */
+  function grab(hit: RiverHit, px: number, py: number): boolean {
     if (hit.kind === 'knot') {
       selected = hit.k;
-      if (knots[hit.k].pin) return tell('滝の位置は崖で決まります（右クリックかDeleteで消せます）');
+      if (knots[hit.k].pin) return (tell('滝の位置は崖で決まります（点を消すで消せます）'), false);
       drag = { mode: 'knot', x: px, y: py, k: hit.k, before: knots };
       held = hit.k;
-      return;
+      return true;
     }
-    // a segment or its "+": a knot there, held
     const [c, r] = hit.kind === 'plus' ? plusTile(knots[hit.k], knots[hit.k + 1]) : hit.tile;
     const before = knots;
     knots = [...knots.slice(0, hit.k + 1), { c, r }, ...knots.slice(hit.k + 1)];
     selected = held = hit.k + 1;
     drag = { mode: 'knot', x: px, y: py, k: hit.k + 1, before, moved: true };
+    return true;
   }
   let frame = 0;
   let pending: [number, number] | null = null;
   function onMove(e: PointerEvent) {
+    if (e.pointerType !== 'mouse') return fingers.move(e);
     const [px, py] = local(e);
     if (!drag) {
       hover = riverHit(view, knots, px, py);
@@ -225,8 +259,11 @@
       view = { ...drag.view!, ox: drag.view!.ox + px - drag.x, oy: drag.view!.oy + py - drag.y };
       return;
     }
-    // (a frame's routing at most: the last tile the pointer was on)
-    pending = tileUnder(view, px, py);
+    dragTo(tileUnder(view, px, py));
+  }
+  /** The held knot toward a tile (a frame's routing at most: the last tile the pointer was on). */
+  function dragTo(tile: [number, number]) {
+    pending = tile;
     if (frame) return;
     frame = requestAnimationFrame(() => {
       frame = 0;
@@ -239,10 +276,15 @@
     });
   }
   function onUp(e: PointerEvent) {
+    if (e.pointerType !== 'mouse') return e.type === 'pointercancel' ? fingers.cancel(e) : fingers.up(e);
+    canvas?.releasePointerCapture(e.pointerId);
+    lift();
+  }
+  /** The knot let go: one step of history for the whole drag (an insert and its drag one step too). */
+  function lift() {
     const d = drag;
     drag = null;
     panning = false;
-    canvas?.releasePointerCapture(e.pointerId);
     if (!d || d.mode !== 'knot') return;
     cancelAnimationFrame(frame);
     frame = 0;
@@ -252,7 +294,6 @@
       pending = null;
     }
     held = null;
-    // one step of history for the whole drag (an insert and its drag one step too)
     if (d.before && !sameKnots(d.before, knots)) {
       undoS = [...undoS.slice(-99), d.before];
       redoS = [];
@@ -411,7 +452,8 @@
     <button type="button" onclick={redo} disabled={!redoS.length} title="⇧⌘Z" data-river-redo>↷ やり直す</button>
     <button type="button" onclick={backToOpened} data-river-opened>開いた時に戻す</button>
     <button type="button" onclick={toFirst} data-river-first>最初の川</button>
-    <label><input type="checkbox" bind:checked={show3d} /> 3D</label>
+    {#if selected !== null}<button type="button" onclick={() => removeKnot(selected!)} data-river-drop>点を消す</button>{/if}
+    <label class="b3d"><input type="checkbox" bind:checked={show3d} /> 3D</label>
     <span class="hint">点をドラッグで移動 · 線か＋をクリックで点を追加 · 右クリックかDeleteで削除 · 空き地をドラッグで移動</span>
   </footer>
 </div>
@@ -426,9 +468,9 @@
   .head { top: 12px; }
   .bar { bottom: 12px; flex-wrap: wrap; }
   h2 { margin: 0 auto 0 4px; font-size: 16px; }
-  .chip { background: var(--c-leaf); color: #fff; border-color: transparent; max-width: 420px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .chip.amber { background: #d7a323; color: #2c2218; }
-  .chip.red { background: #e2553d; }
+  .head .chip { background: var(--c-leaf); color: #fff; border-color: transparent; max-width: 420px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .head .chip.amber { background: #d7a323; color: #2c2218; }
+  .head .chip.red { background: #e2553d; }
   .ok:not(:disabled) { background: var(--c-yuzu); }
   .hint { font-size: 13px; color: var(--c-ink-soft); margin-left: auto; }
   label { font-size: 13px; font-weight: 700; display: inline-flex; align-items: center; gap: 4px; }
@@ -445,4 +487,16 @@
   }
   .banner { top: 66px; border-color: #d7a323; }
   .note { top: 110px; }
+  /* a phone (the editor's ≤ 760 px): clear of the notch and the home indicator, the kit's 44px hit, no mouse words;
+     its 3D from the editor's bar once the tool's closed */
+  @media (max-width: 760px) {
+    .head { top: calc(var(--ui-top) + 8px); left: calc(8px + var(--safe-left)); right: calc(8px + var(--safe-right)); }
+    .bar { bottom: calc(var(--safe-bottom) + 8px); left: calc(8px + var(--safe-left)); right: calc(8px + var(--safe-right)); gap: 6px; }
+    .head :global(button), .bar :global(button) { min-height: 44px; }
+    .head .chip { max-width: 34vw; }
+    .hint, .b3d { display: none; }
+    .list { top: calc(var(--ui-top) + 70px); left: 8px; right: 8px; width: auto; max-height: 50%; overflow-y: auto; }
+    .banner { top: calc(var(--ui-top) + 70px); }
+    .note { top: calc(var(--ui-top) + 114px); max-width: calc(100% - 24px); }
+  }
 </style>

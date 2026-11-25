@@ -168,6 +168,18 @@ export function paste(l: Layout, clip: Clip, c: number, r: number, at: number): 
   return { layout: set.length ? settle(withChanges(l, { set }), ids) : l, ids };
 }
 
+/** A copy of the pieces beside them (right of their box, else left), the copies' ids; null with nothing to copy. */
+export function duplicate(l: Layout, ids: Iterable<string>, at: number): { layout: Layout; ids: string[] } | null {
+  const os = [...ids].map((id) => l.objects.get(id)).filter((o): o is Obj => !!o && removable(o));
+  const clip = copy(l, os.map((o) => o.id));
+  if (!clip) return null;
+  const x0 = Math.min(...os.map((o) => o.x)), z0 = Math.min(...os.map((o) => o.z)), w = Math.max(...os.map((o) => o.x + footOf(l, o)[0])) - x0;
+  const right = paste(l, clip, x0 + w, z0, at);
+  if (right.ids.length === clip.items.length) return right;
+  const left = paste(l, clip, x0 - w, z0, at);
+  return left.ids.length > right.ids.length ? left : right;
+}
+
 /** The objects whose footprints a tile box (inclusive) touches. */
 export function inBox(l: Layout, c0: number, r0: number, c1: number, r1: number): string[] {
   const [a, b] = [Math.min(c0, c1), Math.max(c0, c1)], [p, q] = [Math.min(r0, r1), Math.max(r0, r1)];
@@ -241,12 +253,22 @@ export function sameLayout(a: Layout, b: Layout): boolean {
 }
 
 /** A tile is water (for a ghost's quick check). */
-export const wetAt = (l: Layout, c: number, r: number): boolean => isWater(l.kind(c, r));
+const wetAt = (l: Layout, c: number, r: number): boolean => isWater(l.kind(c, r));
 /** A kind's footprint in a facing (for a ghost). */
 export const ghostFoot = (k: string, f: number): [number, number] => {
   const def = kindDef(k);
   return def ? footprintOf(def, f) : [1, 1];
 };
+
+/** Where a kind put down at a tile goes (its footprint about the tile) and whether it may (on the grid, never on water
+ *  or the sea but a bridge). */
+export function ghostAt(l: Layout, k: string, f: Facing, [c, r]: readonly [number, number]): { k: string; x: number; z: number; f: Facing; ok: boolean } {
+  const [w, d] = ghostFoot(k, f);
+  const x = c - Math.floor((w - 1) / 2), z = r - Math.floor((d - 1) / 2);
+  let ok = x >= 0 && z >= 0 && x + w <= GRID.cols && z + d <= GRID.rows;
+  for (let j = 0; j < d && ok; j++) for (let i = 0; i < w && ok; i++) if (k !== 'bridge' && (wetAt(l, x + i, z + j) || l.kind(x + i, z + j) === 'sea')) ok = false;
+  return { k, x, z, f, ok };
+}
 
 /** A kind put down in a run, a drag across tiles (the garden's: a fence, a crop; layout/garden.ts): one tile at a time. */
 export const runs = (k: string): boolean => isFence(k) || isCrop(k);
