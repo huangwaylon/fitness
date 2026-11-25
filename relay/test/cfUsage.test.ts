@@ -1,6 +1,6 @@
 // ボット → Jobs' Cloudflare free tier (src/cfUsage.ts, src/jobs.ts jobsRoute): GraphQL's reply as the four limits (the
 // namespaces named, the rest `other`, the most first), the isolate's copy (10 min, a failure 2 min, never past UTC
-// midnight, one read at a time), the failures (no token: never asked; HTTP, GraphQL's errors, a bad shape, a timeout:
+// midnight, each request its own read), the failures (no token: never asked; HTTP, GraphQL's errors, a bad shape, a timeout:
 // the day's last good limits kept) logged once per change, and `/jobs` carrying it (absent or failing: the record's
 // answer as it was). Hermetic: fetch mocked, the clock pinned.
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -85,10 +85,10 @@ function net(answer: () => Response | 'hang' | 'throw' = () => Response.json(REP
 }
 
 describe('the copy and the failures', () => {
-  it('read once, kept 10 min (one read for callers at once), read again after; a new UTC day reads at once', async () => {
+  it('read once, kept 10 min, read again after; a new UTC day reads at once', async () => {
     const c = newUsageCache(), n = net();
-    const [a, b] = await Promise.all([cfUsage(c, n.deps), cfUsage(c, n.deps)]);
-    expect(a).toBe(b);
+    const a = await cfUsage(c, n.deps);
+    expect(await cfUsage(c, n.deps)).toBe(a);
     expect(n.calls).toHaveLength(1);
     expect(n.calls[0].auth).toBe('Bearer cf_test');
     expect(n.calls[0].query).toContain('date:"2026-11-25"');

@@ -278,11 +278,11 @@ export class StoreShop {
 
   /**
    * The admin's `ledger_retire {confirm: 'retire-ledger-rows', dry?}`: the shop's history let go, the stored ledger the
-   * record's alone (meta `ledger_only`): every `sell`, `buy`, `buy_starts`, `sg_reward` and `shop_adjust` row deleted
-   * (their ids stay known: a late retry is a duplicate), and the day tallies and give-backs older than TALLY_KEEP_DAYS
-   * (none may be sent again: contract/record.ts TALLY_PAST_DAYS), then a new epoch (the phones refetch). Only with every
-   * person seeded and no drift (ledgerCheck); `dry`: the counts only. Since then the daily prune keeps the shop's rows
-   * RETIRED_KEEP_DAYS (ledgerPrune). Never a metric, a ベル row, a farm row (the field's fold) or anything else.
+   * record's alone (meta `ledger_only`): every RETIRED row deleted (`farm` too: the stored field is the record's since
+   * 2026-11-24, no fold needed; their ids stay known: a late retry is a duplicate), and the day tallies and give-backs
+   * older than TALLY_KEEP_DAYS (none may be sent again: contract/record.ts TALLY_PAST_DAYS), then a new epoch (the phones
+   * refetch). Only with every person seeded and no drift (ledgerCheck); `dry`: the counts only. Since then the daily
+   * prune keeps the RETIRED rows RETIRED_KEEP_DAYS (ledgerPrune). Never a metric, a ベル row or anything else.
    */
   ledgerRetire(o: Rec): Record<string, unknown> {
     if (o.confirm !== RETIRE_CONFIRM) return { ok: false, error: 'bad_request', detail: `it deletes the shop's rows: pass confirm: '${RETIRE_CONFIRM}' (dump first)` };

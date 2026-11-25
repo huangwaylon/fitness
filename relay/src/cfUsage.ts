@@ -1,7 +1,9 @@
 // ボット → Jobs' Cloudflare free tier (docs/bots.md "Jobs", docs/ops/observability.md "The rows-read budget"): the
 // account's use today of the Free plan's daily limits, for `GET /jobs`'s `usage` (contract: app/src/lib/contract/jobs.ts
 // Usage). One GraphQL Analytics query (a subrequest, the secret CF_ANALYTICS_TOKEN: Account Analytics read), kept in
-// the isolate's memory USAGE_TTL_MS (a failure FAIL_TTL_MS), one read at a time. Never a Durable Object: no rows, so
+// the isolate's memory USAGE_TTL_MS (a failure FAIL_TTL_MS), each request reading its own (never awaiting another
+// request's: a cancelled one's read never settles, and every later /jobs in the isolate would hang on it). Never a
+// Durable Object: no rows, so
 // it still answers when the objects are over quota. (No Cache API: the relay is on workers.dev, where it keeps nothing.)
 // - Logged: `cf.usage` when its state changes in an isolate (failing: warn, well again: info); `no_token` never (the
 //   test copy has none: the page says so).
@@ -80,10 +82,10 @@ export interface UsageDeps {
   timeoutMs?: number;
 }
 
-/** An isolate's copy: the last answer and until when it holds, the last good one (its day), the read under way, the
- *  state last logged (null: well). */
-export interface UsageCache { u: Usage | null; until: number; good: Usage | null; inflight: Promise<Usage> | null; logged: string | null }
-export const newUsageCache = (): UsageCache => ({ u: null, until: 0, good: null, inflight: null, logged: null });
+/** An isolate's copy: the last answer and until when it holds, the last good one (its day), the state last logged
+ *  (null: well). */
+export interface UsageCache { u: Usage | null; until: number; good: Usage | null; logged: string | null }
+export const newUsageCache = (): UsageCache => ({ u: null, until: 0, good: null, logged: null });
 /** The isolate's own. */
 export const USAGE_CACHE = newUsageCache();
 
@@ -124,14 +126,13 @@ async function readOnce(c: UsageCache, d: UsageDeps): Promise<Usage> {
   return { at: good?.at ?? t0, day: good?.day ?? null, limits: good?.limits ?? [], err };
 }
 
-/** The day's use: the isolate's copy while it holds (USAGE_TTL_MS; a failure FAIL_TTL_MS), else read (one at a time). */
+/** The day's use: the isolate's copy while it holds (USAGE_TTL_MS; a failure FAIL_TTL_MS), else read (two requests at
+ *  once both read: rare, one page's). */
 export async function cfUsage(c: UsageCache, d: UsageDeps): Promise<Usage> {
   // (a copy from the UTC day before never outlives midnight: the limits reset)
   if (c.u && d.now() < c.until && (!c.u.day || c.u.day === new Date(d.now()).toISOString().slice(0, 10))) return c.u;
-  c.inflight ??= readOnce(c, d).then((u) => {
-    c.u = u;
-    c.until = d.now() + (u.err ? FAIL_TTL_MS : USAGE_TTL_MS);
-    return u;
-  }).finally(() => { c.inflight = null; });
-  return c.inflight;
+  const u = await readOnce(c, d);
+  c.u = u;
+  c.until = d.now() + (u.err ? FAIL_TTL_MS : USAGE_TTL_MS);
+  return u;
 }
