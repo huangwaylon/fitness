@@ -155,10 +155,10 @@ for (const [h, ins] of [[852, IPHONE], [659, SAFARI_BAR]] as const) {
             await expect(page.locator('dialog[open] [data-offline-save]')).toHaveCount(0);
             await clean();
           } else if (s === 'trip layers') {
-            await page.locator('dialog[open] [data-map-pane] [data-map-layers]')[how]();
+            await page.locator('dialog[open] [data-travel-map] [data-map-layers]')[how]();
             await expect(page.locator('dialog[open] [data-map-layer="places"]')).toBeVisible();
             await clean();
-            await page.locator('dialog[open] [data-map-pane] [data-map-layers]')[how]();
+            await page.locator('dialog[open] [data-travel-map] [data-map-layers]')[how]();
           } else if (s === 'trip place') {
             await page.locator('dialog[open] [data-map-place="ok0"]')[how]();
             await expect(page.locator('dialog[open] [data-place-float]')).toBeVisible();

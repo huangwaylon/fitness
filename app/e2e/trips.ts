@@ -1,5 +1,5 @@
 // りょこう in the specs: the trips' sheet (the menu's りょこう pill, on the demo), a trip's page in it, and the trip map
-// (components/travel/map, docs/travel.md "Maps"): its hook (window.__travelMap) and OpenFreeMap answered from fixtures
+// (components/travel/whole, docs/travel.md "Maps"): its hook (window.__travelMap) and OpenFreeMap answered from fixtures
 // (e2e/fixtures/travel/: a trimmed TileJSON and the tiles round Motobu, z6-12), so no spec ever reaches the network. Any
 // other tile is an empty 204; any other request to that origin fails the spec.
 //
@@ -11,13 +11,13 @@
 import { expect, type Page } from './fixtures.ts';
 import { openFreeMap } from './mapTiles.ts';
 import TILEJSON from './fixtures/travel/tilejson.json' with { type: 'json' };
-import type { MapState } from '../src/lib/components/travel/map/types.ts';
+import type { MapState } from '../src/lib/components/travel/whole/types.ts';
 import { BASE } from './island.ts';
 import { fromMenu, hudMenu } from './hud.ts';
 
 export const mapState = (page: Page) => page.evaluate(() => (window as unknown as { __travelMap: { state(): unknown } }).__travelMap.state()) as Promise<MapState>;
 
-type TripTab = 'days' | 'map' | 'pack' | 'camps';
+type TripTab = 'days' | 'map' | 'prep' | 'pack';
 /** The trips' sheet. */
 export const tripsSheet = (page: Page) => page.locator('dialog[open] [data-travel]');
 /** From the island already up: the menu's りょこう pill: the list (or the trip on now). */
@@ -40,7 +40,8 @@ export async function pickTrip(page: Page, trip: string, tab: TripTab = 'days') 
   await sheet.locator(`[data-trip="${trip}"]`).click();
   await expect(sheet.locator(`[data-trip-view="${trip}"]`)).toBeVisible();
   if (tab !== 'days') await sheet.locator(`[data-trip-tab="${tab}"]`).click();
-  await expect(sheet.locator(`[data-pane="${tab}"]`)).toBeVisible();
+  // (地図 is its own layer over the page: AllDaysMap)
+  await expect(sheet.locator(tab === 'map' ? '[data-travel-map]' : `[data-pane="${tab}"]`)).toBeVisible();
 }
 /** From the island already up: the menu's りょこう pill, `trip`'s pass, its page `tab`. */
 export async function openTrip(page: Page, trip = 'nz', tab: TripTab = 'map') {

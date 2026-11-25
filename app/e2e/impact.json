@@ -45,7 +45,7 @@
     ["src/lib/components/share/**", ["share-page", "share"]],
     ["src/lib/sync/shareRead*", ["share-page"]],
     ["src/lib/i18n/link*", ["share-page"]],
-    ["src/lib/components/travel/map/**", ["travel-map", "share-page"]],
+    ["src/lib/components/travel/whole/**", ["travel*", "share-page", "csp", "offline", "leaks*", "maps-context"]],
     ["src/lib/components/map/**", ["travel-map", "share-page", "hiking*", "places*", "csp", "offline", "leaks*"]],
     ["src/lib/components/travel/**", ["travel*", "share-page", "share"]],
     ["src/lib/travel/**", ["travel*", "share-page"]],

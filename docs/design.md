@@ -457,6 +457,17 @@ plays ラジオ体操 on the [shared stage](#shared-music) and every awake villa
 旅行 ([travel.md](travel.md)): `travel/TravelSheet.svelte`. <a id="offline-maps"></a>**Offline maps**:
 `offline/SaveButton`, `travel/OfflineMaps`.
 
+- **A trip** (`travel/TripView.svelte`; /s `share/TripShare.svelte`): 日程 · 地図 · 準備 (logistics, campsites) · 持ち物.
+- **日程** (`travel/Itinerary.svelte`): every day on one page, a boarding pass each: the stub 「● 2/13（土） 3日目 タイトル」
+  (date in ink, the day's colour only the dot) held at the top, torn off along a stitch. A stop: arrival, place, one quiet
+  line of how we got there (「車 2時間31分」, 「07:35発」 on the first leg only); 「泊」, **未予約** in bold. Notes, km,
+  sun, 地図で見る, Googleマップ only on a tap; the day's tip and photo on its stub's tap. Each fact once a screen.
+- **Now:** one yuzu line on the stop we're heading to (「いま移動中 · あと1時間40分 · 181 km」), earlier lines soft; the
+  page opens on it. Days below it are `content-visibility: auto` with a guessed height (WebKit: no scroll anchoring),
+  never one holding an open line; the pass's side room is the section's, so its notches aren't clipped.
+- Distinct from the list's boarding pass: that one is torn down the right with a photo and sky band; the day's is torn
+  across under its stub, text only.
+
 ### Seasonal look
 
 `ui-state/preview.ts`, `panel/SeasonSection.svelte`: forces the island's look only (`pref seasonLook`).

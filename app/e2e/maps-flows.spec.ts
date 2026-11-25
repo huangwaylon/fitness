@@ -337,10 +337,10 @@ test.describe('trip and trail maps', () => {
     const how = howOf(info.project.name);
     await app(page);
     await openTrip(page, 'okinawa', 'map');
-    const pane = page.locator('dialog[open] [data-map-pane]');
+    const pane = page.locator('dialog[open] [data-travel-map]');
     await pane.locator('[data-map-day="2"]')[how]();
-    const n = Number(await pane.locator('[data-travel-map]').getAttribute('data-places'));
-    await expect.poll(async () => Number(await pane.locator('[data-travel-map]').getAttribute('data-places'))).toBeGreaterThan(0);
+    const n = Number(await pane.getAttribute('data-places'));
+    await expect.poll(async () => Number(await pane.getAttribute('data-places'))).toBeGreaterThan(0);
     await copied(page);
     // reloaded with the relay held: the squares at once
     const release = await hold(page, PLACES_URL);
@@ -348,12 +348,12 @@ test.describe('trip and trail maps', () => {
     await islandUp(page);
     await openTrip(page, 'okinawa', 'map');
     await pane.locator('[data-map-day="2"]')[how]();
-    await expect.poll(async () => Number(await pane.locator('[data-travel-map]').getAttribute('data-places'))).toBeGreaterThan(0);
+    await expect.poll(async () => Number(await pane.getAttribute('data-places'))).toBeGreaterThan(0);
     expect(n).toBeGreaterThanOrEqual(0);
     // the switch off here
     await pane.locator('[data-map-layers]')[how]();
     await pane.locator('[data-map-layer="places"]')[how]();
-    await expect(pane.locator('[data-travel-map]')).toHaveAttribute('data-places', '0');
+    await expect(pane).toHaveAttribute('data-places', '0');
     await closeAll(page);
     // the trail: from the copy too, and off (the one switch)
     await fromMenu(page, 'hiking', how);

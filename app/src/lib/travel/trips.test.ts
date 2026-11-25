@@ -13,6 +13,7 @@ import { loadTrip } from './trips/index.ts';
 import { TRIP_META } from './trips/meta.ts';
 import { isIcon } from '../components/ui/Icon.svelte';
 import { catIcon } from '../components/travel/packView.ts';
+import { lines } from '../components/travel/ledger.ts';
 import { SHARE_PRIVATE_NOTE_KEYS, SHARE_TRIP_REFS } from '../contract/share.ts';
 import { idLikeRuns } from '../contract/private.ts';
 
@@ -46,7 +47,7 @@ const hrefs = (t: Trip) => [
   ...(t.camps ?? []).map((c) => c.maps),
   ...t.places.flatMap((p) => (p.link ? [p.link] : []))
 ];
-const photos = (t: Trip) => [t.cover, t.hero, ...t.days.flatMap((d) => (d.photo ? [d.photo] : [])), ...t.logistics.flatMap((c) => (c.photo ? [c.photo] : [])), ...(t.camps ?? []).flatMap((c) => (c.photo ? [c.photo] : []))];
+const photos = (t: Trip) => [t.cover, ...t.days.flatMap((d) => (d.photo ? [d.photo] : [])), ...t.logistics.flatMap((c) => (c.photo ? [c.photo] : [])), ...(t.camps ?? []).flatMap((c) => (c.photo ? [c.photo] : []))];
 
 describe('the trips', () => {
   it('numbered and dated from the start to the end', () => {
@@ -204,6 +205,60 @@ describe('the trip data', () => {
   });
   it('loadTrip gives each module', async () => {
     for (const id of TRIP_IDS) expect((await loadTrip(id)).id).toBe(id);
+  });
+});
+
+/** A note that says the leg's time or distance again (the leg line does: 「車 2時間31分」): '16分 · コーヒー',
+ *  '{km:193} · 渋滞なしで2時間31分', '8 min on foot', 'ショップから24分'. Not a time of day, nor a margin ('20–40分の余裕'). */
+const LEG_ECHO = /(?:^|[\s·、])(?:徒歩|\S+(?:から|まで))?\d+分(?:$|[\s·、])|\d+時間\d+分|渋滞なし|free-flow|\{km:|(?<![–\d])\d+ min\b|\(\S* ?h drive\)/;
+
+describe('the rows (types.ts RowKind: what 日程 and 地図 are built from)', () => {
+  it.each(TRIP_IDS)('%s: a colour a day, the next day’s never the same', (id) => {
+    const t = TRIPS[id];
+    expect(t.dayColors.length).toBe(t.days.length);
+    for (const c of t.dayColors) expect(c).toMatch(/^#[0-9a-f]{6}$/i);
+    t.dayColors.forEach((c, i) => i && expect(c, `day ${i + 1}`).not.toBe(t.dayColors[i - 1]));
+  });
+  it.each(TRIP_IDS)('%s: at most one stay a day, booked or not said on it alone; only stops and events after it', (id) => {
+    for (const d of TRIPS[id].days) {
+      const stays = d.rows.flatMap((r, i) => (r.kind === 'stay' ? [i] : []));
+      expect(stays.length, `day ${d.n}`).toBeLessThanOrEqual(1);
+      for (const r of d.rows) expect(typeof r.booked === 'boolean', `day ${d.n} ${r.t}`).toBe(r.kind === 'stay');
+      if (stays.length) expect(d.rows.slice(stays[0] + 1).every((r) => r.kind === 'event' || r.kind === 'sun' || r.kind === 'flight'), `day ${d.n}`).toBe(true);
+      // 未予約 is the stay's to say, never the day's note
+      expect(strs(d.note ?? {}).some((x) => /予約していません|未予約|not booked/i.test(x)), `day ${d.n}`).toBe(false);
+    }
+  });
+  it.each(TRIP_IDS)('%s: a way and minutes only on a leg; a flight and a sunrise at no stop of the map’s', (id) => {
+    for (const d of TRIPS[id].days)
+      for (const r of d.rows) {
+        if (r.go) expect(r.kind, `day ${d.n} ${r.t}`).toBe('leg');
+        if (r.kind === 'flight') expect(r.place, `day ${d.n} ${r.t}`).toBeUndefined();
+      }
+  });
+  it.each(TRIP_IDS)('%s: a stop with a place reached by a leg into it (but where the day sets off)', (id) => {
+    const t = TRIPS[id];
+    for (const d of t.days) {
+      const first = d.rows.findIndex((r) => r.place);
+      d.rows.forEach((r, i) => {
+        if (!r.place || i === first || (r.kind !== 'stop' && r.kind !== 'stay')) return;
+        const p = t.places.find((x) => x.id === r.place)!;
+        expect(t.legs.some((l) => l.day === d.n && l.to === p.id && l.i === p.i), `${r.place}`).toBe(true);
+      });
+    }
+  });
+  it.each(TRIP_IDS)('%s: no note says the leg again where the leg line shows it (its minutes, its km)', (id) => {
+    const t = TRIPS[id];
+    for (const d of t.days)
+      for (const l of lines(t, d))
+        if (l.how?.min || l.km) for (const m of l.more) for (const x of strs(m.note ?? {})) expect(LEG_ECHO.test(x), `day ${d.n} ${l.id}: ${x}`).toBe(false);
+    for (const d of t.days) for (const r of d.rows) for (const x of strs(r.text)) expect(/\(\S* ?h drive\)/.test(x), x).toBe(false);
+  });
+  it('the leg-echo guard catches what the notes said before, and lets real facts through', () => {
+    for (const x of ['16分 · コーヒー', '{km:193} · 渋滞なしで2時間31分 · ツアーは事前予約', '徒歩8分', 'ショップから24分 · 昼は15:30まで', '8 min on foot', '{km:20} · 22分 · レンタカー返却', '空港から{km:20}、渋滞なしで22分'])
+      expect(LEG_ECHO.test(x), x).toBe(true);
+    for (const x of ['土曜 08:00–12:00', '干潮14:53 · 崖を下る', '島を縦断 · 07:00–23:00 · 三連休の日曜、20–40分の余裕を', '昼は15:30まで、L.O. 15:00', '1人¥1,330', 'Lunch to 15:30, last order 15:00'])
+      expect(LEG_ECHO.test(x), x).toBe(false);
   });
 });
 

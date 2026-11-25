@@ -44,7 +44,7 @@ const SELF: Record<string, string> = {
 /** `none`: deliberately silent. */
 const NONE: Record<string, string> = {
   'lib/components/ui/Toast.svelte': 'a banner with 取り消す: a tap only holds it (the button is the sound)',
-  'lib/components/travel/map/TripMap.svelte': 'the logic-tier stub\'s empty-map tap (the drawn map makes no sound either)',
+  'lib/components/travel/whole/AllDaysMap.svelte': 'the logic-tier stub\'s empty-map tap (the drawn map makes no sound either)',
   'lib/components/hiking/TrailMap.svelte': 'the logic-tier stub\'s empty-map tap (the drawn map makes no sound either)',
   'lib/components/places/PlacesView.svelte': 'the search field: the system keyboard clicks',
   'routes/pair/+page.svelte': 'the key field: the system keyboard clicks',

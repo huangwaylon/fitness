@@ -189,7 +189,6 @@ const PLAIN_P: Record<string, number> = {
   'lib/components/tent/StereoPicker.svelte': 1,
   'lib/components/tent/TentEdit.svelte': 5,
   'lib/components/tent/TentRoom.svelte': 1,
-  'lib/components/travel/MapPane.svelte': 1,
   'lib/components/travel/PackList.svelte': 2,
   'lib/components/travel/ShareLinks.svelte': 2,
   'lib/components/travel/TravelSettings.svelte': 1,

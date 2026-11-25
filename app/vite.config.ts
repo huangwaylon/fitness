@@ -305,7 +305,7 @@ const englishData = (): Plugin => {
   };
 };
 
-const MAP_ENGINE = /\/src\/lib\/components\/(travel|hiking|places)\/map\/engine\.ts$/;
+const MAP_ENGINE = /\/src\/lib\/components\/(?:(travel|hiking|places)\/map|travel\/whole)\/engine\.ts$/;
 /** The maps' shared GL modules (components/map/gl*.ts, map/places/layer.ts): only the engines import them, so a chunk
  *  holding one (shared by two engines but not the third: not MapLibre's own) is a map chunk too. */
 const MAP_CORE = /\/src\/lib\/components\/map\/(gl[^/]*|places\/layer)\.ts$/;

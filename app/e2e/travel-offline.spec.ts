@@ -10,7 +10,7 @@ import { join } from 'node:path';
 import { expect, test, type Page, type Route } from './fixtures.ts';
 import { fromMenu } from './hud.ts';
 import { islandUp } from './island.ts';
-import { drawn, gotoTrips, mapReady, pickTrip, tripsSheet } from './trips.ts';
+import { drawn, gotoTrips, mapReady, mapState, pickTrip, tripsSheet } from './trips.ts';
 import { storeKeys } from './swFiles.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
@@ -165,8 +165,8 @@ test.describe('with the worker', () => {
     // the saved one either way)
     await expect(tripsSheet(page).locator('[data-travel-map]')).toHaveAttribute('data-mode', /ready|offline/, { timeout: 30_000 });
     await expect(tripsSheet(page).locator('[data-map-note="saved"]')).toHaveText('保存した範囲のみ');
-    await expect(page.locator('dialog[open] .maplibregl-marker.tm-pin').first()).toBeVisible();
-    await expect.poll(() => page.evaluate(() => (window as unknown as { __travelMap: { state(): { settled: boolean } } }).__travelMap.state().settled), { timeout: 15_000 }).toBe(true);
+    await expect.poll(async () => (await mapState(page)).stops, { timeout: 15_000 }).toBeGreaterThan(0);
+    await expect.poll(async () => (await mapState(page)).settled, { timeout: 15_000 }).toBe(true);
     // no tile the area holds asked of the network (one past its rings may be: the screen is wider than its 3 km band)
     const held = await page.evaluate(async (n) => (await (await caches.open(n)).keys()).map((r) => r.url).filter((u) => u.endsWith('.pbf')).map((u) => u.split('/planet/_/')[1]), AREA);
     expect(held.length).toBeGreaterThan(300);

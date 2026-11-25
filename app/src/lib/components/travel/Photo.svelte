@@ -1,6 +1,6 @@
 <script lang="ts">
   // A guide photo (static/travel/<trip>/, docs/travel.md "Photos"): its box held from its size before it loads (no
-  // layout shift), loaded lazily, its caption under it in the reader's locale. (A trip's hero is ui/PhotoBand's.)
+  // layout shift), loaded lazily, its caption under it in the reader's locale.
   //   <Photo photo={day.photo} />
   import { photoFallback } from '../ui/photoFallback.ts';
   import type { Photo } from '#lib/travel/types.ts';

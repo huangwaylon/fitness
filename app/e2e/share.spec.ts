@@ -113,6 +113,7 @@ test('a member makes a 1年 link to the trips page; a fresh phone with no key re
   // a coming trip (NZ: opens on 準備): its notes' free value, its {p:} values 🔒; 持ち物 the seed and the guest's item
   await list.locator('[data-trip="nz"]')[how]();
   const nz = v.page.locator('[data-share-trip="nz"]');
+  await nz.locator('[data-trip-tab="prep"]')[how]();
   await expect(nz.locator('[data-share-notes]')).toContainText('Taupō は天気次第');
   await expect(nz.locator('[data-locked]').first()).toBeVisible();
   await nz.locator('[data-trip-tab="pack"]')[how]();
@@ -128,8 +129,7 @@ test('a member makes a 1年 link to the trips page; a fresh phone with no key re
   const item = ok.locator('[data-pack-item="_e2eitem1"]');
   await expect(item).toContainText('お土産リスト');
   await expect(item.locator('[data-locked="redacted"]')).toBeVisible();
-  await ok.locator('[data-trip-tab="days"]')[how]();
-  await ok.locator('[data-day-pick="prep"]')[how]();
+  await ok.locator('[data-trip-tab="prep"]')[how]();
   const notes = ok.locator('[data-share-notes]');
   await expect(notes).toContainText('集合 那覇空港 9:00');
   await expect(notes).toContainText('レンタカー 予約');

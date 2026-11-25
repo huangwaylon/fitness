@@ -125,10 +125,10 @@ for (const f of first) if (/\/maplibre\./.test(f)) fail.push(`${f} (MapLibre) is
 for (const [what, mark] of [["the places' store", '/places/sync'], ["the basemap's style", 'tiles.openfreemap.org']]) {
   for (const f of first) if (f.endsWith('.js') && readFileSync(join(BUILD, f), 'utf8').includes(mark)) fail.push(`${f} (${what}) is in the first load`);
 }
-// /s's map (MapPane, lazy) never holds the places' store (TripView hands it the saved places' layer; its fetch's
+// /s's map (AllDaysMap, lazy) never holds the places' store (TripView hands it the saved places' layer; its fetch's
 // '/places/sync' the store's alone; a shared chunk: by its name)
-const pane = Object.values(manifest).find((x) => x.name === 'MapPane' && x.file.endsWith('.js'));
-if (!pane) fail.push('no MapPane chunk in the build');
+const pane = Object.values(manifest).find((x) => x.name === 'AllDaysMap' && x.file.endsWith('.js'));
+if (!pane) fail.push('no AllDaysMap chunk in the build');
 else for (const f of closure([...shareFirst, pane.file])) if (f.endsWith('.js') && readFileSync(join(BUILD, f), 'utf8').includes('/places/sync')) fail.push(`${f} (the places' store) is in /s's map`);
 
 // what a phone may never open (the English catalogs, the wedding board, ごはん's scanner, すごろく's word lists:

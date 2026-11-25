@@ -120,7 +120,7 @@ test('a trip’s map, OpenFreeMap held (the TileJSON and its tiles): the day’s
   await islandUp(page);
   await openTrip(page, 'nz', 'map');
   await until(page, '__travelMap', (s) => s.mode === 'ready' && Number(s.legs) > 0);
-  await expect(page.locator('dialog[open] [data-map-pane] .maplibregl-marker').first()).toBeVisible();
+  await expect(page.locator('dialog[open] [data-travel-map] .maplibregl-canvas').first()).toBeVisible();
   expect(held.count(), 'OpenFreeMap asked for (held)').toBeGreaterThan(0);
   await held.release();
   await until(page, '__travelMap', (s) => !!s.settled);

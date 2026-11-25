@@ -161,8 +161,8 @@ test('りょこう: kept on a trip’s page, where it was left; on 地図 let go
   await expect(tripsSheet(page).locator('[data-trip-view="nz"][data-kept-tag]')).toHaveCount(1);
   await expect(tripsSheet(page).locator('[data-pane="pack"]')).toBeVisible();
   await tripsSheet(page).locator('[data-trip-tab="map"]').click();
-  await expect(tripsSheet(page).locator('[data-pane="map"]')).toBeVisible();
+  await expect(tripsSheet(page).locator('[data-travel-map]')).toBeVisible();
   await closed(page);
   await expect(page.locator('[data-travel]')).toHaveCount(0);
-  await expect(page.locator('[data-map-pane]')).toHaveCount(0);
+  await expect(page.locator('[data-travel-map]')).toHaveCount(0);
 });

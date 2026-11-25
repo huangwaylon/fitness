@@ -1,6 +1,6 @@
-// 地図's 保存した場所 layer (docs/travel.md "Maps", docs/places.md "Map"): the saved places (GET /places routed to
-// invented ones, e2e/places.ts) within 2 km of the shown day's stops and legs, nearest first, a far one left out; the
-// set follows the day chip; the layers panel's 保存した場所 row first (the phone's one switch, kept over a reload); a
+// 地図's 保存した場所 layer (components/travel/whole, docs/places.md "Map"): the saved places (GET /places routed to
+// invented ones, e2e/places.ts) within 2 km of the focused day's stops and legs, nearest first, a far one left out; the
+// set follows the foot row's day; the layers panel's 保存した場所 row first (the phone's one switch, kept over a reload); a
 // square's floating card (name, category, hours, 経路, ✕) closed by ✕, an empty map's tap, Esc, a pin, another day;
 // offline, from the places' copy; /s (a shared trip) has no such row and never asks for /places nor loads the store.
 // Okinawa (a past trip on the pinned day: it opens on day 1); the drawn test (@render) on the fixture tiles.
@@ -19,8 +19,8 @@ import { toTrack } from '../src/lib/contract/hikeTrack.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
 const howOf = (project: string) => (project.startsWith('webkit') ? 'tap' : 'click') as 'tap' | 'click';
-const pane = (p: Page) => p.locator('dialog[open] [data-map-pane]');
-const map = (p: Page) => pane(p).locator('[data-travel-map]');
+const map = (p: Page) => p.locator('dialog[open] [data-travel-map]');
+const pane = map;
 
 const NOW_S = Date.parse('2026-11-04T12:00:00+09:00') / 1000;
 const place = (id: string, name: string, lat: number, lng: number, o: Partial<Place> = {}): Place => ({
@@ -56,7 +56,7 @@ test('the places near the shown day, nearest first, the far one out; the day chi
   const how = howOf(info.project.name);
   const relay = await phone(page);
   // day 1: none near (the panel holds the candidate layers alone)
-  await expect(map(page)).toHaveAttribute('data-day', '1');
+  await expect(map(page)).toHaveAttribute('data-focus', '1');
   await expect(map(page)).toHaveAttribute('data-places', '0');
   await pane(page).locator('[data-map-layers]')[how]();
   await expect(pane(page).locator('[data-map-layer]')).toHaveText(['キャンプ場', '自然', '食べる']);
@@ -141,9 +141,9 @@ test('a square’s floating card: name, category, hours, 経路, ✕; closed by 
   await expect(card.locator('[data-place-route]')).toHaveAttribute('href', /^https:\/\/www\.google\.com\/maps\/dir\/\?api=1&destination=26\.645,127\.866$/);
   await expect(card.locator('[data-place-route]')).toHaveText('経路');
   await expect(pane(page).locator('[data-map-place="b"]')).toHaveClass(/sel/);
-  // (its foot over the locate disc, inside the map)
-  const [cb, disc, slot] = await Promise.all([card.boundingBox(), pane(page).locator('.locate').boundingBox(), pane(page).locator('.slot').boundingBox()]);
-  expect(cb!.y + cb!.height).toBeLessThanOrEqual(disc!.y);
+  // (its foot over the foot row, inside the map)
+  const [cb, foot, slot] = await Promise.all([card.boundingBox(), pane(page).locator('.foot').boundingBox(), map(page).boundingBox()]);
+  expect(cb!.y + cb!.height).toBeLessThanOrEqual(foot!.y);
   expect(cb!.y).toBeGreaterThanOrEqual(slot!.y);
   await shot(page, 'trip-places-stub-card');
   await card.getByRole('button', { name: '閉じる' })[how]();
@@ -203,19 +203,19 @@ test('/s: a shared trip’s map has no 保存した場所, never asks for /place
   await routeShare(page, () => ({ ok: true, kind: 'trip', ref: 'okinawa', exp: '2027-11-20T03:00:00.000Z', data: {} }));
   await page.goto(`s?demo&date=2026-11-04T12:00#${TOKEN}`);
   await page.locator('[data-trip-tab="map"]')[how]();
-  const m = page.locator('[data-map-pane]');
-  await expect(m.locator('[data-travel-map]')).toHaveAttribute('data-mode', 'stub');
+  const m = page.locator('[data-travel-map]');
+  await expect(m).toHaveAttribute('data-mode', 'stub');
   await m.locator('[data-map-day="2"]')[how]();
   await m.locator('[data-map-layers]')[how]();
   await expect(m.locator('[data-map-layer]')).toHaveText(['キャンプ場', '自然', '食べる']);
   await expect(m.locator('[data-map-place]')).toHaveCount(0);
-  await expect(m.locator('[data-travel-map]')).toHaveAttribute('data-places', '0');
+  await expect(m).toHaveAttribute('data-places', '0');
   await page.waitForLoadState('networkidle');
   expect(relay.calls).toEqual([]);
   expect(store).toEqual([]);
 });
 
-test('drawn: the squares near day 2 on the map, under the pins, gone when toggled off', { tag: '@render' }, async ({ page }, info) => {
+test('drawn: the squares near day 2 on the map, gone when toggled off', { tag: '@render' }, async ({ page }, info) => {
   const how = howOf(info.project.name);
   await mapsDrawn(page);
   await fixtureTiles(page);
@@ -223,12 +223,14 @@ test('drawn: the squares near day 2 on the map, under the pins, gone when toggle
   await mapReady(page);
   await pane(page).locator('[data-map-day="2"]')[how]();
   await mapSettled(page);
-  // Sesoko's row: the map in there (a day's fit is under the squares' z10), its square drawn ('a' may sit past the edge)
-  await pane(page).locator('[data-stop="s2-1"]')[how]();
+  // zoomed in on Sesoko (a day's fit is under the squares' z10): its square drawn ('a' may sit past the edge)
+  const at = await page.evaluate(() => (window as unknown as { __travelMap: { px(id: string): [number, number] } }).__travelMap.px('s2-1'));
+  const box = (await map(page).boundingBox())!;
+  for (let k = 0; k < 2; k++) {
+    await page.mouse.dblclick(box.x + at[0], box.y + at[1]);
+    await mapSettled(page);
+  }
   await expect.poll(async () => { const s = await mapState(page); return s.settled ? s.places : -1; }, { timeout: 15_000 }).toBeGreaterThan(0);
-  // (the row again: the pin let go, its tag off the square; the map stays)
-  await pane(page).locator('[data-stop="s2-1"]')[how]();
-  await expect(map(page)).toHaveAttribute('data-selected', '');
   await shot(page, 'trip-places-drawn');
   await (await placesRow(page, how))[how]();
   await expect.poll(async () => (await mapState(page)).places).toBe(0);

@@ -1,4 +1,4 @@
-// A trip's dates in the reader's locale (the list, a trip's photo, the day cards and chips, a row on another date):
+// A trip's dates in the reader's locale (the list, 日程's day headings, a row on another date):
 // '2月11日（木）〜16日（火）'; 'Feb 10'; '2/11'.
 import type { Locale } from '#lib/i18n/index.ts';
 import { addDays } from '#lib/time/dates.ts';
@@ -26,8 +26,8 @@ export function listSpan(start: string, end: string, locale: Locale): string {
   return `${m1}月${d1}日（${weekdayOf(start, 'ja')}）〜${m2 !== m1 ? `${m2}月` : ''}${d2}日（${weekdayOf(end, 'ja')}）`;
 }
 
-/** A day's date in its card's head: the day of the month, the month ('10月', 'Oct') and the weekday ('土', 'Sat'). */
-export function dayParts(date: string, locale: Locale): { d: number; m: string; wd: string } {
+/** A day's date in 日程's heading: '2/13（土）', 'Sat, Feb 13'. */
+export function headDate(date: string, locale: Locale): string {
   const [, m, d] = parts(date);
-  return locale === 'ja' ? { d, m: `${m}月`, wd: weekdayOf(date, 'ja') } : { d, m: en(date, { month: 'short' }), wd: en(date, { weekday: 'short' }) };
+  return locale === 'ja' ? `${m}/${d}（${weekdayOf(date, 'ja')}）` : en(date, { weekday: 'short', month: 'short', day: 'numeric' });
 }

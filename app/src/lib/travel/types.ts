@@ -26,10 +26,32 @@ interface Section { head?: L; kind: 'tl' | 'bul'; rows: Row[] }
 
 interface Stat { k: L; v: L }
 
-/** A day's timeline row; `place` names the map stop (Place.id) it arrives at, when there is one; `dd` a row on
- *  another date than the day's (-1 the NZ flight out on the eve, 1 the flight home after midnight); `tz` the zone
- *  its time is in when that isn't the trip's (the flight out of Narita, on Tokyo's clock). */
-export interface DayRow { t: string; text: L; note?: L; place?: string; dd?: -1 | 1; tz?: string }
+/** What a day's row is (docs/travel.md "Rows"), which says how 日程 shows it:
+ *  - `stop`: we arrive somewhere (its own line: time, place, how we got there);
+ *  - `stay`: the stop we sleep at that night (its line says 「泊」; one a day at most);
+ *  - `leg`: we set off (no line of its own: the next stop's 「車 2時間31分」, 「09:30発」 on the day's first);
+ *  - `event`: something done where we are (a timed line under its stop; a line of its own before any stop);
+ *  - `flight`: a flight, a line of its own;
+ *  - `sun`: sunrise or sunset (only in its stop's tap-open details). */
+type RowKind = 'stop' | 'stay' | 'leg' | 'event' | 'flight' | 'sun';
+
+/** A day's timeline row; `place` names the map stop (Place.id) it arrives at (a `leg`'s: the place it leaves), when
+ *  there is one; `dd` a row on another date than the day's (-1 the NZ flight out on the eve, 1 the flight home after
+ *  midnight); `tz` the zone its time is in when that isn't the trip's (the flight out of Narita, on Tokyo's clock).
+ *  The note is the small print shown on tap: never the drive's time or distance (the leg says them). */
+export interface DayRow {
+  t: string;
+  kind: RowKind;
+  text: L;
+  note?: L;
+  place?: string;
+  dd?: -1 | 1;
+  tz?: string;
+  /** A `stay`'s bed is booked (false: 「未予約」 in bold). Only on a stay, always on one. */
+  booked?: boolean;
+  /** A `leg`'s way and minutes where no routed Leg says them, or says them wrong (a bus's timetable beats free-flow). */
+  go?: { mode: Leg['mode']; min?: number };
+}
 
 interface Hike {
   level: 'mod' | 'hard' | 'epic';
@@ -85,7 +107,8 @@ export interface Leg {
   from: string;
   to: string;
   mode: 'drive' | 'bus' | 'walk' | 'boat';
-  /** OSRM free-flow minutes and km, on the routed legs (a walk or a boat is a straight line, unmeasured). */
+  /** OSRM free-flow minutes and km, on the routed legs; a walk's or a boat's minutes the guide's (its line straight,
+   *  no km). */
   min?: number;
   km?: number;
   /** [lon, lat], 5 decimals, simplified (Douglas-Peucker, 5 m). */
@@ -139,8 +162,7 @@ export interface Trip {
   end: string;
   tz: string;
   cover: Photo;
-  hero: Photo;
-  /** The source theme's map colour per day (d1…). */
+  /** A colour per day (d1…, one for every day): its dot on 日程, its route on 地図. */
   dayColors: string[];
   /** [west, south, east, north]: every place is inside it (the old map's window where it had one). */
   bbox: [number, number, number, number];

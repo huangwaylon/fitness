@@ -11,8 +11,11 @@ export const seattle: Trip = {
   end: "2026-07-19",
   tz: "America/Los_Angeles",
   cover: { src: "travel/seattle/cover.webp", w: 560, h: 240 },
-  hero: { src: "travel/seattle/hero.webp", w: 720, h: 540 },
-  dayColors: [],
+  dayColors: [
+    "#1f6fe0", "#e0453f", "#00996f", "#e07c00", "#8a3fd6", "#0aa2bd",
+    "#1f6fe0", "#e0453f", "#00996f", "#e07c00", "#8a3fd6", "#0aa2bd",
+    "#1f6fe0", "#e0453f", "#00996f", "#e07c00", "#8a3fd6", "#0aa2bd"
+  ],
   bbox: [-122.45, 46.75, -120.6, 48.15],
   days: [
     {
@@ -20,9 +23,9 @@ export const seattle: Trip = {
       date: "2026-07-02",
       title: { en: "Arrival & Errands" },
       rows: [
-        { t: "9:36", text: { en: "Land — Flight DL166" } },
-        { t: "", text: { en: "Picked up by parents" } },
-        { t: "~12:00", text: { en: "Arrive back home" } }
+        { t: "9:36", kind: "flight", text: { en: "Land — Flight DL166" } },
+        { t: "", kind: "event", text: { en: "Picked up by parents" } },
+        { t: "~12:00", kind: "stop", text: { en: "Arrive back home" } }
       ],
       sections: [
         {
@@ -44,12 +47,12 @@ export const seattle: Trip = {
       date: "2026-07-03",
       title: { en: "Lake 22" },
       rows: [
-        { t: "7:00", text: { en: "Leave house" } },
-        { t: "8:30", text: { en: "Start hike" } },
-        { t: "10:30", text: { en: "Brunch" } },
-        { t: "11:30", text: { en: "Continue hike" } },
-        { t: "13:00", text: { en: "Go home" } },
-        { t: "", text: { en: "Chipotle dinner" } }
+        { t: "7:00", kind: "leg", text: { en: "Leave house" } },
+        { t: "8:30", kind: "stop", text: { en: "Start hike" } },
+        { t: "10:30", kind: "event", text: { en: "Brunch" } },
+        { t: "11:30", kind: "event", text: { en: "Continue hike" } },
+        { t: "13:00", kind: "event", text: { en: "Go home" } },
+        { t: "", kind: "event", text: { en: "Chipotle dinner" } }
       ],
       photo: {
         src: "travel/seattle/lake-22.webp",
@@ -95,10 +98,10 @@ export const seattle: Trip = {
       date: "2026-07-05",
       title: { en: "Seattle City Day" },
       rows: [
-        { t: "9:30", text: { en: "Depart from house" } },
-        { t: "10:30", text: { en: "Arrive at UW" } },
-        { t: "11:30", text: { en: "Depart UW" } },
-        { t: "12:00", text: { en: "Lunch at Pike Place" } }
+        { t: "9:30", kind: "leg", text: { en: "Depart from house" } },
+        { t: "10:30", kind: "stop", text: { en: "Arrive at UW" } },
+        { t: "11:30", kind: "leg", text: { en: "Depart UW" } },
+        { t: "12:00", kind: "stop", text: { en: "Lunch at Pike Place" } }
       ],
       sections: [
         {
@@ -127,11 +130,11 @@ export const seattle: Trip = {
       date: "2026-07-06",
       title: { en: "Snow Lake" },
       rows: [
-        { t: "8:30", text: { en: "Leave house (~1 h drive)" } },
-        { t: "9:30", text: { en: "Arrive & start hike" }, note: { en: "~2.5 h up" } },
-        { t: "12:00", text: { en: "Reach Snow Lake — lunch" } },
-        { t: "13:00", text: { en: "Descend" } },
-        { t: "15:00", text: { en: "Go home" } }
+        { t: "8:30", kind: "leg", go: { mode: "drive", min: 60 }, text: { en: "Leave house" } },
+        { t: "9:30", kind: "stop", text: { en: "Arrive & start hike" }, note: { en: "~2.5 h up" } },
+        { t: "12:00", kind: "stop", text: { en: "Reach Snow Lake — lunch" } },
+        { t: "13:00", kind: "event", text: { en: "Descend" } },
+        { t: "15:00", kind: "event", text: { en: "Go home" } }
       ],
       photo: {
         src: "travel/seattle/snow-lake.webp",
@@ -157,10 +160,10 @@ export const seattle: Trip = {
       date: "2026-07-07",
       title: { en: "Farms & Alpacas" },
       rows: [
-        { t: "9:00", text: { en: "Farrel-McWhirter Park" } },
-        { t: "11:00", text: { en: "Carnation Farms" } },
-        { t: "13:00", text: { en: "Harvold Berry Farm — raspberry U-pick" }, note: { en: "harvoldberryfarm.com" } },
-        { t: "15:00", text: { en: "Cascade Rose Alpacas" } }
+        { t: "9:00", kind: "stop", text: { en: "Farrel-McWhirter Park" } },
+        { t: "11:00", kind: "stop", text: { en: "Carnation Farms" } },
+        { t: "13:00", kind: "stop", text: { en: "Harvold Berry Farm — raspberry U-pick" }, note: { en: "harvoldberryfarm.com" } },
+        { t: "15:00", kind: "stop", text: { en: "Cascade Rose Alpacas" } }
       ]
     },
     {
@@ -168,11 +171,11 @@ export const seattle: Trip = {
       date: "2026-07-08",
       title: { en: "Skyline Trail Loop" },
       rows: [
-        { t: "6:00", text: { en: "Depart (3 h drive)" } },
-        { t: "9:30", text: { en: "Start hike" } },
-        { t: "12:00", text: { en: "Lunch" } },
-        { t: "13:00", text: { en: "Descend" } },
-        { t: "15:30", text: { en: "Go home" } }
+        { t: "6:00", kind: "leg", go: { mode: "drive", min: 180 }, text: { en: "Depart" } },
+        { t: "9:30", kind: "stop", text: { en: "Start hike" } },
+        { t: "12:00", kind: "event", text: { en: "Lunch" } },
+        { t: "13:00", kind: "event", text: { en: "Descend" } },
+        { t: "15:30", kind: "event", text: { en: "Go home" } }
       ],
       photo: {
         src: "travel/seattle/skyline-loop.webp",
@@ -228,9 +231,8 @@ export const seattle: Trip = {
       date: "2026-07-11",
       title: { en: "The Enchantments" },
       rows: [
-        { t: "5:00", text: { en: "Start hike (with Chris)" } },
-        { t: "", text: { en: "{km:30.7} · {m:1477} gain · 10–13 h" } },
-        { t: "<21:00", text: { en: "Finish before sunset" }, note: { en: "Bring the water filter!" } }
+        { t: "5:00", kind: "stop", text: { en: "Start hike (with Chris)" } },
+        { t: "<21:00", kind: "event", text: { en: "Finish before sunset" }, note: { en: "Bring the water filter!" } }
       ],
       photo: {
         src: "travel/seattle/enchantments.webp",
@@ -275,11 +277,11 @@ export const seattle: Trip = {
       date: "2026-07-13",
       title: { en: "Lake Serene" },
       rows: [
-        { t: "8:00", text: { en: "Depart (1 h drive)" } },
-        { t: "9:00", text: { en: "Start hike" } },
-        { t: "12:00", text: { en: "Lunch" } },
-        { t: "13:00", text: { en: "Descend" } },
-        { t: "16:00", text: { en: "Go home" } }
+        { t: "8:00", kind: "leg", go: { mode: "drive", min: 60 }, text: { en: "Depart" } },
+        { t: "9:00", kind: "stop", text: { en: "Start hike" } },
+        { t: "12:00", kind: "event", text: { en: "Lunch" } },
+        { t: "13:00", kind: "event", text: { en: "Descend" } },
+        { t: "16:00", kind: "event", text: { en: "Go home" } }
       ],
       photo: {
         src: "travel/seattle/bridal-veil.webp",
@@ -305,11 +307,11 @@ export const seattle: Trip = {
       date: "2026-07-14",
       title: { en: "Mt Pilchuck" },
       rows: [
-        { t: "8:00", text: { en: "Depart" } },
-        { t: "9:45", text: { en: "Start hike" } },
-        { t: "12:00", text: { en: "Lunch" } },
-        { t: "13:00", text: { en: "Descend" } },
-        { t: "14:30", text: { en: "Go home" } }
+        { t: "8:00", kind: "leg", text: { en: "Depart" } },
+        { t: "9:45", kind: "stop", text: { en: "Start hike" } },
+        { t: "12:00", kind: "event", text: { en: "Lunch" } },
+        { t: "13:00", kind: "event", text: { en: "Descend" } },
+        { t: "14:30", kind: "event", text: { en: "Go home" } }
       ],
       photo: {
         src: "travel/seattle/mount-pilchuck.webp",
@@ -351,11 +353,11 @@ export const seattle: Trip = {
       date: "2026-07-16",
       title: { en: "Lake Valhalla" },
       rows: [
-        { t: "7:30", text: { en: "Depart" } },
-        { t: "9:00", text: { en: "Start hike" } },
-        { t: "11:30", text: { en: "Lunch" } },
-        { t: "12:30", text: { en: "Descend" } },
-        { t: "15:00", text: { en: "Go home" } }
+        { t: "7:30", kind: "leg", text: { en: "Depart" } },
+        { t: "9:00", kind: "stop", text: { en: "Start hike" } },
+        { t: "11:30", kind: "event", text: { en: "Lunch" } },
+        { t: "12:30", kind: "event", text: { en: "Descend" } },
+        { t: "15:00", kind: "event", text: { en: "Go home" } }
       ],
       photo: {
         src: "travel/seattle/lake-valhalla.webp",
@@ -400,11 +402,11 @@ export const seattle: Trip = {
       date: "2026-07-18",
       title: { en: "Lake Talapus" },
       rows: [
-        { t: "7:00", text: { en: "Depart" } },
-        { t: "8:30", text: { en: "Start hike" } },
-        { t: "10:00", text: { en: "Brunch" } },
-        { t: "11:00", text: { en: "Descend" } },
-        { t: "12:00", text: { en: "Go home" } }
+        { t: "7:00", kind: "leg", text: { en: "Depart" } },
+        { t: "8:30", kind: "stop", text: { en: "Start hike" } },
+        { t: "10:00", kind: "event", text: { en: "Brunch" } },
+        { t: "11:00", kind: "event", text: { en: "Descend" } },
+        { t: "12:00", kind: "event", text: { en: "Go home" } }
       ],
       photo: {
         src: "travel/seattle/talapus-lake.webp",
@@ -430,9 +432,9 @@ export const seattle: Trip = {
       date: "2026-07-19",
       title: { en: "Fly Home to Japan" },
       rows: [
-        { t: "7:30", text: { en: "Depart from home" } },
-        { t: "8:30", text: { en: "Arrive at airport" }, note: { en: "Arrive 3 h before" } },
-        { t: "11:50", text: { en: "Departure" } }
+        { t: "7:30", kind: "leg", text: { en: "Depart from home" } },
+        { t: "8:30", kind: "stop", text: { en: "Arrive at airport" }, note: { en: "Arrive 3 h before" } },
+        { t: "11:50", kind: "flight", text: { en: "Departure" } }
       ]
     }
   ],

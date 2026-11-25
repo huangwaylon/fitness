@@ -227,7 +227,7 @@ test('the info sheets in and out (the trips, Okinawa’s map and campsites, the 
     await openTrip(page, 'nz', 'days');
     for (const tab of ['map', 'pack', 'days']) {
       await tripsSheet(page).locator(`[data-trip-tab="${tab}"]`).click();
-      await expect(tripsSheet(page).locator(`[data-pane="${tab}"]`)).toBeVisible();
+      await expect(tripsSheet(page).locator(tab === 'map' ? '[data-travel-map]' : `[data-pane="${tab}"]`)).toBeVisible();
       if (tab === 'map') await mapReady(page);
     }
     await sheet.locator('.navbar .back').click();
@@ -236,7 +236,7 @@ test('the info sheets in and out (the trips, Okinawa’s map and campsites, the 
     await mapReady(page);
     await sheet.locator('[data-map-layers]').click();
     await sheet.locator('[data-map-layer="camp"]').click();
-    await tripsSheet(page).locator('[data-trip-tab="camps"]').click();
+    await tripsSheet(page).locator('[data-trip-tab="prep"]').click();
     await tripsSheet(page).locator('[data-camp]').first().click();
     await expect(page.locator('dialog[open] [data-camp-sheet]')).toBeVisible();
     await page.keyboard.press('Escape');

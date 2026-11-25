@@ -50,7 +50,6 @@ export const zao: Trip = {
   end: '2027-01-31',
   tz: 'Asia/Tokyo',
   cover: { src: 'travel/zao/cover.webp', w: 560, h: 240 },
-  hero: { src: 'travel/zao/hero.webp', w: 720, h: 540 },
   dayColors: ['#1f6fe0', '#e0453f', '#00996f'],
   bbox: [139.85, 36.5, 140.46, 38.3],
   days: [
@@ -61,36 +60,36 @@ export const zao: Trip = {
       sub: { ja: '宇都宮 → 蔵王 → 山形', en: 'Utsunomiya → Zao → Yamagata' },
       rows: [
         {
-          t: '22:00',
+          t: '22:00', kind: 'stop',
           text: { ja: '宇都宮駅で集合、車でちーちゃんの家へ', en: 'Meet at Utsunomiya Station, drive to Chi-chan’s home' },
-          note: { ja: '1月28日（木）· 前泊', en: 'Thu Jan 28 · the night before' },
+          note: { ja: "前泊", en: "The night before" },
           dd: -1
         },
-        { t: '06:00', text: { ja: '蔵王へ出発', en: 'Leave for Zao' } },
+        { t: '06:00', kind: 'leg', go: { mode: 'drive' }, text: { ja: '蔵王へ出発', en: 'Leave for Zao' } },
         {
-          t: '10:00',
+          t: '10:00', kind: 'stop',
           text: { ja: '蔵王温泉スキー場に到着', en: 'Arrive at Zao Onsen ski resort' },
           note: { ja: 'たぶん横倉から滑る（レンタル店は上の台に多い）', en: 'Probably riding from Yokokura (the rental shops are around Uenodai)' },
           place: 's1-0'
         },
         {
-          t: '11:00',
+          t: '11:00', kind: 'event',
           text: { ja: '滑りはじめ', en: 'First runs' },
           note: { ja: '2日券（ちーちゃんが3人分購入済み）', en: 'The 2-day pass (Chi-chan bought all three)' }
         },
-        { t: '12:30', text: { ja: 'お昼', en: 'Lunch' } },
+        { t: '12:30', kind: 'event', text: { ja: 'お昼', en: 'Lunch' } },
         {
-          t: '15:00',
+          t: '15:00', kind: 'event',
           text: { ja: '滑り終わり', en: 'Done riding' },
           note: { ja: 'ボードは車に積んで翌日へ', en: 'The boards stay in the car for tomorrow' }
         },
         {
-          t: '16:00',
+          t: '16:00', kind: 'stay', booked: true,
           text: { ja: '山形グランドホテル', en: 'Yamagata Grand Hotel' },
-          note: { ja: '車で約20分（渋滞なし · 雪道はもっとかかる）', en: 'About 20 min by car (free-flow · slower on snow)' },
+          note: { ja: "雪道はもっとかかる", en: "Slower on snow" },
           place: 's1-1'
         },
-        { t: '17:00', text: { ja: '夕食 — ホテルの近く', en: 'Dinner — near the hotel' }, note: { ja: 'お店は未定', en: 'Where: not decided yet' } }
+        { t: '17:00', kind: 'event', text: { ja: '夕食 — ホテルの近く', en: 'Dinner — near the hotel' }, note: { ja: 'お店は未定', en: 'Where: not decided yet' } }
       ],
       links: [{ label: { ja: '蔵王温泉スキー場', en: 'Zao Onsen ski resort' }, href: RESORT }]
     },
@@ -100,30 +99,30 @@ export const zao: Trip = {
       title: { ja: '一日じゅう滑る', en: 'A full day' },
       sub: { ja: '2日券の2日目 · ナイターも？', en: 'The pass’s second day · night riding too?' },
       rows: [
-        { t: '07:00', text: { ja: 'ホテルを出発', en: 'Leave the hotel' }, place: 's2-0' },
+        { t: '07:00', kind: 'leg', text: { ja: 'ホテルを出発', en: 'Leave the hotel' }, place: 's2-0' },
         {
-          t: '08:00',
+          t: '08:00', kind: 'stop',
           text: { ja: '滑りはじめ', en: 'Start riding' },
           note: { ja: '2日券の2日目 · リフトは8:30から', en: 'Day 2 of the 2-day pass · lifts from 08:30' },
           place: 's2-1'
         },
-        { t: '12:00', text: { ja: 'お昼', en: 'Lunch' } },
+        { t: '12:00', kind: 'event', text: { ja: 'お昼', en: 'Lunch' } },
         {
-          t: '15:00',
+          t: '15:00', kind: 'event',
           text: { ja: '滑り終わり', en: 'Done riding' },
           note: { ja: 'シーズンレンタルなら返却なし（お店で借りたら16:00まで）', en: 'Nothing to return with the season rental (a shop’s: back by 16:00)' }
         },
-        { t: '16:00', text: { ja: 'ホテルへ戻る、またはナイター！', en: 'Back to the hotel — or night riding!' } },
-        { t: '17:00', text: { ja: 'A：ホテルの近くで夕食', en: 'A: dinner near the hotel' } },
+        { t: '16:00', kind: 'stay', booked: true, text: { ja: 'ホテルへ戻る — またはナイター！', en: 'Back to the hotel — or night riding!' } },
+        { t: '17:00', kind: 'event', text: { ja: 'A：ホテルの近くで夕食', en: 'A: dinner near the hotel' } },
         {
-          t: '17:00',
+          t: '17:00', kind: 'event',
           text: { ja: 'B：ナイター（上の台、〜21:00）', en: 'B: night riding (上の台, till 21:00)' },
           note: {
             ja: '気温と体力しだい · 悪天候は中止 · ナイター券は要確認',
             en: 'If it isn’t too cold and we’re up for it · off in bad weather · check the night pass'
           }
         },
-        { t: '~22:00', text: { ja: 'B：ホテルへ戻って夕食', en: 'B: back to the hotel, dinner' }, note: { ja: '未定', en: 'Not sure yet' } }
+        { t: '~22:00', kind: 'event', text: { ja: 'B：ホテルへ戻って夕食', en: 'B: back to the hotel, dinner' }, note: { ja: '未定', en: 'Not sure yet' } }
       ],
       links: [{ label: { ja: 'リフト・ロープウェイ運行状況', en: 'Lift and ropeway status' }, href: `${RESORT}ropeway-lift-information/` }]
     },
@@ -133,25 +132,24 @@ export const zao: Trip = {
       title: { ja: 'もう一度滑るか、観光か', en: 'Ride again, or sightsee' },
       sub: { ja: '帰る日', en: 'The day home' },
       rows: [
-        { t: '', text: { ja: 'ホテルをチェックアウト', en: 'Check out of the hotel' }, place: 's3-0' },
+        { t: '', kind: 'leg', text: { ja: 'ホテルをチェックアウト', en: 'Check out of the hotel' }, place: 's3-0' },
         {
-          t: '',
+          t: '', kind: 'event',
           text: { ja: 'A：もう一度滑る、15:00まで', en: 'A: ride again, till 15:00' },
           note: {
             ja: 'リフト券は当日 · ピーク料金（4時間券 ¥7,400 · 1日券 ¥9,000）',
             en: 'Passes on the day · peak prices (4-hour ¥7,400 · 1-day ¥9,000)'
           }
         },
-        { t: '', text: { ja: 'B：周辺を観光して帰る', en: 'B: see the area, then head home' } },
+        { t: '', kind: 'event', text: { ja: 'B：周辺を観光して帰る', en: 'B: see the area, then head home' } },
         {
-          t: '',
+          t: '', kind: 'event',
           text: { ja: '帰りに米沢で夕食（候補）', en: 'Dinner near Yonezawa on the way (maybe)' },
           note: { ja: '米沢市小野川町のかまくら村 · 帰り道の途中', en: 'Kamakura-mura, Onogawa, Yonezawa · on the way home' }
         },
         {
-          t: '20:00',
+          t: '20:00', kind: 'stop',
           text: { ja: '宇都宮駅に到着、解散', en: 'Arrive at Utsunomiya Station, home from there' },
-          note: { ja: 'ホテルから車で約3時間10分（渋滞なし）', en: 'About 3 h 10 by car from the hotel (free-flow)' },
           place: 's3-1'
         }
       ],

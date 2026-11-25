@@ -1,4 +1,4 @@
-// The app offline (docs/backend.md "Service worker" › Offline): once visited online, a trip's hero and the photos seen
+// The app offline (docs/backend.md "Service worker" › Offline): once visited online, a trip's cover and the photos seen
 // come from the service worker's caches, a trail's track (precached) draws its chart and its map's route, and a photo
 // never seen shows the paper placeholder, not WebKit's "?"; the sync pill counts the taps waiting. The logic tier (maps are
 // stubs), but the drawn map offline (@render).
@@ -15,7 +15,9 @@ import { storeKeys } from './swFiles.ts';
 test.use({ viewport: { width: 393, height: 852 } });
 
 const loaded = (img: import('@playwright/test').Locator) => expect.poll(() => img.evaluate((i: HTMLImageElement) => i.complete && i.naturalWidth > 1 && !('missing' in i.dataset)), { timeout: 15_000 }).toBe(true);
-const dayChip = (p: Page, d: number) => tripsSheet(p).locator(`[data-day-pick="${d}"]`);
+/** A day's heading on 日程: a tap opens its details (its photo, a hike's facts). */
+const dayHead = (p: Page, d: number) => tripsSheet(p).locator(`[data-day-head="${d}"]`);
+const dayPhoto = (p: Page, d: number) => tripsSheet(p).locator(`[data-day-tip="${d}"] img`);
 const hiking = (p: Page) => p.locator('dialog[open] [data-hiking]');
 const URL_ = `${BASE}/?demo&date=2026-11-04T12:00`;
 const up = (page: Page) => page.waitForFunction(() => !!(window as unknown as { __world?: unknown }).__world, null, { timeout: 30_000 });
@@ -24,18 +26,19 @@ test.describe('offline after a visit', () => {
   test.use({ serviceWorkers: 'allow' });
 
   // (in Chromium: WebKit's Playwright build doesn't route a service worker's fetches, nor takes it offline)
-  test("a trip's hero and a photo seen, a trail's track and chart; a photo never seen is the placeholder", { tag: '@chromium' }, async ({ page, context }) => {
+  test("a trip's cover and a photo seen, a trail's track and chart; a photo never seen is the placeholder", { tag: '@chromium' }, async ({ page, context }) => {
     test.setTimeout(120_000);
     await page.addInitScript(() => localStorage.setItem('e2e.render', 'none'));
     await page.goto(URL_);
     await up(page);
     await page.waitForFunction(() => !!navigator.serviceWorker.controller, null, { timeout: 60_000 });
 
-    // online: Seattle's day 2, its hike's photo (cached on first view)
+    // online: the list's covers, then Seattle's day 2, its hike's photo in the heading's details (cached on first view)
     await fromMenu(page, 'travel');
+    await loaded(tripsSheet(page).locator('[data-trip="seattle"] img'));
     await pickTrip(page, 'seattle');
-    await dayChip(page, 2).click();
-    await loaded(tripsSheet(page).locator('[data-day="2"] [data-hike] .band img'));
+    await dayHead(page, 2).click();
+    await loaded(dayPhoto(page, 2));
     await expect.poll(async () => (await storeKeys(page, 'photos')).some((u) => u.endsWith('/travel/seattle/lake-22.webp')), { timeout: 10_000 }).toBe(true);
 
     await context.setOffline(true);
@@ -43,11 +46,11 @@ test.describe('offline after a visit', () => {
     expect(again?.fromServiceWorker()).toBe(true);
     await up(page);
     await fromMenu(page, 'travel');
+    // the cover and the photo, both seen online (PHOTO_CACHE)
+    await loaded(tripsSheet(page).locator('[data-trip="seattle"] img'));
     await pickTrip(page, 'seattle');
-    // the hero and the photo, both seen online (PHOTO_CACHE)
-    await loaded(tripsSheet(page).locator('[data-trip-view="seattle"] .band.edge img'));
-    await dayChip(page, 2).click();
-    await loaded(tripsSheet(page).locator('[data-day="2"] [data-hike] .band img'));
+    await dayHead(page, 2).click();
+    await loaded(dayPhoto(page, 2));
     await page.keyboard.press('Escape');
     await expect(page.locator('dialog[open]')).toHaveCount(0);
 
@@ -101,7 +104,7 @@ test.describe('offline after a visit', () => {
     await fromMenu(page, 'travel');
     await pickTrip(page, 'nz', 'map');
     await mapReady(page);
-    await expect(page.locator('dialog[open] .maplibregl-marker.tm-pin').first()).toBeVisible();
+    await expect.poll(async () => (await mapState(page)).stops).toBeGreaterThan(0);
     await mapSettled(page);
     await page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))));
     // every tile it drew came from the cache: none went out, no offline note
@@ -298,11 +301,12 @@ test('a photo that fails to load is the paper placeholder with its box kept, and
   await up(page);
   await fromMenu(page, 'travel');
   await pickTrip(page, 'seattle');
-  await dayChip(page, 2).click();
-  const img = tripsSheet(page).locator('[data-day="2"] [data-hike] .band img');
+  await dayHead(page, 2).click();
+  const img = dayPhoto(page, 2);
   await img.scrollIntoViewIfNeeded();
   await expect(img).toHaveAttribute('data-missing', '');
-  expect(await img.evaluate((i: HTMLImageElement) => [i.src.startsWith('data:image/svg+xml'), i.naturalWidth > 0, Math.round(i.getBoundingClientRect().height)])).toEqual([true, true, 150]);
+  // its box the photo's own shape (720 × 480 at the details' width)
+  expect(await img.evaluate((i: HTMLImageElement) => [i.src.startsWith('data:image/svg+xml'), i.naturalWidth > 0, Math.round((i.getBoundingClientRect().width * 480) / 720 - i.getBoundingClientRect().height)])).toEqual([true, true, 0]);
   fail = false;
   await img.evaluate((i: HTMLImageElement) => (i.src = new URL('travel/seattle/lake-22.webp', document.baseURI).href));
   await loaded(img);

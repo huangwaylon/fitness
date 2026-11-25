@@ -112,10 +112,10 @@ const record = (page: Page, kind: Kind, ms = 60_000) => page.evaluate(([kind, ms
     places: () => Number(q('dialog[open] [data-trail-map]')?.getAttribute('data-places')) > 0,
     settled: () => !!st('__trailMap').settled
   } : {
-    sheet: () => !!q('dialog[open] [data-map-pane]'),
+    sheet: () => !!q('dialog[open] [data-travel-map]'),
     canvas: () => !!q('dialog[open] .maplibregl-canvas'),
     ready: () => st('__travelMap').mode === 'ready',
-    pins: () => !!q('dialog[open] [data-map-pane] .maplibregl-marker'),
+    pins: () => !!q('dialog[open] [data-travel-map] .maplibregl-canvas'),
     route: () => Number(st('__travelMap').legs) > 0,
     places: () => Number(st('__travelMap').places) > 0,
     settled: () => !!st('__travelMap').settled

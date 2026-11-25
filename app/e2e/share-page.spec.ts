@@ -37,18 +37,18 @@ test('a stranger opens the link: the trip, 🔒 for every private value, no 持�
   // one read, the token alone (not paired: no `self`), as text/plain
   expect(seen.map((s) => s.body)).toEqual([{ t: TOKEN }]);
   expect(seen[0].headers['content-type']).toMatch(/^text\/plain/);
-  // the pages: 日程 and 地図, never 持ち物
-  await expect(page.locator('[data-trip-tab]')).toHaveCount(2);
+  // the pages: 日程 地図 準備, never 持ち物
+  await expect(page.locator('[data-trip-tab]')).toHaveText(['日程', '地図', '準備']);
   await expect(page.locator('[data-trip-tab="pack"]')).toHaveCount(0);
-  // NZ before the trip opens on 準備: its private values (the flight's ref, the travellers) locked, never shown
+  // 日程: every day on one page, the link's foot under them
+  await expect(page.locator('[data-itinerary="nz"] section[data-day]')).toHaveCount(6);
+  await expect(page.locator('[data-share-private]')).toBeVisible();
+  await expect(page.locator('[data-share-foot]')).toContainText('Island Fund の旅のしおり · 2027/11/20まで有効');
+  // 準備: its private values (the flight's ref, the travellers) locked, never shown
+  await page.locator('[data-trip-tab="prep"]').tap();
   await expect(page.locator('[data-prep]')).toBeVisible();
   await expect(page.locator('[data-locked]').first()).toBeVisible();
   await expect(page.locator('[data-locked]').first()).toHaveAttribute('aria-label', '非公開');
-  await expect(page.locator('[data-share-private]')).toBeVisible();
-  await expect(page.locator('[data-share-foot]')).toContainText('Island Fund の旅のしおり · 2027/11/20まで有効');
-  // a day
-  await page.locator('[data-day-pick="1"]').tap();
-  await expect(page.locator('article.day[data-day="1"]')).toBeVisible();
   await expect(page).toHaveTitle(/ニュージーランド · 旅のしおり/);
   // no service worker on a visitor's phone (stepped past where swLate would register one, 2 s after the load), no key
   // in any request, nothing kept but the tests' own
@@ -73,6 +73,7 @@ test('a trips link: the list (これから, これまで), a trip with its 持�
   await expect(page).toHaveTitle(/旅行 · 旅のしおり/);
   await list.locator('[data-trip="nz"]').tap();
   const nz = page.locator('[data-share-trip="nz"]');
+  await nz.locator('[data-trip-tab="prep"]').tap();
   await expect(nz.locator('[data-share-notes]')).toContainText('集合 8:00 オークランド空港');
   await expect(nz.locator('[data-share-notes] [data-locked="redacted"]')).toHaveCount(1);
   await expect(nz.locator('[data-trip-tab="pack"]')).toBeVisible();
@@ -84,15 +85,15 @@ test('a trips link: the list (これから, これまで), a trip with its 持�
   await expect(page.locator('[data-pack-item="ok-0-0"]')).toContainText('身分証明書');
 });
 
-test('地図: the trip map, without オフライン用に保存; キャンプ場 for a trip with campsites', async ({ page }) => {
+test('地図: the trip map, without オフライン用に保存; 準備 holds the campsites of a trip with them', async ({ page }) => {
   await mapsDrawn(page);
   await open(page, () => OK('okinawa'), '?demo');
   await page.locator('[data-trip-tab="map"]').tap();
   await mapReady(page);
   // no save anywhere: none on the map, no 設定 (オフライン地図 is the app's)
   await expect(page.locator('[data-offline-save], [data-offline-maps], [data-travel-tab="settings"]')).toHaveCount(0);
-  await page.locator('[data-trip-tab="camps"]').tap();
-  await expect(page.locator('[data-pane="camps"] [data-camp]').first()).toBeVisible();
+  await page.locator('[data-trip-tab="prep"]').tap();
+  await expect(page.locator('[data-pane="prep"] [data-camp]').first()).toBeVisible();
 });
 
 test('gone: turned off and an unknown token alike; expired with its date; no fragment at all', async ({ page }) => {
@@ -167,7 +168,6 @@ for (const [tod, at] of [['day', '2026-11-04T12:00'], ['night', '2026-11-04T21:3
     let answer = OK('okinawa');
     await open(page, () => answer, `?demo&date=${at}`);
     await expect(page.locator('[data-share-trip="okinawa"]')).toBeVisible();
-    await page.locator('[data-day-pick="1"]').tap();
     await page.evaluate(() => document.fonts.ready);
     await shot(page, `share-days-${tod}`);
     await page.locator('[data-trip-tab="map"]').tap();

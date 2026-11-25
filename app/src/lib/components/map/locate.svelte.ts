@@ -24,6 +24,8 @@ export interface Locate<K extends string> {
 export function useLocate<K extends string = never>(o: {
   /** The map's root: the watch pauses while it is out of view (none: only the tab's visibility). */
   el?: () => Element | null | undefined;
+  /** The map is showing (false: another tab over it, the watch paused; default: always). */
+  shown?: () => boolean;
   /** Each change (a fix, a state): `first` the first fix since asking. */
   onchange?: (w: LocWatch, first: boolean) => void;
   geo?: ConstructorParameters<typeof LocWatch>[1];
@@ -46,12 +48,13 @@ export function useLocate<K extends string = never>(o: {
   }, o.geo);
 
   $effect(() => {
-    const el = o.el?.();
+    const el = o.el?.(), on = o.shown?.() ?? true;
     let inView = true;
-    const shown = () => watch.visible(inView && document.visibilityState === 'visible');
+    const shown = () => watch.visible(on && inView && document.visibilityState === 'visible');
     const io = el ? new IntersectionObserver(([e]) => ((inView = e.isIntersecting), shown())) : null;
     if (el) io!.observe(el);
     document.addEventListener('visibilitychange', shown);
+    shown();
     return () => {
       io?.disconnect();
       document.removeEventListener('visibilitychange', shown);

@@ -32,7 +32,7 @@
 
 <Sheet name="kit" bind:open label="Kit" variant="full">
   <div class="col">
-    <PhotoBand src="/travel/okinawa/hero.webp" height={120} edge>
+    <PhotoBand src="/travel/okinawa/cover.webp" height={120} edge>
       {#snippet nav()}<NavBar over title="Kit" onback={() => {}} onclose={() => (open = false)} />{/snippet}
       <b class="ttl">PhotoBand · NavBar over</b>
     </PhotoBand>

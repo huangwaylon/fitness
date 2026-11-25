@@ -21,7 +21,23 @@ hand. `trips.test.ts` pins each trip's counts (stops, campsites, packing) and fa
 
 Schema: [`types.ts`](../app/src/lib/travel/types.ts). Guide text is `{ja?, en?}`, shown in the reader's locale, else
 the other; chrome strings in `i18n/travel.{ja,en}.json`. Tokens (`travel/tokens.ts`): `{km:}`, `{m:}`, `{c:}` follow the
-device's units; `{p:key}` is a private value. Each trip's dates and `tz` drive "today".
+device's units; `{p:key}` is a private value. Each trip's dates and `tz` drive "today". `dayColors`: one a day.
+
+### Rows
+
+Every day row has a `kind` (`types.ts` `RowKind`), so 日程 and 地図 never guess from the text: `stop` (we arrive),
+`stay` (the night's stop, `booked` true/false: 「未予約」), `leg` (we set off: no line of its own; `go` gives the way and
+minutes where no routed `Leg` does, or a bus's timetable instead of free-flow), `event` (done where we are), `flight`,
+`sun` (sunrise/sunset). A note never repeats the leg's minutes or km (`trips.test.ts` `LEG_ECHO`); a walk's or a boat's
+minutes are on its `Leg`. A text's gloss follows 「 — 」 (`itinerary.ts` `DASH`).
+
+## Itinerary
+
+`lib/travel/itinerary.ts` `itinerary(trip, locale)`: the days (`i`, date, title, colour), each one's stops (id = the
+place's, else `r<day>-<row>`; `kind` stop · stay · start · flight; lat/lng when on the map), legs and stay. The sheet
+(`TripView`) holds the day and stop 日程 and 地図 hand each other (`MapTabProps`): 地図で見る → 地図 on the stop; the
+map's 日程で見る → 日程 scrolled to the stop's line, opened; 地図 opens on the day being read. 日程's lines are
+`components/travel/ledger.ts` (`lines`, `nowMark`); the list is `Itinerary.svelte` ([design.md](design.md#trips)).
 
 ### Private values
 
@@ -54,21 +70,26 @@ Contract `app/src/lib/contract/pack.ts` (shared by `relay/src/store.ts` and the 
 
 ## Maps
 
-`components/travel/map/`: `TripMap.svelte`, `engine.ts` (lazy chunk), `style.ts`, `overlay.ts` (pins, legs,
-candidates). The shared core (basemap, fonts, location dot, `LocateDisc`, `askAgain.ts`, `cached.ts`) is
+`components/travel/whole/`: `AllDaysMap.svelte` (地図, the app's and /s's one trip map: mounted once a trip page,
+kept while hidden), `engine.ts` (lazy chunk), `style.ts`, `logic.ts` (focus boxes, faded days, candidates, the saved
+places' path). The shared core (basemap, fonts, location dot, `LocateDisc`, `askAgain.ts`, `cached.ts`) is
 `components/map/` ([design.md](design.md#maps)).
 
 - **Source:** `components/map/style.ts` `BASEMAP`, `https://tiles.openfreemap.org/planet`: the only third party the
   phones contact for maps (CSP `connect-src`); it sees the IP and area, never the trip.
-- **Overlays:** the day's legs by mode, numbered stop pins (within 30 m merged), Okinawa's candidates; saved places
-  within 2 km of the day's path via `PlacesLayer` (never on /s: `load-budget.ts` checks).
-- **States** (`data-mode`): `loading`, `ready`, `offline` (route only), `failed` (もう一度), `lost` (WebGL context).
+- **Overlays:** every day's legs in its colour (walks and boats dashed), the stops as dots (a focused day's full, the
+  others faded; a tapped one ringed, the zoom kept), Okinawa's candidates (off at first; a campsite's dot opens its
+  card); saved places within 2 km of the focused day's path (every day's under 全体) via `PlacesLayer` (never on /s:
+  `load-budget.ts` checks).
+- **States** (`data-mode`): `loading`, `ready`, `offline` (route only), `failed` (もう一度), `lost` (WebGL context);
+  offline with the trip's area saved, 「保存した範囲のみ」.
 - **Locate:** permission on the first tap; over 50 km from every stop the map stays on the route
-  (「旅先から離れています」). Refused: MS.refused; asked again per launch unless Safari allows: MS.again.
+  (「旅先から離れています」). Refused: MS.refused; asked again per launch unless Safari allows: MS.again. Paused while
+  the tab is hidden.
 
 ## Photos
 
-`static/travel/<trip>/`: WebP ≤ 720 px wide, lazy (the hero eager). A failed photo is the paper placeholder
+`static/travel/<trip>/`: WebP ≤ 720 px wide, lazy (the list's covers eager); a day's photo is in its heading's details. A failed photo is the paper placeholder
 (`components/ui/photoFallback.ts`).
 
 ## Sharing
@@ -105,7 +126,7 @@ Saved from 設定 › オフライン地図 (`components/travel/OfflineMaps.svel
 
 ## Open
 
-- Unchecked on a real iPhone: `text-wrap: pretty`, hero crops, offline maps on Metal.
+- Unchecked on a real iPhone: `text-wrap: pretty`, offline maps on Metal, 日程's lazy days (`content-visibility`) on a fast flick.
 - No map night tint; packing has no icon picker, note editing or cross-category moves.
 
 ## Trip facts
