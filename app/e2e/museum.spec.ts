@@ -685,7 +685,10 @@ test('while a drag turns the camera the curator’s balloon stays whole (its box
   for (let i = 1; i <= 6; i++) await page.mouse.move(cx + i * 12, cy);
   // (the camera turned: he moved on screen)
   await expect.poll(async () => ((p) => Math.hypot(p.x - h.x, p.y - h.y))(await him())).toBeGreaterThan(10);
-  const h1 = await him();
+  // (the mouse held there, still mid-drag: the balloon eases after him (Talk's watch), a few frames behind on a loaded
+  // runner, so its tail is waited back by him, not read at once: flake hunt #44's 62 px; as say.spec's pinch)
+  let h1 = await him();
+  await expect.poll(async () => (await balloonState(page, '[data-fx="talk"]', (h1 = await him())))?.dist ?? Infinity, { message: 'its tail back by him, mid-drag' }).toBeLessThanOrEqual(near);
   await expectWhole(page, '[data-fx="talk"]', h1, near);
   await page.mouse.up();
 });

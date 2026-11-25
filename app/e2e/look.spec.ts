@@ -72,11 +72,13 @@ test('コーデ: save, wear, うわがき, なまえ, けす with とりけす; 
   // the worn cable knit is checked; its colours are on the stage, and a dot there wears the cream one: the grid stays put
   const aran = settings(a).locator('[data-closet=top] [data-item=TopsTexTopOuterLAran]');
   await expect(aran).toHaveAttribute('aria-checked', 'true');
+  // (its box once its press's bounce back is over: read mid-way it was a few tenths of a px small, flake hunt #44)
+  const still = async () => (await aran.evaluate((e) => Promise.all(e.getAnimations().map((x) => x.finished.catch(() => {})))), aran.boundingBox());
   await aran.click();
-  const box = await aran.boundingBox();
+  const box = await still();
   await settings(a).locator('[data-colours=TopsTexTopOuterLAran] [data-part=TopsTexTopOuterLAran1]').click();
   await expect(aran).toHaveAttribute('data-part', 'TopsTexTopOuterLAran1');
-  expect(await aran.boundingBox()).toEqual(box);
+  expect(await still()).toEqual(box);
   if (process.env.SHOTS) await a.screenshot({ path: `${process.env.SHOTS}/look-tops.png` });
   await expect(status(a)).toHaveText('いつもの · アレンジ中');
   await expect(settings(a).locator('[data-look-revert]')).toBeVisible();
