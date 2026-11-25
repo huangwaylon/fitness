@@ -2,7 +2,7 @@
 // rules (its key gives the role, never kept), once per batch id, within the day's caps; the relay's own events; the
 // admin's query; retention; and no key, health value, food name, name or free text ever reaches a stored row.
 import { beforeEach, describe, expect, it } from 'vitest';
-import { CAPS_SAVE_MS, LOG_CAPS, LOG_KEEP_DAYS, LOG_READS_MAX, LogCore, SHED_PCT, type RelayEvent } from '../src/log.ts';
+import { CAPS_SAVE_MS, LOG_CAPS, LOG_KEEP_DAYS, LOG_READS_MAX, LogCore, SHED_PCT, WRITE_SHED_PCT, type RelayEvent } from '../src/log.ts';
 import { logHealthRoute, logRoute, relaySink, resetLogRoute, type LogRoom } from '../src/logRoute.ts';
 import { apiWithMeta, countingSql } from '../src/reqMeta.ts';
 import { apiRoute, type StoreRoom } from '../src/storeRoute.ts';
@@ -174,6 +174,30 @@ describe('the relay’s events, the query, retention', () => {
     const test = new LogCore({ sql: db.sql, tx: db.tx, keys, now: () => now, shedPct: 10 });
     test.meter({ rr: 500_000 });
     expect(test.reads().shed).toBe(true);
+  });
+
+  it('the write guard (#41: the account at 82 % of the 100k rows written a day): past WRITE_SHED_PCT, the account\'s when Cloudflare says, else its own, the log keeps only errors (closed till midnight UTC) and the optional work is refused; the reads go on', () => {
+    expect(log.writes()).toMatchObject({ shed: false });
+    // the account's count (other objects, the test copy, the bots), and this copy's own since it was said
+    const day = new Date(now).toISOString().slice(0, 10);
+    log.account(day, WRITE_SHED_PCT * 1000 - 500);
+    expect(log.writes().shed).toBe(false);
+    log.meter({ rw: 500 });
+    expect(log.writes()).toMatchObject({ n: WRITE_SHED_PCT * 1000, shed: true });
+    expect(log.reads()).toMatchObject({ shed: true, rshed: false, logsShed: false });
+    expect(log.stats()).toMatchObject({ wshed: true, rowsPct: WRITE_SHED_PCT, rowsStore: 500, e1h: 0 });
+    const r = log.ingestText(batch([ev('app.show'), ev('js.error', {}, 3)]));
+    expect(r).toMatchObject({ ok: true, kept: 1, dropped: 1, closed: (Math.floor(now / DAY) + 1) * DAY });
+    expect(log.add([{ e: 'req', l: 1, d: { action: 'snapshot', st: 'ok' } }, { e: 'do.error', l: 3, d: { where: 'x' } }])).toMatchObject({ kept: 1, closed: expect.any(Number) });
+    expect(log.query({ since: 0 }).rows.map((x) => x.ev).sort()).toEqual(['do.error', 'js.error']);
+    // another day's count is none; the next UTC day starts again
+    log.account('2000-01-01', 99_000);
+    now += DAY;
+    expect(log.writes().shed).toBe(false);
+    // no account count: its own (the test copy's lower share)
+    const test = new LogCore({ sql: db.sql, tx: db.tx, keys, now: () => now, writeShedPct: 20 });
+    test.meter({ rw: 20_000 });
+    expect(test.writes().shed).toBe(true);
   });
 
   it('an event\'s rows by its index (log_ev): an exact name and a prefix read only theirs', () => {

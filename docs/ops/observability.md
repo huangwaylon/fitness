@@ -101,6 +101,18 @@ the record 1.69M, the TEST copy's smokes 1.43M (it shares the account's quota). 
   glance: ボット → Jobs → **Daily limits (Cloudflare)** (the same query, by the relay with `CF_ANALYTICS_TOKEN`, 10 min
   cached, no DO rows; amber from 60 %, red and 「!」 from 85 %: [bots.md](../bots.md)).
 
+### The rows-written budget (the account's 100k a day)
+2026-11-25 (#41): 82k by 14:00 UTC (the alert said 68 %: the relay's own count, without the test copy). By GraphQL
+hour: 41.8k at 00 UTC were one-off, `log_ev` built over the log's rows (prod 27.6k, test 13.3k: **a new index writes a
+row per existing row**, budget a migration on a big table); the rest the record's `events` (each ~8 rows: the row, its
+`id`/`slot`/`at`/`type` index entries, `ids`, a slot's replaced row; an editor session moving hundreds of pieces is
+~6k an hour) and places-details' redo (~3.5k a run). Nights are ~30 an hour.
+- **The guard** (log.ts `writes`, `WRITE_SHED_PCT` 80; the test copy's `WRITES_SHED_PCT` 20 of its own): past that share
+  of the day's rows written (the account's, Cloudflare's count asked by the log every 10 min with `CF_ANALYTICS_TOKEN`,
+  plus its own since; no token: its own) the log keeps only errors (`closed` till midnight UTC, as a capped day) and
+  the optional admin ops that write are refused **429 `budget`** (places ingest/details, the checks; the read-only ops
+  and `ESSENTIAL_OPS` served); `/health/log` says `wshed`, `rowsPct` is the account's. The phones' writes go on.
+
 ### Request budget
 Free plan, daily: Workers 100k requests; Durable Objects 100k requests (a WebSocket connect is one, incoming messages
 20:1, outgoing free), 13,000 GB-s duration (hibernated objects free), 5M rows read, 100k written, 5 GB storage. A

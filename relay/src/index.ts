@@ -38,6 +38,9 @@ export interface Env {
   LOG_OFF?: string;
   /** The share of the day's 5M rows read past which optional reads are refused (log.ts SHED_PCT; the test copy's lower). */
   READS_SHED_PCT?: string;
+  /** The share of the day's 100k rows written past which the log keeps only errors and the optional work is refused
+   *  (log.ts WRITE_SHED_PCT; the test copy's lower: it sees only its own rows). */
+  WRITES_SHED_PCT?: string;
   /** The health workflow's token for `/health/log` (a secret: counts only). Unset: no `/health/log`. */
   HEALTH_TOKEN?: string;
   /** Comma-separated page origins allowed to connect (localhost is always allowed). */

@@ -46,7 +46,7 @@ let store: Record<string, (...a: never[]) => unknown>;
 let log: Record<string, (...a: never[]) => unknown>;
 let promises: Promise<unknown>[];
 /** The log's answer to the record's budget ask (log.ts reads). */
-let reads = { n: 0, pct: 0, shed: false, logsShed: false };
+let reads = { n: 0, pct: 0, shed: false, rshed: false, logsShed: false };
 const settle = async () => {
   while (promises.length) await Promise.allSettled(promises.splice(0));
 };
@@ -109,7 +109,7 @@ beforeEach(() => {
   resetLogRoute();
   calls = {};
   promises = [];
-  reads = { n: 0, pct: 0, shed: false, logsShed: false };
+  reads = { n: 0, pct: 0, shed: false, rshed: false, logsShed: false };
   room = {
     notify: (...a: never[]) => (rec('ROOM.notify', ...a), Promise.resolve(1)),
     wxAdmin: (o: never) => (rec('ROOM.wxAdmin', o), Promise.resolve({ ok: true, wx: null })),
@@ -143,7 +143,7 @@ describe('IslandStore', () => {
 
   it('over the day\'s read budget: an optional op 429 `budget` (a dump, places, the logs), the repairs and /api served; the log not answering counts as over (2026-11-25)', async () => {
     const s = make();
-    reads = { n: 3_100_000, pct: 62, shed: true, logsShed: true };
+    reads = { n: 3_100_000, pct: 62, shed: true, rshed: true, logsShed: true };
     for (const op of ['dump', 'places_status', 'places_ingest', 'logs', 'logstats', 'decorcheck']) {
       const r = await s.adminSigned(...(await sign({ op })));
       expect([op, r.status, JSON.parse(r.body)]).toEqual([op, 429, { ok: false, error: 'budget', pct: 62 }]);
@@ -154,9 +154,13 @@ describe('IslandStore', () => {
     // the cron's places tick waits it out
     expect(await s.placesTick()).toEqual({ ok: true, full: false, ms: 0 });
     // the log's own queries alone over theirs: logs refused, a dump served
-    reads = { n: 1_200_000, pct: 24, shed: false, logsShed: true };
+    reads = { n: 1_200_000, pct: 24, shed: false, rshed: false, logsShed: true };
     expect((await s.adminSigned(...(await sign({ op: 'logs' })))).status).toBe(429);
     expect((await admin(s, { op: 'dump' })).status).toBe(200);
+    // over the write guard alone (#41): the ops that write refused, the reads served
+    reads = { n: 1_200_000, pct: 24, shed: true, rshed: false, logsShed: false };
+    for (const op of ['places_ingest', 'places_details', 'decorcheck']) expect([op, (await s.adminSigned(...(await sign({ op })))).status]).toEqual([op, 429]);
+    for (const op of ['places_status', 'places_ids', 'logs']) expect([op, (await admin(s, { op })).status]).toEqual([op, 200]);
     // the log down: optional ops refused
     log.reads = () => Promise.reject(new Error('Exceeded allowed rows read'));
     expect((await s.adminSigned(...(await sign({ op: 'dump' })))).status).toBe(429);

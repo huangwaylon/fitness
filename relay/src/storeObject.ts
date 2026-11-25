@@ -105,11 +105,11 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
 
   /** Today's rows read against the budget (log.ts reads: the log object's memory). The log not answering counts as
    *  over: an optional read waits, the phones' never asks. */
-  private async budget(): Promise<{ shed: boolean; logsShed: boolean; pct: number }> {
+  private async budget(): Promise<{ shed: boolean; rshed?: boolean; logsShed: boolean; pct: number }> {
     try {
       return await logDo(this.env).reads();
     } catch {
-      return { shed: true, logsShed: true, pct: -1 };
+      return { shed: true, rshed: true, logsShed: true, pct: -1 };
     }
   }
 
@@ -452,10 +452,11 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
    */
   private async admin(o: Record<string, unknown>): Promise<Record<string, unknown>> {
     const storage = this.ctx.storage;
-    // (over the day's read budget: an optional op refused, 429 `budget`; the repairs and a restore never are)
+    // (over the day's read budget, or the write guard's for an op that writes: an optional op refused, 429 `budget`;
+    // the repairs and a restore never are)
     if (!ESSENTIAL_OPS.has(String(o.op))) {
       const b = await this.budget();
-      if (o.op === 'logs' || o.op === 'logstats' ? b.logsShed : b.shed) return { ok: false, error: 'budget', pct: b.pct };
+      if (o.op === 'logs' || o.op === 'logstats' ? b.logsShed : READ_OPS.has(String(o.op)) ? b.rshed : b.shed) return { ok: false, error: 'budget', pct: b.pct };
     }
     switch (o.op) {
       // the real weather, the room's (index.ts wxAdmin): a fetch now, a fixture timeline, or how it is

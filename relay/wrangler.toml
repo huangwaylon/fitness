@@ -133,6 +133,9 @@ VAPID_PUBLIC = "BF4wAVL_Tio7Tnlvwk5Vh9DOpXQdOJ_bdlo8EqcNUkLZXjUuTHtzX3ekqG2VrmXy
 PLACES_LIST = "a3yCJpEiSAOfjK8l36rPGA"
 # its reads share the account's 5M a day with production's: its optional reads stop at 10 % (log.ts SHED_PCT: 60)
 READS_SHED_PCT = "10"
+# and its writes the account's 100k a day (it sees only its own): past 20 % its log keeps only errors and its optional
+# work stops (log.ts WRITE_SHED_PCT: 80, of the account's)
+WRITES_SHED_PCT = "20"
 
 [env.test.ai]
 binding = "AI"

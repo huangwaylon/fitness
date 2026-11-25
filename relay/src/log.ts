@@ -17,6 +17,9 @@
 //   own): the log's own (its SQLite cursors' counts, reqMeta.ts countingSql, as the record's), the record's (each
 //   `req`'s `rw`, the backup's, the rest by `meter`) and the room's (`room.close`'s `rw`); and read, the log's and the
 //   record's the same way; `stats` says them against the Free plan's ROWS_DAY and READS_DAY.
+// - The write guard (2026-11-25, #41): past WRITE_SHED_PCT of ROWS_DAY written (the account's, Cloudflare's count when
+//   the object has it, logObject.ts; else this copy's own) the log keeps only errors (`closed` till midnight UTC, as a
+//   capped day) and the optional work is refused as over the read budget (reads().shed): the phones' writes go on.
 // - Retention: 30 days (`prune`, the object's daily alarm, 5,000 rows a chunk).
 import { roleOfKey, type Keys } from './auth.ts';
 import type { Sql } from './store.ts';
@@ -35,6 +38,9 @@ export interface LogIO {
   /** The share of READS_DAY past which the optional reads are refused (reads(): the account's quota is shared by the
    *  test copy, which sets a lower one; default SHED_PCT). */
   shedPct?: number;
+  /** The share of ROWS_DAY past which the log keeps only errors and the optional work is refused (writes(); the test
+   *  copy, which sees only its own rows, sets a lower one; default WRITE_SHED_PCT). */
+  writeShedPct?: number;
 }
 
 /** A relay event (src `r`): its name, level, payload, and whom it concerns. */
@@ -62,6 +68,9 @@ const ROWS_DAY = 100_000, READS_DAY = 5_000_000;
  *  are. 2026-11-25: the account hit the Free plan's 5M at 04:00 JST and every Durable Object threw till 09:00 (agents'
  *  log scans 1.9M, the test copy's smokes 1.4M, the record 1.7M). */
 export const SHED_PCT = 60;
+/** Past this share of ROWS_DAY written (the account's when known: writes()) the log keeps only errors and the optional
+ *  work is refused (`shed`). The account's 100k a day is shared by the test copy and the bots; DO writes fail past it. */
+export const WRITE_SHED_PCT = 80;
 /** The log's own reads a day past which its queries alone are refused (a 30-day report reads every row of the window). */
 export const LOG_READS_MAX = 1_000_000;
 /** A query's rows at most. */
@@ -131,6 +140,8 @@ export class LogCore {
   private day = '';
   private caps = new Map<Bucket, number>();
   private rw: RowsWritten = { ...NO_ROWS };
+  /** The account's rows written today as Cloudflare last said (logObject.ts), and this copy's own then. */
+  private acct = { day: '', n: 0, own: 0 };
   /** The buckets counted since their rows were last written, and when that was. */
   private dirty = new Set<Bucket>();
   private savedAt = 0;
@@ -217,14 +228,32 @@ export class LogCore {
     this.read('rLog', t.rr);
   }
 
-  /** Today's rows read (the log's and the record's) against READS_DAY: `shed` past the shed share (the optional reads
-   *  refused), `logsShed` too past LOG_READS_MAX of the log's own (its queries refused). No SQL: in memory. */
-  reads(): { n: number; pct: number; shed: boolean; logsShed: boolean } {
+  /** Today's rows read (the log's and the record's) against READS_DAY: `rshed` past the shed share (the optional reads
+   *  refused), `shed` that or past the write guard's (writes(): the optional work refused), `logsShed` past the read
+   *  share or LOG_READS_MAX of the log's own (its queries refused). No SQL: in memory. */
+  reads(): { n: number; pct: number; shed: boolean; rshed: boolean; logsShed: boolean } {
     this.today();
     this.tally();
     const n = this.rw.rLog + this.rw.rStore, pct = Math.round((n / READS_DAY) * 1000) / 10;
-    const shed = (n / READS_DAY) * 100 >= (this.io.shedPct ?? SHED_PCT);
-    return { n, pct, shed, logsShed: shed || this.rw.rLog >= LOG_READS_MAX };
+    const rshed = (n / READS_DAY) * 100 >= (this.io.shedPct ?? SHED_PCT);
+    return { n, pct, shed: rshed || this.writes().shed, rshed, logsShed: rshed || this.rw.rLog >= LOG_READS_MAX };
+  }
+
+  /** The account's rows written today (UTC `day`) as Cloudflare says (logObject.ts, a few minutes behind). */
+  account(day: string, n: number): void {
+    if (day !== this.today() || !(n >= 0)) return;
+    this.tally();
+    this.acct = { day, n, own: this.rw.log + this.rw.store + this.rw.room };
+  }
+
+  /** Today's rows written against ROWS_DAY: the account's (as Cloudflare last said, with this copy's own since) or, not
+   *  known, this copy's own; `shed` past the write guard's share. No SQL. */
+  writes(): { n: number; pct: number; shed: boolean } {
+    const day = this.today();
+    const own = this.rw.log + this.rw.store + this.rw.room;
+    const n = Math.max(own, this.acct.day === day ? this.acct.n + own - this.acct.own : 0);
+    const pct = Math.round((n / ROWS_DAY) * 1000) / 10;
+    return { n, pct, shed: pct >= (this.io.writeShedPct ?? WRITE_SHED_PCT) };
   }
 
   /** The record's rows outside a `req` (its cron work, alarm, admin ops, places and share reads: storeObject.ts
@@ -303,11 +332,15 @@ export class LogCore {
     return this.io.tx(() => {
       if (this.sql.exec('SELECT 1 AS x FROM batches WHERE b = ?', b).toArray().length) return { ok: true, dup: true, kept: 0, dropped: 0 };
       const day = this.today();
+      this.tally();
+      const wshed = this.writes().shed;
       let kept = 0, dropped = 0;
       for (const x of body.es as unknown[]) {
         const ev = x && typeof x === 'object' ? (x as Record<string, unknown>) : null;
         if (!ev || !isLogEvent(ev.e) || LOG_EVENTS[ev.e].src !== 'c') { dropped++; continue; }
         const l = levelOf(ev.l);
+        // (over the write guard: errors only, the rest as a capped day's)
+        if (wshed && l !== 3) { dropped++; continue; }
         if (!this.take(`c:${role}:${l === 3 ? 'e' : 'i'}`)) { dropped++; continue; }
         const ct = typeof ev.t === 'number' && Math.abs(ev.t - now) <= DAY ? Math.round(ev.t) : null;
         const q = typeof ev.q === 'number' && Number.isInteger(ev.q) && ev.q >= 0 && ev.q < 1e9 ? ev.q : null;
@@ -316,7 +349,7 @@ export class LogCore {
       }
       this.sql.exec('INSERT INTO batches (b, ts) VALUES (?, ?)', b, now);
       this.counted(day);
-      const closed = this.full(`c:${role}:i`) ? this.nextDay() : undefined;
+      const closed = wshed || this.full(`c:${role}:i`) ? this.nextDay() : undefined;
       return { ok: true, kept, dropped, ...(closed ? { closed } : {}) };
     });
   }
@@ -325,6 +358,8 @@ export class LogCore {
   add(evs: RelayEvent[]): { ok: true; kept: number; closed?: number } {
     return this.io.tx(() => {
       const day = this.today();
+      this.tally();
+      const wshed = this.writes().shed;
       let kept = 0;
       for (const ev of evs) {
         if (!isLogEvent(ev.e) || LOG_EVENTS[ev.e].src !== 'r') continue;
@@ -336,7 +371,7 @@ export class LogCore {
           this.read('rStore', Number(ev.d?.rr));
         }
         if (ev.e === 'room.close') this.wrote('room', Number(ev.d?.rw));
-        if (!this.take(`r:${l === 3 ? 'e' : 'i'}`)) continue;
+        if ((wshed && l !== 3) || !this.take(`r:${l === 3 ? 'e' : 'i'}`)) continue;
         const role = ev.role === 'A' || ev.role === 'B' || ev.role === 'G' ? ev.role : null;
         const id = this.nextId(), d = cleanData(ev.e, ev.d);
         this.insert([id, null, l, ev.e, 'r', role, isLogId(ev.sid) ? ev.sid : null, isLogId(ev.rid) ? ev.rid : null, null, null, null, JSON.stringify(d)]);
@@ -344,7 +379,7 @@ export class LogCore {
         kept++;
       }
       this.counted(day);
-      const closed = this.full('r:i') ? this.nextDay() : undefined;
+      const closed = wshed || this.full('r:i') ? this.nextDay() : undefined;
       return { ok: true as const, kept, ...(closed ? { closed } : {}) };
     });
   }
@@ -430,9 +465,9 @@ export class LogCore {
     this.tally();
     // (one pass over the day's rows: a count each window read them again, ~2.6k rows a call; 2026-11-24)
     const h1 = (now - 3_600_000) * 1000, h6 = (now - 6 * 3_600_000) * 1000;
-    // (over the budget: the day's scan skipped, its counts -1, `shed`)
-    const shedNow = this.reads().shed;
-    const c = shedNow ? { e1h: -1, e6h: -1, w6h: -1, u6h: -1, p24: -1 } : this.sql.exec<Record<string, number | null>>(
+    // (over the read budget: the day's scan skipped, its counts -1; `shed` the optional work refused, reads or writes)
+    const r = this.reads(), shedNow = r.shed, w = this.writes();
+    const c = r.logsShed ? { e1h: -1, e6h: -1, w6h: -1, u6h: -1, p24: -1 } : this.sql.exec<Record<string, number | null>>(
       `SELECT sum(id >= ? AND lvl = 3) AS e1h, sum(id >= ? AND lvl = 3 AND d NOT LIKE '%"leaving":true%') AS e6h, sum(id >= ? AND lvl = 2) AS w6h,
         sum(id >= ? AND ev = 'req' AND d LIKE '%"st":"unavailable"%') AS u6h, sum(src = 'c') AS p24 FROM log WHERE id >= ?`,
       h1, h6, h6, h6, (now - DAY) * 1000
@@ -456,7 +491,9 @@ export class LogCore {
       rowsLog: this.rw.log,
       rowsStore: this.rw.store,
       rowsRoom: this.rw.room,
-      rowsPct: Math.round(((this.rw.log + this.rw.store + this.rw.room) / ROWS_DAY) * 100),
+      // (the account's, every object's, once Cloudflare has said: the write guard's share, writes(); `wshed` past it)
+      rowsPct: Math.round(w.pct),
+      wshed: w.shed,
       // and read (the log's and the record's; READS_DAY the Free plan's 5M, the account's: the test copy's not here)
       readLog: this.rw.rLog,
       readStore: this.rw.rStore,

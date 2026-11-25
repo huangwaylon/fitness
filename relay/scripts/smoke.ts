@@ -453,7 +453,9 @@ if (PLACES_KEY) {
   const got = (await admin({ op: 'logs', since, sid })) as { ok?: boolean; rows?: { ev: string; role: string; rid: string | null; d: Record<string, unknown> }[] };
   const err = got.rows?.find((r) => r.ev === 'js.error'), req = got.rows?.find((r) => r.ev === 'req' && r.rid === rid);
   check(err?.role === 'A' && err.d.msg === 'smoke: forced error # <id>' && err.d.stack === 'smoke@smoke.js:1:2', `the forced error is in the log, scrubbed (${JSON.stringify(err?.d)})`);
-  check(req?.d.action === 'whoami' && req.d.st === 'ok' && typeof req.d.ms === 'number', `the /api request is in the log by its id (${req?.d.ms} ms)`);
   const stats = await admin({ op: 'logstats' });
+  // (over the write guard the log keeps only errors: log.ts WRITE_SHED_PCT)
+  if (stats.wshed === true) console.log(`  (the log keeps only errors today: ${String(stats.rowsPct)} % of the day's rows written; the request's line not checked)`);
+  else check(req?.d.action === 'whoami' && req.d.st === 'ok' && typeof req.d.ms === 'number', `the /api request is in the log by its id (${req?.d.ms} ms)`);
   check(stats.ok === true && typeof stats.e1h === 'number', `the log's stats (${stats.e1h} errors this hour, ${stats.budgetPct} % of the day's cap)`);
 }
