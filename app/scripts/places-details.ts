@@ -16,7 +16,7 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { PICS_MAX } from '../src/lib/contract/places.ts';
 import { parsePlace, type GDetails, type Parsed } from '../src/lib/places/gplace.ts';
-import { CAP, dueToday, PICS_BEFORE, pickDetails, pickNoHours, REDO_BEFORE, type LiveId } from '../src/lib/places/refresh.ts';
+import { CAP, dueToday, pickDetails, pickNoHours, type LiveId } from '../src/lib/places/refresh.ts';
 
 // node's fetch ignores the proxy env vars without this (a run from a Mac behind a proxy): re-exec once with it
 const PROXY_VARS = ['http_proxy', 'https_proxy', 'HTTP_PROXY', 'HTTPS_PROXY', 'all_proxy', 'ALL_PROXY'];
@@ -92,7 +92,7 @@ async function cmdDaily(args: string[]): Promise<void> {
   const live = JSON.parse(readFileSync(idsFile, 'utf8')) as LiveId[];
   const cap = Number(opt(args, '--cap') ?? CAP);
   // (--missing-hours, the one-off's: the looked-up whose details found no hours, again)
-  const pick = args.includes('--missing-hours') ? { missing: [], refresh: pickNoHours(live, cap), waiting: 0 } : pickDetails(live, { cap, redoBefore: REDO_BEFORE, picsBefore: PICS_BEFORE });
+  const pick = args.includes('--missing-hours') ? { missing: [], refresh: pickNoHours(live, cap), waiting: 0 } : pickDetails(live, { cap });
   const until = Date.now() + Number(opt(args, '--minutes') ?? 12) * 60_000;
   const now = Math.floor(Date.now() / 1000);
   const rows: DetRow[] = [];
@@ -130,7 +130,7 @@ function cmdDue(args: string[]): void {
   const idsFile = opt(args, '--ids');
   if (!idsFile) throw new Error('due needs --ids');
   const live = JSON.parse(readFileSync(idsFile, 'utf8')) as LiveId[];
-  const d = dueToday(live, Math.floor(Date.now() / 1000), { cap: Number(opt(args, '--cap') ?? CAP), redoBefore: REDO_BEFORE, picsBefore: PICS_BEFORE });
+  const d = dueToday(live, Math.floor(Date.now() / 1000), { cap: Number(opt(args, '--cap') ?? CAP) });
   console.error(`places-details due: ${JSON.stringify(d)}`);
   console.log(`skip=${d.skip ? 1 : 0}\nageH=${d.ageH}`);
 }
