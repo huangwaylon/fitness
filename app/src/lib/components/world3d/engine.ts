@@ -24,7 +24,7 @@ import { bendTree, bendU, overLog, unbendRay } from './bend.ts';
 import { waterFog, waterU } from './water.ts';
 import { createThings, type Things } from './things.ts';
 import { shadowBox, sunOn, type ShadowBox } from './shadowBox.ts';
-import { DAY_SUN, FOV, PIVOT_DROP, VIEW_W, ZOOM, backAt, backFor, liftProfile, stretchZoom, zoomOutOf, cullBands, dropPivot, focalOf, haze, horizonAt, pitchAt, pose } from './islandCam.ts';
+import { DAY_SUN, FOV, PIVOT_DROP, VIEW_W, ZOOM, backAt, backFor, endsAt, liftProfile, type ZoomEnds, stretchZoom, zoomOutOf, cullBands, dropPivot, focalOf, haze, horizonAt, pitchAt, pose } from './islandCam.ts';
 import { createCards, type Cards } from './cards.ts';
 import { createEffects, type FxKind, type FxOpts } from './effects.ts';
 import { createBiteMarks, type MarkState } from './biteMark.ts';
@@ -230,6 +230,7 @@ export interface Island3 {
   xRoom(zoom?: number): number;
   /** The zoom's range (the widest: the land's width; the default; fully in). */
   zoomRange(): { min: number; def: number; max: number };
+  /** The ends at the zoom now. */
   limits(): { min: number; max: number };
   /** The test hook's (docs/ops/testing.md): what's drawn now with a NaN in its bounds, or reaching far off the island
    *  (`reach` u past the ground's plan): a stray vertex (a quantized mesh baked wrong) draws a line across the screen. */
@@ -273,8 +274,8 @@ export interface Island3 {
   /** The launch's programs linked ahead (progCache.ts): how many were made, how many of them a material took by the
    *  island whole, and when the launch's programs were last all linked (performance.now(); 0: never one waiting). */
   progStats(): { progPre: number; progHit: number; linkedAt: number };
-  /** The camera's ends for this screen (the scene fits them: まえ's shore, おく's campsite). */
-  setLimits(min: number, max: number): void;
+  /** The camera's ends for this screen at a few zooms, read between (the scene fits them: islandCam.ts fitZoomEnds). */
+  setLimits(ends: readonly ZoomEnds[]): void;
   // ---- the projection (the World's Proj3; px from the canvas's top-left) ----
   /** (`out`: written into and returned, no object a call: the camera's hot path) */
   at(x: number, z: number, lift: number, out?: At): At;
@@ -387,7 +388,10 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
   }
 
   // ---- the camera ----
+  /** The scroll's ends at each fitted zoom (setLimits), and at the zoom now (`lim`: again as the zoom changes, aim). */
+  let ends: ZoomEnds[] = [{ k: 1, ...CAM_Z }];
   const lim = { min: CAM_Z.min as number, max: CAM_Z.max as number };
+  const limNow = () => Object.assign(lim, endsAt(ends, zoomK));
   let camZ = lim.min, zoomK = 1, pitch = pitchAt(1), rev = 0;
   let shadowAim: ShadowBox | null = null;
   /** The camera's rev in the last frame's scene step (its DOM nodes placed for it). */
@@ -405,6 +409,7 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
   const liftAt = () => (lift ??= liftProfile(src.height, ground.land));
   let camX = midX(), fx = camX, fy = 0, fpitch = 0, fk = 0, fdrop = 0, drop = PIVOT_DROP;
   function aim() {
+    limNow();
     pitch = pitchAt(zoomK);
     if (fk > 0) pitch += (fpitch - pitch) * fk;
     const d = PIVOT_DROP + (fdrop - PIVOT_DROP) * fk;
@@ -1326,12 +1331,10 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
     xRoom,
     zoomRange: () => ({ min: kMin(), def: ZOOM.def, max: ZOOM.max }),
     go(z, k, free, x) {
-      if (free) {
-        lim.min = Math.min(lim.min, z);
-        lim.max = Math.max(lim.max, z);
-      }
-      camZ = rawZ = Math.max(lim.min, Math.min(lim.max, z));
       if (k) zoomK = rawK = Math.max(kMin(), Math.min(ZOOM.max, k));
+      if (free) ends = ends.map((e) => ({ k: e.k, min: Math.min(e.min, z), max: Math.max(e.max, z) }));
+      limNow();
+      camZ = rawZ = Math.max(lim.min, Math.min(lim.max, z));
       camX = clampX(x ?? camX);
       vel = velX = 0;
       zoomBack = null;
@@ -1373,9 +1376,9 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
       return out;
     },
     focusOn, restore, frame: frameRect,
-    setLimits(min, max) {
-      lim.min = min;
-      lim.max = Math.max(min, max);
+    setLimits(e) {
+      ends = e.map((x) => ({ k: x.k, min: x.min, max: Math.max(x.min, x.max) }));
+      limNow();
       lift = null;
       camZ = rawZ = Math.max(lim.min, Math.min(lim.max, camZ));
       // (the ends follow a layout change: the island's middle across too, its land's)

@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { PerspectiveCamera, Plane, Raycaster, Vector2, Vector3 } from 'three';
-import { FOV, LIFT_BLUR, VIEW_W, ZOOM, backAt, backFor, dropPivot, liftProfile, pitchAt, pose, stretchZoom, zoomOutOf } from './islandCam.ts';
+import { FOV, LIFT_BLUR, VIEW_W, ZOOM, backAt, backFor, dropPivot, endZooms, endsAt, fitZoomEnds, liftProfile, pitchAt, pose, stretchZoom, zoomOutOf } from './islandCam.ts';
+import { bendPoint } from './bend.ts';
+import { RECORD_ROWS, tieredLayout } from './tiered.cases.ts';
 import { defaultLayout, extentOf } from '#lib/layout/model.ts';
 import { fieldOf } from '#lib/layout/height.ts';
 
@@ -68,5 +70,58 @@ describe('islandCam: the camera backs off with the terrain', () => {
     // (the grass a little over the sea's level)
     expect(lift(ext.shore + 100)).toBeLessThan(3);
     expect(lift(ext.land.z1 - LIFT_BLUR - 30)).toBeGreaterThan(20);
+  });
+});
+
+describe('islandCam: the scroll’s ends at every zoom', () => {
+  // the phone's camera on a layout's ground, as engine.ts aims it (backed off with the lift, bent over the log)
+  const R = 1300, HUD = 60;
+  function camOn(lay: ReturnType<typeof defaultLayout>) {
+    const ext = extentOf(lay), ground = fieldOf(lay).ground, lift = liftProfile(ground, ext.land), mid = (ext.land.x0 + ext.land.x1) / 2;
+    const cam = new PerspectiveCamera(FOV, W / H, 20, 8000), v = new Vector3();
+    dropPivot(cam, W, H);
+    const sy = (cz: number, k: number, x: number, z: number, h: number) => {
+      const pitch = pitchAt(k);
+      pose(cam, mid, 0, cz, backFor(backAt(W / H), k, lift(cz), pitch), pitch);
+      const [bx, by, bz] = bendPoint(x, ground(x, z) + h, -z, -cz, R);
+      return ((1 - v.set(bx, by, bz).project(cam).y) / 2) * H;
+    };
+    // (the last row's highest ground across, as Island3D's fitEnds finds it)
+    const ez = ext.land.z1 - 15;
+    let ex = mid;
+    for (let x = ext.land.x0 + 15; x < ext.land.x1; x += 30) if (ground(x, ez) > ground(ex, ez)) ex = x;
+    const lo = zoomOutOf(ext.land.x1 - ext.land.x0);
+    const marks = { midX: mid, shore: ext.shore, canopy: [60, 216, 120], home: [ext.home[0], ext.home[1], 60], edge: [ex, ez, 120], hud: HUD, H } as const;
+    const ends = fitZoomEnds(sy, marks, endZooms(lo), ext.shore - 400, Math.max(ext.land.z1, ext.home[1]) + 700);
+    return { ext, sy, ends, lo, ex, ez, mid, top: ground(ex, ez) };
+  }
+  const zooms = (lo: number) => [lo, (lo + 1) / 2, 1, 1.25, 1.5, 1.8, 2.2, 2.7, ZOOM.max];
+
+  for (const [name, lay] of [['the default', defaultLayout()], ['the record’s one upper tier', tieredLayout(RECORD_ROWS)], ['tiers up to the highest', tieredLayout()]] as const)
+    it(`${name}: zoomed anywhere, the far end shows the last row and its trees’ tops under the HUD, the front its shore`, () => {
+      const c = camOn(lay);
+      for (const k of zooms(c.lo)) {
+        const { min, max } = endsAt(c.ends, k);
+        // the far end: the last row's ground on screen, its trees' tops (120 u) below the HUD, a little sky over them
+        const ground = c.sy(max, k, c.ex, c.ez, 0), tops = c.sy(max, k, c.ex, c.ez, 120);
+        expect(ground, `k ${k}`).toBeLessThan(H);
+        expect(tops, `k ${k}`).toBeGreaterThan(HUD + 16);
+        // (and no further: a little less and the tops go under the HUD or the row sits above 0.42 of the screen)
+        expect(Math.min(c.sy(max - 30, k, c.ex, c.ez, 120) - HUD - 16 - 0.04 * H, c.sy(max - 30, k, c.ex, c.ez, 0) - 0.42 * H), `k ${k}`).toBeLessThan(0);
+        // the front: the shore on screen, the sea past it, not just sea
+        const shore = c.sy(min, k, c.mid, c.ext.shore, 0);
+        expect(shore, `k ${k}`).toBeLessThan(H * 0.9);
+        expect(shore, `k ${k}`).toBeGreaterThan(H * 0.5);
+        expect(min).toBeLessThan(max);
+      }
+    });
+
+  it('the ends read between the fitted zooms linearly and hold past them', () => {
+    const e = [{ k: 0.8, min: 100, max: 1000 }, { k: 1, min: 80, max: 1100 }, { k: 3.2, min: 40, max: 1500 }];
+    expect(endsAt(e, 0.5)).toEqual({ min: 100, max: 1000 });
+    expect(endsAt(e, 0.9)).toEqual({ min: 90, max: 1050 });
+    expect(endsAt(e, 2.1).max).toBeCloseTo(1300, 6);
+    expect(endsAt(e, 4)).toEqual({ min: 40, max: 1500 });
+    expect(endsAt([{ k: 1, min: 5, max: 9 }], 2)).toEqual({ min: 5, max: 9 });
   });
 });

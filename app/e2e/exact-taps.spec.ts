@@ -35,10 +35,12 @@ async function open(page: Page, layout: 'default' | 'user', date = '2026-11-04')
   expect(await is3d(page)).toBe(true);
   await quiet(page);
 }
-/** The camera's far stop (up the island as far as it goes), at zoom `k`, panned to world x `x`. */
+/** The camera at the default zoom's far stop (up the island as far as it goes at 1), at zoom `k`, panned to world x
+ *  `x` (zoomed in, the far end goes further back still: islandCam.ts fitZoomEnds; this view is within it). */
 async function farStop(page: Page, k: number, x?: number) {
   await page.evaluate(([k, x]) => {
     const w = (window as unknown as Hooks).__world3d;
+    w.go(Infinity, 1);
     w.go(w.limits().max, k, x ?? undefined);
   }, [k, x ?? null] as const);
   await expect.poll(() => hooks(page, (h) => h.__world3d.camStill()), { message: 'the camera still' }).toBe(true);

@@ -44,6 +44,7 @@
   import { ambient3 } from '../island/ambient3d.svelte.ts';
   import PLACES from '#lib/world/models.json' with { type: 'json' };
   import { createIsland, islandRenderer, type At, type Island3 } from './engine.ts';
+  import { endZooms, fitZoomEnds } from './islandCam.ts';
   import { assetFor } from './assets.ts';
   import { keyModel, modelBounds } from './models3d.ts';
   import { floats as floatsNow, floatAt, type Float } from './floats3d.ts';
@@ -91,7 +92,7 @@
   import { inOval } from '#lib/world/world.ts';
   import { extentOf, midXOf, type Layout } from '#lib/layout/model.ts';
   import { GRASS_Y, SEA_Y as LAYOUT_SEA_Y, WATER_DROP as LAYOUT_DROP, fieldOf } from '#lib/layout/height.ts';
-  import { TIER_H } from '#lib/layout/grid.ts';
+  import { TIER_H, TILE } from '#lib/layout/grid.ts';
   import { drawOff, testHooks } from '#lib/ui-state/testMode.ts';
   import { releaseWorker } from '#lib/ui-state/swLate.ts';
   import { timers } from '../island/timers.ts';
@@ -1010,44 +1011,26 @@
     return eng?.limits() ?? { min: 30, max: 1000 };
   }
 
-  /** The camera's ends for this screen: まえ puts the shoreline SHORE_AT down
-   *  the screen (unless the goal trees' canopies would go under the HUD), おく the campsite's feet CAMP_AT down it with
-   *  its top clear of the HUD. */
-  const SHORE_AT = 0.83, CAMP_AT = 0.5, CLEAR = 16;
   /** The layout ground's bake (px a unit): nothing drawn (the e2e's logic mode), a token one; a software renderer
    *  half the phone's (its bake held every tab of CI's browser up for seconds). */
   const groundPx = (soft: boolean) => (drawOff() ? 0.05 : soft ? 0.8 : undefined);
-  /** The ends' landmarks: the layout's (its middle across, its front shore, ウェイ's home's door; まえ's canopy that
-   *  must clear the HUD, おく's landmark, its feet half way down the screen, its top clear). */
-  function endsNow(): { midX: number; shore: number; canopy: readonly [number, number, number]; back: readonly [number, number, number]; edge: number } {
-    const x = extentOf(sceneLayout());
-    // (and the land's far edge: the user, "scroll further back, to see the back of the island too")
-    return { midX: midXOf(x.land), shore: x.shore, canopy: [GOAL_TREES.A[0], GOAL_TREES.A[1], TREE_H], back: [x.home[0], x.home[1], CAMPSITE.h], edge: x.land.z1 };
-  }
-  /** The far end shows the island's back: its far edge this share down the screen (the cliff top, its trees, the far
-   *  shore and the sea past it all in view). */
-  const EDGE_AT = 0.42;
+  /** The camera's ends for this screen, at each of a few zooms (islandCam.ts fitZoomEnds): まえ the shore, おく the
+   *  land's last row on its highest ground with its trees' tops (the user, 2026-11-25: "scroll further back, to see the
+   *  back of the island too"; zoomed in, "I can't scroll to the very back to see the trees"), at the default and wider
+   *  also the goal tree's canopy clear of the HUD and ウェイ's home's door half way down. */
   function fitEnds(e: Island3) {
     const v = e.view(), H = canvas?.clientHeight ?? 0;
     if (!H) return;
     const hud = Math.max(0, (document.querySelector('.ribbon-wrap')?.getBoundingClientRect().bottom ?? 0) - scene.getBoundingClientRect().top);
-    const en = endsNow();
-    e.setLimits(en.shore - 400, Math.max(en.back[1], en.edge) + 700);
-    const syAt = (x: number, z: number, lift: number) => (cz: number) => (e.go(cz, 1), e.at(x, z, lift).sy);
-    const solve = (f: (cz: number) => number, target: number, lo: number, hi: number) => {
-      for (let i = 0; i < 28; i++) {
-        const mid = (lo + hi) / 2;
-        if (f(mid) < target) lo = mid;
-        else hi = mid;
-      }
-      return Math.round((lo + hi) / 2);
-    };
-    const { midX, shore, canopy: [cx, cz, ch], back: [bx, bz, bh], edge } = endsNow();
-    const lo = shore - 400, hi = Math.max(bz, edge) + 700;
-    const min = Math.max(solve(syAt(midX, shore, 0), H * SHORE_AT, lo, shore + 530), solve(syAt(cx, cz, ch), hud + CLEAR, lo, cz + 400));
-    let max = Math.max(solve(syAt(bx, bz, 0), H * CAMP_AT, min, hi), solve(syAt(bx, bz, bh), hud + CLEAR, min, hi));
-    max = Math.max(max, solve(syAt(midX, edge, 0), Math.max(hud + CLEAR, H * EDGE_AT), min, hi));
-    e.setLimits(min, max);
+    const x = extentOf(sceneLayout()), midX = midXOf(x.land), lo = x.shore - 400, hi = Math.max(x.land.z1, x.home[1]) + 700;
+    // (the last row's highest ground across: a cliff top, not the sea at its foot)
+    const ez = x.land.z1 - TILE / 2;
+    let ex = midX;
+    for (let cx = x.land.x0 + TILE / 2; cx < x.land.x1; cx += TILE) if (heightOf(cx, ez) > heightOf(ex, ez)) ex = cx;
+    e.setLimits([{ k: 1, min: lo, max: hi }]);
+    const marks = { midX, shore: x.shore, canopy: [GOAL_TREES.A[0], GOAL_TREES.A[1], TREE_H], home: [x.home[0], x.home[1], CAMPSITE.h], edge: [ex, ez, TREE_H], hud, H } as const;
+    const sy = (cz: number, k: number, px: number, pz: number, lift: number) => (e.go(cz, k), e.at(px, pz, lift).sy);
+    e.setLimits(fitZoomEnds(sy, marks, endZooms(e.zoomRange().min), lo, hi));
     e.go(v.camZ, v.zoom);
   }
 

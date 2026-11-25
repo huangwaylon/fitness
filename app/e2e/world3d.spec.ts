@@ -4,6 +4,7 @@
 import { expect, test, type Page } from './fixtures.ts';
 import { openRewards } from './hud.ts';
 import { fxSince, islandUp, islandURL, lawnTap, loaded3d, pageNow, tapOn, type W3 as W3Probe } from './island.ts';
+import { BACK_TREES, tieredOps } from '../src/lib/components/world3d/tiered.cases.ts';
 
 type W3 = {
   xRoom(k?: number): number;
@@ -167,6 +168,45 @@ test('the 3D camera zoomed in: one finger pans sideways too, held over the islan
   await w3(page, (w) => w.go(400, 3.2, 1000));
   const side = await w3(page, (w) => ({ ...w.view(), room: w.xRoom() }));
   expect(side.camX).toBeCloseTo(195 + side.room, 1);
+});
+
+test('the 3D camera zoomed in scrolls to the very back of a tiered island: its last row’s trees in view, tops and all', async ({ page }) => {
+  // (the record's shape, tiers up to the highest at its back, cedars on its last two rows: tiered.cases.ts)
+  await page.addInitScript((ops) => localStorage.setItem('island-demo.layout', ops), JSON.stringify(tieredOps()));
+  await page.goto(`?${Q}`);
+  await ready(page);
+  // a wide pinch apart: fully in
+  await touches(page, line(6, (i) => [[175 - i * 22, 430], [215 + i * 22, 430]]), true, true);
+  await idle(page);
+  expect((await w3(page, (w) => w.view())).zoom).toBeGreaterThan(2.8);
+  // one finger flung down the screen, again and again, till the far end holds it
+  let z = -1;
+  for (let n = 0; n < 12; n++) {
+    await touches(page, line(4, (i) => [[200, 200 + i * 120]]));
+    await idle(page);
+    const v = await w3(page, (w) => w.view());
+    if (Math.abs(v.camZ - z) < 0.5) break;
+    z = v.camZ;
+  }
+  const end = await w3(page, (w) => ({ ...w.view(), lim: w.limits() }));
+  expect(end.camZ).toBeCloseTo(end.lim.max, 0);
+  // the last row's cedars: drawn, their feet on screen, their tops under the HUD
+  const hud = await page.evaluate(() => document.querySelector('.ribbon-wrap')!.getBoundingClientRect().bottom);
+  const trees = await page.evaluate((pre) => {
+    const w = window as unknown as { __world3d: W3 & { where(id: string): { hidden: boolean } | null }; __layout: { ids(k: string): string[]; pos(id: string): [number, number] } };
+    return w.__layout.ids('cedar').filter((id) => id.startsWith(pre) && id.endsWith('-77')).map((id) => {
+      const [x, z] = w.__layout.pos(id);
+      return { id, x, feet: w.__world3d.client(x, z, 0)[1], top: w.__world3d.client(x, z, 120)[1], hidden: w.__world3d.where(id)?.hidden ?? true };
+    });
+  }, BACK_TREES);
+  expect(trees.length).toBe(7);
+  const onScreen = trees.filter((t) => t.x > end.camX - 60 && t.x < end.camX + 60);
+  expect(onScreen.length).toBeGreaterThan(0);
+  for (const t of onScreen) {
+    expect(t.hidden, t.id).toBe(false);
+    expect(t.feet, t.id).toBeLessThan(852);
+    expect(t.top, t.id).toBeGreaterThan(hud);
+  }
 });
 
 test('the 3D camera backs off with the terrain: the pivot’s row as wide on the upper tier as below it', async ({ page }) => {
@@ -470,7 +510,8 @@ test('one source for screen ↔ world: at the default, zoomed in panned sideways
       const w = (window as unknown as { __world3d: W3x }).__world3d;
       // open lawn in view (off the middle's path, a tap on which is no walk, and off the beach and the sea: a cast)
       const z0 = w.view().camZ, out: { cx: number; cy: number; g: { x: number; z: number } }[] = [];
-      for (const dz of [60, 110, 160, 30, 210]) for (const x of [150, 240, 120, 270, 90, 300]) {
+      // (behind the pivot too: zoomed in at the far end, the land's last rows are just ahead of it)
+      for (const dz of [60, 110, 160, 30, 210, -40, -90]) for (const x of [150, 240, 120, 270, 90, 300]) {
         const [cx, cy] = w.client(x, z0 + dz);
         if (cx < 30 || cx > innerWidth - 30 || cy < 160 || cy > innerHeight - 120) continue;
         const g = w.ground(cx, cy);

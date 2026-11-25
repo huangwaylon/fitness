@@ -62,6 +62,61 @@ export function liftProfile(heightAt: (x: number, z: number) => number, land: { 
  *  up there: backed off along its own line of sight by the lift's share, so the ground `lift` high where that line
  *  meets it is VIEW_W / k across (the same width on a cliff top as below it), the screen's middle on the same ground. */
 export const backFor = (d0: number, k: number, lift: number, pitch: number): number => d0 / k + lift / Math.sin(pitch);
+
+/** The scroll's ends (the pivot's z) at a zoom `k`: what must show at an end grows on screen zoomed in, so each zoom
+ *  has its own (the user, 2026-11-25: zoomed in, the back's trees were past the far end). */
+export interface ZoomEnds { k: number; min: number; max: number }
+/** The zooms the ends are fitted at (the widest `lo` … fully in), read between linearly. */
+export const endZooms = (lo: number): number[] => [...new Set([lo, ZOOM.def, 1.5, 2.2, ZOOM.max])];
+/** The ends at a zoom: between the fitted zooms' linearly, the nearest's past them. */
+export function endsAt(ends: readonly ZoomEnds[], k: number): { min: number; max: number } {
+  let i = 0;
+  while (i < ends.length - 2 && k > ends[i + 1].k) i++;
+  const a = ends[i], b = ends[i + 1] ?? a, t = b.k > a.k ? Math.max(0, Math.min(1, (k - a.k) / (b.k - a.k))) : 0;
+  return { min: a.min + (b.min - a.min) * t, max: a.max + (b.max - a.max) * t };
+}
+/** What each end shows (world points: x, z, the height above the ground there), and the screen (px). */
+export interface EndMarks {
+  midX: number;
+  /** The land's front edge (its ground SHORE_AT down the screen). */
+  shore: number;
+  /** The front's tree whose top clears the HUD, and ウェイ's home (its door half way down, its top clear): at the
+   *  default zoom and wider only (zoomed in, the shore and the back's edge come first). */
+  canopy: readonly [number, number, number];
+  home: readonly [number, number, number];
+  /** The land's last row, on its highest ground: its ground EDGE_AT down, and its tall things' tops (a tree's height)
+   *  clear of the HUD with a little sky (SKY_AT) over them. */
+  edge: readonly [number, number, number];
+  /** The HUD's bottom and the screen's height (px). */
+  hud: number;
+  H: number;
+}
+const SHORE_AT = 0.83, HOME_AT = 0.5, EDGE_AT = 0.42, CLEAR = 16, SKY_AT = 0.04;
+/** The ends fitted at each zoom of `ks`: `sy(camZ, k, x, z, lift)` the screen y (px) of the point `lift` over the
+ *  ground at (x, z) with the pivot at camZ, zoom k (larger as camZ grows: the point lower down the screen), the
+ *  search within lo … hi. */
+export function fitZoomEnds(sy: (camZ: number, k: number, x: number, z: number, lift: number) => number, m: EndMarks, ks: readonly number[], lo: number, hi: number): ZoomEnds[] {
+  // (searched near the point: a point far past the log's horizon shows lower again, behind it)
+  const solve = (k: number, [x, z, h]: readonly [number, number, number], target: number) => {
+    let a = Math.max(lo, z - 900), b = Math.min(hi, z + 400);
+    for (let i = 0; i < 18; i++) {
+      const mid = (a + b) / 2;
+      if (sy(mid, k, x, z, h) < target) a = mid;
+      else b = mid;
+    }
+    return Math.round((a + b) / 2);
+  };
+  const top = m.hud + CLEAR;
+  return ks.map((k) => {
+    const wide = k <= ZOOM.def;
+    let min = solve(k, [m.midX, m.shore, 0], m.H * SHORE_AT);
+    if (wide) min = Math.max(min, solve(k, m.canopy, top));
+    const [ex, ez] = m.edge;
+    let max = Math.max(solve(k, [ex, ez, 0], Math.max(top, m.H * EDGE_AT)), solve(k, m.edge, top + m.H * SKY_AT));
+    if (wide) max = Math.max(max, solve(k, [m.home[0], m.home[1], 0], m.H * HOME_AT), solve(k, m.home, top));
+    return { k, min, max: Math.max(min, max) };
+  });
+}
 /** How far below the screen's middle the pivot sits (a share of the height). */
 export const PIVOT_DROP = 0.16;
 /** The haze's start and end, as shares of the horizon's view depth: only what stands by the horizon fades a little. */
