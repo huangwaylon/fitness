@@ -1,0 +1,210 @@
+{
+ "v": 1,
+ "at": 1795617440863,
+ "verdict": "held",
+ "reasons": [
+  "band_added",
+  "band_gone",
+  "band_ended",
+  "band_items"
+ ],
+ "run": {
+  "id": 45635337105,
+  "url": "https://github.com/huangwaylon/fitness/actions/runs/45635337105",
+  "event": "workflow_dispatch",
+  "round": 1,
+  "result": "held",
+  "startedAt": 1795617202000,
+  "endedAt": 1795617440863,
+  "shardsDone": 20,
+  "shardsTotal": 20
+ },
+ "next": 1796146860000,
+ "dataset": {
+  "tag": "kalori-2026-11-17",
+  "date": "2026-11-17",
+  "url": "https://github.com/huangwaylon/fitness/releases/tag/kalori-2026-11-17",
+  "items": 54419,
+  "shops": 448,
+  "ended": 775,
+  "dropped": {
+   "no_values": 0,
+   "long_name": 0,
+   "range": 10,
+   "implausible": 12,
+   "off_product": 54,
+   "duplicate": 0,
+   "near_duplicate": 190,
+   "takeout_twin": 126,
+   "retired": 0
+  }
+ },
+ "diff": {
+  "added": 3612,
+  "gone": 1514,
+  "renamed": 0,
+  "valuesChanged": 5,
+  "estChanged": 4,
+  "endedChanged": 1547,
+  "itemsDelta": 3483,
+  "shares": {
+   "added": 0.06668,
+   "gone": 0.02795,
+   "valuesChanged": 9e-05,
+   "estChanged": 7e-05
+  },
+  "limits": {
+   "added": 0.025,
+   "gone": 0.015,
+   "valuesChanged": 0.01,
+   "estChanged": 0.005
+  },
+  "tripped": [
+   {
+    "code": "band_added",
+    "key": "added",
+    "share": 0.06668,
+    "limit": 0.025
+   },
+   {
+    "code": "band_gone",
+    "key": "gone",
+    "share": 0.02795,
+    "limit": 0.015
+   },
+   {
+    "code": "band_ended",
+    "key": "ended",
+    "share": 0.02856,
+    "limit": 0.01
+   },
+   {
+    "code": "band_items",
+    "key": "items",
+    "share": 0.06429,
+    "limit": 0.02
+   }
+  ]
+ },
+ "coverage": {
+  "complete": true,
+  "fetched": 56122,
+  "discovered": 56122,
+  "shopsTracked": 457,
+  "noNutrition": 0,
+  "failed": 0
+ },
+ "merge": {
+  "sha": null,
+  "deploy": "held",
+  "pr": "https://github.com/huangwaylon/fitness/pull/42"
+ },
+ "alert": {
+  "text": "held by the gates: band_added, band_gone, band_ended, band_items (the PR has the table)",
+  "since": 1795547673947,
+  "runUrl": "https://github.com/huangwaylon/fitness/actions/runs/45635337105",
+  "prUrl": "https://github.com/huangwaylon/fitness/pull/42",
+  "issueUrl": null
+ },
+ "history": [
+  {
+   "t": 1794640924750,
+   "result": "held",
+   "tag": "kalori-2026-11-14-2",
+   "added": 0,
+   "gone": 0,
+   "valuesChanged": 0,
+   "endedChanged": 0,
+   "ms": 579750,
+   "runUrl": "https://github.com/huangwaylon/fitness/actions/runs/43569987229"
+  },
+  {
+   "t": 1794641575024,
+   "result": "merged",
+   "tag": "kalori-2026-11-14-2",
+   "added": 0,
+   "gone": 0,
+   "valuesChanged": 0,
+   "endedChanged": 0,
+   "ms": 413024,
+   "runUrl": "https://github.com/huangwaylon/fitness/actions/runs/43571075376"
+  },
+  {
+   "t": 1794723148390,
+   "result": "merged",
+   "tag": "kalori-2026-11-15",
+   "added": 103,
+   "gone": 27,
+   "valuesChanged": 0,
+   "endedChanged": 27,
+   "ms": 688390,
+   "runUrl": "https://github.com/huangwaylon/fitness/actions/runs/43683520678"
+  },
+  {
+   "t": 1794725193988,
+   "result": "merged",
+   "tag": "kalori-2026-11-15-2",
+   "added": 0,
+   "gone": 0,
+   "valuesChanged": 0,
+   "endedChanged": 0,
+   "ms": 837988,
+   "runUrl": "https://github.com/huangwaylon/fitness/actions/runs/43685915601"
+  },
+  {
+   "t": 1794942090383,
+   "result": "merged",
+   "tag": "kalori-2026-11-17",
+   "added": 302,
+   "gone": 383,
+   "valuesChanged": 0,
+   "endedChanged": 389,
+   "ms": 980383,
+   "runUrl": "https://github.com/huangwaylon/fitness/actions/runs/44151213298"
+  },
+  {
+   "t": 1795547673947,
+   "result": "failed",
+   "tag": null,
+   "added": 0,
+   "gone": 0,
+   "valuesChanged": 0,
+   "endedChanged": 0,
+   "ms": 1762947,
+   "runUrl": "https://github.com/huangwaylon/fitness/actions/runs/45462892831"
+  },
+  {
+   "t": 1795572612562,
+   "result": "failed",
+   "tag": "kalori-2026-11-25",
+   "added": 3612,
+   "gone": 1514,
+   "valuesChanged": 5,
+   "endedChanged": 1547,
+   "ms": 468562,
+   "runUrl": "https://github.com/huangwaylon/fitness/actions/runs/45530071390"
+  },
+  {
+   "t": 1795617066238,
+   "result": "failed",
+   "tag": null,
+   "added": 3612,
+   "gone": 1514,
+   "valuesChanged": 5,
+   "endedChanged": 1547,
+   "ms": 242238,
+   "runUrl": "https://github.com/huangwaylon/fitness/actions/runs/45634188559"
+  },
+  {
+   "t": 1795617440863,
+   "result": "held",
+   "tag": "kalori-2026-11-25-2",
+   "added": 3612,
+   "gone": 1514,
+   "valuesChanged": 5,
+   "endedChanged": 1547,
+   "ms": 238863,
+   "runUrl": "https://github.com/huangwaylon/fitness/actions/runs/45635337105"
+  }
+ ]
+}
