@@ -118,7 +118,7 @@ export function useBalloon(w: World, ondone: () => void): () => void {
       const f = flight;
       if (!f) return;
       const bw = RIG.balloon * 0.6 + 10, bh = RIG.balloon + RIG.string + RIG.gift + 8, mid = (RIG.balloon - RIG.string - RIG.gift) / 2;
-      return untrack(() => tap3(w, [{ kind: 'balloon', id: '', x: f.x0, z: f.z, h: RIG.balloon + RIG.string + RIG.gift, live: knot, always: true, l: -bw / 2, r: bw / 2, b: mid - bh / 2, t: mid + bh / 2, min: [48, 48, 'mid'], act: tap }])());
+      return untrack(() => tap3(w, [{ kind: 'balloon', id: '', x: f.x0, z: f.z, h: RIG.balloon + RIG.string + RIG.gift, live: knot, l: -bw / 2, r: bw / 2, b: mid - bh / 2, t: mid + bh / 2, min: [48, 48, 'mid'], act: tap }])());
     });
 
     $effect(() => untrack(() => {

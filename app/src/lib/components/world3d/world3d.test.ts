@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { bendPoint, maskedLights, unbendRay } from './bend.ts';
+import { bendPoint, maskedLights, overLog, unbendRay } from './bend.ts';
 
 describe('the rolling log', () => {
   it('leaves the pivot where it is and drops the ground away from it', () => {
@@ -17,6 +17,19 @@ describe('the rolling log', () => {
       expect(hit[0]).toBeCloseTo(150, 3);
       expect(hit[1]).toBeCloseTo(z, 3);
     }
+  });
+
+  it("sees a lifted point over the curve though the ground under it is past it (overLog: K.K.'s head on the upper level's back row)", () => {
+    // (the island's log, R 1300; a camera 600 up and 700 back of the pivot; the upper level 40 up)
+    const R = 1300, pivot = 0, cam = [0, 600, 700], h = 40;
+    const seen = (z: number, lift: number) => {
+      const [, by, bz] = bendPoint(0, h + lift, z, pivot, R);
+      return overLog(by, bz, cam[1], cam[2], h, pivot, R);
+    };
+    // (a hair up) the ground in front, and the ground past the tangent from the camera (~0.85 rad round from it)
+    expect([seen(-300, 1), seen(-500, 1), seen(-800, 1)]).toEqual([true, true, false]);
+    // further past it: a figure's head still shows, a flower's top doesn't; much further, nothing does
+    expect([seen(-1100, 120), seen(-1100, 4), seen(-1500, 120)]).toEqual([true, false, false]);
   });
 });
 

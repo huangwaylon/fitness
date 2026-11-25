@@ -816,7 +816,7 @@
   $effect(() => {
     const list = drops;
     return untrack(() => {
-      const offs = list.map((p) => thing(w, { x: p.to[0], z: p.to[2], h: 40, always: true, live: () => fallNow(p), m3: p.m3 })());
+      const offs = list.map((p) => thing(w, { x: p.to[0], z: p.to[2], h: 40, live: () => fallNow(p), m3: p.m3 })());
       return () => offs.forEach((off) => off());
     });
   });
@@ -928,7 +928,7 @@
   {#if v.mumble}
     {@const m = v.mumble}
     {#key m.n}
-      <span class="mumble-node" aria-hidden="true" {@attach w.at({ x: v.mumbleAt()[0], z: v.mumbleAt()[1], lift: v.mumbleAt()[2], h: 20, zi: OVER, always: true, inv: true, live: () => v.mumbleAt() })}>
+      <span class="mumble-node" aria-hidden="true" {@attach w.at({ x: v.mumbleAt()[0], z: v.mumbleAt()[1], lift: v.mumbleAt()[2], h: 20, zi: OVER, inv: true, live: () => v.mumbleAt() })}>
         <span class="mumble if-caption" data-mumble data-veg-want={m.want} {@attach edgeIn}>{m.text}</span>
       </span>
     {/key}

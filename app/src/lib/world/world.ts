@@ -33,10 +33,6 @@ let GRASS: RoundRect = { x0: LAND.x0 + BEACH_SIDE, x1: LAND.x1 - BEACH_SIDE, z0:
  *  campsite's end); the 3D island's camera fits its own ends to the screen (world3d/engine.ts limits). */
 export let CAMS: { readonly mae: number; readonly oku: number } = { mae: 30, oku: 642 };
 
-/** The live window (spec §7): only sprites in [camZ − BEHIND, camZ + AHEAD] are displayed. */
-export const BEHIND = 600;
-export const AHEAD = 900;
-
 // ---- water ----------------------------------------------------------------------------------------------------------
 
 /** The stream's centreline [x, z, width]: the spring on the upper tier, the falls over the cliff, a meander down the

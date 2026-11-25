@@ -81,8 +81,6 @@ export interface Thing3 {
   h?: number;
   /** A moving thing's live position, read each frame: [x, z, lift?]. */
   live?: () => readonly [number, number, number?];
-  /** In view wherever it is along the island (the anchor rule's `always`: not held to the camera's z window). */
-  always?: boolean;
 }
 export interface Entry extends Thing3 {
   id: string;
@@ -94,7 +92,6 @@ export interface Figure3 {
   z: number;
   h?: number;
   live?: () => readonly [number, number, number?];
-  always?: boolean;
 }
 /** A tap area (world3d/pick3d.ts projects it): placed by the camera's anchor rule (World.place: its foot at x, z,
  *  `lift` up; `model`: squashed upright by the camera's foreshortening), a rect in its units round its foot, grown to
@@ -111,8 +108,7 @@ export interface Tap3 {
   z: number;
   lift?: number;
   live?: () => readonly [number, number, number?];
-  /** Placed wherever it is (not held to the camera's z window), and its height for the in-view test (default 80). */
-  always?: boolean;
+  /** Its height for the in-view test (default 80). */
   h?: number;
   model?: boolean;
   /** The rect (u): across from the foot (l … r), up from it (b … t; b < 0 below it). */

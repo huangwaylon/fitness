@@ -25,7 +25,7 @@ export interface Area {
   slop: number;
 }
 
-const Q: At = { sx: 0, sy: 0, k: 0, up: 0, ground: 0, depth: 0, visible: false };
+const Q: At = { sx: 0, sy: 0, k: 0, up: 0, ground: 0, depth: 0, visible: false }, TOP: At = { ...Q };
 const C: At[] = Array.from({ length: 8 }, () => ({ ...Q }));
 
 /** Every tap area now (things3's), top first: by the World's stacking (its depth, else its own order), a later one on
@@ -41,15 +41,15 @@ export function tapsNow(w: World, extra: readonly Tap3[] = []): Tap3[] {
 }
 
 /** Tap area `t` on screen now (client px), or null where the World would hide its node (out of view, behind the
- *  horizon, past the screen's edges, out of the camera's z window). */
+ *  horizon, past the screen's edges). */
 export function areaOf(w: World, t: Tap3): Area | null {
   const p = w.three, v = w.view;
   if (!p) return null;
   if (t.body) return bodyOf(w, t);
   const live = t.live?.(), x = live ? live[0] : t.x, z = live ? live[1] : t.z, lift = live?.[2] ?? t.lift ?? 0;
-  if (!live && !t.always && (z < w.win[0] || z > w.win[1])) return null;
   const q = p.at(x, z, lift, Q), h = t.h ?? 80;
-  if (!q.visible || q.sy - (h + lift) * q.k > v.vh + 40 || q.sy < -60 || q.sx < -400 || q.sx > v.vw + 400) return null;
+  if (q.sy - (h + lift) * q.k > v.vh + 40 || q.sy < -60 || q.sx < -400 || q.sx > v.vw + 400) return null;
+  if (!q.visible && !p.at(x, z, lift + h, TOP).visible) return null;
   const k = q.k, ky = t.model ? q.k * q.up : q.k, sx = q.sx + v.left, sy = q.sy + v.top;
   let l = sx + t.l * k, r = sx + t.r * k, tp = sy - t.t * ky, b = sy - t.b * ky;
   if (t.base) {

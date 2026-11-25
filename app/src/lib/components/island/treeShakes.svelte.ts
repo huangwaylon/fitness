@@ -441,7 +441,7 @@ export function useTreeShakes(w: World, o: {
     const d = dangler;
     if (!d) return;
     const offs = [
-      thing(w, { x: d.x, z: d.y, lift: d.up ? d.from : DANGLE_UP, h: 4, always: true, m3: { key: `critters/${d.bug}`, id: `dangle-${d.n}`, ms: 900, line: () => [d.x, d.y, d.from] } })(),
+      thing(w, { x: d.x, z: d.y, lift: d.up ? d.from : DANGLE_UP, h: 4, m3: { key: `critters/${d.bug}`, id: `dangle-${d.n}`, ms: 900, line: () => [d.x, d.y, d.from] } })(),
       // (climbing back up: still there, but a tap on it does nothing)
       tap(w, pickArea(d.bug, d.x, d.y, d.from, DANGLE_UP, netDangler))()
     ];

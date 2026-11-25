@@ -9,7 +9,7 @@
 import type { LogMoveTag } from '#lib/contract/log.ts';
 import { getContext, setContext } from 'svelte';
 import { zIndexAt } from '#lib/world/geom.ts';
-import { AHEAD, BEHIND, CAMS, PLAN, type Pt } from '#lib/world/world.ts';
+import { CAMS, PLAN, type Pt } from '#lib/world/world.ts';
 import type { At } from '../world3d/engine.ts';
 
 /** A scratch point for the camera (Proj3 at()'s `out`): no object a call. */
@@ -27,8 +27,6 @@ interface NodeSpec {
   zi?: number | null;
   /** A moving thing's live position (read every frame while anything moves): [x, z, lift?]. */
   live?: () => readonly [number, number, number?];
-  /** Always place it, whatever the live window (something that may come into view from far off). */
-  always?: boolean;
   /** Set --inv = 1 / scale on the node (a caption drawn at its true size). */
   inv?: boolean;
 }
@@ -88,8 +86,6 @@ export interface Proj3 {
   /** The camera moving fast under a gesture (a drag, a pinch, a fast fling: engine.ts rushing): a touch landing on it
    *  only stops it (world3d/pick3d.ts). */
   rushing?(): boolean;
-  /** Where the camera is now (world z): the move's own, before the frame that writes it into the view. */
-  camZ?(): number;
   /** Ask for a frame (the engine runs the World's step in it, then draws). */
   kick(): void;
   /** No frame pending. */
@@ -164,8 +160,6 @@ export class World {
    *  `nodes:` the latest move's tag, perf.rest's nd1). */
   going: 'walk' | `nodes:${string}` | null = null;
   private lastCam = NaN;
-  /** The world z window nodes are placed in (BEHIND … AHEAD of the camera; things3.ts reads it too). */
-  win: [number, number] = [-Infinity, Infinity];
   private hook: ((ts: number) => boolean | 'ambient') | null = null;
   /** The game's own clock under the 3D island (docs/decisions.md "The island in 3D"): the engine steps the World in
    *  its frames (the DOM in step with the picture), and this steps it whenever no frame has for SIM_MS while anything
@@ -272,10 +266,13 @@ export class World {
     const t = this.three, v = this.view;
     if (!t) return this.hide(n);
     const q = t.at(x, z, lift, Q), h = n.h ?? 80, k = q.k / v.s;
-    if (!q.visible || q.sy - (h + lift) * q.k > v.vh + 40 || q.sy < -60 || q.sx < -400 || q.sx > v.vw + 400) return this.hide(n);
+    if (q.sy - (h + lift) * q.k > v.vh + 40 || q.sy < -60 || q.sx < -400 || q.sx > v.vw + 400) return this.hide(n);
+    // (its foot in front of the horizon, or its top over it: mirror3.ts inShot; Q's read before the top's projection)
+    const sx = q.sx, sy = q.sy;
+    if (!q.visible && !t.at(x, z, lift + h, Q).visible) return this.hide(n);
     this.show(n);
-    if (moved(n.last, q.sx * 10, q.sy * 10, k * 1e4, 0)) {
-      n.el.style.transform = `translate(${q.sx.toFixed(1)}px,${q.sy.toFixed(1)}px) scale(${k.toFixed(4)})`;
+    if (moved(n.last, sx * 10, sy * 10, k * 1e4, 0)) {
+      n.el.style.transform = `translate(${sx.toFixed(1)}px,${sy.toFixed(1)}px) scale(${k.toFixed(4)})`;
     }
     if (n.inv) {
       const iv = invOf(1 / k);
@@ -295,7 +292,6 @@ export class World {
       this.zOf(n, x, z);
       return this.place(n, x, z, lift ?? n.lift ?? 0);
     }
-    if (!n.always && (n.z < this.win[0] || n.z > this.win[1])) return this.hide(n);
     this.place(n, n.x, n.z, n.lift ?? 0);
   }
 
@@ -311,10 +307,6 @@ export class World {
     if (cam !== this.lastCam) {
       this.lastCam = cam;
       if (this.three) v.horizon = this.three.horizon();
-      // (the camera's own z: a step of the game clock's between an instant move, its rev bumped, and the engine's frame
-      // that writes the view's camZ placed every node by the old window, and nothing past it showed till the next move)
-      const cz = this.three?.camZ?.() ?? v.camZ;
-      this.win = [cz - BEHIND, cz + AHEAD];
       for (const n of this.nodes) this.placeNode(n);
       this.dirty.clear();
     } else {

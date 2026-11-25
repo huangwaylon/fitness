@@ -21,7 +21,7 @@ function reader(w: World): Reader {
 export function eachV3(w: World, fn: (v3: V3, x: number, z: number, shown: boolean) => void): void {
   for (const f of things3(w).figs.values()) {
     const p = f.live?.(), x = p ? p[0] : f.x, z = p ? p[1] : f.z;
-    fn(f.v3, x, z, inShot(w, x, z, 0, f.h ?? 80, !!f.live || !!f.always));
+    fn(f.v3, x, z, inShot(w, x, z, 0, f.h ?? 80));
   }
 }
 
@@ -41,7 +41,7 @@ export function model3(w: World, s: Entry): Model3 {
   } else (rec.x = s.x), (rec.z = s.z), (rec.lift = s.lift ?? 0);
   rec.id = s.id;
   rec.m3 = s.m3;
-  rec.shown = inShot(w, rec.x, rec.z, rec.lift, s.h ?? 80, !!s.live || !!s.always);
+  rec.shown = inShot(w, rec.x, rec.z, rec.lift, s.h ?? 80);
   return rec;
 }
 
@@ -54,15 +54,19 @@ export function shown3(w: World, id: string): boolean {
 /** Whether the figure of actor `actor` (visitor, guest, kk) is in view now, by the anchor rule (false: none). */
 export function figShown3(w: World, actor: string): boolean {
   const f = things3(w).figs.get(actor), p = f?.live?.();
-  return !!f && inShot(w, p ? p[0] : f.x, p ? p[1] : f.z, 0, f.h ?? 80, !!f.live || !!f.always);
+  return !!f && inShot(w, p ? p[0] : f.x, p ? p[1] : f.z, 0, f.h ?? 80);
 }
 
 const Q: At = { sx: 0, sy: 0, k: 0, up: 0, ground: 0, depth: 0, visible: false };
-/** In view, by the camera's anchor rule (World.placeNode, place): in its z window (or `free`: moving, or always placed), in
- *  front of the horizon, not past the screen's bottom by its height, nor far past its other edges. */
-function inShot(w: World, x: number, z: number, lift: number, h: number, free: boolean): boolean {
+/** In view, by the camera's anchor rule (World.place): not past the screen's bottom by its height, nor far past its
+ *  other edges, and its foot in front of the horizon or its top over it (the upper level's back row: his feet past
+ *  the log's curve, K.K.'s head and guitar still show). No z window round the camera: the bend, the upper level and
+ *  the zoom-out show the back past any fixed reach, and K.K. on his stool there came and went as the camera crossed
+ *  it (the user, 2026-11-25). */
+function inShot(w: World, x: number, z: number, lift: number, h: number): boolean {
   const t = w.three, v = w.view;
-  if (!t || (!free && (z < w.win[0] || z > w.win[1]))) return false;
+  if (!t) return false;
   const q = t.at(x, z, lift, Q);
-  return q.visible && !(q.sy - (h + lift) * q.k > v.vh + 40 || q.sy < -60 || q.sx < -400 || q.sx > v.vw + 400);
+  if (q.sy - (h + lift) * q.k > v.vh + 40 || q.sy < -60 || q.sx < -400 || q.sx > v.vw + 400) return false;
+  return q.visible || t.at(x, z, lift + h, Q).visible;
 }

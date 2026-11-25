@@ -38,13 +38,12 @@ describe('pick3d', () => {
     expect(areaOf(w, at(100, 300, { l: -1, r: 1, b: -1, t: 1, min: [44, 44, 'mid'] }))).toMatchObject({ l: 78, r: 122, t: 278, b: 322 });
   });
 
-  it('hidden as its node would be: out of the z window (not if moving or always placed), past the screen, behind the camera', () => {
+  it('hidden as its node would be: past the screen, behind the camera; never by its distance ahead (no z window)', () => {
     const w = world(2400);
-    expect(areaOf(w, at(100, 1500))).toBeNull();
-    expect(areaOf(w, at(100, 1500, { always: true }))).not.toBeNull();
+    expect(areaOf(w, at(100, 1500))).not.toBeNull();
     expect(areaOf(w, at(100, 50, { live: () => [100, 1500] }))).not.toBeNull();
     expect(areaOf(w, at(-500, 300))).toBeNull();
-    expect(areaOf(w, at(100, 2100, { always: true }))).toBeNull();
+    expect(areaOf(w, at(100, 2100))).toBeNull();
   });
 
   it('rounded corners and a clip as the DOM hit-tests them; a body by its outline', () => {

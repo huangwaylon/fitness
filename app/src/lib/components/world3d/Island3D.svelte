@@ -359,7 +359,7 @@
     let v = vilTaps.get(slot);
     if (!at) return void (v?.off(), vilTaps.delete(slot));
     if (!v) {
-      const t: Tap3 = { kind: 'villager', id: slot, x: 0, z: 0, always: true, h: VILLAGER.h, l: 0, r: 0, b: 0, t: 0, round: [0.4, 0.2], act: () => things3(world).onVillager?.(slot) };
+      const t: Tap3 = { kind: 'villager', id: slot, x: 0, z: 0, h: VILLAGER.h, l: 0, r: 0, b: 0, t: 0, round: [0.4, 0.2], act: () => things3(world).onVillager?.(slot) };
       vilTaps.set(slot, (v = { t, off: tap3(world, [t])() }));
     }
     const t = v.t, px = 1 / world.view.s, drop = 2 * px + (seat ? SEAT_DROP : 0);
@@ -1215,7 +1215,7 @@
     e.go(start ?? e.limits().min);
     const proj: Proj3 = {
       at: (x, z, lift, out) => e.at(x, z, lift, out), outline: (id) => e.outline(id), ground: (sx, sy) => e.groundAt(sx, sy), feet: (x, z) => feetOf(x, z), horizon: () => e.horizon(),
-      rev: () => e.rev(), rushing: () => e.rushing(), camZ: () => e.view().camZ, kick: () => e.kick(false), idle: () => e.idle(), paused: () => e.isPaused(),
+      rev: () => e.rev(), rushing: () => e.rushing(), kick: () => e.kick(false), idle: () => e.idle(), paused: () => e.isPaused(),
       focus: (f, ms) => ((focusAt = { x: f.x, z: f.z }), e.frame(f, ms)), unfocus: (ms) => ((focusAt = null), e.restore(ms)), attach: (id, obj) => e.things.attach(id, obj as Object3D | null)
     };
     world.useThree(proj);

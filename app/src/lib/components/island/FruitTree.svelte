@@ -270,7 +270,7 @@
         const [tx, tz, lift] = s.at, m3 = { key: modelOf(s.f), id: fruitId3(s.f) };
         return s.down
           ? thing(w, { x: tx, z: tz, h: FRUIT_U, m3: { ...m3, ms: drop.includes(s.f) ? 520 : 0 } })()
-          : thing(w, { x: tx, z: tz, lift, h: 4, always: true, m3: { ...m3, grey: s.grey } })();
+          : thing(w, { x: tx, z: tz, lift, h: 4, m3: { ...m3, grey: s.grey } })();
       });
       return () => offs.forEach((off) => off());
     });

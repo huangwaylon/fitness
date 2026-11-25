@@ -1494,29 +1494,29 @@ export function useCritters(w: World, o: {
     $effect(() => {
       if (!three()) return;
       // (its moves, its heading and its nose at the float: fish3, each frame; it fades in and out: world3d/things.ts)
-      const offs = allFish().map((f) => thing(w, { x: f.ax, z: f.az, lift: -2.5, h: 4, always: true, live: () => fish3(f),
+      const offs = allFish().map((f) => thing(w, { x: f.ax, z: f.az, lift: -2.5, h: 4, live: () => fish3(f),
         m3: { key: shadowKey(f), id: fishId(f), water: true, wet: () => fishMid(f), get off() { return f.gone; }, get yaw() { return fishYaw(f); } } })());
       return () => offs.forEach((off) => off());
     });
     $effect(() => {
       const d = diving;
       if (!three() || !d?.chase) return;
-      return thing(w, { x: d.x, z: d.z, h: 4, always: true, m3: { key: 'shadow/dive', id: `dive-${d.n}`, ms: d.ms, face: 'move', water: true, off: d.gone } })();
+      return thing(w, { x: d.x, z: d.z, h: 4, m3: { key: 'shadow/dive', id: `dive-${d.n}`, ms: d.ms, face: 'move', water: true, off: d.gone } })();
     });
     $effect(() => {
       const b = bubbles;
       if (!three() || !b) return;
-      return thing(w, { x: b.x, z: b.z, h: 4, always: true, m3: { key: '', id: `bubbles-${b.n}`, water: true, emit: { kind: 'bubbles', every: 420 } } })();
+      return thing(w, { x: b.x, z: b.z, h: 4, m3: { key: '', id: `bubbles-${b.n}`, water: true, emit: { kind: 'bubbles', every: 420 } } })();
     });
     /** Each nibble's small ring on the water at a float, and the bite's splash and big ring (once each: a thing of its
      *  own; the landing's ring is the float's own). */
     const ring = (x: number, z: number, id: string, n: number, under: boolean) =>
-      n > 1 ? thing(w, { x, z, h: 4, always: true, m3: { key: '', id: `ring-${id}`, water: true, emit: under ? { kind: 'splash', every: 60_000 } : { kind: 'ripple', every: 60_000, size: 0.7 } } })() : () => {};
+      n > 1 ? thing(w, { x, z, h: 4, m3: { key: '', id: `ring-${id}`, water: true, emit: under ? { kind: 'splash', every: 60_000 } : { kind: 'ripple', every: 60_000, size: 0.7 } } })() : () => {};
     $effect(() => {
       if (!three()) return;
       // another's float and the line from their villager's rod (or the bank) to it (their phone's steps)
       const offs = Object.values(lines).flatMap((l) => (l ? [
-        thing(w, { x: l.x, z: l.z, h: 4, always: true, live: () => floatOf(l), m3: { key: 'tools/bobber', id: `bobber-${l.slot}`, water: true, off: !l.landed && !l.under,
+        thing(w, { x: l.x, z: l.z, h: 4, live: () => floatOf(l), m3: { key: 'tools/bobber', id: `bobber-${l.slot}`, water: true, off: !l.landed && !l.under,
           emit: l.landed && !l.under ? { kind: 'ripple', every: 2600, size: 0.45 } : undefined, line: () => [l.sx, l.sz, 4] as const } })(),
         ring(l.x, l.z, `${l.slot}-${l.rings}`, l.rings, l.under)
       ] : []));
@@ -1530,7 +1530,7 @@ export function useCritters(w: World, o: {
       // floatLift, each frame; a soft ring now and then while it waits); the line from my villager's rod to it (from the
       // hand's height at its feet till its model holds the rod)
       const offs = [
-        thing(w, { x: l.x, z: l.z, h: 4, always: true, live: () => floatAt(l), m3: { key: 'tools/bobber', id: 'bobber', water: true, off: !out,
+        thing(w, { x: l.x, z: l.z, h: 4, live: () => floatAt(l), m3: { key: 'tools/bobber', id: 'bobber', water: true, off: !out,
           emit: out && !under ? { kind: 'ripple', every: 2600, size: 0.45 } : undefined,
           line: () => {
             // (a hand's reach toward the float, however far it is)
@@ -1545,11 +1545,11 @@ export function useCritters(w: World, o: {
       if (!three()) return;
       // (its moves and its turns: bug3, each frame; it fades in where it comes, and out over its leave's end)
       const offs = bugs.flatMap((b) => [
-        thing(w, { x: b.ax, z: b.az, lift: 0, h: 4, always: true, live: () => bug3(b), m3: { key: `critters/${b.id}`, id: bugId(b), get yaw() { return bugYaw(b); }, get flap() { return mos.get(srcBug(b).id)?.flap ?? 0; }, get off() { return bugOff(b); },
+        thing(w, { x: b.ax, z: b.az, lift: 0, h: 4, live: () => bug3(b), m3: { key: `critters/${b.id}`, id: bugId(b), get yaw() { return bugYaw(b); }, get flap() { return mos.get(srcBug(b).id)?.flap ?? 0; }, get off() { return bugOff(b); },
           // perched on a trunk: flat on its bark, its back to the camera (read each frame, as its yaw)
           get pitch() { return b.sat && (b.place === 'trunk' || b.place === 'palm') ? (b.flip ? -1 : 1) * Math.PI / 2 : 0; } } })(),
         // NH's dung beetle rolls a snowball before it (critterMotion3d.ts ball3)
-        ...(b.id === 'dung-beetle' ? [thing(w, { x: b.ax, z: b.az, lift: 0, h: 4, always: true, live: () => ball3(b), m3: { key: 'critters/dung-beetle-ball', id: `ball-${b.n}`, get yaw() { return bugYaw(b); }, get pitch() { return ballRoll(b); }, get off() { return ballOff(b); } } })()] : [])
+        ...(b.id === 'dung-beetle' ? [thing(w, { x: b.ax, z: b.az, lift: 0, h: 4, live: () => ball3(b), m3: { key: 'critters/dung-beetle-ball', id: `ball-${b.n}`, get yaw() { return bugYaw(b); }, get pitch() { return ballRoll(b); }, get off() { return ballOff(b); } } })()] : [])
       ]);
       return () => offs.forEach((off) => off());
     });

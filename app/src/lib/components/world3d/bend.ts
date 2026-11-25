@@ -101,6 +101,15 @@ export function unbendRay(o: readonly number[], d: readonly number[], h: number,
   return [o[0] + t * d[0], pivotZ - R * th];
 }
 
+/** Whether bent point p (three's y, z) is seen from the camera c over the bent ground at height h under it: the sight
+ *  line clears the cylinder of radius R + h round (y = −R, z = pivotZ). A point lifted off its ground (a figure's
+ *  head) shows over the log's curve though its foot is past it (the upper level's back row: K.K. on his stool). */
+export function overLog(py: number, pz: number, cy: number, cz: number, h: number, pivotZ: number, R: number): boolean {
+  const ay = cy + R, az = cz - pivotZ, dy = py - cy, dz = pz - cz, dd = dy * dy + dz * dz;
+  const t = dd > 0 ? Math.max(0, Math.min(1, -(ay * dy + az * dz) / dd)) : 0;
+  return Math.hypot(ay + t * dy, az + t * dz) >= R + h;
+}
+
 /** Light added over what's drawn, never touching the canvas's alpha. The island's canvas is transparent where the sky
  *  is (the DOM's sky shows through): three's additive blending writes alpha there too, so a glow over the sky (a far
  *  lamp's halo behind the trees, a firefly) came out as a black box. Colour added (by its alpha when `byAlpha`), alpha

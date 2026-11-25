@@ -63,14 +63,14 @@ describe('things3', () => {
     expect(model3(w, models3(w)[0]).x).toBe(9);
   });
 
-  it('in view by the anchor rule: the same as a node placed there, in and past the z window and the screen', () => {
+  it('in view by the anchor rule: the same as a node placed there, on and past the screen and the horizon', () => {
     const w = world();
-    const pts: [number, number, number, boolean][] = [];
-    for (const x of [-500, -390, 0, 200, 780, 900]) for (const z of [-100, -50, 0, 400, 880, 900, 1990, 2100]) for (const free of [false, true]) pts.push([x, z, 0, free]);
-    const nodes = pts.map(([x, z, lift, free]) => {
+    const pts: [number, number, number][] = [];
+    for (const x of [-500, -390, 0, 200, 780, 900]) for (const z of [-100, -50, 0, 400, 880, 900, 1990, 2100]) pts.push([x, z, 0]);
+    const nodes = pts.map(([x, z, lift]) => {
       const e = el();
-      w.at({ x, z, lift, h: 10, always: free })(e);
-      thing(w, { x, z, lift, h: 10, always: free, m3: { key: 'k', id: `${x},${z},${free}` } })();
+      w.at({ x, z, lift, h: 10 })(e);
+      thing(w, { x, z, lift, h: 10, m3: { key: 'k', id: `${x},${z}` } })();
       return e;
     });
     w.invalidate();
@@ -82,11 +82,30 @@ describe('things3', () => {
     }
   });
 
+  it("K.K. at the back stays in view however far ahead of the camera (no z window), his head over the log's curve though his feet are past it", () => {
+    // (the user, 2026-11-25: he came and went as the camera crossed camZ + 900; past z 2000 here his foot is behind
+    // the horizon, but whatever is 60 u up still shows over it)
+    const w = new World();
+    w.fit(390, 844);
+    w.useThree({ ...flat(), at: (x, z, lift, out) => Object.assign(out ?? ({} as At), { sx: x, sy: Math.max(0, 800 - z / 4) - lift, k: 1, up: 1, ground: 1, depth: 100, visible: z < 2000 || lift >= 60 }) });
+    w.step(0);
+    const v3 = { id: 'kk-slider', actor: 'kk' as const, lift: () => 0, prone: () => false, away: () => false };
+    const shownAt = (z: number, h: number) => {
+      const off = figure(w, { v3, x: 100, z, h })();
+      let shown = false;
+      eachV3(w, (_v, _x, _z, s) => (shown = s));
+      off();
+      return shown;
+    };
+    expect([1000, 1500, 1900].map((z) => shownAt(z, 80))).toEqual([true, true, true]);
+    expect([shownAt(2100, 80), shownAt(2100, 40)]).toEqual([true, false]);
+  });
+
   it("a figure by its actor, where it is now, in view by the anchor rule", () => {
     const w = world(), v3 = (id: string, actor?: 'kk') => ({ id, actor, lift: () => 0, prone: () => false, away: () => false });
     figure(w, { v3: v3('kk-slider', 'kk'), x: 30, z: 40 })();
     let x = 50;
-    const off = figure(w, { v3: v3('celeste'), x: 0, z: 60, live: () => [x, 70], always: true })();
+    const off = figure(w, { v3: v3('celeste'), x: 0, z: 60, live: () => [x, 70] })();
     const seen = () => {
       const out: string[] = [];
       eachV3(w, (v, x, z, shown) => out.push(`${v.id}@${x},${z}${shown ? '' : ' hidden'}`));

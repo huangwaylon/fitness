@@ -20,7 +20,7 @@ import {
   WebGLRenderTarget, PCFSoftShadowMap, MeshDepthMaterial, RGBADepthPacking, FrontSide, BackSide, DoubleSide, type Material, type MeshLambertMaterial, type Object3D, type Side, type WebGLRenderer
 } from 'three';
 import { cubicInOut, cubicOut } from '#lib/math.ts';
-import { bendTree, bendU, unbendRay } from './bend.ts';
+import { bendTree, bendU, overLog, unbendRay } from './bend.ts';
 import { waterFog, waterU } from './water.ts';
 import { createThings, type Things } from './things.ts';
 import { shadowBox, sunOn, type ShadowBox } from './shadowBox.ts';
@@ -483,7 +483,8 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
     // in front of the horizon: the ground faces the camera here (a tall thing's top may still show over it)
     const th = (z - camZ) / R, ny = Math.cos(th), nz = -Math.sin(th);
     const cy = camera.position.y - by, cz = camera.position.z - bz;
-    const visible = depth > 1 && (ny * cy + nz * cz) / Math.hypot(cy, cz) > -0.12;
+    // (lifted: its sight line over the ground under it, its foot may be past the curve: overLog)
+    const visible = depth > 1 && ((ny * cy + nz * cz) / Math.hypot(cy, cz) > -0.12 || (lift > 0 && overLog(by, bz, camera.position.y, camera.position.z, gy, pz, R)));
     if (!out) return { sx, sy, k, up, ground, depth, visible };
     out.sx = sx;
     out.sy = sy;

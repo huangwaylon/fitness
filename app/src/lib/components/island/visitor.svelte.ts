@@ -959,7 +959,7 @@ export function useVisitor(w: World, o_: {
     $effect(() => {
       const id = shown, s = spot;
       if (!id || !s) return;
-      return untrack(() => figure(w, { x: s.x, z: s.z, h: s.h + 40, live: () => livePos(A), always: true,
+      return untrack(() => figure(w, { x: s.x, z: s.z, h: s.h + 40, live: () => livePos(A),
         v3: { id, actor: A, lift: liftNow, prone: proneNow, away: awayNow, also: id === 'reese' ? { id: 'cyrus', dx: s.h * PAIR_DX } : undefined } })());
     });
     // Wisp's glow round him (a pale light breathing as he floats in it), and Reese and Cyrus under their heart float
@@ -970,7 +970,7 @@ export function useVisitor(w: World, o_: {
       const h = s.h, t0 = performance.now();
       const live = id === 'wisp' ? () => [...where(), liftNow() + h * 0.5] as const : () => [...where(), h * 2.2 + Math.sin((performance.now() - t0) / 1080) * h * 0.03] as const;
       const emit = id === 'wisp' ? { kind: 'aura', every: 0, hold: true as const, size: (h * 1.6) / 10 } : { kind: 'art', v: 'float', art: 'heart-float', every: 0, hold: true as const, size: h * 0.67 };
-      return untrack(() => thing(w, { x: s.x, z: s.z, h: h * 2, always: true, live, m3: { key: '', id: `${A}-${id === 'wisp' ? 'glow' : 'heart'}`, emit } })());
+      return untrack(() => thing(w, { x: s.x, z: s.z, h: h * 2, live, m3: { key: '', id: `${A}-${id === 'wisp' ? 'glow' : 'heart'}`, emit } })());
     });
     /** On screen now: in view, its feet clear of the horizon, its box on the page (out of it, a line is a banner). */
     function onScreenNow(): boolean {
