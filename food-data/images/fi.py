@@ -41,7 +41,7 @@ OUT = REPO / 'app' / 'static' / 'food-img'
 SRC = REPO / 'food-data' / 'data_src'
 RAW = Path(os.environ.get('FOOD_IMG_RAW', '~/food-images-raw')).expanduser()
 MAIN = Path(os.environ.get('FOOD_MAIN', '/Users/waylonhuang/Documents/other/fitness'))  # the main checkout's raw/ (MAFF photos)
-VERDICTS = HERE / 'verdicts.jsonl'
+VERDICTS = Path(os.environ.get('FI_VERDICTS', HERE / 'verdicts.jsonl'))  # FI_VERDICTS: one file per machine (merged after), or a scratch copy
 SLOTS = HERE / 'slots.json'
 UA = 'island-fund-food-refs/1.1 (https://github.com/huangwaylon/fitness; look-only reference photos for a private app) curl/8'  # with a contact: Wikimedia throttles anonymous UAs hard
 
@@ -675,7 +675,8 @@ def cmd_gen(keys=None):
 
 # ---------- the vision check (qwen via ollama)
 
-VMODEL = os.environ.get('VMODEL', 'qwen3.8:27b-q8_0')
+VMODEL = os.environ.get('VMODEL', 'qwen3.8:27b')  # MLX 4-bit, ~20 GB resident (q8_0's ~33 GB is over a shared Mac's budget)
+OLLAMA = os.environ.get('OLLAMA_URL', 'http://localhost:11434')
 VPROMPT = """You are checking a food illustration for a Japanese nutrition app before it ships. Accuracy matters more than beauty.
 Food: {ja}. Expected look: {desc}
 Images 1-{n} are REFERENCE PHOTOS of this food from independent sources (they may show it plated or styled differently).
@@ -696,8 +697,26 @@ def _b64(p, px=448):
     return base64.b64encode(b.getvalue()).decode()
 
 
-def cmd_verify(keys=None):
+def ask(row, refs, gen):
+    """One vision check: (verdict pass|wrong|reroll|unsure, why, seconds)."""
     import urllib.request
+    import urllib.request
+    body = dict(model=VMODEL, stream=False, think=False, options=dict(temperature=0, seed=1),  # no format=json: the MLX runner refuses it
+                prompt=VPROMPT.format(n=len(refs), last=len(refs) + 1, ja=row['ja'], desc=row['desc']),
+                images=[_b64(p) for p in refs] + [_b64(gen)])
+    t = time.time()
+    res = json.loads(urllib.request.urlopen(urllib.request.Request(OLLAMA + '/api/generate', json.dumps(body).encode(),
+                                                                   {'Content-Type': 'application/json'}), timeout=900).read())
+    try:
+        a = json.loads(re.search(r'\{.*\}', res['response'], re.S).group())
+    except (AttributeError, ValueError):
+        a = {'verdict': 'unsure', 'issues': 'unparsable answer'}
+    v = a.get('verdict')
+    verdict = 'pass' if v == 'pass' and a.get('same_food') else 'wrong' if a.get('same_food') is False or v == 'fallback' else 'reroll' if v == 'reroll' else 'unsure'
+    return verdict, str(a.get('issues', ''))[:200], round(time.time() - t, 1)
+
+
+def cmd_verify(keys=None):
     vs = verdicts()
     for r in table():
         if keys and r['key'] not in keys:
@@ -706,20 +725,8 @@ def cmd_verify(keys=None):
         if st != 'verify':
             continue
         refs = [RAW / 'refs' / r['key'] / f'c{x["n"]}.jpg' for x in vetted_refs(r)[:3]]
-        body = dict(model=VMODEL, stream=False, think=False, format='json', options=dict(temperature=0, seed=1),
-                    prompt=VPROMPT.format(n=len(refs), last=len(refs) + 1, ja=r['ja'], desc=r['desc']),
-                    images=[_b64(p) for p in refs] + [_b64(gen_path(r, roll))])
-        t = time.time()
-        res = json.loads(urllib.request.urlopen(urllib.request.Request('http://localhost:11434/api/generate', json.dumps(body).encode(),
-                                                                       {'Content-Type': 'application/json'}), timeout=900).read())
-        try:
-            a = json.loads(res['response'])
-        except ValueError:
-            a = {'verdict': 'unsure', 'issues': 'unparsable answer'}
-        v = a.get('verdict')
-        verdict = 'pass' if v == 'pass' and a.get('same_food') else 'wrong' if a.get('same_food') is False or v == 'fallback' else 'reroll' if v == 'reroll' else 'unsure'
-        rec = {'key': r['key'], 'roll': roll, 'h': desc_hash(r), 'check': 'qwen', 'verdict': verdict, 'why': a.get('issues', '')[:200],
-               'model': VMODEL, 's': round(time.time() - t, 1)}
+        verdict, why, s = ask(r, refs, gen_path(r, roll))
+        rec = {'key': r['key'], 'roll': roll, 'h': desc_hash(r), 'check': 'qwen', 'verdict': verdict, 'why': why, 'model': VMODEL, 's': s}
         log_verdict(rec)
         vs.setdefault(r['key'], []).append(rec)
         print(json.dumps(rec, ensure_ascii=False), flush=True)
