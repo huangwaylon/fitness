@@ -20,7 +20,7 @@
 // they do). Gulliver sleeps face down until the fifth nudge. They arrive when their visit starts (walking from the
 // campsite along the paths, down from the sky, or appearing) and leave when it ends (back to the campsite); on a
 // page's first paint they're simply there.
-// `?arrive` (dev or test mode): the arrival plays on load; `?leave=<ms>`: the visit ends after that long; `?stroll`: a
+// `?arrive` (dev or test mode): the arrival plays on load; `?leave=<ms>`: the visit ends that long after they're here; `?stroll`: a
 // stroll now; `?meet`: the partner comes over now.
 import { dayRecord } from '#lib/world/dayRecord.ts';
 import { untrack, type Component } from 'svelte';
@@ -139,14 +139,15 @@ export function useVisitor(w: World, o_: {
     const clock = $derived(minuteNow());
     const who = $derived(visitorNow(clock));
     const date = $derived(dayKey(clock));
-    /** `?leave=<ms>` (dev or test mode): the visit ends after that long (the departure's hook). */
+    /** `?leave=<ms>` (dev or test mode): the visit ends that long after they're here (the departure's hook; from the
+     *  arrival's end, not the page's start: a loaded page's slow start never skips the visit). */
     let gone = $state(false);
+    let leaveT: ReturnType<typeof setTimeout> | undefined;
     $effect(() => {
       const ms = Number(hook('leave'));
-      if (!ms) return;
-      const t = setTimeout(() => (gone = true), ms);
-      return () => clearTimeout(t);
+      if (ms && !leaveT && phase === 'here') leaveT = setTimeout(() => (gone = true), ms);
     });
+    $effect(() => () => clearTimeout(leaveT));
     /** Who should be here now, and who is (a visitor whose time is up is still here while they leave). */
     const target = $derived(gone ? null : who);
     let shown = $state<VisitorId | null>(null);
