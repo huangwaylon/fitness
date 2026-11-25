@@ -472,7 +472,9 @@
   .head .chip.amber { background: #d7a323; color: #2c2218; }
   .head .chip.red { background: #e2553d; }
   .ok:not(:disabled) { background: var(--c-yuzu); }
-  .hint { font-size: 13px; color: var(--c-ink-soft); margin-left: auto; }
+  /* (the editor's buttons, compact: the bar stays one row over the plan on a desktop) */
+  .head :global(button), .bar :global(button) { padding: 3px 9px; }
+  .hint { font-size: 13px; color: var(--c-ink-soft); flex: 1 1 0; min-width: 0; text-align: right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   label { font-size: 13px; font-weight: 700; display: inline-flex; align-items: center; gap: 4px; }
   .list {
     position: absolute; top: 64px; right: 12px; width: 340px; list-style: none; margin: 0; padding: 8px; display: flex; flex-direction: column; gap: 4px;
