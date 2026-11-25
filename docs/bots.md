@@ -50,3 +50,11 @@ the runs. The dot and the state follow the latest run; history stays in the stri
   `next`. Its detail: the sentence, Next run, items, more rows, the last 8 weeks, the last change, and run / PR /
   workflow links.
 - The relay reads GitHub on its tick, or on a read ≥ 5 min after the last, never per request.
+- **Cloudflare free tier** (`UsageRow`; `/jobs` `usage`, `relay/src/cfUsage.ts`): a row per daily limit (DO rows read
+  5M, DO rows written 100k, DO requests 100k, Worker requests 100k): used / max, percent, a bar; "Resets in Xh" (00:00
+  UTC = 9:00) in the heading; a tap shows who used it (Worker or DO class) and when it was read. Green < 60 %, amber
+  ≥ 60 % (like a late job), red ≥ 85 % (like a failing one: 「!」); amber or red moves the section right after Needs
+  attention, else it is last. The relay asks GraphQL Analytics itself (secret `CF_ANALYTICS_TOKEN`, Account Analytics
+  read), kept 10 min per isolate, never a Durable Object; no token or a failure: "Usage unavailable (code)". An outage (the record unreadable, its objects over a limit):
+  `/jobs` answers 503 `unavailable` with `usage`, and the page shows the section from it under its LoadError
+  (`lib/jobs/outage.svelte.ts`), so it says which limit was hit.

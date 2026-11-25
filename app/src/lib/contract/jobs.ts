@@ -76,7 +76,26 @@ export interface JobsStatus {
   jobs: JobRow[];
   /** The open alert issues. */
   alerts: JobAlert[];
+  /** The account's Cloudflare free-tier use today (absent: a relay from before it). */
+  usage?: Usage;
 }
+
+/** A Cloudflare free-tier daily limit: Durable Objects' rows read, rows written, requests; Workers' requests. */
+export type UsageKey = 'doRead' | 'doWrite' | 'doReq' | 'wReq';
+/** The Workers Free plan's daily limits, the account's (every Worker and Durable Object shares them; reset 00:00 UTC). */
+export const FREE_LIMITS: Readonly<Record<UsageKey, number>> = { doRead: 5_000_000, doWrite: 100_000, doReq: 100_000, wReq: 100_000 };
+/** A limit's use today. @public (relay/src/cfUsage.ts) */
+export interface UsageLimit {
+  k: UsageKey;
+  used: number;
+  max: number;
+  /** Who used it: a Worker or a Durable Object class (`relay/IslandStore`, `other`), the most first. */
+  by: { name: string; n: number }[];
+}
+/** The day's use as Cloudflare's GraphQL Analytics counts it (relay/src/cfUsage.ts, read at most every 10 min): when it
+ *  was read, its UTC day, the limits; `err`: the last read failed (`no_token`, `timeout`, `http_<status>`, `gql`,
+ *  `shape`, `fetch`), the limits then the day's last good read, or none. */
+export interface Usage { at: number; day: string | null; limits: UsageLimit[]; err: string | null }
 
 const REPO_URL = 'https://github.com/huangwaylon/fitness';
 export const runUrl = (id: number): string => `${REPO_URL}/actions/runs/${id}`;
@@ -101,6 +120,20 @@ function parseRun(x: unknown): JobRun | null {
 
 const isDay = (x: unknown): x is JobDay => Array.isArray(x) && x.length === 3 && typeof x[0] === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(x[0]) && isNum(x[1]) && isNum(x[2]);
 
+const USAGE_KEYS = Object.keys(FREE_LIMITS) as UsageKey[];
+
+/** The usage block read back (null: none or not one). */
+export function parseUsage(x: unknown): Usage | null {
+  if (!isRec(x) || !isNum(x.at)) return null;
+  const limits = (Array.isArray(x.limits) ? x.limits : []).flatMap((l): UsageLimit[] => {
+    if (!isRec(l) || !USAGE_KEYS.includes(l.k as UsageKey) || !isNum(l.used) || !isNum(l.max) || l.max <= 0) return [];
+    const by = (Array.isArray(l.by) ? l.by : []).flatMap((b) => (isRec(b) && typeof b.name === 'string' && isNum(b.n) ? [{ name: b.name.slice(0, 40), n: b.n }] : [])).slice(0, 12);
+    return [{ k: l.k as UsageKey, used: Math.max(0, l.used), max: l.max, by }];
+  });
+  const day = typeof x.day === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(x.day) ? x.day : null;
+  return { at: x.at, day, limits, err: short(x.err, 40) ?? null };
+}
+
 /** `/jobs`'s answer read back (the phone's kept copy too), unknown jobs and bad runs dropped; null when it isn't one. */
 export function parseJobs(x: unknown): JobsStatus | null {
   if (!isRec(x) || x.ok !== true || x.v !== 1 || !isNum(x.now) || !Array.isArray(x.jobs) || !isRec(x.ext)) return null;
@@ -118,8 +151,9 @@ export function parseJobs(x: unknown): JobsStatus | null {
   }
   const alerts = (Array.isArray(x.alerts) ? x.alerts : []).flatMap((a): JobAlert[] =>
     isRec(a) && isNum(a.n) && typeof a.title === 'string' && typeof a.label === 'string' && isNum(a.at) ? [{ n: a.n, title: a.title.slice(0, 120), label: a.label.slice(0, 30), at: a.at }] : []);
+  const usage = parseUsage(x.usage);
   return {
-    ok: true, v: 1, now: x.now, ...(isNum(x.since) ? { since: x.since } : {}), jobs, alerts,
+    ok: true, v: 1, now: x.now, ...(isNum(x.since) ? { since: x.since } : {}), jobs, alerts, ...(usage ? { usage } : {}),
     ext: { at: isNum(e.at) ? e.at : null, by: e.by === 'app' ? 'app' : null, err: short(e.err, 40) ?? null }
   };
 }

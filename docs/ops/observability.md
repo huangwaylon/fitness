@@ -48,6 +48,7 @@ carry `rid` and `sid`; the relay echoes `X-Request-Id`.
   `msg`; a lost alarm `do.alarm`. `cron.backup` carries the App's mint failure and the bots' day-before counts.
 - `dv` (a hello's device) joins `ws.hello`, `room.*` and the phone's `ws.close`.
 - `cron.places` (`places.ts`): a pull's change or refusal ([runbook](runbook.md#saved-places)).
+- `cf.usage` (`cfUsage.ts`): Jobs' GraphQL usage read failing (warn, its code) or well again, once per change.
 - **Nightly jobs** (`nightly.ts`, [runbook §0](runbook.md#0-scheduled-work)): ledger check, link sweep, prunes; one
   `cron.nightly` a day; `/health/log` reports `nightlyH` (-1 never).
 - **Caps** (UTC day, `LOG_CAPS`, 8,000 total): over one, dropped, `log.cap` once. Tables and retention:
@@ -96,7 +97,9 @@ the record 1.69M, the TEST copy's smokes 1.43M (it shares the account's quota). 
 - `logs` lists filtered by an event read only that event's rows (index `log_ev`); a report still reads every row of
   its window: keep `--since` at a day unless the question needs more (`logs` refuses past SCAN_MAX without `--force`).
 - The test copy is for a few rows: no load tests, no repeated full snapshots or dumps against it.
-- Daily per object: the GraphQL query above (wrangler's login has analytics read: never print its token).
+- Daily per object: the GraphQL query above (wrangler's login has analytics read: never print its token). At a
+  glance: ボット → Jobs → **Cloudflare free tier** (the same query, by the relay with `CF_ANALYTICS_TOKEN`, 10 min
+  cached, no DO rows; amber from 60 %, red and 「!」 from 85 %: [bots.md](../bots.md)).
 
 ### Request budget
 Free plan, daily: Workers 100k requests; Durable Objects 100k requests (a WebSocket connect is one, incoming messages

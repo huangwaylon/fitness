@@ -113,5 +113,22 @@
   "jobs.g.bots": "Services",
   "jobs.svc.gym": "Gym bot",
   "jobs.svc.its": "ITS bot",
-  "jobs.d.its": "Open the ITS tab"
+  "jobs.d.its": "Open the ITS tab",
+  "jobs.say.cf": "Free tier: {names}.",
+  "jobs.cf.title": "Cloudflare free tier",
+  "jobs.cf.doRead": "DO rows read",
+  "jobs.cf.doWrite": "DO rows written",
+  "jobs.cf.doReq": "DO requests",
+  "jobs.cf.wReq": "Worker requests",
+  "jobs.cf.of": "{used} / {max}",
+  "jobs.cf.resets": "Resets in {in}",
+  "jobs.cf.h": "{n} h",
+  "jobs.cf.m": "{n} min",
+  "jobs.cf.about": "The account's daily limit, shared by every Worker and Durable Object. At 100%, these calls fail until the reset at 9:00.",
+  "jobs.cf.by": "By use",
+  "jobs.cf.read": "Read",
+  "jobs.cf.none": "Usage unavailable ({code}).",
+  "jobs.cf.stale": "Couldn't refresh ({code}); the last reading today.",
+  "jobs.cf.old": "Last reading from {day} (UTC); the limits have reset since.",
+  "jobs.cf.label": "{name}, {pct} used, {of}"
 }

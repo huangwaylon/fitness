@@ -51,10 +51,29 @@ const runs = (now: number, every: number, n: number, o: { bad?: (i: number) => b
 const day = (now: number, back: number) => new Date(now + 9 * H - back * D).toISOString().slice(0, 10);
 const days = (now: number, fails: (i: number) => number = () => 0) => Array.from({ length: 14 }, (_, i) => [day(now, 13 - i), 40, fails(i)]);
 
+type Usage = 'ok' | 'tight' | 'none' | 'over';
+/** /jobs's usage (relay/src/cfUsage.ts) read 4 min before `now`: well (every limit under 60 %), tight (rows read 92 %:
+ *  red, rows written 72 %: amber), over (rows read at 5M: /jobs then 503s, the record unreadable), none (the test
+ *  copy's: no token). */
+function usage(now: number, u: Usage) {
+  const day = new Date(now).toISOString().slice(0, 10);
+  if (u === 'none') return { at: now, day: null, limits: [], err: 'no_token' };
+  const read = u === 'over' ? 5_000_000 : u === 'tight' ? 4_600_000 : 325_265, written = u === 'tight' ? 72_000 : 22_971;
+  return {
+    at: now - 4 * MIN, day, err: null,
+    limits: [
+      { k: 'doRead', used: read, max: 5_000_000, by: [{ name: 'test/IslandStore', n: Math.round(read * 0.55) }, { name: 'relay/IslandStore', n: Math.round(read * 0.3) }, { name: 'relay/IslandLog', n: Math.round(read * 0.15) }] },
+      { k: 'doWrite', used: written, max: 100_000, by: [{ name: 'relay/IslandLog', n: Math.round(written * 0.6) }, { name: 'test/IslandLog', n: Math.round(written * 0.4) }] },
+      { k: 'doReq', used: 4633, max: 100_000, by: [{ name: 'test/IslandRoom', n: 2633 }, { name: 'relay/IslandRoom', n: 2000 }] },
+      { k: 'wReq', used: 1377, max: 100_000, by: [{ name: 'relay', n: 750 }, { name: 'test', n: 450 }, { name: 'gym-bot', n: 89 }, { name: 'its-bot', n: 88 }] }
+    ]
+  };
+}
+
 /** /jobs at `now`: everything well (the backup not run yet since the relay began 2 h ago: 初回; 全テスト failed 2 h ago,
  *  green since: 回復), but `trouble`: the backup failing twice (不調), the weather 80 min late (遅れ) and one open alert
  *  issue. */
-function jobs(now: number, trouble = false) {
+function jobs(now: number, trouble = false, u: Usage = 'ok') {
   const half = (id: string, o: Parameters<typeof runs>[3] = {}) => ({ id, runs: runs(now, 30 * MIN, 24, o), days: days(now) });
   const daily = (id: string, o: Parameters<typeof runs>[3] = {}) => ({ id, runs: runs(now, D, 14, o), days: days(now, (i) => (o.bad?.(13 - i) ? 1 : 0)) });
   return {
@@ -74,13 +93,14 @@ function jobs(now: number, trouble = false) {
       { id: 'dispatch', runs: runs(now, 30 * MIN, 24).map((r) => ({ ...r, c: 'app' })), days: days(now) },
       { id: 'gym', runs: runs(now, 15 * MIN, 24).map((r, i) => (i % 3 ? r : { ...r, st: 'idle' })), days: days(now) }
     ],
-    alerts: trouble ? [{ n: 42, title: 'Relay alert: no record backup in 30 h', label: 'alert', at: now - 5 * H }] : []
+    alerts: trouble ? [{ n: 42, title: 'Relay alert: no record backup in 30 h', label: 'alert', at: now - 5 * H }] : [],
+    usage: usage(now, u)
   };
 }
 
 /** A phone paired as `who`, /jobs answering `body()` (`'offline'`: unreachable); the gym bot's /status answered (its
  *  Services row: its words all English), the ITS Worker refused (its tab isn't this spec's: its row unknown). */
-async function phone(page: Page, context: BrowserContext, o: { who?: Who; trouble?: boolean; ins?: typeof IPHONE; held?: boolean; tab?: string } = {}) {
+async function phone(page: Page, context: BrowserContext, o: { who?: Who; trouble?: boolean; ins?: typeof IPHONE; held?: boolean; tab?: string; usage?: Usage } = {}) {
   await context.addInitScript(() => localStorage.setItem('e2e.render', 'none'));
   // (the tab a session kept: メニュー's, from before it was 定期処理's row)
   if (o.tab) await context.addInitScript((t) => sessionStorage.setItem('island.botsTab', t), o.tab);
@@ -96,7 +116,9 @@ async function phone(page: Page, context: BrowserContext, o: { who?: Who; troubl
     if (req.method() === 'OPTIONS') return route.fulfill({ status: 204, headers: cors });
     seen.n++;
     seen.auth.push(req.headers().authorization ?? '');
-    return route.fulfill({ status: 200, contentType: 'application/json', headers: cors, body: JSON.stringify(jobs(rec.now(), o.trouble)) });
+    // (the record over the rows-read limit: unavailable, the usage still said)
+    if (o.usage === 'over') return route.fulfill({ status: 503, contentType: 'application/json', headers: cors, body: JSON.stringify({ ok: false, error: 'unavailable', usage: usage(rec.now(), 'over') }) });
+    return route.fulfill({ status: 200, contentType: 'application/json', headers: cors, body: JSON.stringify(jobs(rec.now(), o.trouble, o.usage)) });
   });
   await page.route(KALORI, (route) => route.fulfill({ status: 200, contentType: 'text/plain; charset=utf-8', headers: { 'Access-Control-Allow-Origin': '*' }, body: JSON.stringify(kaloriStatus(rec.now(), o.held)) }));
   await page.route(/its-bot|gym-bot/, (route) => route.abort('blockedbyclient'));
@@ -120,7 +142,7 @@ async function englishFits(page: Page) {
     const ja = /[\u3040-\u30ff\u4e00-\u9fff]/;
     const right = root.getBoundingClientRect().right;
     const named = [...root.querySelectorAll('[aria-label], [title]')].map((e) => `${e.getAttribute('aria-label') ?? ''} ${e.getAttribute('title') ?? ''}`);
-    const boxes = [...root.querySelectorAll<HTMLElement>('.name, .age, .l2 > span, .sec-label, h3, [data-bots-word], [data-bots-asof], [data-bots-stale], [data-bots-say], dt, dd, .about, .say, .lbl, .run, .run a, .btn, [data-jobs-reason]')];
+    const boxes = [...root.querySelectorAll<HTMLElement>('.name, .age, .l2 > span, .sec-label, .sec-label > span, h3, .cf-note, [data-bots-word], [data-bots-asof], [data-bots-stale], [data-bots-say], dt, dd, .about, .say, .lbl, .run, .run a, .btn, [data-jobs-reason]')];
     const cut = boxes.filter((e) => e.scrollWidth > e.clientWidth + 1 || e.getBoundingClientRect().right > right + 1).map((e) => e.textContent);
     return { ja: [(root as HTMLElement).innerText, ...named].filter((t) => ja.test(t)), cut };
   });
@@ -157,7 +179,7 @@ for (const [h, ins] of [[852, IPHONE], [659, SAFARI_BAR]] as const) {
       await expect(alert.locator('[data-jobs-link="42"]')).toHaveAttribute('href', 'https://github.com/huangwaylon/fitness/issues/42');
       // the groups, in order, their rows
       // 要確認 first (the worst first), Services (the bots, then their jobs), then by purpose, the rows in trouble out of their own
-      await expect(page_(page).locator('[data-jobs-group] .sec-label')).toHaveText(['Needs attention', 'Services', 'Data updates', 'Monitoring & backups', 'Deploys & tests']);
+      await expect(page_(page).locator('[data-jobs-group] .sec-label')).toHaveText(['Needs attention', 'Services', 'Data updates', 'Monitoring & backups', 'Deploys & tests', /^Cloudflare free tier/]);
       await expect(page_(page).locator('[data-jobs-group="look"] [data-jobs-row]')).toHaveCount(2);
       await expect(page_(page).locator('[data-jobs-group="look"] [data-jobs-row]').first()).toHaveAttribute('data-jobs-row', 'backup');
       await expect(page_(page).locator('[data-jobs-group="look"] [data-jobs-row]').last()).toHaveAttribute('data-jobs-row', 'wx');
@@ -186,7 +208,9 @@ for (const [h, ins] of [[852, IPHONE], [659, SAFARI_BAR]] as const) {
       await shot(page, `jobs-trouble-${info.project.name}-${h}`);
       await noOverlaps(page, { insets: ins });
       await englishFits(page);
-      await page_(page).locator('[data-jobs-group="ship"]').scrollIntoViewIfNeeded();
+      // the free tier, last while every limit is under 60 %
+      await expect(page_(page).locator('[data-jobs-cf][data-jobs-tone="good"]')).toHaveCount(4);
+      await page_(page).locator('[data-jobs-group="cf"]').scrollIntoViewIfNeeded();
       await settle(page);
       await shot(page, `jobs-bottom-${info.project.name}-${h}`);
       await noOverlaps(page, { insets: ins });
@@ -282,6 +306,65 @@ test('offline: the last copy this phone read, under one quiet note, its time (no
   await page_(page).locator('[data-jobs-error] button')[how]();
   await expect(page_(page).locator('[data-jobs-error]')).toHaveCount(0);
   await expect(page_(page).locator('[data-jobs-verdict] [data-bots-asof]')).toBeVisible();
+});
+
+test('Cloudflare free tier: a row per limit (share, bar), last while all is well; red and amber after 要確認 with the tab’s 「!」, named; a tap unfolds who used it', async ({ page, context }, info) => {
+  const how = howOf(info.project.name);
+  await phone(page, context, { usage: 'tight' });
+  await openJobs(page, how);
+  const sec = page_(page).locator('[data-jobs-group="cf"]');
+  // (no job in trouble: Needs attention is empty, the free tier first)
+  await expect(page_(page).locator('[data-jobs-group] .sec-label').first()).toHaveText(/^Cloudflare free tier/);
+  await expect(sec.locator('[data-jobs-cf-resets]')).toHaveText(/^Resets in \d+ (h|min)$/);
+  await expect(sec.locator('[data-jobs-cf]')).toHaveCount(4);
+  await expect(sec.locator('[data-jobs-cf] .name')).toHaveText(['DO rows read', 'DO rows written', 'DO requests', 'Worker requests']);
+  const tones = await sec.locator('[data-jobs-cf]').evaluateAll((els) => els.map((e) => e.getAttribute('data-jobs-tone')));
+  expect(tones).toEqual(['bad', 'warn', 'good', 'good']);
+  const read = sec.locator('[data-jobs-cf="doRead"]');
+  await expect(read.locator('[data-jobs-cf-of]')).toHaveText('4.6M / 5M92%');
+  await expect(read.locator('button')).toHaveAccessibleName('DO rows read, 92% used, 4.6M / 5M');
+  await expect(tab(page)).toHaveAttribute('data-look', '');
+  await expect(page_(page).locator('[data-jobs-verdict="failing"] [data-bots-say]')).toContainText('Free tier: DO rows read 92%, DO rows written 72%.');
+  await read.locator('button')[how]();
+  const d = read.locator('[data-jobs-detail]');
+  await expect(d.locator('.about')).toContainText('shared by every Worker and Durable Object');
+  await expect(d.locator('[data-jobs-cf-by]')).toHaveCount(3);
+  await expect(d.locator('[data-jobs-cf-by="test/IslandStore"] dd')).toHaveText('2.53M · 55%');
+  await expect(d.locator('[data-jobs-cf-read] dd')).toHaveText('4 min ago');
+  await settle(page);
+  await shot(page, `jobs-cf-tight-${info.project.name}`);
+  await noOverlaps(page, { insets: IPHONE });
+  await englishFits(page);
+});
+
+test('Cloudflare free tier unavailable (no token): one quiet line, last; the verdict unmoved', async ({ page, context }, info) => {
+  const how = howOf(info.project.name);
+  await phone(page, context, { usage: 'none' });
+  await openJobs(page, how);
+  const sec = page_(page).locator('[data-jobs-group="cf"]');
+  await expect(page_(page).locator('[data-jobs-group] .sec-label').last()).toHaveText('Cloudflare free tier');
+  await expect(sec.locator('[data-jobs-cf]')).toHaveCount(0);
+  await expect(sec.locator('[data-jobs-cf-note]')).toHaveText('Usage unavailable (no_token).');
+  await expect(tab(page)).not.toHaveAttribute('data-look');
+  await englishFits(page);
+});
+
+test('an outage (the record over the rows-read limit: /jobs 503): LoadError as before, and the free tier from the refusal, rows read at 100%', async ({ page, context }, info) => {
+  const how = howOf(info.project.name);
+  await phone(page, context, { usage: 'over' });
+  await fromMenu(page, 'bots', how);
+  await tab(page)[how]();
+  await expect(sheet(page)).toHaveAttribute('data-tab', 'jobs');
+  await expect(page_(page).locator('[data-jobs-error]')).toBeVisible();
+  await expect(page_(page).locator('[data-jobs-row]')).toHaveCount(0);
+  const sec = page_(page).locator('[data-jobs-group="cf"]');
+  await expect(sec.locator('[data-jobs-cf]')).toHaveCount(4);
+  await expect(sec.locator('[data-jobs-cf="doRead"]')).toHaveAttribute('data-jobs-tone', 'bad');
+  await expect(sec.locator('[data-jobs-cf="doRead"] [data-jobs-cf-pct]')).toHaveText('100%');
+  await settle(page);
+  await shot(page, `jobs-cf-outage-${info.project.name}`);
+  await noOverlaps(page, { insets: IPHONE });
+  await englishFits(page);
 });
 
 test('the guest: the tab and every row, read with the guest’s own key', async ({ page, context }) => {

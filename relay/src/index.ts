@@ -20,6 +20,7 @@ import { IMG_DAY_MAX, imgGetRoute, imgPostRoute } from './img.ts';
 import { shareRoute } from './share.ts';
 import { placesRoute } from './places.ts';
 import { jobsRoute } from './jobs.ts';
+import { cfUsage, USAGE_CACHE } from './cfUsage.ts';
 import { errData, errName, type RelayEvent } from './log.ts';
 import type { ReqMeta } from './reqMeta.ts';
 import { TOKYO, WX_EMPTY, due, fetchTick, fixture, omUrl, wxHealth, type WxState } from './weather.ts';
@@ -80,6 +81,9 @@ export interface Env {
    *  key a var (wrangler.toml), the private scalar a secret. Either missing: push is off. */
   VAPID_PUBLIC?: string;
   VAPID_PRIVATE?: string;
+  /** ボット → Jobs' Cloudflare free tier (cfUsage.ts): a token with Account Analytics read only (a secret). Unset:
+   *  the page says `no_token`. */
+  CF_ANALYTICS_TOKEN?: string;
   /** The deployed commit (scripts/deploy.sh `--var COMMIT:<short sha>`; `-dirty`: the test copy from a dirty tree). */
   COMMIT?: string;
 }
@@ -447,7 +451,12 @@ export default {
         pics: (id) => store.placesPics(id)
       });
     }
-    if (url.pathname === '/jobs') return jobsRoute(req, { allowed: env.ALLOWED_ORIGINS ?? '', roleOf: (k) => roleOfKey(k, env), read: () => record(env).jobsRead() });
+    if (url.pathname === '/jobs') {
+      return jobsRoute(req, {
+        allowed: env.ALLOWED_ORIGINS ?? '', roleOf: (k) => roleOfKey(k, env), read: () => record(env).jobsRead(),
+        usage: () => cfUsage(USAGE_CACHE, { now: Date.now, fetch: (u, i) => fetch(u, i), token: env.CF_ANALYTICS_TOKEN, log: (e) => log([e]) })
+      });
+    }
     if (url.pathname === '/share') return shareRoute(req, env.ALLOWED_ORIGINS ?? '', (i) => record(env).shareRead(i));
     // (with the saved places' list's age, hours: places-pull.yml is its only reader, its-bot's dispatch its only trigger
     // that runs; -1 never pulled)

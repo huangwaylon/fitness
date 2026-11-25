@@ -8,8 +8,9 @@
 //   `actions: read` on fitness. Each workflow's days are counted once per run (`seen`: the newest run counted, none
 //   after one still under way), so the 14 days outlive the page of runs read.
 // - Logged: nothing (a refresh's failure is the copy's `err`, shown on the page).
+// - `usage`: the account's Cloudflare free-tier use (cfUsage.ts), joined to the answer, not kept.
 import { localDateAt } from '../../app/src/lib/contract/tokyo.ts';
-import { DAYS_KEPT, JOBS, RUNS_KEPT, WORKFLOWS, type JobAlert, type JobDay, type JobId, type JobRow, type JobRun, type JobsStatus, type RunBy, type RunSt } from '../../app/src/lib/contract/jobs.ts';
+import { DAYS_KEPT, JOBS, RUNS_KEPT, WORKFLOWS, type JobAlert, type JobDay, type JobId, type JobRow, type JobRun, type JobsStatus, type RunBy, type RunSt, type Usage } from '../../app/src/lib/contract/jobs.ts';
 import { bearerOf, corsOf } from './auth.ts';
 import { isNum, isRec } from '../../app/src/lib/contract/guards.ts';
 import type { Who } from '../../app/src/lib/contract/api.ts';
@@ -263,8 +264,10 @@ export function jobsStatus(s: { tick?: TickRings; nightly?: Ring; backup?: Ring;
   return { ok: true, v: 1, now: s.now, ...(s.since !== undefined ? { since: s.since } : {}), ext: { at: s.ext.at, by: s.ext.by, err: s.ext.err }, jobs, alerts: s.ext.alerts };
 }
 
-/** `GET /jobs`: a person's key (the guest's too), CORS for the app's origin. */
-export async function jobsRoute(req: Request, env: { allowed: string; roleOf(key: string): Who | null; read(): Promise<string> }): Promise<Response> {
+/** `GET /jobs`: a person's key (the guest's too), CORS for the app's origin; the record's answer with the account's
+ *  Cloudflare free-tier use (`usage`: cfUsage.ts, read beside it, never from an object) added, the record failing
+ *  too (503 `unavailable` with `usage`). */
+export async function jobsRoute(req: Request, env: { allowed: string; roleOf(key: string): Who | null; read(): Promise<string>; usage?: () => Promise<Usage> }): Promise<Response> {
   const cors = corsOf(req.headers.get('Origin'), env.allowed);
   if (!cors) return new Response('forbidden', { status: 403 });
   const base = { ...cors, 'Cache-Control': 'private, no-store' };
@@ -272,9 +275,15 @@ export async function jobsRoute(req: Request, env: { allowed: string; roleOf(key
   if (req.method !== 'GET') return new Response('method not allowed', { status: 405, headers: { ...base, Allow: 'GET' } });
   const json = (body: unknown, status = 200) => Response.json(body, { status, headers: base });
   if (!env.roleOf(bearerOf(req))) return json({ ok: false, error: 'unauthorized' }, 401);
+  const usage = env.usage?.().catch(() => null) ?? Promise.resolve(null);
   try {
-    return new Response(await env.read(), { headers: { ...base, 'Content-Type': 'application/json' } });
+    const body = await env.read(), u = await usage;
+    // (the record's answer is one JSON object: the usage joins it as its last key)
+    const out = u && body.endsWith('}') ? `${body.slice(0, -1)},"usage":${JSON.stringify(u)}}` : body;
+    return new Response(out, { headers: { ...base, 'Content-Type': 'application/json' } });
   } catch {
-    return json({ ok: false, error: 'unavailable' }, 503);
+    // (the record unreadable, its objects over a limit most likely: the usage still says which)
+    const u = await usage;
+    return json({ ok: false, error: 'unavailable', ...(u ? { usage: u } : {}) }, 503);
   }
 }

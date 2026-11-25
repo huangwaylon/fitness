@@ -7,13 +7,14 @@ import { t, formatNum, inLocale } from '#lib/i18n/index.ts';
 import { memberCall } from '#lib/bots/memberCall.ts';
 import { relayUrl } from '#lib/sync/transport.ts';
 import type { BotReply, BotTone, BotWord, Fact, VerdictView } from '#lib/bots/types.ts';
-import { JOBS, RUNS_KEPT, DAYS_KEPT, parseJobs, type JobId, type JobRow, type JobRun, type JobsStatus, type RunSt } from '#lib/contract/jobs.ts';
+import { JOBS, RUNS_KEPT, DAYS_KEPT, parseJobs, parseUsage, type JobId, type JobRow, type JobRun, type JobsStatus, type RunSt, type Usage, type UsageKey } from '#lib/contract/jobs.ts';
 import { isRec } from '#lib/contract/guards.ts';
 import { alertLines, changeParts, edges, factRows as kaloriFacts, fetchStatus, menuLinks, parseStatus, verdictOf as kaloriVerdict, verdictView, weekStrip, type KaloriStatus } from '#lib/kalori/status.ts';
 import { addDays, localDateAt } from '#lib/contract/tokyo.ts';
 import type { CellState, StripCell } from '#lib/strip.ts';
 import { durationOf, shortDay, timeOf, whenOf } from '#lib/i18n/when.ts';
 import '#lib/i18n/jobs.ts';
+import { outage } from './outage.svelte.ts';
 import '#lib/i18n/bots.ts';
 
 const MIN = 60_000, H = 60 * MIN, D = 24 * H;
@@ -29,10 +30,12 @@ const MENU: JobId = 'kalori-scrape';
 const WATCH: JobId = 'kalori-watch';
 
 /** GET /jobs and status.json side by side: the status, or why not (no_key, offline, timeout, http, json, a refusal's
- *  code: /jobs's; status.json failing only leaves `kalori` null). Never throws. */
+ *  code: /jobs's; status.json failing only leaves `kalori` null; a refusal's usage kept in `outage`). Never throws. */
 export async function fetchJobs(signal?: AbortSignal): Promise<BotReply<JobsView>> {
   const [c, k] = await Promise.all([memberCall(relayUrl('/jobs'), 'GET', undefined, signal), fetchStatus(signal).catch(() => null)]);
   if (!c.ok) return { ok: false, err: c.err === 'aborted' ? 'offline' : c.err, http: null };
+  // (a refusal may carry the free tier's usage: the record over a limit, outage.svelte.ts)
+  outage.usage = c.res.ok ? null : (isRec(c.json) ? parseUsage(c.json.usage) : null);
   if (!c.res.ok) return { ok: false, err: 'http', http: c.res.status };
   const s = parseJobs(c.json);
   return s ? { ok: true, status: { ...s, kalori: k?.ok ? k.status : null } } : { ok: false, err: 'json', http: c.res.status };
@@ -161,20 +164,22 @@ function verdictOf_(s: JobsView, now: number): VerdictView & { needsLook: boolea
   const ids = (f: (h: RowHealth) => boolean) => hs.filter((x) => f(x.h)).map((x) => x.id);
   const bad = ids((h) => h.tone === 'bad'), warn = ids((h) => h.tone === 'warn'), held = ids((h) => h.why === 'held');
   const good = ids((h) => h.tone === 'good'), back = ids((h) => h.why === 'recovered'), first = ids((h) => h.why === 'first');
-  const seen = hs.filter((x) => x.h.tone !== 'unknown' && x.h.tone !== 'idle');
-  const tone = (seen.length ? TONE_RANK.find((r) => seen.some((x) => x.h.tone === r)) : hs.length ? 'idle' : 'unknown') ?? 'unknown';
+  const cf = usageView_(s.usage, now)?.rows.filter((r) => r.tone === 'warn' || r.tone === 'bad') ?? [];
+  const seen = [...hs.filter((x) => x.h.tone !== 'unknown' && x.h.tone !== 'idle').map((x) => x.h.tone), ...cf.map((r) => r.tone)];
+  const tone = (seen.length ? TONE_RANK.find((r) => seen.includes(r)) : hs.length ? 'idle' : 'unknown') ?? 'unknown';
   const names = (ids: JobId[]) => (ids.length > 3 ? t('jobs.say.more', { names: ids.slice(0, 3).map(jobName_).join(', '), n: ids.length - 3 }) : ids.map(jobName_).join(', '));
   const late = warn.filter((id) => !held.includes(id));
   const parts = [
     bad.length ? t('jobs.say.bad', { names: names(bad) }) : '',
     held.length ? t('jobs.say.held', { names: names(held) }) : '',
     late.length ? t('jobs.say.warn', { names: names(late) }) : '',
+    cf.length ? t('jobs.say.cf', { names: cf.map((r) => `${r.name} ${r.pct}`).join(', ') }) : '',
     !bad.length && !warn.length && good.length ? t('jobs.say.ok', { n: formatNum(good.length) }) : '',
     back.length ? t('jobs.say.back', { names: names(back) }) : '',
     first.length ? t('jobs.say.first', { names: names(first) }) : '',
     s.ext.err ? t('jobs.say.ext', { code: s.ext.err }) : ''
   ].filter(Boolean);
-  const needsLook = bad.length > 0 || held.length > 0 || s.alerts.length > 0 || !!s.kalori?.alert;
+  const needsLook = bad.length > 0 || held.length > 0 || s.alerts.length > 0 || !!s.kalori?.alert || cf.some((r) => r.tone === 'bad');
   return { tone, w: WORD[tone], word: t(`bots.w.${WORD[tone]}`), sentence: parts.join(' '), needsLook, bad, warn };
 }
 
@@ -269,6 +274,54 @@ function menuDetail_(k: KaloriStatus, now: number) {
   };
 }
 
+// ---- the Cloudflare free tier (/jobs `usage`: relay/src/cfUsage.ts) ----
+
+/** A limit's tone by its share used: good under 60 %, warn from it, bad from 85 % (past 100 % its calls fail). */
+export const usageTone = (used: number, max: number): 'good' | 'warn' | 'bad' => (used >= 0.85 * max ? 'bad' : used >= 0.6 * max ? 'warn' : 'good');
+const USAGE_ORDER: readonly UsageKey[] = ['doRead', 'doWrite', 'doReq', 'wReq'];
+
+/** 「840」 「38.2k」 「325k」 「1.25M」 「5M」. */
+export function compactNum(n: number): string {
+  const trim = (x: number, d: number) => String(Number(x.toFixed(d)));
+  if (n < 1000) return String(Math.round(n));
+  if (n < 1e6) return `${trim(n / 1e3, n < 1e4 ? 1 : 0)}k`;
+  return `${trim(n / 1e6, n < 1e7 ? 2 : 1)}M`;
+}
+/** 「7%」 (floored: 84.9 % isn't 85 %), 「<1%」 for a little. */
+const pctOf = (used: number, max: number): string => (used > 0 && used < max / 100 ? '<1%' : `${Math.floor((100 * used) / max)}%`);
+
+export interface UsageRowView {
+  k: UsageKey;
+  name: string;
+  /** idle: a reading from an earlier UTC day (the limits have reset since). */
+  tone: 'good' | 'warn' | 'bad' | 'idle';
+  /** The share used, 0–1 (the bar; capped at 1). */
+  share: number;
+  pct: string;
+  of: string;
+  by: { name: string; n: string; pct: string }[];
+}
+export interface UsageView { rows: UsageRowView[]; resets: string; asOf: string | null; note: string | null; trouble: boolean }
+
+/** The section: a row per limit (its tone, share, 「325k / 5M」, who used it), the reset's countdown (00:00 UTC), when
+ *  it was read, and a note: unavailable (no reading: its code), couldn't refresh (the day's last kept), or the reading
+ *  from an earlier day (its tones idle). Null: a relay from before it. */
+function usageView_(u: Usage | undefined, now: number): UsageView | null {
+  if (!u) return null;
+  const today = new Date(now).toISOString().slice(0, 10);
+  const current = u.day === today;
+  const rows = [...u.limits].sort((a, b) => USAGE_ORDER.indexOf(a.k) - USAGE_ORDER.indexOf(b.k)).map((l): UsageRowView => ({
+    k: l.k, name: t(`jobs.cf.${l.k}`), tone: current ? usageTone(l.used, l.max) : 'idle', share: Math.min(1, l.used / l.max),
+    pct: pctOf(l.used, l.max), of: t('jobs.cf.of', { used: compactNum(l.used), max: compactNum(l.max) }),
+    by: l.by.map((b) => ({ name: b.name, n: compactNum(b.n), pct: l.used > 0 ? pctOf(b.n, l.used) : '0%' }))
+  }));
+  const left = Math.max(0, Date.parse(`${today}T00:00:00Z`) + D - now);
+  const resets = t('jobs.cf.resets', { in: left >= H ? t('jobs.cf.h', { n: Math.floor(left / H) }) : t('jobs.cf.m', { n: Math.max(1, Math.ceil(left / MIN)) }) });
+  const note = !rows.length ? t('jobs.cf.none', { code: u.err ?? 'empty' }) : u.err ? t('jobs.cf.stale', { code: u.err }) : !current && u.day ? t('jobs.cf.old', { day: u.day }) : null;
+  return { rows, resets, asOf: rows.length ? agoOf_(u.at, now) : null, note, trouble: rows.some((r) => r.tone === 'warn' || r.tone === 'bad') };
+}
+
+export const usageView = en(usageView_);
 export const jobName = en(jobName_);
 export const menuDetail = en(menuDetail_);
 export const verdictOf = en(verdictOf_);

@@ -3,9 +3,9 @@
 // bad, a part warn; skipped ones pass), the page's verdict naming the rows (never-run rows aside; a look for a 不調
 // row or an open alert), the strips (24 cells, the newest at the right) and the 14 days.
 import { describe, expect, it } from 'vitest';
-import { agoOf, dayCells, extraRows, factRows, lastRun, menuAttention, menuDetail, parseView, rowHealth, runCells, runLine, sections, verdictOf, type JobsView } from './status.ts';
+import { agoOf, compactNum, dayCells, extraRows, factRows, lastRun, menuAttention, menuDetail, parseView, rowHealth, runCells, runLine, sections, usageTone, usageView, verdictOf, type JobsView } from './status.ts';
 import { i18n, loadEnglish } from '#lib/i18n/index.ts';
-import { JOBS, parseJobs, type JobRow, type JobsStatus } from '#lib/contract/jobs.ts';
+import { FREE_LIMITS, JOBS, parseJobs, type JobRow, type JobsStatus, type Usage, type UsageKey } from '#lib/contract/jobs.ts';
 import { parseStatus, type KaloriStatus } from '#lib/kalori/status.ts';
 
 const MIN = 60_000, H = 60 * MIN, D = 24 * H;
@@ -183,5 +183,58 @@ describe('Menu update’s last run', () => {
     expect(lastRun(gh, k({ id: 1, result: 'cancelled', startedAt: now - H, endedAt: now }))).toMatchObject({ st: 'idle', c: 'cancelled' });
     expect(lastRun(gh, null)).toBe(tick);
     expect(lastRun(row('wx', [tick]), done)).toBe(tick);
+  });
+});
+
+describe('the Cloudflare free tier', () => {
+  // (12:20 Tokyo = 03:20 UTC: the limits reset at 00:00 UTC, in 20 h)
+  const lim = (k: UsageKey, used: number, by: { name: string; n: number }[] = []) => ({ k, used, max: FREE_LIMITS[k], by });
+  const usage = (o: Partial<Usage> = {}): Usage => ({ at: NOW - 3 * MIN, day: '2026-11-24', err: null, limits: [lim('wReq', 1377), lim('doRead', 325_265, [{ name: 'test/IslandStore', n: 115_172 }, { name: 'relay/IslandStore', n: 85_156 }]), lim('doWrite', 52_971), lim('doReq', 4633)], ...o });
+  const withU = (u: Usage | undefined) => ({ ...status([row('tick', [{ t: NOW, st: 'ok' }])]), ...(u ? { usage: u } : {}) });
+
+  it('tones: green under 60 %, amber from it, red from 85 %', () => {
+    expect([usageTone(59_999, 100_000), usageTone(60_000, 100_000), usageTone(84_999, 100_000), usageTone(85_000, 100_000), usageTone(6e6, 5e6)]).toEqual(['good', 'warn', 'warn', 'bad', 'bad']);
+    expect([840, 9_960, 38_240, 325_265, 1_254_000, 5_000_000, 100_000].map(compactNum)).toEqual(['840', '10k', '38k', '325k', '1.25M', '5M', '100k']);
+    expect(compactNum(4633)).toBe('4.6k');
+  });
+
+  it('a row per limit in a fixed order: its share, 「325k / 5M」, the percent floored (<1% for a little), who used it; the reset’s countdown; when read', () => {
+    const v = usageView(usage(), NOW)!;
+    expect(v.rows.map((r) => [r.k, r.name, r.tone, r.of, r.pct])).toEqual([
+      ['doRead', 'DO rows read', 'good', '325k / 5M', '6%'], ['doWrite', 'DO rows written', 'good', '53k / 100k', '52%'],
+      ['doReq', 'DO requests', 'good', '4.6k / 100k', '4%'], ['wReq', 'Worker requests', 'good', '1.4k / 100k', '1%']
+    ]);
+    expect(v.rows[0].by).toEqual([{ name: 'test/IslandStore', n: '115k', pct: '35%' }, { name: 'relay/IslandStore', n: '85k', pct: '26%' }]);
+    expect(v.rows[0].share).toBeCloseTo(0.065, 3);
+    expect([v.resets, v.asOf, v.note, v.trouble]).toEqual(['Resets in 20 h', '3 min ago', null, false]);
+    expect(usageView(usage({ limits: [lim('wReq', 30)] }), NOW)!.rows[0].pct).toBe('<1%');
+    expect(usageView(usage(), Date.parse('2026-11-24T23:40:00Z'))!.resets).toBe('Resets in 20 min');
+    expect(usageView(undefined, NOW)).toBeNull();
+  });
+
+  it('amber and red join the verdict as a late and a failing job do: named with their percent; red needs a look', () => {
+    expect(verdictOf(withU(usage()), NOW)).toMatchObject({ tone: 'good', needsLook: false, sentence: 'All 1 OK.' });
+    const amber = withU(usage({ limits: [lim('doWrite', 72_000)] }));
+    expect(usageView(amber.usage, NOW)!.trouble).toBe(true);
+    expect(verdictOf(amber, NOW)).toMatchObject({ tone: 'warn', w: 'trouble', needsLook: false, sentence: 'Free tier: DO rows written 72%. All 1 OK.' });
+    const red = withU(usage({ limits: [lim('doRead', 4_600_000), lim('doWrite', 61_000)] }));
+    expect(verdictOf(red, NOW)).toMatchObject({ tone: 'bad', w: 'failing', needsLook: true, sentence: 'Free tier: DO rows read 92%, DO rows written 61%. All 1 OK.' });
+  });
+
+  it('unavailable: its code, no rows, no verdict; couldn’t refresh: the day’s last reading kept; an earlier day’s: idle, never trouble', () => {
+    const none = usageView(usage({ limits: [], day: null, err: 'no_token' }), NOW)!;
+    expect([none.rows, none.note, none.asOf]).toEqual([[], 'Usage unavailable (no_token).', null]);
+    expect(verdictOf(withU(usage({ limits: [], day: null, err: 'timeout' })), NOW).tone).toBe('good');
+    expect(usageView(usage({ err: 'http_500' }), NOW)!.note).toBe("Couldn't refresh (http_500); the last reading today.");
+    const old = withU(usage({ day: '2026-11-23', limits: [lim('doRead', 4_900_000)] }));
+    expect(usageView(old.usage, NOW)).toMatchObject({ trouble: false, note: 'Last reading from 2026-11-23 (UTC); the limits have reset since.', rows: [{ tone: 'idle' }] });
+    expect(verdictOf(old, NOW).needsLook).toBe(false);
+  });
+
+  it('read back: bad limits dropped, unknown keys too; none: no usage', () => {
+    const s = parseJobs({ ok: true, v: 1, now: NOW, ext: { at: NOW, by: 'app', err: null }, jobs: [], alerts: [],
+      usage: { at: NOW, day: '2026-11-24', err: null, limits: [lim('doRead', 5), { k: 'nope', used: 1, max: 2 }, { k: 'wReq', used: 'x', max: 1 }, { k: 'doReq', used: 1, max: 0 }] } });
+    expect(s?.usage).toEqual({ at: NOW, day: '2026-11-24', err: null, limits: [lim('doRead', 5)] });
+    expect(parseJobs({ ok: true, v: 1, now: NOW, ext: {}, jobs: [], alerts: [] })?.usage).toBeUndefined();
   });
 });

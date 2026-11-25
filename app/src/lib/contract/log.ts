@@ -265,6 +265,9 @@ export const LOG_EVENTS = {
   "ws.hello": { src: 'r', f: { b: 't', pr: 'n', sv: 't', re: 'b', socks: 'n', bA: 't', bB: 't', bG: 't', dv: 't' } },
   // a weather fetch that failed (warn), and once a Tokyo day (00:15) its health (info): fails since the last good one
   "cron.wx": { src: 'r', f: { ok: 'b', fetched: 'b', fail: 't', hours: 'n', age: 'n', ms: 'n', fails: 'n' } },
+  // ボット → Jobs' Cloudflare free tier (relay/src/cfUsage.ts): its GraphQL read failing (warn: timeout, http_<n>, gql,
+  // shape, fetch) or well again (info), once per change of state in an isolate
+  "cf.usage": { src: 'r', f: { ok: 'b', why: 't', ms: 'n' } },
   // 行きたい場所's tick (relay/src/places.ts placesLog): a change or a whole read (info), a pulled answer refused (error:
   // the last good list kept); the cron's only on a change of state (cronLog): its categoriser failing or the list
   // stale (warn), well again (info); counts only, never a place
