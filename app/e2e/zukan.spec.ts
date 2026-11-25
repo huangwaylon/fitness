@@ -247,7 +247,7 @@ test('なかま: NH’s special characters by where we meet them, the ones with 
   await fromMenu(page, 'zukan');
   await page.locator('[data-zukan="cast"]').click();
   const cast = page.locator('[data-cast]');
-  await expect(cast.locator('[data-cast-role]')).toHaveText(['タヌキ商店で働く', '博物館の館長', 'とたけけのステージで歌う', '島を訪れる', 'ときどき島を訪れる', '島のリセットのときに', 'ペアリングの入口で', '住民に選べる', '島には来ない']);
+  await expect(cast.locator('[data-cast-role]')).toHaveText(['タヌキ商店で働く', '博物館の館長', 'とたけけのステージで歌う', '島を訪れる', '島のリセットのときに', 'ペアリングの入口で', '住民に選べる', '島には来ない']);
   await expect(cast.locator('[data-cast-id="timmy"]')).toContainText('まめきち');
   await expect(cast.locator('[data-cast-id="katrina"]')).toContainText('ハッケミィ');
   await expect(cast.locator('[data-cast-id="porter"]')).toContainText('えきいんさん');

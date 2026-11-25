@@ -46,14 +46,16 @@ test('けっこんしき’s filter chips and トレイル’s: a 44 × 44 hit e
   await all44(chips);
 });
 
-test('りょこう’s km | mi and a trip’s day chips: a 44 × 44 hit each', async ({ page }) => {
+// (the itinerary has no day strip since 658f3bc97: a day is picked in 地図's foot row)
+test('りょこう’s km | mi and a trip map’s day cells: a 44 × 44 hit each', async ({ page }) => {
   await island(page);
   await fromMenu(page, 'travel');
   await page.locator('dialog[open] [data-travel-tab="settings"]').click();
   await all44(page.locator('dialog[open] [data-units]'));
   await page.locator('dialog[open] [data-travel-tab="trips"]').click();
   await page.locator('dialog[open] [data-trip="nz"]').click();
-  const days = page.locator('dialog[open] .chip-row .chip');
+  await page.locator('dialog[open] [data-trip-tab="map"]').click();
+  const days = page.locator('dialog[open] [data-map-day]');
   await expect(days.first()).toBeVisible();
   await all44(days);
 });

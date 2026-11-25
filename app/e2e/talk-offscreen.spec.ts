@@ -25,6 +25,13 @@ const catchFish = (page: Page) =>
   page.evaluate(() => document.querySelector('.scene')!.dispatchEvent(new CustomEvent('island:catch', { detail: { kind: 'fish', id: 'sea-bass' } })));
 /** Whether Chip is drawn now (one out of view isn't). */
 const chipShown = async (page: Page) => !!(await chip(page))?.shown;
+/** Whether Chip's feet are past the horizon (out of view for his lines: visitor.svelte.ts onScreenNow; his head may
+ *  still be drawn over the far ground since 73bf4d85e, as K.K.'s). */
+const chipPast = (page: Page) =>
+  page.evaluate(() => {
+    const sc = document.querySelector<HTMLElement>('.if-scene')!, foot = (window as unknown as { __world3d: W3 }).__world3d.box('visitor', 'chip')?.foot;
+    return !!foot && foot[1] < sc.getBoundingClientRect().top + Number(sc.dataset.horizon) + 24;
+  });
 /** The gap between the placed balloon's box and Chip's (px; 0 overlapping), or null with no balloon. */
 const balloonOff = (page: Page) =>
   page.evaluate(() => {
@@ -59,7 +66,7 @@ test('Chip out of view (past the horizon from まえ): his cheer at a catch is a
   await camTo(page, g.CAMS.oku);
   await expect.poll(() => chipShown(page)).toBe(true);
   await camTo(page, g.CAMS.mae);
-  await expect.poll(() => chipShown(page)).toBe(false);
+  await expect.poll(() => chipPast(page)).toBe(true);
   await catchFish(page);
   await expect(page.locator('.banner[role="status"] .txt')).toContainText(VISITORS['chat.sp.chip.cheer'].split(' ')[0], { timeout: 8000 });
   await expect(page.locator('.banner[role="status"] .txt')).toContainText(JA['visitor.chip']);

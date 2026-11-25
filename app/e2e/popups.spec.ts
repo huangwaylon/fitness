@@ -46,7 +46,10 @@ async function expectBottomCentre(page: Page) {
 /** The open sky's roomiest point: away from the sun or moon, the clouds and every control (as sky.spec's). */
 const openSky = (page: Page) => page.evaluate(() => {
   const scene = document.querySelector('.if-scene')!.getBoundingClientRect(), sky = document.querySelector('.if-scene .sky')!.getBoundingClientRect();
-  const avoid = [...document.querySelectorAll('.if-scene .orb, .if-scene .cloud, button')].map((e) => e.getBoundingClientRect());
+  // (and the island's controls' 3D tap areas: the shop's roof reaching over the horizon since 73bf4d85e has no button)
+  const ctl = (window as unknown as { __world3d?: { controls(): { box: { left: number; top: number; width: number; height: number } }[] } }).__world3d?.controls() ?? [];
+  const avoid = [...[...document.querySelectorAll('.if-scene .orb, .if-scene .cloud, button')].map((e) => e.getBoundingClientRect()),
+    ...ctl.map(({ box: c }) => ({ left: c.left, right: c.left + c.width, top: c.top, bottom: c.top + c.height }))];
   let best = { x: scene.left + scene.width / 2, y: scene.top + 40 }, room = 0;
   for (let y = scene.top + 4; y < sky.bottom - 10; y += 4)
     for (let x = scene.left + 4; x < scene.right - 4; x += 4) {
