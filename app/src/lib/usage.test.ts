@@ -94,7 +94,7 @@ const usedBy = (key: string, prefixOk = true) => literals.has(key) || (prefixOk 
 
 /** The main catalogs, けんこう's (loaded with its tab), ごはん's (with the meal log), the catchables' names (loaded with the first catch or the
  *  ずかん), the balloon catalogue's and the rooms' (tent.*), as `t()` sees them once all are in. */
-// (ボット → Jobs' strings, jobs.*, and its Menu update row's, kalori.*, are English only by design: the user's ask,
+// (ボット → Jobs' strings, jobs.*, and its Chain menus row's, kalori.*, are English only by design: the user's ask,
 // 2026-11-24; one catalog each, i18n/jobs.ts and i18n/kalori.ts, standing in Japanese's place too)
 const jaJobs = enJobs, jaKalori = enKalori;
 const ja: Record<string, string> = { ...jaMain, ...jaTab, ...jaSheets, ...jaFood, ...jaNames, ...jaCatalog, ...jaTent, ...jaRooms, ...jaVisitors, ...jaTravel, ...jaLink, ...jaWed, ...jaTodo, ...jaGym, ...jaIts, ...jaKalori, ...jaJobs, ...jaBots };

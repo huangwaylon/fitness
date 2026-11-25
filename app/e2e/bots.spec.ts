@@ -106,14 +106,14 @@ test('the menu’s ボット, right above やること (then 設定), 「!」 wh
     const box = (await tab(id).boundingBox())!;
     expect(Math.min(box.width, box.height)).toBeGreaterThanOrEqual(44);
   }
-  // ジム · 保養所 · 定期処理, left to right; 定期処理 healthy: no dot (one only while a person must act)
+  // ジム · 保養所 · Jobs, left to right; Jobs' rows healthy, but its verdict weighs the bots' too: the worst (ジム
+  // broken), its 「!」
   const [l, m, r] = [(await tab('gym').boundingBox())!, (await tab('its').boundingBox())!, (await tab('jobs').boundingBox())!];
   expect(l.x).toBeLessThan(m.x);
   expect(m.x).toBeLessThan(r.x);
-  await expect(tab('jobs')).toHaveAccessibleName('Jobs, healthy');
-  await expect(tab('jobs')).toHaveAttribute('data-tab-status', 'good');
-  await expect(tab('jobs')).not.toHaveAttribute('data-look');
-  await expect(tab('jobs').locator('[data-dot]')).toHaveCount(0);
+  await expect(tab('jobs')).toHaveAccessibleName('Jobs, failing, needs you');
+  await expect(tab('jobs')).toHaveAttribute('data-tab-status', 'bad');
+  await expect(tab('jobs')).toHaveAttribute('data-look', '');
   await expect(tab('gym').locator('[data-dot="bad"][data-look]')).toHaveCount(1);
   // the page's head: its dot says the word (the status itself is Jobs')
   await expect(sheet.locator('[data-gym-page] [data-bots-dot]')).toHaveAccessibleName('ジムの状態：故障。Jobsで詳しく見る');
@@ -221,7 +221,8 @@ test('定期処理 reads while shown only: the tab left, or the sheet closed, it
   await tab('jobs').click();
   await expect(sheet).toHaveAttribute('data-tab', 'jobs');
   const k = sheet.locator('[data-jobs-page]');
-  await expect(k.locator('[data-jobs-verdict="healthy"]')).toBeVisible();
+  // (its verdict weighs the bots' too: 保養所's hold)
+  await expect(k.locator('[data-jobs-verdict]')).toBeVisible();
   const shown = () => page.evaluate(() => document.dispatchEvent(new Event('visibilitychange')));
   // shown: the phone coming back reads it again
   let n = calls.jobs;
@@ -295,7 +296,8 @@ test('the dots survive a reload: kept with the status, shown before any read, ke
   const { sheet, tab, setGym, setJobs } = await phone(page, context, 'broken', { its: false });
   await fromMenu(page, 'bots');
   await expect(sheet.locator('[data-gym-verdict="broken"]')).toBeVisible();
-  await expect(tab('jobs')).toHaveAttribute('data-tab-status', 'good');
+  // (Jobs weighs ジム too)
+  await expect(tab('jobs')).toHaveAttribute('data-tab-status', 'bad');
   await page.locator('dialog[open] .navbar button.nav.close').click();
   setGym(false);
   setJobs('offline');
@@ -311,7 +313,7 @@ test('the dots survive a reload: kept with the status, shown before any read, ke
   await expect(tab('gym')).toHaveAttribute('data-tab-status', 'bad');
   await expect(tab('gym')).toHaveAttribute('data-stale', ''); // dimmed: the read failed
   await expect(tab('gym')).toHaveAccessibleName('ジム、故障、要対応（古い）');
-  await expect(tab('jobs')).toHaveAttribute('data-tab-status', 'good');
+  await expect(tab('jobs')).toHaveAttribute('data-tab-status', 'bad');
   // 保養所 never answered: hollow, 不明
   await expect(tab('its')).toHaveAttribute('data-tab-status', 'unknown');
   await expect(tab('its')).toHaveAccessibleName('保養所、不明');

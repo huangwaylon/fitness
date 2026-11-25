@@ -1,13 +1,14 @@
-// ボット → 定期処理's view (docs/bots.md "Jobs"): the relay's GET /jobs (contract/jobs.ts) read with this phone's key
-// (the guest's too) and the Kalori scraper's status.json (lib/kalori/status.ts: メニューの更新's row, once its own tab),
-// each job's health by its latest state on the phone's clock (初回, 遅れ, 止まっています, 失敗, 回復, 保留), the page's
-// sections by what a job is for (要確認 first) and its verdict, and the rows' strips (the last RUNS_KEPT runs, the newest
-// at the right edge) and the detail's 14 days. Pure but for the fetch: JobsPage.svelte stays thin.
+// ボット → Jobs' view (docs/bots.md "Jobs"): the relay's GET /jobs (contract/jobs.ts) read with this phone's key (the
+// guest's too) and the Kalori scraper's status.json (lib/kalori/status.ts: Chain menus' row), each job's health by its
+// latest state on the phone's clock (First run, Late, Stopped, Failed, Recovered, Held; Waiting on a job it depends
+// on), the page's layout (Needs you, then the sections by what a row is for, with the Gym and ITS bots' rows and the
+// Cloudflare limits), its verdict over all of them, and the rows' strips (the last RUNS_KEPT runs, the newest at the
+// right edge) and the detail's 14 days. Pure but for the fetch: JobsPage.svelte stays thin.
 import { t, formatNum, inLocale } from '#lib/i18n/index.ts';
 import { memberCall } from '#lib/bots/memberCall.ts';
 import { relayUrl } from '#lib/sync/transport.ts';
-import type { BotReply, BotTone, BotWord, Fact, VerdictView } from '#lib/bots/types.ts';
-import { JOBS, RUNS_KEPT, DAYS_KEPT, parseJobs, parseUsage, type JobId, type JobRow, type JobRun, type JobsStatus, type RunSt, type Usage, type UsageKey } from '#lib/contract/jobs.ts';
+import { shown, type BotReply, type BotTone, type BotVerdict, type BotWord, type Fact, type VerdictView } from '#lib/bots/types.ts';
+import { JOBS, RUNS_KEPT, DAYS_KEPT, issueUrl, parseJobs, parseUsage, type JobId, type JobRow, type JobRun, type JobsStatus, type RunSt, type Usage, type UsageKey } from '#lib/contract/jobs.ts';
 import { isRec } from '#lib/contract/guards.ts';
 import { alertLines, changeParts, edges, factRows as kaloriFacts, fetchStatus, menuLinks, parseStatus, verdictOf as kaloriVerdict, verdictView, weekStrip, type KaloriStatus } from '#lib/kalori/status.ts';
 import { addDays, localDateAt } from '#lib/contract/tokyo.ts';
@@ -15,6 +16,7 @@ import type { CellState, StripCell } from '#lib/strip.ts';
 import { durationOf, shortDay, timeOf, whenOf } from '#lib/i18n/when.ts';
 import '#lib/i18n/jobs.ts';
 import { outage } from './outage.svelte.ts';
+import { alertTitle } from './specNames.ts';
 import '#lib/i18n/bots.ts';
 
 const MIN = 60_000, H = 60 * MIN, D = 24 * H;
@@ -47,9 +49,10 @@ export function parseView(x: unknown): JobsView | null {
   return s && { ...s, kalori: isRec(x) && x.kalori ? parseStatus(x.kalori) : null };
 }
 
-/** A row's state: its tone and why (the word under its name); `next`: its first scheduled run (why first). */
-type RowWhy = 'ok' | 'recovered' | 'running' | 'first' | 'late' | 'stopped' | 'failed' | 'failing' | 'partial' | 'held' | 'watch' | 'none';
-export interface RowHealth { tone: Exclude<BotTone, 'busy'>; why: RowWhy; next?: number }
+/** A row's state: its tone and why (the word under its name); `next`: its first scheduled run (why first); `on`: the
+ *  job it waits on (why waiting); `pauses`: the jobs waiting on it (DEPS). */
+type RowWhy = 'ok' | 'recovered' | 'running' | 'first' | 'late' | 'stopped' | 'failed' | 'failing' | 'partial' | 'held' | 'watch' | 'waiting' | 'none';
+export interface RowHealth { tone: Exclude<BotTone, 'busy'>; why: RowWhy; next?: number; on?: JobId; pauses?: JobId[] }
 
 const jobOf = (id: JobId) => JOBS.find((j) => j.id === id);
 /** 遅れ past this age, 止まっています past the second (a frequent job: 2 and 4 cadences; a daily or weekly one: a cadence
@@ -125,62 +128,171 @@ function healthOf(s: JobsView, row: JobRow, now: number): RowHealth {
 
 const jobName_ = (id: JobId): string => t(`jobs.n.${id}`);
 
-/** The page's sections, by what a job is for (要確認 first: the rows in trouble, the worst first, out of their own;
- *  Services: the bots' own jobs, under the ジム and 保養所 rows: JobsPage). */
-export type Section = 'look' | 'bots' | 'data' | 'watch' | 'ship';
-const SECTIONS: Record<Exclude<Section, 'look'>, readonly JobId[]> = {
-  bots: ['gym', 'its-health', 'dispatch'],
-  data: ['wx', 'places', 'places-pull', 'places-details', MENU],
-  watch: ['health', 'tick', 'nightly', 'backup'],
-  ship: ['pages', 'e2e-logic-full', 'e2e-flake-hunt']
-};
-export interface ViewRow { row: JobRow; h: RowHealth }
+/** A row on the page: a job's, a bot's (Gym bot, ITS bot: their tabs' verdicts, JobsPage), a Cloudflare limit's. */
+export type RowKey = JobId | 'svc-gym' | 'svc-its' | `cf-${UsageKey}`;
+type SvcId = 'gym' | 'its';
+/** A bot's verdict as its tab reads it (null: none read yet); only the bots this phone has. */
+export interface SvcIn { id: SvcId; v: BotVerdict | null }
+type Tone = Exclude<BotTone, 'busy'>;
+export type Item =
+  | { kind: 'job'; key: JobId; tone: Tone; row: JobRow; h: RowHealth }
+  | { kind: 'svc'; key: `svc-${SvcId}`; tone: Tone; id: SvcId }
+  | { kind: 'cf'; key: `cf-${UsageKey}`; tone: Tone; u: UsageRowView };
 
-/** The rows by section, each with its health (a job the relay didn't send: none; the watchdog folded into メニュー). */
-export function sections(s: JobsView, now: number): { id: Section; rows: ViewRow[] }[] {
-  const by = new Map(s.jobs.map((j) => [j.id, j]));
-  const of = (ids: readonly JobId[]) => ids.flatMap((id): ViewRow[] => ((row) => (row ? [{ row, h: healthOf(s, row, now) }] : []))(by.get(id)));
-  const trouble = (x: ViewRow) => x.h.tone === 'bad' || x.h.tone === 'warn';
-  const look = of(Object.values(SECTIONS).flat()).filter(trouble).sort((a, b) => Number(a.h.tone !== 'bad') - Number(b.h.tone !== 'bad'));
-  return [{ id: 'look', rows: look }, ...(['bots', 'data', 'watch', 'ship'] as const).map((id) => ({ id, rows: of(SECTIONS[id]).filter((x) => !trouble(x)) }))];
+/** The page's sections by what a row is for, in order (Needs you above them: JobsPage); Behind the scenes and Releases
+ *  fold while healthy; the Cloudflare limits always last. */
+export type SectionId = 'bots' | 'data' | 'yours' | 'behind' | 'ship' | 'cf';
+const SECTIONS: Record<Exclude<SectionId, 'cf'>, readonly RowKey[]> = {
+  bots: ['svc-gym', 'gym', 'svc-its', 'its-health'],
+  data: ['wx', 'places-pull', 'places', 'places-details', MENU],
+  yours: ['backup', 'nightly'],
+  behind: ['tick', 'dispatch', 'health'],
+  ship: ['pages', 'relay', 'e2e-logic-full', 'e2e-flake-hunt']
+};
+const FOLDS: ReadonlySet<SectionId> = new Set(['behind', 'ship']);
+/** The flake hunt's failures are the `flake` issue's, never the verdict's nor Needs you's. */
+const FLAKE: JobId = 'e2e-flake-hunt';
+/** What a job starts: the server timer the weather and the places' sorting (relay/src/index.ts scheduled), its-bot's
+ *  dispatch the dispatched workflows (relay/src/jobs.ts DISPATCHED). Late or stopped, its dependents wait on it. */
+const DEPS: Partial<Record<JobId, readonly JobId[]>> = { tick: ['wx', 'places'], dispatch: ['health', 'its-health', 'places-pull'] };
+
+export interface SectionView {
+  id: SectionId;
+  /** The rows left at home (Needs you took the rest; the limits stay, Needs you shows a copy). */
+  items: Item[];
+  /** How many moved up to Needs you. */
+  above: number;
+  /** Behind the scenes and Releases fold; `fold`: folded at first (every row at home well, the flake hunt aside). */
+  foldable: boolean;
+  fold: boolean;
+  /** The folded row's dot and words: 「All 3 OK」, 「2 OK · 1 waiting」. */
+  tone: Tone;
+  summary: string;
+}
+export interface Layout { needs: Item[]; sections: SectionView[] }
+
+const trouble = (x: Item) => (x.tone === 'bad' || x.tone === 'warn') && x.key !== FLAKE;
+const TONE_RANK: readonly Tone[] = ['bad', 'warn', 'unknown', 'good', 'idle'];
+const worstTone = (ts: readonly Tone[]): Tone => TONE_RANK.find((r) => ts.includes(r)) ?? 'idle';
+
+/** The jobs' health, a dependent of a late or stopped job waiting on it (neutral) rather than late itself. */
+function healths(s: JobsView, now: number): Map<JobId, { row: JobRow; h: RowHealth }> {
+  const m = new Map(s.jobs.filter((r) => r.id !== WATCH).map((row) => [row.id, { row, h: healthOf(s, row, now) }]));
+  for (const [on, deps] of Object.entries(DEPS) as [JobId, readonly JobId[]][]) {
+    const p = m.get(on);
+    if (!p || (p.h.why !== 'late' && p.h.why !== 'stopped')) continue;
+    p.h = { ...p.h, pauses: deps.filter((d) => m.has(d)) };
+    for (const d of deps) {
+      const x = m.get(d);
+      if (x && (x.h.why === 'late' || x.h.why === 'stopped')) x.h = { tone: 'idle', why: 'waiting', on };
+    }
+  }
+  return m;
 }
 
-/** 確認が必要's part from メニュー (as its tab's was): status.json's lines while it needs a look (保留: the step to merge by
- *  hand; 不調: what the sentence leaves out), 保留's PR. */
+/** The page's rows: Needs you (the rows in trouble from anywhere, red then amber, the page's order within; the flake
+ *  hunt never) and the sections with what's left, each folded row's summary. `s` null: /jobs not read yet (the bots'
+ *  rows only); `usage`: usageView's. */
+function layout_(s: JobsView | null, now: number, svc: readonly SvcIn[], usage: UsageView | null): Layout {
+  const jobs = s ? healths(s, now) : new Map<JobId, { row: JobRow; h: RowHealth }>();
+  const item = (key: RowKey): Item | null => {
+    if (key === 'svc-gym' || key === 'svc-its') {
+      const b = svc.find((x) => `svc-${x.id}` === key);
+      return b ? { kind: 'svc', key, id: b.id, tone: b.v ? shown(b.v).tone : 'unknown' } : null;
+    }
+    const j = jobs.get(key as JobId);
+    return j ? { kind: 'job', key: key as JobId, tone: j.h.tone, row: j.row, h: j.h } : null;
+  };
+  const homes = (Object.entries(SECTIONS) as [SectionId, readonly RowKey[]][]).map(([id, keys]) => ({ id, all: keys.map(item).filter((x): x is Item => x !== null) }));
+  const cf = (usage?.rows ?? []).map((u): Item => ({ kind: 'cf', key: `cf-${u.k}`, tone: u.tone, u }));
+  const needs = [...homes.flatMap((x) => x.all), ...cf].filter(trouble).sort((a, b) => Number(a.tone !== 'bad') - Number(b.tone !== 'bad'));
+  const sections = homes.map(({ id, all }): SectionView => {
+    const items = all.filter((x) => !trouble(x));
+    return { id, items, above: all.length - items.length, foldable: FOLDS.has(id), ...foldOf(id, items) };
+  });
+  if (usage) sections.push({ id: 'cf', items: cf, above: 0, foldable: false, fold: false, tone: worstTone(cf.map((x) => x.tone)), summary: '' });
+  return { needs, sections };
+}
+
+/** A section's folded row: its worst dot, 「All 3 OK」 or the counts (OK, waiting, not run yet, failed); folded at
+ *  first while every row is well (the flake hunt's failures aside: its issue's). */
+function foldOf(id: SectionId, items: readonly Item[]): { fold: boolean; tone: Tone; summary: string } {
+  const what = (x: Item) => (x.kind === 'job' && x.h.why === 'waiting' ? 'waiting' : x.kind === 'job' && (x.h.why === 'first' || x.h.why === 'none') ? 'new' : x.tone === 'good' || x.tone === 'idle' ? 'ok' : 'trouble');
+  const n = { ok: 0, waiting: 0, new: 0, trouble: 0 };
+  for (const x of items) n[what(x)]++;
+  const summary = !items.length ? '' : n.ok === items.length ? t('jobs.fold.all', { n: formatNum(n.ok) })
+    : (['ok', 'waiting', 'new', 'trouble'] as const).filter((k) => n[k]).map((k) => t(`jobs.fold.${k}`, { n: formatNum(n[k]) })).join(' · ');
+  const fold = FOLDS.has(id) && items.every((x) => x.key === FLAKE || what(x) === 'ok' || what(x) === 'new');
+  return { fold, tone: worstTone(items.map((x) => x.tone)), summary };
+}
+
+/** A row's word under its name: 「Late」, 「Waiting on Server timer」; a job others wait on, what's paused. */
+function whyOf_(h: RowHealth): { word: string; pauses: string | null } {
+  return {
+    word: h.why === 'waiting' && h.on ? t('jobs.why.waiting', { on: jobName_(h.on) }) : t(`jobs.why.${h.why}`),
+    pauses: h.pauses?.length ? t('jobs.why.pauses', { names: listOf(h.pauses.map(jobName_)) }) : null
+  };
+}
+
+/** 「A」 「A and B」 「A, B and C」. */
+const listOf = (xs: readonly string[]): string => (xs.length < 2 ? (xs[0] ?? '') : t('jobs.say.and', { a: xs.slice(0, -1).join(', '), b: xs.at(-1)! }));
+
+/** Needs you's person steps: the open alert issues (the flake hunt's `flake` issue aside: its row's), then Menu
+ *  update's (held: the step to merge by hand, and its PR). Each a line and its links. */
+function stepsOf_(s: JobsView, now: number): { id: string; text: string; links: { id: string; href: string; label: string }[] }[] {
+  const alerts = s.alerts.filter((a) => a.label !== 'flake');
+  const menu = menuAttention_(s, now);
+  return [
+    ...alerts.map((a) => ({ id: `a${a.n}`, text: t('jobs.alert', { title: alertTitle(a.title), ago: agoOf_(a.at, now) }), links: [{ id: String(a.n), href: issueUrl(a.n), label: t('jobs.alertLink') }] })),
+    ...menu.lines.map((text, i) => ({ id: `m${i}`, text, links: i === menu.lines.length - 1 && menu.pr ? [{ id: 'pr', href: menu.pr, label: t('bots.attn.pr') }] : [] }))
+  ];
+}
+
+/** Needs you's part from Chain menus (as its tab's was): status.json's lines while it needs a look (held: the step to
+ *  merge by hand; failing: what the sentence leaves out), held's PR. */
 function menuAttention_(s: JobsView, now: number): { lines: string[]; pr: string | null } {
   const k = s.kalori;
   if (!k) return { lines: [], pr: null };
   return { lines: alertLines(k, now), pr: menuLinks(k, now).find((l) => l.id === 'pr')?.href ?? null };
 }
 
-const TONE_RANK: readonly RowHealth['tone'][] = ['bad', 'warn', 'unknown', 'good', 'idle'];
-const WORD: Record<RowHealth['tone'], BotWord> = { bad: 'failing', warn: 'trouble', unknown: 'unknown', good: 'healthy', idle: 'healthy' };
+const WORD: Record<Tone, BotWord> = { bad: 'failing', warn: 'trouble', unknown: 'unknown', good: 'healthy', idle: 'healthy' };
 
-/** The page's verdict: the worst row by its latest state (neutral rows aside: 初回 to come, 記録なし), naming the rows
- *  in trouble (三つまで, 他n件), then the recovered and the first runs to come; a GitHub copy that failed said too. A look
- *  needed for a 不調 row, an open alert issue, or メニュー 保留 (its PR to merge by hand) or with an alert of its own. */
-function verdictOf_(s: JobsView, now: number): VerdictView & { needsLook: boolean; bad: JobId[]; warn: JobId[] } {
-  const hs = sections(s, now).flatMap((x) => x.rows).map((x) => ({ id: x.row.id, h: x.h }));
-  const ids = (f: (h: RowHealth) => boolean) => hs.filter((x) => f(x.h)).map((x) => x.id);
-  const bad = ids((h) => h.tone === 'bad'), warn = ids((h) => h.tone === 'warn'), held = ids((h) => h.why === 'held');
-  const good = ids((h) => h.tone === 'good'), back = ids((h) => h.why === 'recovered'), first = ids((h) => h.why === 'first');
-  const cf = usageView_(s.usage, now)?.rows.filter((r) => r.tone === 'warn' || r.tone === 'bad') ?? [];
-  const seen = [...hs.filter((x) => x.h.tone !== 'unknown' && x.h.tone !== 'idle').map((x) => x.h.tone), ...cf.map((r) => r.tone)];
-  const tone = (seen.length ? TONE_RANK.find((r) => seen.includes(r)) : hs.length ? 'idle' : 'unknown') ?? 'unknown';
-  const names = (ids: JobId[]) => (ids.length > 3 ? t('jobs.say.more', { names: ids.slice(0, 3).map(jobName_).join(', '), n: ids.length - 3 }) : ids.map(jobName_).join(', '));
-  const late = warn.filter((id) => !held.includes(id));
-  const parts = [
-    bad.length ? t('jobs.say.bad', { names: names(bad) }) : '',
-    held.length ? t('jobs.say.held', { names: names(held) }) : '',
+/** The page's verdict over every row Needs you weighs (the jobs, the Gym and ITS bots, the Cloudflare limits; the
+ *  flake hunt and the rows waiting on another aside), its sentence what to do, the first that applies: read the open
+ *  alert, merge Chain menus' PR, a bot's own step, check the failing rows, keep an eye on the late ones or a tight limit; then 「2 more
+ *  below.」 for the rest; all well: 「All 18 OK. Nothing to do.」 with the first runs to come. A failed GitHub read
+ *  said too. 「!」 for a failing row or limit, an open alert, Chain menus held or alerting, or a bot's own 「!」. */
+function verdictOf_(s: JobsView, now: number, svc: readonly SvcIn[] = []): VerdictView & { needsLook: boolean; bad: RowKey[]; warn: RowKey[] } {
+  const { needs, sections } = layout_(s, now, svc, usageView_(s.usage, now));
+  const counted = [...needs, ...sections.flatMap((x) => x.items).filter((x) => x.kind !== 'cf' && x.key !== FLAKE)];
+  const nameOf = (x: Item) => (x.kind === 'job' ? jobName_(x.key) : x.kind === 'svc' ? t(`jobs.svc.${x.id}`) : t('jobs.say.at', { name: x.u.name, pct: x.u.pct }));
+  const names = (xs: Item[]) => listOf(xs.length > 3 ? [...xs.slice(0, 2).map(nameOf), t('jobs.say.others', { n: xs.length - 2 })] : xs.map(nameOf));
+  const bad = needs.filter((x) => x.tone === 'bad'), warn = needs.filter((x) => x.tone === 'warn');
+  const held = needs.some((x) => x.kind === 'job' && x.h.why === 'held');
+  const alerts = s.alerts.filter((a) => a.label !== 'flake').length;
+  // (a bot with its own 「!」: a step for the person, said as such; the rest by kind)
+  const look = needs.filter((x) => x.kind === 'svc' && svc.find((b) => b.id === x.id)?.v?.needsLook);
+  const cf = (xs: Item[], on: boolean) => xs.filter((x) => (x.kind === 'cf') === on && !look.includes(x));
+  const late = cf(warn, false).filter((x) => !(x.kind === 'job' && x.h.why === 'held'));
+  const steps = [
+    alerts ? t(alerts > 1 ? 'jobs.say.alerts' : 'jobs.say.alert', { n: formatNum(alerts) }) : '',
+    held ? t('jobs.say.held') : '',
+    look.length ? t('jobs.say.look', { names: names(look) }) : '',
+    cf(bad, false).length ? t('jobs.say.bad', { names: names(cf(bad, false)) }) : '',
+    cf(bad, true).length ? t('jobs.say.cfBad', { names: names(cf(bad, true)) }) : '',
     late.length ? t('jobs.say.warn', { names: names(late) }) : '',
-    cf.length ? t('jobs.say.cf', { names: cf.map((r) => `${r.name} ${r.pct}`).join(', ') }) : '',
-    !bad.length && !warn.length && good.length ? t('jobs.say.ok', { n: formatNum(good.length) }) : '',
-    back.length ? t('jobs.say.back', { names: names(back) }) : '',
-    first.length ? t('jobs.say.first', { names: names(first) }) : '',
-    s.ext.err ? t('jobs.say.ext', { code: s.ext.err }) : ''
+    cf(warn, true).length ? t('jobs.say.cf', { names: names(cf(warn, true)) }) : ''
   ].filter(Boolean);
-  const needsLook = bad.length > 0 || held.length > 0 || s.alerts.length > 0 || !!s.kalori?.alert || cf.some((r) => r.tone === 'bad');
-  return { tone, w: WORD[tone], word: t(`bots.w.${WORD[tone]}`), sentence: parts.join(' '), needsLook, bad, warn };
+  const good = counted.filter((x) => x.tone === 'good'), first = counted.filter((x) => x.kind === 'job' && x.h.why === 'first');
+  const parts = steps.length
+    ? [steps[0], steps.length > 1 ? t('jobs.say.more', { n: formatNum(steps.length - 1) }) : '']
+    : [good.length ? t('jobs.say.ok', { n: formatNum(good.length) }) : '', first.length ? t('jobs.say.first', { names: names(first) }) : ''];
+  if (s.ext.err) parts.push(t('jobs.say.ext', { code: s.ext.err }));
+  const seen = counted.map((x) => x.tone).filter((x) => x !== 'unknown' && x !== 'idle');
+  const tone: Tone = seen.length ? worstTone(seen) : counted.length ? 'idle' : 'unknown';
+  const needsLook = bad.some((x) => x.kind !== 'svc') || held || alerts > 0 || !!s.kalori?.alert || svc.some((b) => b.v?.needsLook);
+  return { tone, w: WORD[tone], word: t(`bots.w.${WORD[tone]}`), sentence: parts.filter(Boolean).join(' '), needsLook, bad: bad.map((x) => x.key), warn: warn.map((x) => x.key) };
 }
 
 /** 「3分前」 「5時間前」 「2日前」 (under a minute: たった今). */
@@ -207,7 +319,7 @@ function runLine_(r: JobRun, now: number): string {
 const KALORI_ST: Record<NonNullable<KaloriStatus['run']>['result'], RunSt> = { published: 'ok', held: 'warn', failed: 'fail', running: 'run', cancelled: 'idle' };
 const KALORI_BY: Record<string, JobRun['by']> = { schedule: 's', workflow_dispatch: 'd' };
 
-/** A row's last run (its age, Last run): its newest GitHub run; Menu update's, status.json's run when read. Its newest
+/** A row's last run (its age, Last run): its newest GitHub run; Chain menus', status.json's run when read. Its newest
  *  GitHub run is often a weekly tick that found the week's release already out and stopped in seconds, while Took
  *  (status.json) timed the scrape: the row's Last run and Took then named two runs (11/18: 「7 s」 beside 「16 min」). */
 export function lastRun(row: JobRow, k: KaloriStatus | null): JobRun | undefined {
@@ -255,17 +367,18 @@ function extraRows_(row: JobRow, now: number): { id: string; label: string; valu
   return Object.entries(x).map(([k, h]) => ({ id: k, label: t(`jobs.part.${k}`), value: h < 0 ? t('bots.key.never') : agoOf_(now - h * H, now) }));
 }
 
-/** The page's くわしく: the GitHub copy's time, whose token read it, its failure. */
+/** The page's くわしく, only while the GitHub copy failed: its time, whose token read it, its failure. */
 function factRows_(s: JobsView, now: number): Fact[] {
+  if (!s.ext.err) return [];
   return [
     { id: 'ext', label: t('jobs.fact.ext'), value: s.ext.at === null ? t('bots.key.never') : timeOf(s.ext.at, now) },
     { id: 'by', label: t('jobs.fact.by'), value: s.ext.by === 'app' ? 'GitHub App' : t('jobs.fact.none') },
-    ...(s.ext.err ? [{ id: 'err', label: t('jobs.fact.err'), value: s.ext.err }] : []),
+    { id: 'err', label: t('jobs.fact.err'), value: s.ext.err },
     { id: 'n', label: t('jobs.fact.n'), value: formatNum(s.jobs.filter((j) => j.id !== WATCH).length) }
   ];
 }
 
-/** Menu update's detail (JobRow), from status.json: its verdict's sentence, Next run, Items, the facts, the last 8
+/** Chain menus' detail (JobRow), from status.json: its verdict's sentence, Next run, Items, the facts, the last 8
  *  weeks' strip, Last changes' bar (none before a first diff) and its links. */
 function menuDetail_(k: KaloriStatus, now: number) {
   return {
@@ -325,7 +438,9 @@ export const usageView = en(usageView_);
 export const jobName = en(jobName_);
 export const menuDetail = en(menuDetail_);
 export const verdictOf = en(verdictOf_);
-export const menuAttention = en(menuAttention_);
+export const layout = en(layout_);
+export const whyOf = en(whyOf_);
+export const stepsOf = en(stepsOf_);
 export const agoOf = en(agoOf_);
 export const runLine = en(runLine_);
 export const runCells = en(runCells_);

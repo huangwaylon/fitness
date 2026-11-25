@@ -7,7 +7,7 @@ import { isNum, isRec } from './guards.ts';
 export type JobGroup = 'server' | 'github' | 'bot';
 export type JobId =
   | 'tick' | 'wx' | 'places' | 'nightly' | 'backup'
-  | 'health' | 'its-health' | 'places-pull' | 'places-details' | 'e2e-flake-hunt' | 'kalori-scrape' | 'kalori-watch' | 'pages' | 'e2e-logic-full'
+  | 'health' | 'its-health' | 'places-pull' | 'places-details' | 'e2e-flake-hunt' | 'kalori-scrape' | 'kalori-watch' | 'pages' | 'relay' | 'e2e-logic-full'
   | 'dispatch' | 'gym';
 
 const MIN = 60_000, H = 60 * MIN, D = 24 * H;
@@ -28,6 +28,8 @@ export const JOBS: readonly { id: JobId; group: JobGroup; every: number | null; 
   { id: 'kalori-watch', group: 'github', every: 6 * H, at: '2026-11-24T03:29+09:00' },
   { id: 'kalori-scrape', group: 'github', every: 7 * D, at: '2026-11-25T02:41+09:00' },
   { id: 'pages', group: 'github', every: null },
+  // (relay.yml: its checks, then the relay's deploy)
+  { id: 'relay', group: 'github', every: null },
   { id: 'e2e-logic-full', group: 'github', every: null },
   { id: 'dispatch', group: 'bot', every: 30 * MIN, at: '2026-11-24T00:15+09:00' },
   // (gym-bot's interval is its own setting, and it pauses: its lateness is ジム's tab's)

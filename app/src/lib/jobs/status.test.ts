@@ -1,9 +1,11 @@
-// Jobs' view (status.ts), English whatever the app's language (the page is English only): a row's health by the phone's clock (遅れ past 2 cadences + 10 min, 止まっています past 4;
-// a daily job a cadence + 2 h and two; an event-driven one never late), its last finished runs (one failure warn, two
-// bad, a part warn; skipped ones pass), the page's verdict naming the rows (never-run rows aside; a look for a 不調
-// row or an open alert), the strips (24 cells, the newest at the right) and the 14 days.
+// Jobs' view (status.ts), English whatever the app's language (the page is English only): a row's health by the
+// phone's clock (late past 2 cadences + 10 min, stopped past 4; a daily job a cadence + 2 h and two; an event-driven
+// one never late), its last finished runs (one failure warn, two bad, a part warn; skipped ones pass), the layout
+// (Needs you from anywhere: the bots and the limits too; the folds' summaries; the rows waiting on another), the
+// verdict's sentence of what to do (the bots counted, the flake hunt and the recovered not), the strips and the days.
 import { describe, expect, it } from 'vitest';
-import { agoOf, compactNum, dayCells, extraRows, factRows, lastRun, menuAttention, menuDetail, parseView, rowHealth, runCells, runLine, sections, usageTone, usageView, verdictOf, type JobsView } from './status.ts';
+import { agoOf, compactNum, dayCells, extraRows, factRows, lastRun, layout, menuDetail, parseView, rowHealth, runCells, runLine, stepsOf, usageTone, usageView, verdictOf, whyOf, type JobsView, type SvcIn } from './status.ts';
+import type { BotVerdict } from '#lib/bots/types.ts';
 import { i18n, loadEnglish } from '#lib/i18n/index.ts';
 import { FREE_LIMITS, JOBS, parseJobs, type JobRow, type JobsStatus, type Usage, type UsageKey } from '#lib/contract/jobs.ts';
 import { parseStatus, type KaloriStatus } from '#lib/kalori/status.ts';
@@ -54,23 +56,93 @@ describe('a row’s health', () => {
 });
 
 describe('the verdict', () => {
-  it('all well: 順調 with the count (never-run rows aside); a late row 一部不調; a stopped one 不調 with 「!」, the rows named', () => {
+  it('all well: the count and nothing to do (the first runs to come named); late: keep an eye on it; failing: check it, the rest 「N more below」', () => {
     const ok = status([row('tick', [{ t: NOW, st: 'ok' }]), row('wx', [{ t: NOW, st: 'ok' }]), row('places', [])]);
-    expect(verdictOf(ok, NOW)).toMatchObject({ tone: 'good', w: 'healthy', sentence: 'All 2 OK. First run to come: Place categories.', needsLook: false });
+    expect(verdictOf(ok, NOW)).toMatchObject({ tone: 'good', w: 'healthy', sentence: 'All 2 OK. Nothing to do. First run to come: Place sorting.', needsLook: false });
     const late = status([row('tick', [{ t: NOW - 80 * MIN, st: 'ok' }]), row('wx', [{ t: NOW, st: 'ok' }])]);
-    expect(verdictOf(late, NOW)).toMatchObject({ tone: 'warn', w: 'trouble', sentence: 'Late or failed: Cron tick.', needsLook: false });
+    expect(verdictOf(late, NOW)).toMatchObject({ tone: 'warn', w: 'trouble', sentence: 'Keep an eye on Server timer: late or failed once.', needsLook: false });
     const bad = status([row('tick', [{ t: NOW - 3 * H, st: 'ok' }]), row('backup', [{ t: NOW, st: 'fail' }, { t: NOW - D, st: 'fail' }]), row('wx', [{ t: NOW, st: 'fail' }])], [], 'gh_403');
-    expect(verdictOf(bad, NOW)).toMatchObject({ tone: 'bad', w: 'failing', needsLook: true, bad: ['tick', 'backup'], warn: ['wx'] });
-    expect(verdictOf(bad, NOW).sentence).toBe("Stopped or failing: Cron tick, Backup. Late or failed: Weather. Couldn't read GitHub (gh_403).");
+    expect(verdictOf(bad, NOW)).toMatchObject({ tone: 'bad', w: 'failing', needsLook: true, bad: ['backup', 'tick'], warn: ['wx'] });
+    expect(verdictOf(bad, NOW).sentence).toBe("Check Backup and Server timer: stopped or failing. 1 more below. Couldn't read GitHub (gh_403).");
   });
 
-  it('an open alert issue needs a look even when every row is well', () => {
-    expect(verdictOf(status([row('tick', [{ t: NOW, st: 'ok' }])], [{ n: 3, title: 'x', label: 'alert', at: NOW }]), NOW).needsLook).toBe(true);
+  it('an open alert issue: read it first, 「!」 even when every row is well; the flake hunt’s `flake` issue never', () => {
+    const alert = { n: 3, title: 'x', label: 'alert', at: NOW };
+    expect(verdictOf(status([row('tick', [{ t: NOW, st: 'ok' }])], [alert]), NOW)).toMatchObject({ needsLook: true, sentence: 'Read the open alert.' });
+    expect(verdictOf(status([row('tick', [{ t: NOW, st: 'ok' }])], [alert, { ...alert, n: 4 }]), NOW).sentence).toBe('Read the 2 open alerts.');
+    const flake = status([row('tick', [{ t: NOW, st: 'ok' }])], [{ ...alert, label: 'flake' }]);
+    expect(verdictOf(flake, NOW)).toMatchObject({ needsLook: false, sentence: 'All 1 OK. Nothing to do.' });
+    expect(stepsOf(flake, NOW)).toEqual([]);
   });
 
-  it('fine now reads 順調: the recovered named, the first runs to come named, neither a warning', () => {
-    const s = status([row('tick', [{ t: NOW, st: 'ok' }]), row('pages', [{ t: NOW - H, st: 'ok' }, { t: NOW - 2 * H, st: 'fail' }]), row('nightly', [])]);
-    expect(verdictOf(s, NOW)).toMatchObject({ tone: 'good', w: 'healthy', needsLook: false, bad: [], warn: [], sentence: 'All 2 OK. Recovered: Deploy. First run to come: Nightly.' });
+  it('the recovered and the flake hunt’s failures leave the sentence (their rows say so)', () => {
+    const s = status([row('tick', [{ t: NOW, st: 'ok' }]), row('pages', [{ t: NOW - H, st: 'ok' }, { t: NOW - 2 * H, st: 'fail' }]), row('e2e-flake-hunt', [{ t: NOW - H, st: 'fail' }, { t: NOW - D, st: 'fail' }])]);
+    expect(verdictOf(s, NOW)).toMatchObject({ tone: 'good', w: 'healthy', needsLook: false, bad: [], warn: [], sentence: 'All 2 OK. Nothing to do.' });
+    const { needs, sections } = layout(s, NOW, [], null);
+    expect(needs).toEqual([]);
+    expect(sections.find((x) => x.id === 'ship')).toMatchObject({ above: 0, fold: true, tone: 'bad', summary: '1 OK · 1 failed' });
+  });
+});
+
+describe('the bots’ rows (their tabs’ verdicts)', () => {
+  const v = (tone: BotVerdict['tone'], needsLook = false): BotVerdict => ({ tone, w: tone === 'bad' ? 'broken' : tone === 'warn' ? 'trouble' : 'healthy', word: '', sentence: '', needsLook });
+  const s = status([row('gym', [{ t: NOW, st: 'ok' }]), row('its-health', [{ t: NOW, st: 'ok' }]), row('tick', [{ t: NOW, st: 'ok' }])]);
+  const bots = (gym: BotVerdict | null, its: BotVerdict | null = v('good')): SvcIn[] => [{ id: 'gym', v: gym }, { id: 'its', v: its }];
+
+  it('count in the verdict: a broken Gym bot fails it, its own 「!」 a step for you; one that heals on its own, no 「!」', () => {
+    expect(verdictOf(s, NOW, bots(v('good')))).toMatchObject({ tone: 'good', sentence: 'All 5 OK. Nothing to do.', needsLook: false });
+    expect(verdictOf(s, NOW, bots(v('bad', true)))).toMatchObject({ tone: 'bad', w: 'failing', needsLook: true, bad: ['svc-gym'], sentence: 'Needs you: Gym bot, see below.' });
+    expect(verdictOf(s, NOW, bots(v('bad')))).toMatchObject({ tone: 'bad', needsLook: false, sentence: 'Check Gym bot: stopped or failing.' });
+    expect(verdictOf(s, NOW, bots(v('good'), v('warn')))).toMatchObject({ tone: 'warn', warn: ['svc-its'], sentence: 'Keep an eye on ITS bot: late or failed once.' });
+    // (a fine bot needing a person reads as its dot: amber)
+    expect(verdictOf(s, NOW, bots(v('good', true)))).toMatchObject({ tone: 'warn', needsLook: true, sentence: 'Needs you: Gym bot, see below.' });
+  });
+
+  it('move up to Needs you, red first, their home counting them; not read yet: unknown, at home, not counted', () => {
+    const l = layout(s, NOW, bots(v('warn'), v('bad')), null);
+    expect(l.needs.map((x) => [x.key, x.tone])).toEqual([['svc-its', 'bad'], ['svc-gym', 'warn']]);
+    expect(l.sections[0]).toMatchObject({ id: 'bots', above: 2 });
+    expect(l.sections[0].items.map((x) => x.key)).toEqual(['gym', 'its-health']);
+    const unread = layout(s, NOW, bots(null), null);
+    expect(unread.sections[0].items.map((x) => [x.key, x.tone])).toEqual([['svc-gym', 'unknown'], ['gym', 'good'], ['svc-its', 'good'], ['its-health', 'good']]);
+    expect(verdictOf(s, NOW, bots(null)).sentence).toBe('All 4 OK. Nothing to do.');
+    // (a phone without the bots: no rows)
+    expect(layout(s, NOW, [], null).sections[0].items.map((x) => x.key)).toEqual(['gym', 'its-health']);
+    // (before /jobs answers: the bots' rows only)
+    expect(layout(null, NOW, bots(v('good')), null).sections[0].items.map((x) => x.key)).toEqual(['svc-gym', 'svc-its']);
+  });
+});
+
+describe('a job others wait on', () => {
+  it('the server timer stopped: its row says what’s paused, Weather and Place sorting wait on it (neutral, not in Needs you)', () => {
+    const s = status([row('tick', [{ t: NOW - 3 * H, st: 'ok' }]), row('wx', [{ t: NOW - 3 * H, st: 'ok' }]), row('places', [{ t: NOW - 3 * H, st: 'idle' }])]);
+    const { needs, sections } = layout(s, NOW, [], null);
+    expect(needs.map((x) => x.key)).toEqual(['tick']);
+    const tick = needs[0].kind === 'job' ? needs[0].h : null;
+    expect(whyOf(tick!)).toEqual({ word: 'Stopped', pauses: 'Weather and Place sorting paused' });
+    const data = sections.find((x) => x.id === 'data')!;
+    expect(data.items.map((x) => (x.kind === 'job' ? [x.key, x.h] : null))).toEqual([['wx', { tone: 'idle', why: 'waiting', on: 'tick' }], ['places', { tone: 'idle', why: 'waiting', on: 'tick' }]]);
+    expect(whyOf({ tone: 'idle', why: 'waiting', on: 'tick' }).word).toBe('Waiting on Server timer');
+    expect(sections.find((x) => x.id === 'behind')).toMatchObject({ above: 1, items: [], summary: '' });
+    expect(verdictOf(s, NOW)).toMatchObject({ tone: 'bad', bad: ['tick'], warn: [], sentence: 'Check Server timer: stopped or failing.' });
+  });
+
+  it('the job trigger late: its three, but a dependent that failed on its own stays a failure', () => {
+    const s = status([row('dispatch', [{ t: NOW - 80 * MIN, st: 'ok' }]), row('health', [{ t: NOW - 80 * MIN, st: 'ok' }]), row('its-health', [{ t: NOW, st: 'fail' }]), row('places-pull', [{ t: NOW - 80 * MIN, st: 'ok' }])]);
+    const { needs, sections } = layout(s, NOW, [], null);
+    expect(needs.map((x) => x.key)).toEqual(['its-health', 'dispatch']);
+    expect(whyOf(needs[1].kind === 'job' ? needs[1].h : rowHealth(row('tick', []), NOW)).pauses).toBe('Server check, ITS bot check and Google Maps sync paused');
+    expect(sections.find((x) => x.id === 'behind')).toMatchObject({ fold: false, summary: '1 waiting' });
+  });
+});
+
+describe('the folds', () => {
+  it('Behind the scenes and Releases fold while healthy: 「All 3 OK」, a job not run yet counted apart; the others never fold', () => {
+    const s = status(JOBS.map((j) => row(j.id, j.id === 'relay' ? [] : [{ t: NOW - 5 * MIN, st: 'ok' }])));
+    const by = Object.fromEntries(layout(s, NOW, [], null).sections.map((x) => [x.id, x]));
+    expect([by.behind.fold, by.behind.summary, by.behind.tone]).toEqual([true, 'All 3 OK', 'good']);
+    expect([by.ship.fold, by.ship.summary]).toEqual([true, '3 OK · 1 not run yet']);
+    expect([by.bots.foldable, by.data.foldable, by.yours.foldable, by.behind.foldable]).toEqual([false, false, false, true]);
   });
 });
 
@@ -98,32 +170,38 @@ describe('メニュー (the Kalori scraper) as a row, and the sections', () => {
   const PR = 'https://github.com/huangwaylon/fitness/pull/901';
   const k = (over: Record<string, unknown>) => parseStatus({ v: 1, at: NOW - MIN, verdict: 'healthy', reasons: [], next: NOW + 3 * D, history: [], ...over }, NOW)!;
   const all = (kalori: KaloriStatus | null, watch: JobRow['runs'] = [{ t: NOW - H, st: 'ok' }]) => status(JOBS.map((j) => j.id === 'kalori-watch' ? row(j.id, watch) : row(j.id, [{ t: NOW - 5 * MIN, st: 'ok' }])), [], null, kalori);
-  const of = (s: JobsView) => sections(s, NOW).flatMap((x) => x.rows.map((r) => [x.id, r.row.id, r.h.why]));
+  const of = (s: JobsView) => {
+    const l = layout(s, NOW, [], null);
+    return [...l.needs.map((r) => ['needs', r]), ...l.sections.flatMap((x) => x.items.map((r) => [x.id, r]))].flatMap(([id, r]) => (typeof r !== 'string' && r.kind === 'job' ? [[id, r.key, r.h.why]] : []));
+  };
 
-  it('by purpose, 要確認 first (empty while all is well); the watchdog folded into メニューの更新; every job somewhere', () => {
+  it('by purpose: Bots · Data for the app · Your data · Behind the scenes · Releases (Needs you empty while all is well); the watchdog folded into Chain menus; every job somewhere', () => {
     const s = all(k({}));
-    expect(sections(s, NOW).map((x) => [x.id, x.rows.map((r) => r.row.id)])).toEqual([
-      ['look', []],
-      ['bots', ['gym', 'its-health', 'dispatch']],
-      ['data', ['wx', 'places', 'places-pull', 'places-details', 'kalori-scrape']],
-      ['watch', ['health', 'tick', 'nightly', 'backup']],
-      ['ship', ['pages', 'e2e-logic-full', 'e2e-flake-hunt']]
+    const l = layout(s, NOW, [], null);
+    expect(l.needs).toEqual([]);
+    expect(l.sections.map((x) => [x.id, x.items.map((r) => r.key)])).toEqual([
+      ['bots', ['gym', 'its-health']],
+      ['data', ['wx', 'places-pull', 'places', 'places-details', 'kalori-scrape']],
+      ['yours', ['backup', 'nightly']],
+      ['behind', ['tick', 'dispatch', 'health']],
+      ['ship', ['pages', 'relay', 'e2e-logic-full', 'e2e-flake-hunt']]
     ]);
     expect(of(s).length).toBe(JOBS.length - 1);
-    expect(verdictOf(s, NOW)).toMatchObject({ tone: 'good', sentence: 'All 15 OK.', needsLook: false });
+    expect(verdictOf(s, NOW)).toMatchObject({ tone: 'good', sentence: 'All 15 OK. Nothing to do.', needsLook: false });
   });
 
-  it('保留: a warning in 要確認 with 「!」, its sentence, 確認が必要’s step and PR', () => {
+  it('held: amber in Needs you with 「!」, the sentence’s step, Needs you’s step and PR', () => {
     const s = all(k({ verdict: 'held', reasons: ['band_gone'], diff: { tripped: [{ code: 'band_gone', key: 'gone', share: 0.021, limit: 0.015 }] }, merge: { pr: PR } }));
-    expect(sections(s, NOW)[0].rows.map((r) => [r.row.id, r.h])).toEqual([['kalori-scrape', { tone: 'warn', why: 'held' }]]);
-    expect(verdictOf(s, NOW)).toMatchObject({ tone: 'warn', needsLook: true, sentence: 'Held: Menu update.' });
-    expect(menuAttention(s, NOW)).toEqual({ lines: ['Check the PR and merge it by hand if it looks right.'], pr: PR });
+    expect(layout(s, NOW, [], null).needs.map((r) => [r.key, r.kind === 'job' && r.h])).toEqual([['kalori-scrape', { tone: 'warn', why: 'held' }]]);
+    expect(verdictOf(s, NOW)).toMatchObject({ tone: 'warn', needsLook: true, sentence: "Merge Chain menus' PR." });
+    expect(stepsOf(s, NOW)).toEqual([{ id: 'm0', text: 'Check the PR and merge it by hand if it looks right.', links: [{ id: 'pr', href: PR, label: 'Open the PR' }] }]);
   });
 
-  it('不調 bad; まだ: 初回 at its next run; the watchdog stopped: 見張りが停止; status.json unread: its runs', () => {
-    expect(of(all(k({ verdict: 'failing', reasons: ['crash'] })))[0]).toEqual(['look', 'kalori-scrape', 'failed']);
-    expect(sections(all(k({ verdict: 'none' })), NOW)[2].rows.find((r) => r.row.id === 'kalori-scrape')!.h).toEqual({ tone: 'idle', why: 'first', next: NOW + 3 * D });
-    expect(of(all(k({}), [{ t: NOW - 30 * H, st: 'ok' }]))[0]).toEqual(['look', 'kalori-scrape', 'watch']);
+  it('failing: red; not run yet: First run at its next; the watchdog stopped: Watch stopped; status.json unread: its runs', () => {
+    expect(of(all(k({ verdict: 'failing', reasons: ['crash'] })))[0]).toEqual(['needs', 'kalori-scrape', 'failed']);
+    const none = layout(all(k({ verdict: 'none' })), NOW, [], null).sections[1].items.find((r) => r.key === 'kalori-scrape');
+    expect(none?.kind === 'job' && none.h).toEqual({ tone: 'idle', why: 'first', next: NOW + 3 * D });
+    expect(of(all(k({}), [{ t: NOW - 30 * H, st: 'ok' }]))[0]).toEqual(['needs', 'kalori-scrape', 'watch']);
     expect(of(all(null)).find((x) => x[1] === 'kalori-scrape')).toEqual(['data', 'kalori-scrape', 'ok']);
   });
 
@@ -135,7 +213,7 @@ describe('メニュー (the Kalori scraper) as a row, and the sections', () => {
 });
 
 describe('English only, whatever the app’s language', () => {
-  it('rows, ages, runs, the days, the facts and Menu update’s detail read English while the app is Japanese', async () => {
+  it('rows, ages, runs, the days, the facts and Chain menus’ detail read English while the app is Japanese', async () => {
     await loadEnglish();
     expect(i18n.locale).toBe('ja');
     expect([agoOf(NOW - 30_000, NOW), agoOf(NOW - 5 * MIN, NOW), agoOf(NOW - 2 * H, NOW), agoOf(NOW - 3 * D, NOW)]).toEqual(['Just now', '5 min ago', '2 h ago', '3 d ago']);
@@ -145,7 +223,9 @@ describe('English only, whatever the app’s language', () => {
     expect(extraRows({ id: 'nightly', runs: [], days: [], x: { ledgercheck: 9.3, tombprune: -1 } }, NOW)).toEqual([
       { id: 'ledgercheck', label: 'Ledger check', value: '9 h ago' }, { id: 'tombprune', label: 'Deleted-row prune', value: 'Not yet' }
     ]);
-    expect(factRows(status([row('tick', [])]), NOW).map((f) => [f.label, f.value])).toEqual([['GitHub read', '12:20'], ['Auth', 'GitHub App'], ['Jobs', '1']]);
+    // (only while GitHub's read failed)
+    expect(factRows(status([row('tick', [])]), NOW)).toEqual([]);
+    expect(factRows(status([row('tick', [])], [], 'gh_403'), NOW).map((f) => [f.label, f.value])).toEqual([['GitHub read', '12:20'], ['Auth', 'GitHub App'], ['Error', 'gh_403'], ['Jobs', '1']]);
     const k = parseStatus({ v: 1, at: NOW - MIN, verdict: 'held', reasons: ['band_gone'], next: NOW + 3 * D, history: [], dataset: { tag: 'kalori-2026-11-18', date: '2026-11-18', items: 54269, shops: 448 },
       diff: { added: 12, gone: 1200, valuesChanged: 38, endedChanged: 3, tripped: [{ code: 'band_gone', key: 'gone', share: 0.021, limit: 0.015 }] } }, NOW)!;
     const m = menuDetail(k, NOW);
@@ -158,7 +238,7 @@ describe('English only, whatever the app’s language', () => {
   });
 });
 
-describe('Menu update’s last run', () => {
+describe('Chain menus’ last run', () => {
   // (11/18: its-bot dispatched the week's scrape at 03:42 JST, 16 min; GitHub's late schedule tick at 08:56 found the
   // release out and stopped in 7 s: the row said 「7 s」 beside Took's 「16 min」)
   const now = Date.parse('2026-11-24T19:16+09:00');
@@ -212,13 +292,17 @@ describe('the Cloudflare free tier', () => {
     expect(usageView(undefined, NOW)).toBeNull();
   });
 
-  it('amber and red join the verdict as a late and a failing job do: named with their percent; red needs a look', () => {
-    expect(verdictOf(withU(usage()), NOW)).toMatchObject({ tone: 'good', needsLook: false, sentence: 'All 1 OK.' });
+  it('amber and red: in Needs you (a copy: the section keeps all four, last), in the sentence with the 100 % stop; red needs a look', () => {
+    expect(verdictOf(withU(usage()), NOW)).toMatchObject({ tone: 'good', needsLook: false, sentence: 'All 1 OK. Nothing to do.' });
     const amber = withU(usage({ limits: [lim('doWrite', 72_000)] }));
     expect(usageView(amber.usage, NOW)!.trouble).toBe(true);
-    expect(verdictOf(amber, NOW)).toMatchObject({ tone: 'warn', w: 'trouble', needsLook: false, sentence: 'Free tier: DO rows written 72%. All 1 OK.' });
-    const red = withU(usage({ limits: [lim('doRead', 4_600_000), lim('doWrite', 61_000)] }));
-    expect(verdictOf(red, NOW)).toMatchObject({ tone: 'bad', w: 'failing', needsLook: true, sentence: 'Free tier: DO rows read 92%, DO rows written 61%. All 1 OK.' });
+    expect(verdictOf(amber, NOW)).toMatchObject({ tone: 'warn', w: 'trouble', needsLook: false, sentence: 'Watch Cloudflare use: DO rows written at 72%; the app stops at 100%.' });
+    const red = withU(usage({ limits: [lim('doRead', 4_600_000), lim('doWrite', 61_000), lim('wReq', 10)] }));
+    expect(verdictOf(red, NOW)).toMatchObject({ tone: 'bad', w: 'failing', needsLook: true, sentence: 'Cut Cloudflare use: DO rows read at 92%; the app stops at 100%. 1 more below.' });
+    const l = layout(red, NOW, [], usageView(red.usage, NOW));
+    expect(l.needs.map((x) => [x.key, x.tone])).toEqual([['cf-doRead', 'bad'], ['cf-doWrite', 'warn']]);
+    expect(l.sections.at(-1)).toMatchObject({ id: 'cf', above: 0 });
+    expect(l.sections.at(-1)!.items.map((x) => x.key)).toEqual(['cf-doRead', 'cf-doWrite', 'cf-wReq']);
   });
 
   it('unavailable: its code, no rows, no verdict; couldn’t refresh: the day’s last reading kept; an earlier day’s: idle, never trouble', () => {

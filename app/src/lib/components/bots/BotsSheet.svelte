@@ -4,8 +4,8 @@
   // tabs (a tablist, registry.ts's bots left to right: ジム, 保養所, Jobs: English, as its page); with one bot only, no tabs. It opens on
   // the tab last shown in this app session (DEVICE.botsTab, sessionStorage: a swipe-closed app opens on ジム, the
   // leftmost; an update's reload keeps it), or the one asked (show(tab): a notification's tap opens 保養所). メニュー was a
-  // tab till 2026-11-24: a kept or asked 'kalori' opens Jobs with Menu update's row unfolded, a bot page's dot with
-  // its Services row unfolded. Only the shown page is mounted (the three in this chunk): it reads and polls while
+  // tab till 2026-11-24: a kept or asked 'kalori' opens Jobs with Chain menus' row unfolded, a bot page's dot with
+  // its row unfolded. Only the shown page is mounted (the three in this chunk): it reads and polls while
   // shown, and the other tab, ✕ or a close unmounts it. Each tab's dot (summary.svelte.ts, StatusDot; dimmed and
   // 「（古い）」 when stale): the other tabs read as the sheet opens, then every 5 min while it stays open (`watch`; none
   // while Jobs is shown: it reads all three). 保養所's unsaved draft: a tab switch asks first (its `leave`), ✕, Esc and
@@ -16,12 +16,13 @@
   import TabBar from '../ui/TabBar.svelte';
   import ItsPage from './ItsPage.svelte';
   import GymPage from './GymPage.svelte';
-  import JobsPage, { type JobsRow } from './JobsPage.svelte';
+  import JobsPage from './JobsPage.svelte';
   import StatusDot from './StatusDot.svelte';
   import { botTabs, botsSheet, type BotAsk } from './open.svelte.ts';
   import { BOTS, botMeta, type BotId } from './registry.ts';
   import { summaries, watch } from './summary.svelte.ts';
-  import { shown } from '#lib/bots/types.ts';
+  import { shown, worst } from '#lib/bots/types.ts';
+  import type { RowKey as JobsRow } from '#lib/jobs/status.ts';
   import { DEVICE, sessionKV } from '#lib/sync/storage.ts';
   import { week } from '#lib/store/week.svelte.ts';
   import { i18n, inLocale, t } from '#lib/i18n/index.ts';
@@ -33,7 +34,7 @@
   const tabs = $derived(botTabs());
   const kept = kv?.getItem(DEVICE.botsTab);
   let picked = $state<BotId>(kept === 'kalori' ? 'jobs' : BOTS.some((b) => b.id === kept) ? (kept as BotId) : 'gym');
-  /** Jobs' row unfolded as it opens (メニュー asked: Menu update's; a bot page's dot: its Services row). */
+  /** Jobs' row unfolded as it opens (メニュー asked: Chain menus'; a bot page's dot: its bot's row). */
   let jobsRow = $state<JobsRow | null>(kept === 'kalori' ? 'kalori-scrape' : null);
   /** The tab shown: the one picked, if this phone has it. */
   const tab = $derived(tabs.includes(picked) ? picked : (tabs[0] ?? 'gym'));
@@ -45,7 +46,7 @@
   /** A tab's dot as drawn, and its name: 「ジム、順調」 (en 「Gym, healthy」), 「、要対応」 when a person must look,
    *  「（古い）」 when the dot is stale; Jobs' in English always (its page is: JobsPage). */
   function dotOf(id: BotId) {
-    const s = summaries[id];
+    const s = id === 'jobs' ? jobsMark() : summaries[id];
     const d = shown(s);
     const lang = id === 'jobs' ? 'en' : i18n.locale;
     return inLocale(lang, () => {
@@ -55,6 +56,15 @@
       if (d.look && d.w !== 'needsYou') name = t('bots.say', { bot: name, word: t('bots.attention') });
       return { ...d, stale: s.stale, name: s.stale ? name + t('bots.stale') : name };
     });
+  }
+  /** Jobs' dot as its verdict weighs it: its rows and the bots' (the other tabs' dots, those read; ITS unknown aside),
+   *  the worst tone, 「!」 when any needs a person; the word the worst's (lib/jobs/status.ts verdictOf). */
+  function jobsMark() {
+    const j = summaries.jobs;
+    const bots = tabs.filter((b) => b !== 'jobs').map((b) => summaries[b]).filter((m) => m.updatedAt !== null && m.tone !== 'unknown');
+    const m = worst([j, ...bots])!;
+    const w = m.tone === j.tone ? j.w : m.tone === 'bad' ? 'failing' : m.tone === 'warn' ? 'trouble' : j.w;
+    return { ...j, tone: m.tone, needsLook: m.needsLook, w } as const;
   }
   const dots = $derived(Object.fromEntries(tabs.map((id) => [id, dotOf(id)])) as Record<BotId, ReturnType<typeof dotOf>>);
   const items = $derived(tabs.map((id) => ({
@@ -75,7 +85,7 @@
     return untrack(() => watch(others));
   });
 
-  /** A tab: `row` unfolded in Jobs (a bot page's dot: its Services row). */
+  /** A tab: `row` unfolded in Jobs (a bot page's dot: its bot's row). */
   function pick(ask: BotAsk, row?: JobsRow) {
     const id: BotId = ask === 'kalori' ? 'jobs' : ask;
     if (ask === 'kalori') jobsRow = 'kalori-scrape';

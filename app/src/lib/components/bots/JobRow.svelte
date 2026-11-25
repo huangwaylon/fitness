@@ -1,17 +1,18 @@
 <script lang="ts">
   // A Jobs row (JobsPage, docs/bots.md "Jobs"; English only, as the page): one button the card's width, 44pt and
   // more: the dot (StatusDot, the row's health: lib/jobs/status.ts healthOf), the job's name, the last run's age at the
-  // right, its cadence and (but when OK or a first run to come) why under the name, then its last runs' strip (the
+  // right, its cadence and (but when OK or a first run to come) why under the name (Waiting on the job it depends on;
+  // a job others wait on: what's paused; the flake hunt's open issue), then its last runs' strip (the
   // newest at the right edge; the states' fills the status card's: ok leaf, warn yuzu capped, fail coral hatched, idle
   // a sunk bar, none a tick), a picture only (VoiceOver: the button's name says the state, the detail lists the runs).
   // A tap unfolds the detail under it: what it does, Schedule and Last run, the 14 days' strip and counts, the last
   // runs (a GitHub run a link), nightly's parts or places-pull's last sync, and a link to GitHub (its workflow) or to
-  // ジム's tab. Menu update (`kalori`: the Kalori scraper's status.json) unfolds its own (status.ts menuDetail): its
+  // ジム's tab (the flake hunt: its issue too). Chain menus (`kalori`: the Kalori scraper's status.json) unfolds its own (status.ts menuDetail): its
   // verdict's sentence, Next run, Items and its facts, Last 8 weeks (a cell a week) in the 14 days' place, Last changes
   // (ChangeBar), and its links (the run while worth a look, the PR while held, the workflow).
   import { formatNum, scoped } from '#lib/i18n/index.ts';
   import { JOBS, runUrl, workflowUrl, type JobRow } from '#lib/contract/jobs.ts';
-  import { agoOf, dayCells, dayTotals, extraRows, jobName, lastRun, menuDetail, runCells, runLine, type RowHealth } from '#lib/jobs/status.ts';
+  import { agoOf, dayCells, dayTotals, extraRows, jobName, lastRun, menuDetail, runCells, runLine, whyOf, type RowHealth } from '#lib/jobs/status.ts';
   import type { KaloriStatus } from '#lib/kalori/status.ts';
   import { timeOf } from '#lib/i18n/when.ts';
   import type { BotId } from './registry.ts';
@@ -19,7 +20,18 @@
   import ChangeBar from './ChangeBar.svelte';
   import Phrases from '../ui/Phrases.svelte';
 
-  let { row, h, kalori = null, now, open, ontoggle, onopen }: { row: JobRow; h: RowHealth; kalori?: KaloriStatus | null; now: number; open: boolean; ontoggle: () => void; onopen: (tab: BotId) => void } = $props();
+  interface Props {
+    row: JobRow;
+    h: RowHealth;
+    kalori?: KaloriStatus | null;
+    /** The flake hunt's open `flake` issue (its page). */
+    issue?: string | null;
+    now: number;
+    open: boolean;
+    ontoggle: () => void;
+    onopen: (tab: BotId) => void;
+  }
+  let { row, h, kalori = null, issue = null, now, open, ontoggle, onopen }: Props = $props();
 
   // (JobsPage pins English)
   const { t, at } = scoped();
@@ -30,8 +42,8 @@
   const age = $derived(last ? agoOf(last.t, now) : h.next !== undefined ? t('jobs.row.first', { at: at(() => timeOf(h.next!, now)) }) : null);
   const cells = $derived(runCells(row, now));
   const github = $derived(JOBS.find((j) => j.id === row.id)?.group === 'github');
-  const why = $derived(t(`jobs.why.${h.why}`));
-  const label = $derived([name, why, last && age ? t('jobs.row.last', { ago: age }) : (age ?? t('jobs.row.never'))].join(', '));
+  const why = $derived(whyOf(h));
+  const label = $derived([name, why.word, why.pauses ?? '', issue ? t('jobs.flake') : '', last && age ? t('jobs.row.last', { ago: age }) : (age ?? t('jobs.row.never'))].filter(Boolean).join(', '));
 </script>
 
 <li class="job" class:open data-jobs-row={row.id} data-jobs-tone={h.tone} data-jobs-why={h.why}>
@@ -42,7 +54,7 @@
       <span class="age" data-jobs-age>{age ?? t('jobs.row.never')}</span>
       <span class="chev" aria-hidden="true"></span>
     </span>
-    <span class="l2"><span>{t(`jobs.when.${row.id}`)}</span>{#if h.why !== 'ok' && h.why !== 'first'}<span class="why {h.why === 'recovered' ? 'back' : h.tone}" data-jobs-why-word>{why}</span>{/if}</span>
+    <span class="l2"><span>{t(`jobs.when.${row.id}`)}</span>{#if h.why !== 'ok' && h.why !== 'first'}<span class="why {h.why === 'recovered' ? 'back' : h.tone}" data-jobs-why-word>{why.word}</span>{/if}{#if why.pauses}<span class="why warn" data-jobs-pauses>{why.pauses}</span>{/if}{#if issue}<span class="why warn" data-jobs-flake>{t('jobs.flake')}</span>{/if}</span>
     <span class="strip" aria-hidden="true" data-jobs-strip>{#each cells as c (c.start)}<i class="cell {c.state}" data-jobs-cell={c.state}></i>{/each}</span>
   </button>
   {#if open}
@@ -91,7 +103,10 @@
       {#if menu}
         <div class="links">{#each menu.links as l (l.id)}<a class="btn small paper" href={l.href} target="_blank" rel="noopener noreferrer" data-sfx="open" data-jobs-link={l.id}>{t(LINK[l.id])}</a>{/each}</div>
       {:else if github}
-        <a class="btn small paper" href={workflowUrl(row.id)} target="_blank" rel="noopener noreferrer" data-sfx="open" data-jobs-open>{t('jobs.d.open')}</a>
+        <div class="links">
+          {#if issue}<a class="btn small paper" href={issue} target="_blank" rel="noopener noreferrer" data-sfx="open" data-jobs-link="flake">{t('jobs.flakeLink')}</a>{/if}
+          <a class="btn small paper" href={workflowUrl(row.id)} target="_blank" rel="noopener noreferrer" data-sfx="open" data-jobs-open>{t('jobs.d.open')}</a>
+        </div>
       {:else if row.id === 'gym'}
         <button type="button" class="btn small paper" data-sfx="tick" data-jobs-gym onclick={() => onopen('gym')}>{t('jobs.d.gym')}</button>
       {/if}

@@ -98,7 +98,7 @@ the record 1.69M, the TEST copy's smokes 1.43M (it shares the account's quota). 
   its window: keep `--since` at a day unless the question needs more (`logs` refuses past SCAN_MAX without `--force`).
 - The test copy is for a few rows: no load tests, no repeated full snapshots or dumps against it.
 - Daily per object: the GraphQL query above (wrangler's login has analytics read: never print its token). At a
-  glance: ボット → Jobs → **Cloudflare free tier** (the same query, by the relay with `CF_ANALYTICS_TOKEN`, 10 min
+  glance: ボット → Jobs → **Daily limits (Cloudflare)** (the same query, by the relay with `CF_ANALYTICS_TOKEN`, 10 min
   cached, no DO rows; amber from 60 %, red and 「!」 from 85 %: [bots.md](../bots.md)).
 
 ### Request budget

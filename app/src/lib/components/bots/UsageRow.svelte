@@ -2,14 +2,16 @@
   // A Cloudflare free-tier row (JobsPage's section, docs/bots.md "Jobs"; English, as the page): one button the card's
   // width, as JobRow's: the dot (green under 60 %, yuzu from it, coral from 85 %: status.ts usageTone; a sunk disc for
   // a reading from an earlier UTC day), the limit's name, 「325k / 5M · 7%」 at the right, then a bar of the share used.
-  // A tap unfolds what the limit is, who used it (a Worker or a Durable Object class, the most first) and when it was
+  // A tap unfolds what the limit is in plain words (the app stops at 100 %), who used it (a Worker or a Durable Object class, the most first) and when it was
   // read.
   import { scoped } from '#lib/i18n/index.ts';
   import type { UsageRowView } from '#lib/jobs/status.ts';
   import Phrases from '../ui/Phrases.svelte';
   import StatusDot from './StatusDot.svelte';
 
-  let { row, asOf, open, ontoggle }: { row: UsageRowView; asOf: string | null; open: boolean; ontoggle: () => void } = $props();
+  /** `copy`: Needs you's (its ids `n-`-prefixed, 「Cloudflare daily limit」 under its name: out of its section). */
+  let { row, asOf, copy = false, open, ontoggle }: { row: UsageRowView; asOf: string | null; copy?: boolean; open: boolean; ontoggle: () => void } = $props();
+  const idp = $derived(copy ? 'n-' : '');
 
   // (JobsPage pins English)
   const { t } = scoped();
@@ -17,18 +19,19 @@
 </script>
 
 <li class="job cf" class:open data-jobs-cf={row.k} data-jobs-tone={row.tone}>
-  <button type="button" class="head" aria-expanded={open} aria-controls="jobs-d-cf-{row.k}" aria-label={label} data-sfx="tick" onclick={ontoggle}>
+  <button type="button" class="head" aria-expanded={open} aria-controls="jobs-d-{idp}cf-{row.k}" aria-label={label} data-sfx="tick" onclick={ontoggle}>
     <span class="l1">
       <StatusDot tone={row.tone} size={10} />
       <b class="name">{row.name}</b>
       <span class="age" data-jobs-cf-of>{row.of}<b class="pct {row.tone}" data-jobs-cf-pct>{row.pct}</b></span>
       <span class="chev" aria-hidden="true"></span>
     </span>
+    {#if copy}<span class="l2" data-jobs-cf-kind>{t('jobs.cf.kind')}</span>{/if}
     <span class="bar" aria-hidden="true"><i class="fill {row.tone}" style:width="{Math.max(row.share > 0 ? 1.5 : 0, row.share * 100)}%"></i></span>
   </button>
   {#if open}
-    <div class="detail" id="jobs-d-cf-{row.k}" data-jobs-detail="cf-{row.k}">
-      <p class="about"><Phrases text={t('jobs.cf.about')} /></p>
+    <div class="detail" id="jobs-d-{idp}cf-{row.k}" data-jobs-detail="cf-{row.k}">
+      <p class="about"><Phrases text={t(`jobs.cf.about.${row.k}`)} /></p>
       <dl class="kv">
         {#each row.by as b (b.name)}<div data-jobs-cf-by={b.name}><dt>{b.name}</dt><dd>{b.n} · {b.pct}</dd></div>{/each}
         {#if asOf}<div data-jobs-cf-read><dt>{t('jobs.cf.read')}</dt><dd>{asOf}</dd></div>{/if}
@@ -53,6 +56,7 @@
   .l1 .chev { margin-right: 0; }
   .open .l1 .chev { rotate: 225deg; margin-top: 4px; }
 
+  .l2 { padding-left: 18px; font: 700 var(--fs-s)/1.3 var(--font-ui); color: var(--text-soft); }
   .bar { display: block; height: 8px; margin: 0 0 2px 18px; border-radius: 4px; background: var(--ctl-off); box-shadow: inset 0 0 0 1px var(--edge); overflow: hidden; }
   .fill { display: block; height: 100%; border-radius: 4px; box-shadow: inset 0 0 0 1px var(--edge); }
   .fill.good { background: var(--c-leaf); }

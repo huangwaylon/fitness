@@ -1,4 +1,4 @@
-// The Kalori scraper's status as ボット › Jobs' Menu update row reads it (status.ts): the file checked (unknown fields and
+// The Kalori scraper's status as ボット › Jobs' Chain menus row reads it (status.ts): the file checked (unknown fields and
 // codes tolerated), every verdict's words (English only, as the Jobs page: i18n/kalori.ts; the page pins English for the
 // shared parts, the dates and durations, as these tests do), late by the phone's clock, the dot, the facts, the alert
 // card, Last 8 weeks' cells and the latest update's bar.
