@@ -1,4 +1,4 @@
-// Google's place kinds (the vendored details' `kind`: ラーメン屋, 仏教寺院, ハイキング コース…) as 保存した場所 reads them
+// Google's place kinds (the details' `kind`: ラーメン屋, 仏教寺院, ハイキング コース…) as 保存した場所 reads them
 // (docs/places.md "Categories"): each one's top and sub in the contract's taxonomy (contract/places.ts PLACE_CATS),
 // whether it overrides the relay's pair (hard: a cuisine, a shrine, a peak, a station) or only fills an empty sub or an
 // その他 top (soft: カフェ・喫茶, レストラン, ホテル…), and the words a search finds it by: the kind itself, its Japanese

@@ -2,8 +2,8 @@
 // shared Google Maps list (wrangler.toml PLACES_LIST) read into the record's `places` table, each place categorised
 // once (rules, then Workers AI), and served as `GET /places` (a columnar payload, deltas by version) and `GET
 // /places/status`. The list comes only from places-pull.yml on GitHub's runners (admin places_ingest: Google
-// /sorry-blocks Cloudflare); the cron's tick (storeObject.ts placesTick) only categorises. Hours, websites: the app's
-// vendored details (app/src/lib/places/vendored.ts), not the relay's.
+// /sorry-blocks Cloudflare); the cron's tick (storeObject.ts placesTick) only categorises. Hours, websites, photos:
+// Google's details on each place (DET_COLS, admin places_details from places-details.yml).
 // Free of the Workers runtime (test/places.test.ts). The list's contents are logged nowhere: counts and classes only.
 import type { Sql } from './store.ts';
 import { corsOf, bearerOf } from './auth.ts';
@@ -17,7 +17,7 @@ import {
 
 // ---------------------------------------------------------------- the list
 
-/** A places_details call's rows at most (the daily run's ~80 in one; the seed in calls of this many). */
+/** A places_details call's rows at most (the daily run's up to 280 in one). */
 export const DET_BATCH = 400;
 
 /** The list's newest this many, every cron tick. */
@@ -533,8 +533,8 @@ export class PlacesCore {
       .toArray().map((r) => [r.id, r.lat, r.lng, r.added, r.det_at ?? 0, r.nh ? 1 : 0, r.category ?? '', r.pn ?? 0, r.opens ?? 0]);
   }
 
-  /** The admin's `places_details {rows: [[id, det | null, pics?], …]}` (the daily scrape's, record.ts places-details;
-   *  the seed's): each a look-up's outcome. A det (checked: placeDetOf; its photo count from the links) and links
+  /** The admin's `places_details {rows: [[id, det | null, pics?], …]}` (the daily scrape's, record.ts places-details):
+   *  each a look-up's outcome. A det (checked: placeDetOf; its photo count from the links) and links
    *  (lh3 tokens, ≤ PICS_MAX) replace the place's when they differ (a new version: the phones get the row in their
    *  delta); null is a miss (a page gone stale): the details kept. Either way `det_at` is now (the queue's order).
    *  A place gone or unknown is skipped. Counts only answered. */

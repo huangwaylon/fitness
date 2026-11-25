@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { CAP, OLD_PICS, PICS_BEFORE, pickDetails, pickNoHours, REDO_BEFORE, REDO_CAP, SLICE, type LiveId } from './refresh.ts';
+import { CAP, DAY_S, dueToday, OLD_PICS, PICS_BEFORE, pickDetails, pickNoHours, REDO_BEFORE, REDO_CAP, SLICE, type LiveId } from './refresh.ts';
 
 const DAY = 86_400;
 const NOW = 1_795_400_000;
@@ -90,5 +90,32 @@ describe('the photo backfill (looked up before PICS_BEFORE with the old cap’s 
     const done = [p(3, OLD_PICS, 0, PICS_BEFORE + 1), p(4, 10, 9, PICS_BEFORE + 1), p(5, 1, 0)];
     expect(pickDetails(done, o).refresh).toHaveLength(done.length);
     expect(pickDetails(Array.from({ length: 100 }, (_, i) => p(i, 1)), o).refresh).toHaveLength(SLICE);
+  });
+});
+
+describe('dueToday (the daily run’s guard: skip only with a run’s worth looked up in the last 20 h)', () => {
+  const o = { redoBefore: REDO_BEFORE, picsBefore: PICS_BEFORE, cap: CAP };
+  const T = PICS_BEFORE + 30 * DAY; // past the redo's cutoffs
+  /** n places looked up at `at`, the rest of 200 a week before. */
+  const live = (n: number, at: number, old = T - 7 * DAY): LiveId[] => Array.from({ length: 200 }, (_, i) => place(i, i < n ? at : old));
+  it('a full run within 20 h: skip; none, a few before /sorry, or one past 20 h: run', () => {
+    expect(dueToday(live(SLICE, T - 3600), T, o)).toMatchObject({ skip: true, recent: SLICE, quota: SLICE, ageH: 1 });
+    expect(dueToday(live(0, 0), T, o)).toMatchObject({ skip: false, recent: 0, ageH: 168 });
+    expect(dueToday(live(5, T - 3600), T, o)).toMatchObject({ skip: false, recent: 5 });
+    expect(dueToday(live(SLICE, T - DAY_S - 1), T, o).skip).toBe(false);
+    // a few pages failing (unstamped) still counts as the run
+    expect(dueToday(live(Math.ceil(SLICE * 0.75), T - 3600), T, o).skip).toBe(true);
+  });
+  it('the 11-25 stall: a short manual run 17 h before and the redo waiting: run (the redo’s REDO_CAP is the quota)', () => {
+    const ps = [...live(40, T - 17 * 3600), ...Array.from({ length: 400 }, (_, i) => [String(5_000_000_000_000 + i), 35.6, 139.7, T, REDO_BEFORE - 10] as LiveId)];
+    expect(dueToday(ps, T, o)).toMatchObject({ skip: false, recent: 40, quota: REDO_CAP, redo: 400 });
+    // the redo's day done (REDO_CAP looked up): skip
+    const done = [...ps.slice(0, 200), ...ps.slice(200).map((p, i) => (i < REDO_CAP ? ([p[0], p[1], p[2], p[3], T - 3600] as LiveId) : p))];
+    expect(dueToday(done, T, o).skip).toBe(true);
+  });
+  it('a small list or cap: the quota no more than the looked-up and the cap; an empty list runs (nothing to do)', () => {
+    expect(dueToday(Array.from({ length: 10 }, (_, i) => place(i, T - 3600)), T, o)).toMatchObject({ skip: true, quota: 10 });
+    expect(dueToday(live(8, T - 3600), T, { ...o, cap: 10 })).toMatchObject({ skip: true, quota: 10 });
+    expect(dueToday([], T, o).skip).toBe(false);
   });
 });

@@ -141,9 +141,8 @@ function walk(dir: string, out: string[] = []): string[] {
     if (statSync(p).isDirectory()) {
       // (トレイル's text is in the system fonts, its own look: docs/hiking.md)
       if (f !== 'fixtures' && f !== 'hiking') walk(p, out);
-    // (places-facets/descs: the vendored Google text packed for the search, static/places/'s own, unscanned; the kinds'
-    // and the gazetteer's names are chip labels: scanned)
-    } else if (/\.(svelte|ts|json)$/.test(f) && !/\.test\.ts$/.test(f) && !/^places-(facets|descs)\.json$/.test(f)) out.push(p);
+    // (the places' kinds' and gazetteer's names are chip labels: scanned)
+    } else if (/\.(svelte|ts|json)$/.test(f) && !/\.test\.ts$/.test(f)) out.push(p);
   }
   return out;
 }

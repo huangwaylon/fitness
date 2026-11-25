@@ -3,8 +3,8 @@
 // the photos, the tiles, the food images), else its files counted (their Content-Length, else their bodies: the
 // shells, the fonts, the audio, the food data); and each one's entries (`<field>N`), the shells kept (`shells`) and all
 // the entries (`ents`): a cold worker's first cache read grows with the origin's entries (review c1 r3 W1). The room's,
-// the art's, the tiles', the photos', ごはん's pictures' and 保存した場所's files are in IndexedDB (service-worker/blobCache.ts
-// STORES): their MB and entries under the store's name (`room`/`roomN` … `place`/`placeN`), not in `ents` (no Cache API
+// the art's, the tiles', the photos', ごはん's pictures' and 保存した場所's photos are in IndexedDB (service-worker/blobCache.ts
+// STORES): their MB and entries under the store's name (`room`/`roomN` … `placePic`/`placePicN`), not in `ents` (no Cache API
 // entry). Loaded only
 // then (not in the first load). Never rejects: a cache it can't read is left out.
 import { blobCache, STORES, type FileStore, type StoreName } from '../../service-worker/blobCache.ts';

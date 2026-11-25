@@ -22,6 +22,27 @@ describe("the room's and the art's files in IndexedDB (blobCache.ts)", () => {
     expect(await room.match(U)).toBeUndefined();
   });
 
+  it("V 4 drops a store no longer listed (the vendored places' `place`), the others' files kept", async () => {
+    const idb = new IDBFactory();
+    await new Promise<void>((ok, no) => {
+      const r = idb.open('island-files', 3);
+      r.onupgradeneeded = () => ['room', 'art', 'tiles', 'photos', 'foodImg', 'place', 'placePic'].forEach((s) => r.result.createObjectStore(s));
+      r.onsuccess = () => {
+        const t = r.result.transaction('room', 'readwrite');
+        t.objectStore('room').put({ b: new Blob(['r']), t: '', s: 200 }, U);
+        t.oncomplete = () => (r.result.close(), ok());
+      };
+      r.onerror = () => no(r.error);
+    });
+    configureFiles(idb);
+    expect(await (await blobCache('room').match(U))!.text()).toBe('r');
+    const names = await new Promise<string[]>((ok) => {
+      const r = idb.open('island-files');
+      r.onsuccess = () => (ok(Array.from(r.result.objectStoreNames)), r.result.close());
+    });
+    expect(names.sort()).toEqual(['art', 'foodImg', 'photos', 'placePic', 'room', 'tiles']);
+  });
+
   it("keeps our own headers (a tile's stored-at stamp), never a host's", async () => {
     const tiles = blobCache('tiles');
     await tiles.put(U, new Response('t', { headers: { 'content-type': 'application/x-protobuf', 'x-island-stored': '123', etag: 'abc' } }));

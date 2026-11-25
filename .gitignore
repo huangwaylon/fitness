@@ -10,7 +10,7 @@ food-data/raw/
 food-data/out/
 food-data/.build-*/
 food-data/**/__pycache__/
-# the saved-places scrape's staging (raw Google data; app/static/places/ ships the packed whitelist)
+# the retired saved-places scrape's staging (raw Google data, never committed)
 app/scripts/data/places-raw/
 # agents' worktrees and local settings (git worktree add .claude/worktrees/…): never committed
 .claude/

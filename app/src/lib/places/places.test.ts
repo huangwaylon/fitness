@@ -199,7 +199,7 @@ describe('the search', () => {
     place({ name: '喫茶ランプ', cat: 'カフェ', sub: '喫茶店', hours: null, note: 'ラーメンの後に', lat: 35.663, lng: 139.702, added: NOW / 1000 - 3600 }),
     place({ name: '高尾山', cat: '自然・登山', sub: '山', addr: '東京都八王子市高尾町', lat: 35.625, lng: 139.243 })
   ];
-  // (the hours are the vendored facets' only: the relay's payload has none since 2026-11-24)
+  // (the hours are the details' only: the relay's payload has none since 2026-11-24)
   const ix = buildIndex(rows, detTables(Object.fromEntries(rows.map((p) => [p.id, { at: NOW / 1000, hours: p.hours }]))).facets);
   const ctx: Ctx = { now: NOW, me: null, view: [139.70, 35.66], sort: 'near' };
   const names = (chips: Chip[], text = '', c: Partial<Ctx> = {}) => search(ix, chips, text, { ...ctx, ...c }).list.map((i) => ix.entries[i].p.name);
@@ -384,13 +384,13 @@ describe('the search, v2: facets, descriptions, the new chips, ignored words, re
     const s = search(ix, r.chips, r.text, { ...ctx, ...c });
     return { ids: s.list.map((i) => ix.entries[i].p.id), s };
   };
-  it('the vendored hours, never the payload’s (a relay row’s are ignored); the rating, its count and the prior', () => {
+  it('the details’ hours, never the payload’s (a relay row’s are ignored); the rating, its count and the prior', () => {
     const e = ix.entries[0];
     expect(e.hours).toHaveLength(7);
     expect([e.kind, e.r, e.rn]).toEqual(['ラーメン屋', 4.6, 900]);
     expect(ix.entries[1].q).toBeLessThan(ix.entries[4].q); // 4.8 from 3 < 4.5 from 400
     expect(find('営業中').ids).toEqual(['1', '5', '4']); // 12:00 Tokyo (Paris 04:00)
-    // no vendored hours: unknown (営業時間は不明), never open in a chip, whatever the row says
+    // no hours in the details: unknown (営業時間は不明), never open in a chip, whatever the row says
     expect(ix.entries[2].hours).toBeNull();
     expect(hoursLine(hoursNow(ix.entries[2].hours, 'Asia/Ho_Chi_Minh', NOW), 'ja').text).toBe('営業時間は不明');
     expect(find('今日営業').ids).toEqual(expect.arrayContaining(['1', '5', '4']));

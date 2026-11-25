@@ -219,7 +219,7 @@ describe('the payload', () => {
     // newest added first, the uncategorised as その他
     expect(m.cols.added).toEqual([...m.cols.added].sort((a, b) => b - a));
     expect(new Set(m.cols.cat)).toEqual(new Set(['その他']));
-    // no hours, no website (the vendored details'), the columns kept for older builds' check
+    // no hours, no website (the details'), the columns kept for older builds' check
     expect([new Set(m.cols.hours), new Set(m.cols.web), m.cols.hours.length]).toEqual([new Set([null]), new Set(['']), m.n]);
     expect(placesPayloadOf(JSON.parse(JSON.stringify(m)))).not.toBeNull();
   });

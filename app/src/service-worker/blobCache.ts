@@ -17,13 +17,13 @@ export interface FileStore {
   keys(): Promise<readonly { url: string }[]>;
 }
 
-const DB = 'island-files', V = 3;
+const DB = 'island-files', V = 4;
 /** The stores: the room's files (ROOM_CACHE's before), the art's (the villagers' cache's before); since 11-24 (V 2) the
- *  maps' seen tiles (TILE_CACHE's), the guides' photos (PHOTO_CACHE's), ごはん's pictures (FOOD_IMG_CACHE's) and
- *  保存した場所's files (PLACE_CACHE's): ~700 more entries out of the Cache API (storage.use tilesN ~300, foodImgN
- *  120-270, the places' ~200, photosN ~50); since 11-24 (V 3) 保存した場所's Google photos (isPlacePic) in a store of their
- *  own, `placePic`, bounded on its own (placePicEvict): up to 10 a place no longer pushes the vendored sheets out. */
-export const STORES = ['room', 'art', 'tiles', 'photos', 'foodImg', 'place', 'placePic'] as const;
+ *  maps' seen tiles (TILE_CACHE's), the guides' photos (PHOTO_CACHE's) and ごはん's pictures (FOOD_IMG_CACHE's): ~500
+ *  more entries out of the Cache API (storage.use tilesN ~300, foodImgN 120-270, photosN ~50); since 11-24 (V 3)
+ *  保存した場所's Google photos (isPlacePic), `placePic`, bounded on their own (placePicEvict). V 4 (11-25) drops a store
+ *  no longer listed (`place`: the retired vendored places' shards and sheets, ~8 MB a phone). */
+export const STORES = ['room', 'art', 'tiles', 'photos', 'foodImg', 'placePic'] as const;
 export type StoreName = (typeof STORES)[number];
 
 /** A file: its body, type and status, and our own headers (`h`, `x-island-*`, since V 2: the tiles' and photos'
@@ -48,7 +48,11 @@ function open(): Promise<IDBDatabase | null> {
     if (!factory) return ok(null);
     try {
       const r = factory.open(DB, V);
-      r.onupgradeneeded = () => STORES.forEach((s) => r.result.objectStoreNames.contains(s) || r.result.createObjectStore(s));
+      r.onupgradeneeded = () => {
+        const d = r.result;
+        for (const s of Array.from(d.objectStoreNames)) if (!(STORES as readonly string[]).includes(s)) d.deleteObjectStore(s);
+        STORES.forEach((s) => d.objectStoreNames.contains(s) || d.createObjectStore(s));
+      };
       r.onsuccess = () => {
         const d = r.result;
         d.onversionchange = () => (d.close(), (db = null));

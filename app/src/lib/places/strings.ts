@@ -107,7 +107,7 @@ export function hoursLine(h: HoursNow, L: Locale): { text: string; tone: 'open' 
   }
 }
 
-/** The vendored rating on the card's sub line: 「★ 4.3 · 532,794件」 (one decimal, the count grouped). */
+/** Google's rating on the card's sub line: 「★ 4.3 · 532,794件」 (one decimal, the count grouped). */
 export function ratingText(r: number, rn: number, L: Locale): string {
   const n = rn.toLocaleString(L === 'ja' ? 'ja-JP' : 'en-US');
   return L === 'ja' ? `★ ${r.toFixed(1)} · ${n}件` : `★ ${r.toFixed(1)} · ${n} reviews`;

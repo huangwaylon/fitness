@@ -9,7 +9,7 @@ import { blobCache, moveCache, type FileStore } from './blobCache.ts';
 import { fetchWithin, netOrSaved } from './netFallback.ts';
 import { swCounter, SW_COUNTS_CACHE } from './counts.ts';
 import { isOwnPhotoUrl, OWN_PHOTO_CACHE, OWN_PHOTO_PENDING, ownPhotoEvict, ownPhotoFetch } from './caches.ts';
-import { artEvict, foodImgEvict, fetchKeep, MAP_META_CACHE, PHOTO_CACHE, PHOTO_CAP_BYTES, PHOTO_FRESH_MS, TILE_CACHE, TILE_CAP_BYTES, TILE_CAP_N, TILE_FRESH_MS, LIVE_KEY, liveShells, bytesEvict, carried, isSavedArea, SAVE_HEADER, saveFetch, savedTile, carryPlan, isGuidePhoto, isTileJson, swrFetch, tileJsonFetch, tileKey, AUDIO_CACHE, FOOD_CACHE, FOOD_IMG_CACHE, foodImgFetch, ENGLISH_CACHE, englishFetch, isEnglishData, isFoodImg, PLACE_CACHE, placeFetch, placeImgEvict, placePicEvict, offlineMiss, isPlaceData, isPlaceImg, isPlacePic, placePicFetch, ROOM_CACHE, ROOM_INDEX, SHELL, foodFetch, roomEvict, roomFiles, type RoomIndex, isAudio, isShellOf, fetchShared, staleFonts, isFoodData, isCritterArt, isDecorArt, isFont, isRoomAsset, isVillagerArt, installStatics, copyChunks, dedupeShells, keepShell, marked, netLog, type Steps, checkShell, checkLog, CHECK_MS, type Checked, freshNow, fromOlder, FRESH_KEY, STATIC_HASHES, type StaticFile, lruEvict, olderShells, precachable, staleCaches, staleUse, warmable } from './caches.ts';
+import { artEvict, foodImgEvict, fetchKeep, MAP_META_CACHE, PHOTO_CACHE, PHOTO_CAP_BYTES, PHOTO_FRESH_MS, TILE_CACHE, TILE_CAP_BYTES, TILE_CAP_N, TILE_FRESH_MS, LIVE_KEY, liveShells, bytesEvict, carried, isSavedArea, SAVE_HEADER, saveFetch, savedTile, carryPlan, isGuidePhoto, isTileJson, swrFetch, tileJsonFetch, tileKey, AUDIO_CACHE, FOOD_CACHE, FOOD_IMG_CACHE, foodImgFetch, ENGLISH_CACHE, englishFetch, isEnglishData, isFoodImg, placePicEvict, offlineMiss, isPlacePic, placePicFetch, ROOM_CACHE, ROOM_INDEX, SHELL, foodFetch, roomEvict, roomFiles, type RoomIndex, isAudio, isShellOf, fetchShared, staleFonts, isFoodData, isCritterArt, isDecorArt, isFont, isRoomAsset, isVillagerArt, installStatics, copyChunks, dedupeShells, keepShell, marked, netLog, type Steps, checkShell, checkLog, CHECK_MS, type Checked, freshNow, fromOlder, FRESH_KEY, STATIC_HASHES, type StaticFile, lruEvict, olderShells, precachable, staleCaches, staleUse, warmable } from './caches.ts';
 
 /** When this worker started (a navigation's fetch event within WORKER_COLD_MS of it: the worker was started for it). */
 const UP_AT = Date.now(), WORKER_COLD_MS = 1000;
@@ -104,7 +104,7 @@ self.addEventListener('install', (event) => {
 self.addEventListener('activate', (event) => {
   const done = (async () => {
     const keys = await caches.keys();
-    for (const key of staleCaches(keys, CACHE, [FONTS, VILLAGERS, AUDIO_CACHE, ROOM_CACHE, FOOD_CACHE, FOOD_IMG_CACHE, ENGLISH_CACHE, PLACE_CACHE, PHOTO_CACHE, TILE_CACHE, MAP_META_CACHE, OWN_PHOTO_CACHE, OWN_PHOTO_PENDING, SW_COUNTS_CACHE], await openShells(keys))) await caches.delete(key); // (never a saved area: caches.ts isSavedArea; the retired ききみみ's island-listen-v1 goes here too)
+    for (const key of staleCaches(keys, CACHE, [FONTS, VILLAGERS, AUDIO_CACHE, ROOM_CACHE, FOOD_CACHE, FOOD_IMG_CACHE, ENGLISH_CACHE, PHOTO_CACHE, TILE_CACHE, MAP_META_CACHE, OWN_PHOTO_CACHE, OWN_PHOTO_PENDING, SW_COUNTS_CACHE], await openShells(keys))) await caches.delete(key); // (never a saved area: caches.ts isSavedArea; retired ones go here too: ききみみ's island-listen-v1, the vendored places' island-place-v1)
     await self.clients.claim();
     // the navigations' network answer asked as each starts (the launch's race: fetch below), not once this worker is up
     await self.registration.navigationPreload?.enable().catch(() => {});
@@ -172,16 +172,15 @@ async function oldMatch(name: string, req: Request | string): Promise<Response |
   if (!had) legacy.set(name, (had = caches.has(name).catch(() => false)));
   return (await had) ? (await caches.open(name)).match(req) : undefined;
 }
-/** The tiles', the photos', ごはん's pictures' and 保存した場所's files: in IndexedDB too since 11-24 (~700 entries
+/** The tiles', the photos' and ごはん's pictures: in IndexedDB too since 11-24 (~500 entries
  *  more), each answered from its old Cache API cache while its move isn't over. */
 const moving = (to: FileStore, name: string): FileStore => ({ ...to, match: async (r) => (await to.match(r)) ?? (await oldMatch(name, typeof r === 'string' || r instanceof Request ? r : r.href)) });
 const TILE_FILES = moving(blobCache('tiles'), TILE_CACHE), PHOTO_FILES = moving(blobCache('photos'), PHOTO_CACHE);
-const FOOD_IMG_FILES = moving(blobCache('foodImg'), FOOD_IMG_CACHE), PLACE_FILES = moving(blobCache('place'), PLACE_CACHE);
-/** 保存した場所's Google photos: a store of their own (no Cache API cache before it; the ones the place store kept go
- *  from there: placeImgEvict). */
+const FOOD_IMG_FILES = moving(blobCache('foodImg'), FOOD_IMG_CACHE);
+/** 保存した場所's Google photos: a store of their own (no Cache API cache before it). */
 const PLACE_PIC_FILES = blobCache('placePic');
 void launchEnd.then(async () => {
-  for (const [name, to] of [[ROOM_CACHE, ROOM_FILES], [VILLAGERS, ART_FILES], [TILE_CACHE, TILE_FILES], [PHOTO_CACHE, PHOTO_FILES], [FOOD_IMG_CACHE, FOOD_IMG_FILES], [PLACE_CACHE, PLACE_FILES]] as const) {
+  for (const [name, to] of [[ROOM_CACHE, ROOM_FILES], [VILLAGERS, ART_FILES], [TILE_CACHE, TILE_FILES], [PHOTO_CACHE, PHOTO_FILES], [FOOD_IMG_CACHE, FOOD_IMG_FILES]] as const) {
     await moveCache(name, to).catch(() => {});
     if (!(await caches.has(name).catch(() => true))) legacy.set(name, Promise.resolve(false));
   }
@@ -194,7 +193,6 @@ const photoUsed = boundedCache(PHOTO_FILES, '__photo-index', (idx, now) => bytes
 const tileUsed = boundedCache(TILE_FILES, '__tile-index', (idx, now) => bytesEvict(idx, now, TILE_CAP_BYTES, 0, TILE_CAP_N));
 const artUsed = boundedCache(ART_FILES, '__art-index', (idx, now) => artEvict(idx, now));
 const foodImgUsed = boundedCache(FOOD_IMG_FILES, '__food-img-index', (idx, now) => foodImgEvict(idx, now));
-const placeImgUsed = boundedCache(PLACE_FILES, '__place-img-index', (idx, now) => placeImgEvict(idx, now));
 const placePicUsed = boundedCache(PLACE_PIC_FILES, '__place-pic-index', (idx, now) => placePicEvict(idx, now));
 const ownPhotoUsed = boundedCache(OWN_PHOTO_CACHE, '__own-photo-index', (idx) => ownPhotoEvict(idx));
 
@@ -444,15 +442,6 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // 保存した場所's vendored details and photos (caches.ts PLACE_CACHE, placeFetch): a hash-named shard or sheet from
-  // the cache, else the network (stored after), the sheets bounded (placeImgEvict); index.json from the network
-  // within 2.5 s, else its last copy, a fresh one dropping the files it no longer names
-  if (isPlaceData(url.pathname) || isPlaceImg(url.pathname)) {
-    const used = (u: string, n?: number) => event.waitUntil(placeImgUsed(u, n).catch(() => {}));
-    event.respondWith(placeFetch(req, PLACE_FILES, (r) => fetch(r, r.url.endsWith('.webp') ? undefined : { cache: 'no-cache' }), (p) => event.waitUntil(p), undefined, used));
-    return;
-  }
-
   // the guides' photos (a trip's cover precached) and the wedding's banner: kept once seen, revalidated in the background
   // after a day; none kept and no network, a saved area's copy (a trail's net file: lib/offline/save.ts)
   if (isGuidePhoto(url.pathname)) {
@@ -563,7 +552,7 @@ self.addEventListener('message', (event) => {
   // (the launch's hold over first: the bound applied by then too)
   if (d?.k === 'flush') {
     endLaunch();
-    event.waitUntil(new Promise((ok) => setTimeout(ok, 0)).then(() => Promise.all([roomUsed, photoUsed, tileUsed, artUsed, foodImgUsed, placeImgUsed, placePicUsed, ownPhotoUsed].map((u) => u.pending()))).then(() => (event.source as Client | null)?.postMessage({ k: 'flushed' })));
+    event.waitUntil(new Promise((ok) => setTimeout(ok, 0)).then(() => Promise.all([roomUsed, photoUsed, tileUsed, artUsed, foodImgUsed, placePicUsed, ownPhotoUsed].map((u) => u.pending()))).then(() => (event.source as Client | null)?.postMessage({ k: 'flushed' })));
     return;
   }
   // the log's counters (counts.ts), taken by a page (sync/log.ts swCounts) and gone from here

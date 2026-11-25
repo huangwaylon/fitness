@@ -285,7 +285,7 @@ test('the sheet: a swipe up on the peek’s rows raises it (no row opened), a ta
   await openPlaces(page, how);
   await expect(view(page)).toHaveAttribute('data-sheet', 'peek');
   const swipe = async (dy: number, from = rows(page).first()) => {
-    // (the sheet's height settled first: the vendored hold released AND its collapse tween done — settle() sees the
+    // (the sheet's height settled first: the hold released AND its collapse tween done — settle() sees the
     // Web Animations; the old CSSTransition-only wait saw neither, and the grip moved mid-swipe)
     await expect(view(page).locator('.band-hold')).toHaveCount(0);
     await settle(page);

@@ -5,7 +5,7 @@
 // ≤ PRECACHE. Bytes only, no timing (docs/ops/testing.md): deterministic per build. Over one, the build fails: make
 // what grew lazy, or raise the cap here with the reason.
 //   node scripts/load-budget.ts
-import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
+import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { gzipSync } from 'node:zlib';
 import { precachable } from '../src/service-worker/caches.ts';
@@ -120,9 +120,9 @@ for (const src of LAZY_SOURCES) {
 }
 for (const f of first) if (/\/maplibre\./.test(f)) fail.push(`${f} (MapLibre) is in the first load`);
 // nor the maps' data (vite.config.ts names every map engine's chunk maplibre.*, above): by what only it holds, the
-// places' store (its '/places/sync'), the vendored details' loader ('places/index.json') and the basemap's style (its
-// tile host); chunks shared with the island would carry them in unnamed
-for (const [what, mark] of [["the places' store", '/places/sync'], ["the vendored details' loader", 'places/index.json'], ["the basemap's style", 'tiles.openfreemap.org']]) {
+// places' store (its '/places/sync') and the basemap's style (its tile host); chunks shared with the island would
+// carry them in unnamed
+for (const [what, mark] of [["the places' store", '/places/sync'], ["the basemap's style", 'tiles.openfreemap.org']]) {
   for (const f of first) if (f.endsWith('.js') && readFileSync(join(BUILD, f), 'utf8').includes(mark)) fail.push(`${f} (${what}) is in the first load`);
 }
 // /s's map (MapPane, lazy) never holds the places' store (TripView hands it the saved places' layer; its fetch's
@@ -155,24 +155,6 @@ const englishSheet = manifest['src/lib/english/components/EnglishSheet.svelte'];
 const englishGz = englishSheet ? gzipSync(readFileSync(join(BUILD, englishSheet.file))).length : 0;
 if (!englishSheet) fail.push('no English Study sheet chunk in the build');
 else if (englishGz > ENGLISH_SHEET) fail.push(`English Study's sheet chunk is ${kb(englishGz)} gzipped (≤ ${kb(ENGLISH_SHEET)}: its banks bundled?)`);
-
-// 保存した場所's vendored details and photos (static/places/, scripts/places-details.ts): fetched when a card opens,
-// never precached (caches.ts isPlaceData/isPlaceImg, the banks' rule); the index and each shard bounded gzipped.
-// Absent before the first scrape: the precachable assertions hold on the paths alone
-for (const p of ['places/index.json', 'places/d/0.00000000.json', 'places/img/c0.00000000.webp', 'places/img/t0.00000000.webp']) {
-  if (precachable(p)) fail.push(`${p} (a vendored place file) is precachable`);
-}
-const PLACES_INDEX = 32 * 1024;
-const PLACES_SHARD = 64 * 1024;
-if (existsSync(join(BUILD, 'places'))) {
-  const pidx = gzipSync(readFileSync(join(BUILD, 'places/index.json'))).length;
-  if (pidx > PLACES_INDEX) fail.push(`places/index.json is ${kb(pidx)} gzipped (≤ ${kb(PLACES_INDEX)})`);
-  for (const f of readdirSync(join(BUILD, 'places/d'))) {
-    const gz = gzipSync(readFileSync(join(BUILD, 'places/d', f))).length;
-    if (gz > PLACES_SHARD) fail.push(`places/d/${f} is ${kb(gz)} gzipped (≤ ${kb(PLACES_SHARD)})`);
-    if (precachable(`places/d/${f}`)) fail.push(`places/d/${f} (a places shard) is precachable`);
-  }
-}
 
 // 保存した場所's search lexicon (lib/places/facets.ts loadLexicon): kinds.ts's table and romaji.ts's gazetteer, as
 // hashed assets fetched when the sheet opens, never in the first load nor precached (caches.ts isFeatureChunk).

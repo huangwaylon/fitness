@@ -45,7 +45,7 @@
 //   places-ids <file>   the live places with a Google page into <file> as JSON ([id, lat, lng, added, last look-up]
 //                       rows: the details scrape's queue, places-details.yml), the count printed
 //   places-details <file>   the scrape's rows ([id, det, links] / [id, null] a miss: app/scripts/places-details.ts
-//                       daily, seed) into the record (admin places_details, 400 a call), the counts printed
+//                       daily) into the record (admin places_details, 400 a call), the counts printed
 //                       (signed with PLACES_KEY when it's in the environment: no member keys needed)
 // (the phones' and the relay's events: scripts/logs.ts, `npm run logs`)
 import { execFileSync } from 'node:child_process';

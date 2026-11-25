@@ -22,7 +22,7 @@ Relay deploy, e2e logic full = Full test run, e2e-flake-hunt.yml = Flaky-test hu
 | its-health.yml | `23,53 * * * *` | its-bot :15/:45 (15 min while booking) | /health/its | → `its-alert` |
 | its-runner.yml | `7,37 * * * *` | schedule; 開始, the watchdog | the booker | its-health's |
 | places-pull.yml | `23,53 * * * *` | its-bot :15/:45 | §9 the list | failed twice → `places-alert`; `placesH` ≥ 3 → `alert` |
-| places-details.yml | `41 19 * * *` | its-bot 03:30 | the details | failed, refused, none in 48 h → `places-alert` |
+| places-details.yml | `41 19 * * *` | its-bot 03:30 | the details (skips with a day's look-ups done) | failed, refused, none in 48 h → `places-alert` |
 | e2e-flake-hunt.yml | `30 19 * * *` | its-bot 04:30 | testing.md "CI" | failures, `hunt_broken` → `flake` |
 | kalori-scrape.yml | `41 17 * * 2` | Wed 02:41; its-bot if missed | §13 | status.json (Jobs' Chain menus) |
 | kalori-watch.yml | `29 */6 * * *` | schedule only | §13: late, stuck, the deploy | → `kalori-alert` |

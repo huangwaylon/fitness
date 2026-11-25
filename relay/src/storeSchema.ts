@@ -116,7 +116,7 @@ export const MIGRATIONS: readonly ((sql: Sql) => void)[] = [
     for (const q of LEDGER_TABLES) sql.exec(q);
   },
   // 11 (2026-11-24): 行きたい場所: Google's details on each place (places.ts DET_COLS: the daily scrape's, admin
-  // places_details), the vendored files' successor
+  // places_details)
   (sql) => addDetCols(sql),
   // 12 (2026-11-24): 行きたい場所: OpenStreetMap's columns dropped (places.ts dropOsmCols)
   (sql) => dropOsmCols(sql),

@@ -12,15 +12,16 @@ The menu's 地図 (`places` in `contract/menu.ts`): a full sheet in its own chun
 `lib/places/store.svelte.ts`: this phone's copy (IndexedDB `island-places`, `lib/places/cache.ts`), then `GET /places`
 with `?since=<ver>` deltas, at most once a minute and on coming back online; no timer (places-pull.yml refreshes the
 list). Offline: the copy, else LoadError. A coral dot when synced over 24 h ago. Logs never name a place.
-`static/places/` (`vendored.ts`): older vendored details and photos, read beside the relay's.
 
 ## Details
 
 On the relay (runbook §9): `det` in `GET /places` (`PlaceDet`), up to 10 photo tokens (`PICS_MAX`) from
 `GET /places/pics?id=`, which also counts the card's openings (`place_opens`, not dumped). Refreshed by
 `places-details.yml` daily (`app/scripts/places-details.ts daily`, picks by `lib/places/refresh.ts`: new first, then the
-oldest look-ups); counts only in the log. A one-time photo backfill (up to 10 a place) uses the 280-a-day redo slots,
-most-opened first (`place_opens`, relay migration 13); when done, `REDO_*` in `lib/places/refresh.ts` goes.
+oldest look-ups); counts only in the log. A run skips when the last 20 h already hold a run's worth of look-ups
+(`dueToday`), so a night the relay or Google refused is made up by the next trigger. A one-time photo backfill (up
+to 10 a place) uses the 280-a-day redo slots, most-opened first (`place_opens`, relay migration 13); when done,
+`REDO_*` in `lib/places/refresh.ts` goes.
 
 ## Screen
 
@@ -61,7 +62,7 @@ Past-midnight periods merge. A tap shows the week.
 (`PlacePhotos.svelte`: a scroll-snap strip, the first alone till it loads, then those in view plus one; a tap opens
 `PhotoViewer.svelte`), hours, the note (members only, edited in Google Maps), 経路, Googleマップ, コピー, 保存日.
 The service worker keeps the photos seen (lh3 `grass-cs/`) in their own IndexedDB store, `placePic`: 300 / 40 MB,
-least recently used out (`PLACE_PIC_CAP_N`), so they never push out the vendored sheets or other pictures; offline with
+least recently used out (`PLACE_PIC_CAP_N`), so they never push out other pictures; offline with
 none kept, a 504 (the placeholder).
 
 ## Categories

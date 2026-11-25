@@ -118,7 +118,7 @@ export interface Place {
   sub: string;
   /** When it was put on the list (epoch seconds). */
   added: number;
-  /** Always null now (the relay's OpenStreetMap hours, dropped 2026-11-24: the vendored details' instead); kept so older
+  /** Always null now (the relay's OpenStreetMap hours, dropped 2026-11-24: the details' `det` instead); kept so older
    *  builds' check (placesPayloadOf) still takes the payload. */
   hours: Period[] | null;
   /** Its IANA time zone (the hours' and openAt's). */

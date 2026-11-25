@@ -2,11 +2,14 @@
 # website, phone, rating, a line about it and its photo links, looked up on a GitHub runner (Google /sorry-blocks
 # Cloudflare) and handed to the relay, the details' only store. Once a day: its-bot dispatches it at 18:30 UTC (03:30
 # JST, away from places-pull.yml's :15/:45; its/worker/src/dispatch.ts), the schedule is the backstop, and a run
-# skips itself when the relay's newest look-up is under 20 h old (force: run anyway; missing_hours, a one-off: the places
-# whose details found no hours looked up again, lib/places/refresh.ts pickNoHours). A run: the queue (relay/scripts/record.ts places-ids: each place's last
-# look-up) → today's places (app/scripts/places-details.ts daily, lib/places/refresh.ts: the never looked up first,
-# then the 48 looked up longest ago, 80 at most (during refresh.ts's REDO, 280 of those looked up before it or holding the old 3-photo cap's 3, the most opened first); one Google request a place ~2 s apart; /sorry or 429 stops it, what
-# came is kept) → the relay (record.ts places-details: a changed place a new version, the phones' delta). The log
+# skips itself when the relay's last 20 h already hold a run's worth of look-ups (lib/places/refresh.ts dueToday: a
+# night the relay or Google refused leaves the day owed for the next trigger; force: run anyway; missing_hours, a
+# one-off: the places whose details found no hours looked up again, refresh.ts pickNoHours). A run: the queue
+# (relay/scripts/record.ts places-ids: each place's last look-up; tried 3 times, a relay blip isn't a lost day) →
+# today's places (app/scripts/places-details.ts daily, refresh.ts pickDetails: the never looked up first, then the 48
+# looked up longest ago, 80 at most; during refresh.ts's REDO, 280 of those looked up before it or holding the old
+# 3-photo cap's 3, the most opened first; one Google request a place ~2 s apart; /sorry or 429 stops it, what came is
+# kept) → the relay (record.ts places-details, tried 3 times: a changed place a new version, the phones' delta). The log
 # shows counts and HTTP codes only: the repo is public (never a place, an id, a key). RELAY_PLACES_KEY (the relay's
 # PLACES_KEY) signs the places ops only (relay/src/sign.ts PLACES_OPS). A failed run, or Google refusing the
 # look-ups with none done in 48 h, opens the `places-alert` issue (.github/scripts/ops-issue.sh).
@@ -19,7 +22,7 @@ on:
   workflow_dispatch:
     inputs:
       force:
-        description: 'Run even when a run looked places up in the last 20 h'
+        description: 'Run even when the last 20 h hold a run of look-ups'
         type: boolean
         default: false
       cap:
@@ -42,7 +45,7 @@ concurrency:
 jobs:
   details:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
     defaults:
       run:
         working-directory: relay
@@ -61,20 +64,21 @@ jobs:
           cache: npm
           cache-dependency-path: relay/package-lock.json
       - run: npm ci --ignore-scripts
-      # (the relay's own last look-ups, not a run's status: a run skipped or keyless counts for nothing)
-      - name: The queue, and a look-up within 20 h (skipped)
+      # (the relay's own look-ups, not a run's status: a run skipped, keyless, refused or cut short counts only for what
+      # it looked up)
+      - name: The queue, and today's look-ups done (skipped)
         id: queue
         env:
           PLACES_KEY: ${{ secrets.RELAY_PLACES_KEY }}
           FORCE: ${{ inputs.force || inputs.missing_hours }}
+          CAP: ${{ inputs.cap || 80 }}
         run: |
           if [ -z "$PLACES_KEY" ]; then echo "::warning::no RELAY_PLACES_KEY secret: nothing looked up"; echo "skip=1" >> "$GITHUB_OUTPUT"; exit 0; fi
-          node scripts/record.ts places-ids "$RUNNER_TEMP/ids.json"
-          newest=$(jq '[.[][4]] | max // 0' "$RUNNER_TEMP/ids.json")
-          h=$(( ($(date +%s) - newest) / 3600 ))
-          echo "the newest look-up $h h ago"
-          echo "ageH=$h" >> "$GITHUB_OUTPUT"
-          if [ "$FORCE" != true ] && [ "$h" -lt 20 ]; then echo "looked up within 20 h: skipped (force: run anyway)"; echo "skip=1" >> "$GITHUB_OUTPUT"; fi
+          for i in 1 2 3; do node scripts/record.ts places-ids "$RUNNER_TEMP/ids.json" && break; [ "$i" = 3 ] && exit 1; sleep 60; done
+          node ../app/scripts/places-details.ts due --ids "$RUNNER_TEMP/ids.json" --cap "$CAP" > "$RUNNER_TEMP/due"
+          cat "$RUNNER_TEMP/due"
+          grep '^ageH=' "$RUNNER_TEMP/due" >> "$GITHUB_OUTPUT"
+          if [ "$FORCE" != true ] && grep -q '^skip=1' "$RUNNER_TEMP/due"; then echo "today's look-ups done: skipped (force: run anyway)"; echo "skip=1" >> "$GITHUB_OUTPUT"; fi
       - name: Look up today's places, hand them to the relay
         id: look
         if: steps.queue.outputs.skip != '1'
@@ -87,7 +91,8 @@ jobs:
           node ../app/scripts/places-details.ts daily --ids "$RUNNER_TEMP/ids.json" --out "$RUNNER_TEMP/rows.json" --cap "$CAP" --minutes 15 ${MISSING_HOURS:+"$MISSING_HOURS"} || rc=$?
           # (3: Google's /sorry or 429 stopped it: what came is sent, the rest waits for tomorrow)
           if [ "$rc" = 3 ]; then echo "::warning::Google blocked the look-ups part way"; echo "blocked=1" >> "$GITHUB_OUTPUT"; elif [ "$rc" != 0 ]; then exit "$rc"; fi
-          node scripts/record.ts places-details "$RUNNER_TEMP/rows.json"
+          # (a relay blip: the rows sent again, a re-sent row only re-stamped)
+          for i in 1 2 3; do node scripts/record.ts places-details "$RUNNER_TEMP/rows.json" && break; [ "$i" = 3 ] && exit 1; sleep 60; done
       - name: The alert (a run failed, or refused with none looked up in 48 h)
         if: ${{ !cancelled() }}
         working-directory: .
