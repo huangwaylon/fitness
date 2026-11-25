@@ -15,7 +15,7 @@ import { partnerTurnTo, sitTo, turnTo } from './avatar.ts';
 import { livePos } from '../motion/director.svelte.ts';
 import { playSpotOf, yawTo } from './sitting.ts';
 import { startPlay } from './islandPlay.ts';
-import { walkable } from '#lib/layout/nav.ts';
+import { archTiles, walkable } from '#lib/layout/nav.ts';
 import { echo3d } from './echo3d.ts';
 import { site } from './site.svelte.ts';
 import { layout } from '#lib/store/layout.svelte.ts';
@@ -63,12 +63,18 @@ export function useDecor(w: World, o: { sit: (id: string) => boolean; say?: (tex
   $effect(() => {
     if (!topSpot && [...(site.layout?.objects.values() ?? [])].some((o) => o.on)) void import('#lib/layout/tops.ts').then((m) => (topSpot = m.topSpot));
   });
+  // (an arch over water on its posts' banks: layout/height.ts standLift, the ground's field, loaded with an arch)
+  let standLift = $state<typeof import('#lib/layout/height.ts').standLift | null>(null);
+  $effect(() => {
+    const l = site.layout;
+    if (!standLift && l && [...l.objects.values()].some((o) => isOutdoor(o.k) && archTiles(l, o))) void import('#lib/layout/height.ts').then((m) => (standLift = m.standLift));
+  });
   const items = $derived.by((): readonly Placed[] => {
     const l = site.layout;
     if (!l) return [];
     return [...l.objects.values()].filter((o) => isDecorKind(o.k)).map((o) => {
       const top = o.on && topSpot ? topSpot(l, o) : null, [x, z] = top ? [top.x, top.z] : objMid(l, o);
-      return { id: o.id, item: o.k, x: Math.round(x), z: Math.round(z), lift: top?.lift ?? 0, f: o.f as Facing };
+      return { id: o.id, item: o.k, x: Math.round(x), z: Math.round(z), lift: top?.lift ?? standLift?.(l, o) ?? 0, f: o.f as Facing };
     });
   });
   /** A tap: a seat or a gym piece is walked up to and on (all taken: its boop); else it jiggles and mine turns to it. */

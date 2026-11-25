@@ -5,8 +5,9 @@
 //   into the sea and the seabed falling away from the shore, a river's or a pond's banks sloping to its bed CARVE below,
 //   a path sunk a little in the grass.
 //   Stairs ramp from their tier to the next along their facing; a bridge's deck arches over its water.
-import { GRID, TIER_H, TILE, idx, kindOf, onGrid, tileAt, tileX, tileZ, type Kind } from './grid.ts';
-import { facingVec, footOf, type Layout } from './model.ts';
+import { GRID, TIER_H, TILE, idx, isWater, kindOf, onGrid, tileAt, tileX, tileZ, type Kind } from './grid.ts';
+import { facingVec, footOf, objMid, type Layout, type Obj } from './model.ts';
+import { archTiles } from './nav.ts';
 import { Ch, fieldsOf, masks, roundedIn, type Fields } from './fields.ts';
 import { clamp01, smoothstep } from '#lib/math.ts';
 
@@ -54,6 +55,14 @@ export function fieldOf(layout: Layout): Field {
 /** The ground's height at (x, z) on the layout (feet: stairs and bridges included). */
 export const heightAt = (layout: Layout, x: number, z: number): number => fieldOf(layout).feet(x, z);
 
+/** How far over the ground under its middle an object stands (u): an arch spanning water (a torii over a river, a
+ *  gazebo over a pond) on its posts' banks, the highest of them, not on the bed (the user, 2026-11-25); else 0. */
+export function standLift(layout: Layout, o: Obj): number {
+  const a = archTiles(layout, o);
+  if (!a?.pass.some(([c, r]) => !onGrid(c, r) || isWater(kindOf(layout.codes[idx(c, r)])))) return 0;
+  const [mx, mz] = objMid(layout, o);
+  return Math.max(0, Math.max(...a.posts.map(([c, r]) => heightAt(layout, tileX(c) + TILE / 2, tileZ(r) + TILE / 2))) - heightAt(layout, mx, mz));
+}
 function build(layout: Layout): Field {
   const F = fieldsOf(layout);
   const ms = masks(layout);

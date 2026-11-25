@@ -23,6 +23,7 @@ import { FENCE_SNOW, cropStage, fenceJoin, isCrop, isFence, isGarden } from '#li
 import { cedarLit, gardenReady } from './garden.ts';
 import { fieldPlots } from '#lib/layout/field.ts';
 import { tileMid } from '#lib/layout/grid.ts';
+import { standLift } from '#lib/layout/height.ts';
 
 /** A model (static/room/world3d/<name>.glb). */
 export type ModelName = string;
@@ -183,7 +184,9 @@ export function placeObjects(layout: Layout, day: Day): { insts: Inst[]; standin
     // facing (nothing till the table's in: kindDef knows none of them before)
     if (def.room) {
       const p = outdoorPiece(o.k);
-      if (p) thing(outdoorModel(p), DECOR_U);
+      // (an arch spanning water on its posts' banks: layout/height.ts standLift)
+      const up = p ? standLift(layout, o) : 0;
+      if (p) thing(outdoorModel(p), DECOR_U, up ? { lift: up } : {});
       continue;
     }
     // a look of the day in its place: a model, else a card

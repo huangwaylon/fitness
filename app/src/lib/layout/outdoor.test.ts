@@ -20,6 +20,7 @@ import { defaultLayout, objMid, withChanges, type Obj } from './model.ts';
 import { isSmallKind, isSurfaceKind, topOf } from './tops.ts';
 import { archTiles, clear, findPath, navOf, seatsOf, walkable } from './nav.ts';
 import { validate } from './validate.ts';
+import { heightAt, standLift } from './height.ts';
 import { anchorsOf, shapeOf } from '../components/villager3d/seats3d.ts';
 import { placeObjects } from '../components/world3d/objects.ts';
 import { roomLamp } from '../components/world3d/outdoorModels.ts';
@@ -157,6 +158,17 @@ describe('its kinds on the island', () => {
       expect(g.pass).toEqual([[7, 20], [6, 21], [7, 21], [8, 21], [7, 22]]);
       // anything else: none
       expect(archTiles(l, at('nh-f14074', 0))).toBeNull();
+    });
+    it('an arch spanning water stands on its posts’ banks, not the river bed (the user, 2026-11-25)', () => {
+      // the default's river at column 15 (rows 28–52), grass one side, sand the other
+      const l0 = defaultLayout(), torii: Obj = { id: 'arch', k: 'nh-f13631', x: 14, z: 34, f: 0 }, l = withChanges(l0, { set: [torii] });
+      const [mx, mz] = objMid(l, torii), bank = Math.max(heightAt(l, mx - 30, mz), heightAt(l, mx + 30, mz));
+      expect(heightAt(l, mx, mz)).toBeLessThan(bank - 3);
+      expect(heightAt(l, mx, mz) + standLift(l, torii)).toBeCloseTo(bank, 5);
+      expect(placeObjects(l, { season: 'autumn', foliage: 'summer', month: 11 }).insts.find((i) => i.id === 'arch')?.lift).toBeCloseTo(standLift(l, torii), 5);
+      // on dry ground, on it; a gazebo with its cross over the river on its corners' banks
+      expect(standLift(l0, { ...torii, x: 6, z: 20 })).toBe(0);
+      expect(standLift(l0, { id: 'g', k: 'nh-f14106', x: 14, z: 34, f: 0 })).toBeGreaterThan(3);
     });
     it('an arch (the torii, the castle gate, the 2021 arch) is walked under: its posts block, its middle doesn’t, turned too', () => {
       for (const code of ['f13631', 'f13581', 'f13543']) {
