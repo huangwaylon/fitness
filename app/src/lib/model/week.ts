@@ -7,24 +7,26 @@ import { ownDayBells, walletAt, weekBells, weekSum, type WeekBells } from './bel
 import { addDays, localDateAt, weekKeyOf } from '#lib/time/dates.ts';
 import { firstWeek, moveGoalOn, partnerOf, provisionalMs, stepsGoalOn, type State } from './state.ts';
 
-/** Which week's harvest is open at t, given the confirmations so far (Sunday 19:30 until both tapped). */
-function harvestWeekAt(s: State, t: number, confirms: Map<WeekKey, Set<PersonId>>): WeekKey | null {
+/** Which week's harvest is open at t, given the confirmations so far (Sunday 19:30 until both members tapped: the
+ *  guest's tap is its own recap seen, never the week's close). */
+function harvestWeekAt(s: State, t: number, confirms: Map<WeekKey, Set<Who>>): WeekKey | null {
   const cur = weekKeyOf(localDateAt(t));
   for (const wk of [cur, addDays(cur, -7)]) {
     const first = firstWeek(s);
     if (t < provisionalMs(wk) || first === null || wk < first) continue;
-    return (confirms.get(wk)?.size ?? 0) < 2 ? wk : null;
+    const c = confirms.get(wk);
+    return c?.has('A') && c.has('B') ? null : wk;
   }
   return null;
 }
 
 /** Accepted harvest taps: only for the week that was open at the time of the tap. */
-function replayHarvests(s: State, now: number): Map<WeekKey, Set<PersonId>> {
-  const confirms = new Map<WeekKey, Set<PersonId>>();
+function replayHarvests(s: State, now: number): Map<WeekKey, Set<Who>> {
+  const confirms = new Map<WeekKey, Set<Who>>();
   for (const h of s.harvests) {
     if (h.at > now) break;
     if (harvestWeekAt(s, h.at, confirms) !== h.week) continue;
-    const set = confirms.get(h.week) ?? new Set<PersonId>();
+    const set = confirms.get(h.week) ?? new Set<Who>();
     set.add(h.person);
     confirms.set(h.week, set);
   }
@@ -67,9 +69,10 @@ function personView(s: State, person: PersonId, e: WeekEarning, today: LocalDate
 
 /** しずえ's line (usage.test.ts checks every key emitted here exists in ja and en). */
 function hostLine(v: Omit<WeekView, 'host'>): WeekView['host'] {
-  if (v.viewer === 'G') return { key: 'host.default' }; // the harvest is over the members' wallets: none the guest's
-  if (v.harvest && !v.harvest.confirmedBy.includes(v.me)) return { key: 'host.harvest_ready', params: { bells: v.harvest.totalBells } };
-  if (v.harvest) return { key: 'host.harvest_waiting', params: { name: v.people[v.partner].villagerName } };
+  const h = v.harvest;
+  if (h && !h.confirmedBy.includes(v.viewer)) return { key: 'host.harvest_ready', params: { bells: h.totalBells } };
+  const waiting = h && harvestWaitingOn(h, v.viewer);
+  if (waiting) return { key: 'host.harvest_waiting', params: { name: v.people[waiting].villagerName } };
   return { key: 'host.default' };
 }
 
@@ -106,18 +109,22 @@ export function buildWeekView(s: State, viewer: Who, now: number): WeekView {
   return { ...base, host: hostLine(base) };
 }
 
-/** The wallets at `now` (`i`: today's index in `w`): each member's, and the viewer's own (the guest: both together). */
+/** The wallets at `now` (`i`: today's index in `w`): each member's, and the viewer's own (the guest's: empty, it has no
+ *  Health data to earn with; the user, 2026-11-25: the guest's phone as a member's). */
 function walletView(s: State, viewer: Who, w: WeekBells, i: number, now: number): WeekView['wallet'] {
   const p = walletAt(s, now);
-  const pair = w.dayTotals[i] ?? 0;
   // today's ベル into each member's wallet
   const today = (who: PersonId) => (i < 0 ? 0 : ownDayBells(w, who, i));
   const people = { A: { balance: p.balance.A, today: today('A') }, B: { balance: p.balance.B, today: today('B') } };
-  return viewer === 'G' ? { balance: p.total, today: pair, people } : { ...people[viewer], people };
+  return { ...(viewer === 'G' ? { balance: 0, today: 0 } : people[viewer]), people };
 }
 
+/** The member a harvest still waits on, as `viewer` sees it (not the viewer; null: none). */
+export const harvestWaitingOn = (h: HarvestView, viewer: Who): PersonId | null =>
+  (['A', 'B'] as const).filter((p) => p !== viewer).find((p) => !h.confirmedBy.includes(p)) ?? null;
+
 /** A week's harvest recap: each person's ベル, the ふたりでぜんぶ days and the total (also the demo's `?demo=harvest`). */
-export function harvestOf(w: WeekBells, confirmedBy: PersonId[]): HarvestView {
+export function harvestOf(w: WeekBells, confirmedBy: Who[]): HarvestView {
   const sum = weekSum(w, w.A.days[6].date);
   return {
     weekKey: w.weekKey,

@@ -411,7 +411,6 @@
   "bots.say": "{bot}, {word}",
   "panel.wedding": "Wedding",
   "decor.turn": "Turn",
-  "guest.note": "You're visiting as a guest. Fish, catch bugs and have fun on their island!",
   "zukan.guestName": "{name} (guest)",
   "guest.arrived": "{name} is visiting!",
   "guest.welcome": "Welcome, guest! Make yourself at home on their island.",

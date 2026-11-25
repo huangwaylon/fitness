@@ -74,11 +74,11 @@ describe('the guest’s rows', () => {
     expect(findsView(tie).get('sea:octopus')?.person).toBe('B');
   });
 
-  it('keeps only the guest’s look and name; its goals, harvests and health are nothing; its buy kept but never covered', () => {
+  it('keeps only the guest’s look and name; its goals and health are nothing; its 受け取る its own; its buy kept but never covered', () => {
     expect(s.prefs.G).toEqual({ villager: 'judy', villagerName: 'ゆき' });
     expect(s.bellSpends.map((x) => x.person)).toEqual(['G']);
     expect(walletAt(s, Date.parse(at(WK, '23:00'))).spends).toEqual([]);
-    expect(s.harvests).toEqual([]);
+    expect(s.harvests.map((h) => h.person)).toEqual(['G']);
     expect([s.dailyGoals.A.move, s.dailyGoals.B.move]).toEqual([[], []]);
     expect(Object.keys(s.metrics)).toEqual(['A', 'B']);
     expect(weekBells(s, WK, Date.parse(at(WK, '23:00'))).A.days.find((d) => d.date === WK)?.steps).toBe(9000);
@@ -90,7 +90,9 @@ describe('the guest’s rows', () => {
     const a = buildWeekView(s, 'A', now);
     expect(g.viewer).toBe('G');
     expect(g.guest).toEqual({ villagerName: 'ゆき', villager: 'judy' });
-    expect({ ...g, viewer: 'A', host: a.host }).toEqual(a);
+    // its own wallet empty (no Health data), else A's view
+    expect(g.wallet).toEqual({ ...a.wallet, balance: 0, today: 0 });
+    expect({ ...g, viewer: 'A', wallet: a.wallet }).toEqual(a);
     expect(a.guest.villagerName).toBe('ゆき'); // the members draw it so too
     expect(buildWeekView(reduce({ metrics: [], events: [] }), 'A', now).guest).toEqual({ villagerName: 'ゲスト', villager: null });
     // the old default, saved unchanged: the default now

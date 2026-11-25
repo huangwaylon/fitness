@@ -133,12 +133,13 @@ describe('golden: the WeekView on a 10-week timeline', () => {
       for (const d of l.days) expect(d.own.A + d.own.B, `${t} ${d.date}`).toBe(d.bells);
       // everything earned less the live buys: both wallets
       const left = l.earned - l.spends.reduce((n, x) => (x.voided ? n : n + x.bells), 0);
-      const g = buildWeekView(s, 'G', tMs).wallet.balance;
-      expect(left, t).toBe(g);
+      const g = buildWeekView(s, 'G', tMs).wallet;
+      expect(left, t).toBe(g.people.A.balance + g.people.B.balance);
+      expect(g.balance, t).toBe(0);
       for (const me of PEOPLE) {
         const v = buildWeekView(s, me, tMs);
         expect(v.wallet.balance, t).toBe(v.wallet.people[me].balance);
-        expect(v.wallet.people.A.balance + v.wallet.people.B.balance, t).toBe(g);
+        expect(v.wallet.people.A.balance + v.wallet.people.B.balance, t).toBe(left);
         const h = v.harvest;
         if (h) expect(h.totalBells, `${t} harvest`).toBe(l.days.filter((d) => d.weekKey === h.weekKey).reduce((n, d) => n + d.bells, 0));
       }

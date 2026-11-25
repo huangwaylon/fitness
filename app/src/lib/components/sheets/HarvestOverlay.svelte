@@ -4,9 +4,11 @@
   // the bottom, in the thumb zone. Recap: each person's ベル of the week (their goals met), the ふたりでぜんぶ days
   // (+2 each) and the week's ベル as the one big number. 「受け取る」 is a ceremony: it records that I saw it, then the
   // end card shows the week's coins falling into the wallet: a +N pops over the jar and fades over my wallet's balance
-  // (the one resting number; the guest's: both members'). No confetti (not in the games): an item-get beat.
+  // (the one resting number; the guest's 0: it earns none). Everyone's alike, the guest's too (the user, 2026-11-25: its
+  // tap is its own recap seen; the week closes with both members'). No confetti (not in the games): an item-get beat.
   // A real modal: a native <dialog> opened with showModal() (inert background, focus trap; Esc = あとで).
   import type { HarvestView, PersonId, WeekView } from '#lib/types.ts';
+  import { harvestWaitingOn } from '#lib/model/week.ts';
   import { RULES } from '#lib/config/rules.ts';
   import Avatar from '../characters/Avatar.svelte';
   import Emote from '../characters/Emote.svelte';
@@ -38,7 +40,8 @@
   const b = $derived(harvest.bells);
 
   let step = $state<'tally' | 'done'>('tally');
-  const partnerDone = $derived(harvest.confirmedBy.includes(partner));
+  /** The member it still waits on (not me). */
+  const waiting = $derived(harvestWaitingOn(harvest, view.viewer));
 
   function receive() {
     onkeep?.();
@@ -117,7 +120,7 @@
             <b class="add money">{formatBells(harvest.totalBells, { signed: true })}</b>
             <span class="bal money">{formatNum(view.wallet.balance)}<small>{t('bells.unit')}</small></span>
           </div>
-          {#if !partnerDone}<span class="mini">{t('harvest.waiting', { name: view.people[partner].villagerName })}</span>{/if}
+          {#if waiting}<span class="mini">{t('harvest.waiting', { name: view.people[waiting].villagerName })}</span>{/if}
         </section>
         <button type="button" class="btn" data-sfx="confirm" onclick={() => ondone?.()}>{t('harvest.home')}</button>
       {/if}

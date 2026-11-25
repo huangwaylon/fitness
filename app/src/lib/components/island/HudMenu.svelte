@@ -3,7 +3,7 @@
   // toggle; aria-expanded) that drops its pills down under it, right-aligned, kanji on them (easier to read than spaced
   // kana); above 設定 (last) in each person's own order (ベル first by default), less the ones they hid (`pref menuOrder`,
   // `pref menuHidden`: store/menu.ts), by default:
-  // 「ベル 121」 (my wallet's balance, the guest's both, no icon: the number is the picture) → the panel (ごほうび) (ずかん is
+  // 「ベル 121」 (my wallet's balance, no icon: the number is the picture) → the panel (ごほうび) (ずかん is
   // 設定's: its last section), 旅行 (Orville's head: the trips' sheet, travel/open.svelte.ts), 結婚式 (パニエル's head:
   // the wedding board, its sheet opened here: components/wedding), トレイル (a mountain: the hiking trails,
   // hiking/open.svelte.ts), 地図 (a pin: 保存した場所, places/open.svelte.ts), 英語 (English Study's sheet, lib/english), ボット (a robot's head: the bots'
@@ -57,10 +57,8 @@
   import { online } from '#lib/ui-state/online.svelte.ts';
 
   interface Props {
-    /** My wallet's balance, the guest's both members' (the ベル row's number). */
+    /** My wallet's balance (the ベル row's number; the guest's 0). */
     bells: number;
-    /** The guest's: each member's wallet, by name (the row shows them, not their sum). */
-    each?: readonly { name: string; bells: number }[];
     /** Today's ベル so far, both people (the ベル row's label, and the flash as coins land). */
     today: number;
     /** The panel the ベル row opens is open (its aria-expanded). */
@@ -72,7 +70,7 @@
     /** The page's timer (cleared with the page). */
     later: (fn: () => void, ms: number) => void;
   }
-  let { bells, each, today, expanded = false, onbells, onsettings, later }: Props = $props();
+  let { bells, today, expanded = false, onbells, onsettings, later }: Props = $props();
 
   let open = $state(false);
   /** Edit mode (a long press). */
@@ -389,18 +387,13 @@
         <!-- ベル: the wallet (the coins land on its number), moved like the others but never hidden: no ⊖ -->
         <button type="button" class="item bells" class:lift={drag?.from === i} data-hud-bells data-menu-pill="bells" data-bells={bells} data-today={today}
           aria-haspopup={editing ? undefined : 'dialog'} aria-expanded={editing ? undefined : expanded}
-          aria-label={editing ? t('island.bellsRow') : t('island.bells', { bells: each ? each.map((e) => `${e.name} ${formatBells(e.bells)}`).join('、') : formatBells(bells), today: formatBells(today) })}
+          aria-label={editing ? t('island.bellsRow') : t('island.bells', { bells: formatBells(bells), today: formatBells(today) })}
           aria-describedby={editing ? 'hud-menu-edit-hint' : undefined}
           style:translate={drag ? `0 ${shift(i)}px` : null} style:--i={i}
           data-sfx="self" onpointerdown={(e) => (ahead('panel'), down(e, id))} onpointermove={move} onpointerup={up} onpointercancel={up}
           oncontextmenu={(e) => e.preventDefault()} onkeydown={(e) => key(e, id)} onclick={() => tapPill(id)}>
           <span class="lbl" aria-hidden="true">{t('island.bellsRow')}</span>
-          {#if each}
-            <!-- the guest's: the two wallets as ごほうび shows them, never their sum -->
-            <span class="each" aria-hidden="true" data-hud-bells-each>{#each each as e, j (e.name)}{#if j}<span class="dot-sep">·</span>{/if}<span class="who">{e.name}</span><b class="num money">{formatNum(e.bells)}</b>{/each}</span>
-          {:else}
-            <b class="num money" aria-hidden="true" onanimationend={(e) => e.currentTarget.classList.remove('catch')}>{formatNum(Math.round(shown.current))}</b>
-          {/if}
+          <b class="num money" aria-hidden="true" onanimationend={(e) => e.currentTarget.classList.remove('catch')}>{formatNum(Math.round(shown.current))}</b>
           {#if open}{@render plus()}{/if}
         </button>
       {:else}
@@ -539,9 +532,6 @@
   /* the ベル row: no icon; the balance where the others' icons are, in the money font, centred in the icons' column */
   .bells { padding-right: 14px; }
   .num { display: inline-block; font: 700 var(--fs-talk)/1 var(--font-num); font-variant-numeric: tabular-nums; letter-spacing: .01em; transform-origin: 50% 70%; }
-  .each { display: inline-flex; align-items: baseline; gap: 4px; white-space: nowrap; }
-  .each .who { font-size: var(--fs-s); }
-  .each .dot-sep { margin: 0 2px; opacity: .6; }
 
   /* today's +N as coins land: a small yuzu bubble just under the leaf (folded), right-aligned to the screen's side, or
      left of the ベル row (open), popping in, rising a little, fading */

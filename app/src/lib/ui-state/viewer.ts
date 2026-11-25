@@ -1,5 +1,5 @@
-// Who holds this phone (docs/design.md "The guest"): a member, or the guest. The guest's phone is a member's but its
-// own villager and name, no からだ figure and no ベル of its own (it buys, voids and harvests none).
+// Who holds this phone (docs/design.md "The guest"): a member, or the guest. The guest's phone is a member's (the user,
+// 2026-11-25) but its own villager and name, and no からだ figure; its wallet is empty (no Health data to earn with).
 import type { WeekView, Who } from '#lib/types.ts';
 
 /** The guest's phone. */

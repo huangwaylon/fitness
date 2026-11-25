@@ -24,7 +24,7 @@ async function pills(page: Page): Promise<string[]> {
   await page.keyboard.press('Escape');
   return ids;
 }
-const order = (page: Page) => page.locator('#hud-menu-items > button').evaluateAll((bs) => bs.map((b) => b.getAttributeNames().find((a) => a.startsWith('data-hud-') && a !== 'data-hud-bells-each')!.slice(9)));
+const order = (page: Page) => page.locator('#hud-menu-items > button').evaluateAll((bs) => bs.map((b) => b.getAttributeNames().find((a) => a.startsWith('data-hud-'))!.slice(9)));
 const editing = (page: Page) => expect(items(page)).toHaveAttribute('data-menu-editing', 'true');
 
 /** One finger: down, moves, up. */

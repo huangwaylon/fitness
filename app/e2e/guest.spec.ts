@@ -4,11 +4,11 @@
 // member's (2026-11-24) but never a からだ figure; its own wallet is 0 (no Health data), so no reward is in reach; it sees the members'
 // goals read-only (each sets only their own), and on the island does what a member does (the editor, the weather); its
 // catches go into the shared ずかん under its own name; its tent pieces reach both members; and its villager is always
-// on the members' islands, asleep while its app is closed (as everyone's: presence-sleep.spec), moving only when it's moved.
+// on the members' islands, asleep while its app is closed (as everyone's: presence-sleep.spec).
 import { expect, test, type BrowserContext, type Page } from './fixtures.ts';
 import { roomUp } from './rooms.ts';
 import { islandUp } from './island.ts';
-import { fromMenu, hudBells, openKenkou, openRewards } from './hud.ts';
+import { fromMenu, hudBells, openKenkou, openRewards, unfoldMenu } from './hud.ts';
 
 const VIEW = { width: 393, height: 659 };
 test.use({ viewport: VIEW });
@@ -61,24 +61,21 @@ test('the guest’s phone: the members’ activity, their goals (read-only) and 
   // 設定 (the HUD menu's): the villager, the sound, the language and the weather as a member's (no つうち, no
   // 模様替え: gone for everyone)
   await fromMenu(page, 'settings');
-  await expect(panel.locator('[data-guest-note]')).toBeVisible();
   await expect(panel.locator('[data-push="look"]')).toBeVisible();
   await expect(panel.locator('#sec-notify')).toHaveCount(0);
   await expect(panel.locator('#sec-lang')).toBeVisible();
   await expect(panel.locator('[data-wx-mode="game"]')).not.toHaveAttribute('aria-disabled', 'true');
   await page.keyboard.press('Escape');
-  // ごほうび, from the menu's ベル row (each wallet by name, never their sum): their balances and the buys, as a member's;
-  // the rewards out of reach (its own wallet: 0), a buy erasable as by anyone
+  // the menu's ベル row: its own wallet, as a member's row is theirs: 0 (the user, 2026-11-25); ごほうび, from it: the
+  // members' balances and the buys, as a member's; the rewards out of reach, a buy erasable as by anyone
+  await unfoldMenu(page);
   const row = hudBells(page);
-  const bells = Number(await row.getAttribute('data-bells'));
-  expect(bells).toBeGreaterThan(0);
-  await expect(row.locator('[data-hud-bells-each] .who')).toHaveText(['ウェイ', 'うめ']);
-  const each = (await row.locator('[data-hud-bells-each] .num').allTextContents()).map((n) => Number(n.replace(/,/g, '')));
-  expect(each[0] + each[1]).toBe(bells);
+  await expect(row).toHaveAttribute('data-bells', '0');
+  await expect(row).toHaveAttribute('data-today', '0');
   await openRewards(page);
   const purses = panel.locator('.hero .purse');
   await expect(purses).toHaveCount(2);
-  await expect.poll(async () => await purses.evaluateAll((els) => els.map((e) => Number((e as HTMLElement).dataset.balance)))).toEqual(each);
+  await expect.poll(async () => (await purses.evaluateAll((els) => els.map((e) => Number((e as HTMLElement).dataset.balance)))).every((b) => b > 0)).toBe(true);
   await expect(panel.locator('[data-item]')).toHaveCount(2);
   for (const item of await panel.locator('[data-item]').all()) await expect(item).toHaveAttribute('aria-disabled', 'true');
   await panel.locator('[data-hist-toggle]').click();
@@ -90,24 +87,59 @@ test('the guest’s phone: the members’ activity, their goals (read-only) and 
 // The guest's 健康 and ごはん leave no hole (health plan C7): no かつどう / からだ to pick, so the period sits at the
 // range row's end (no row of its own); in the title bar its pill is its avatar alone (every name's is), the page switch
 // centred.
-// The guest stands far up the island: its island opens there, its villager in view (only the open position is set:
-// no-island-autoscroll), where a member's opens at the front (review 11/10 r3).
-test('the guest’s island opens at its own villager; a member’s at the front', async ({ page }) => {
-  type Wd = { cam(): number; who(w: string): [number, number] | null; at(x: number, z: number): [number, number]; stops(): [number, number] };
+// Everyone's island opens at the front, the guest's too (the user, 2026-11-25: the guest's phone as a member's).
+test('the guest’s island opens at the front, as a member’s', async ({ page }) => {
+  type Wd = { cam(): number; stops(): [number, number] };
   const view = () => page.evaluate(() => {
-    const w = (window as unknown as { __world: Wd }).__world, me = w.who('G')!;
-    return { cam: w.cam(), me, at: w.at(me[0], me[1]), front: w.stops()[0] };
+    const w = (window as unknown as { __world: Wd }).__world;
+    return { cam: w.cam(), front: w.stops()[0] };
   });
   await page.setViewportSize({ width: 393, height: 852 });
   await page.goto(`?demo&date=${DATE}&visitor=none&as=G`);
   await islandUp(page);
   const g = await view();
-  expect(g.cam).toBeGreaterThan(g.front + 200);
-  expect(g.at[1]).toBeGreaterThan(150);
-  expect(g.at[1]).toBeLessThan(800);
-  await page.goto(`?demo&date=${DATE}&visitor=none`);
-  await islandUp(page);
-  expect((await view()).cam).toBe(g.front);
+  expect(g.cam).toBe(g.front);
+});
+
+// The guest's phone shows what a member's does (the user, 2026-11-25): the same menu pills, the same 設定 sections, the
+// same けんこう tabs; the one thing it lacks is からだ (no switch, no body card).
+test('the guest sees a member’s HUD and menus, but for からだ', async ({ browser }) => {
+  const seen = async (as: 'A' | 'G') => {
+    const ctx = await browser.newContext({ viewport: VIEW });
+    const page = await open(ctx, as);
+    await unfoldMenu(page);
+    const pills = await page.locator('#hud-menu-items > button').evaluateAll((bs) => bs.map((b) => b.getAttribute('data-menu-pill')));
+    const hud = await page.locator('.ribbon-wrap button:visible').evaluateAll((bs) => bs.map((b) => b.getAttribute('aria-label') === null ? b.className.split(' ')[0] : b.getAttribute('aria-label')).filter((l) => !/ベル/.test(l ?? '')));
+    await fromMenu(page, 'settings');
+    const sections = await page.locator('dialog[open] [data-settings] h3').allTextContents();
+    await page.keyboard.press('Escape');
+    await openKenkou(page, 'health');
+    const tabs = await page.locator('dialog[open] [data-kenkou-tab]').allTextContents();
+    const body = await page.locator('dialog[open] [data-group]').count();
+    await ctx.close();
+    return { pills, hud, sections, tabs, body };
+  };
+  const a = await seen('A'), g = await seen('G');
+  expect(g.pills).toEqual(a.pills);
+  expect(g.hud).toEqual(a.hud);
+  expect(g.sections).toEqual(a.sections);
+  expect(g.tabs).toEqual(a.tabs);
+  // からだ: the member's かつどう | からだ switch, none on the guest's
+  expect(a.body).toBeGreaterThan(0);
+  expect(g.body).toBe(0);
+});
+
+// The Sunday harvest's recap on the guest's phone as on a member's: its 受け取る its own (the week closes with both
+// members'), the end card its own empty wallet.
+test('the guest’s harvest recap: the week’s tally, 受け取る, back to the island', async ({ page }) => {
+  await page.goto(`?demo=harvest&date=${DATE}&critter=none&visitor=none&as=G`);
+  const tally = page.locator('.overlay .tally');
+  await expect(tally.locator('.trow:not(.duo)')).toHaveCount(2);
+  await page.getByRole('button', { name: '受け取る！' }).tap();
+  await expect(page.locator('.overlay .card.done')).toBeVisible();
+  await page.getByRole('button', { name: '島へ戻る' }).tap();
+  await expect(page.locator('.overlay')).toHaveCount(0);
+  await expect(page.getByRole('button', { name: '受け取る！' })).toHaveCount(0);
 });
 
 test('the guest’s 健康: the period on the range row; ごはん: its pill the avatar alone, the switch centred', async ({ page }) => {
@@ -127,7 +159,7 @@ test('the guest’s 健康: the period on the range row; ごはん: its pill the
   await expect(pill.locator('select option:checked')).toHaveText('ゲスト'); // (its name in the picker)
 });
 
-test('the guest’s ベル row: today’s into both wallets (ふたりでぜんぶ in); its ごほうび each member’s today as a member’s phone has it', async ({ browser }) => {
+test('the guest’s ベル row its own, empty; its ごほうび each member’s today as a member’s phone has it', async ({ browser }) => {
   const ctx = await browser.newContext({ viewport: VIEW });
   const at = '&date=2026-10-28T22:00&critter=none&visitor=none';
   const member = await ctx.newPage();
@@ -144,8 +176,7 @@ test('the guest’s ベル row: today’s into both wallets (ふたりでぜん�
   const both = (await panel.locator('.hero .purse .today').evaluateAll((els) => els.map((e) => Number((e as HTMLElement).dataset.today)))).reduce((a, b) => a + b, 0);
   expect(both).toBeGreaterThan(today);
   await g.keyboard.press('Escape');
-  await expect(hudBells(g)).toHaveAttribute('data-today', String(both));
-  await expect(hudBells(g)).toHaveAttribute('aria-label', new RegExp(` · 今日 ${both}\\sベル$`));
+  await expect(hudBells(g)).toHaveAttribute('data-today', '0');
   await ctx.close();
 });
 
@@ -156,8 +187,6 @@ test('a guest’s catch is in the members’ ずかん at once, credited to the 
   const g = await ctx.newPage();
   await g.goto(`?demo&date=${DATE}&critter=common-butterfly&visitor=none&as=G`);
   await islandUp(g);
-  // (the guest's island opens at its own villager, far up; the flowers the butterfly lands on are at the front)
-  await g.evaluate(() => { const w3 = (window as unknown as { __world3d: { go(z: number): void; limits(): { min: number } } }).__world3d; w3.go(w3.limits().min); });
   // the butterfly landed on a flower (still there: a flying one is somewhere else by the time a tap lands), tapped
   // where its 3D model is (taps go by the model's spot, not the sprite's box), in one step in the page
   // (each try reports what it saw, the last one the failure's message: the butterfly's critter rows (sat or flying),
@@ -248,8 +277,8 @@ test.describe(() => {
     const near = (at: [number, number] | null, to: [number, number] | null) => (at && to ? Math.hypot(at[0] - to[0], at[1] - to[1]) : 999);
     expect(near(there, spot)).toBeLessThan(2);
     for (const p of [a, b]) await expect.poll(async () => near(await who(p, 'G'), there), { timeout: 4000 }).toBeLessThan(2);
-    // idle: nobody's life moves it, on its own phone or theirs (a fixed wait: proving that nothing happens, two of ambient
-    // life's 10 s slots)
+    // idle, its app open: nobody's life moves it, on its own phone or theirs, as a member's online villager (a fixed
+    // wait: proving that nothing happens, two of ambient life's 10 s slots)
     await g.waitForTimeout(11_000);
     for (const p of [g, a, b]) expect(near(await who(p, 'G'), there)).toBeLessThan(2);
     // the guest closes its app: still there on both islands, awake for the grace, then asleep where it stood

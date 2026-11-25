@@ -104,8 +104,7 @@ export class DemoBackend implements Backend {
   decorate(m: ComposedModel, v: WeekView): void {
     if (this.#mode !== 'harvest' || v.harvest) return;
     const wk = addDays(v.weekKey, -7);
-    if (v.viewer === 'G') return; // the harvest is the members'
-    v.harvest = harvestOf(weekBells(m.state, wk, m.now), this.#harvested ? [v.me] : []);
+    v.harvest = harvestOf(weekBells(m.state, wk, m.now), this.#harvested ? [v.viewer] : []);
   }
 
   /** The demo's taps of today (both players), oldest first. */

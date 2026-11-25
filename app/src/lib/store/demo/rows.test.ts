@@ -53,7 +53,8 @@ describe.each(['2026-10-29T08:00:00.000Z', '2026-11-02T01:00:00.000Z', '2026-11-
     const view = buildWeekView(m.state, m.me, m.now);
     // everything earned less the live buys: both wallets
     const left = ledger.earned - ledger.spends.reduce((n, x) => (x.voided ? n : n + x.bells), 0);
-    expect(walletAt(s, now).total).toBe(left);
+    const { balance } = walletAt(s, now);
+    expect(balance.A + balance.B).toBe(left);
     // both of us buy
     expect(new Set(ledger.spends.map((x) => x.by))).toEqual(new Set(['A', 'B']));
     // the demo can always buy either reward, from either wallet

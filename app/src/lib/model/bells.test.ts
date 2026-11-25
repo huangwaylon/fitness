@@ -51,8 +51,8 @@ describe('daily earnings land as they happen', () => {
     expect(v.people.A.today).toEqual({ bells: 4, rings: { pear: 1, peach: 1, cherry: 1, apple: 1 } });
     expect(v.people.A.weekBells).toBe(3 * 4); // only days up to today count, even with later-dated rows
     expect(v.wallet).toEqual({ balance: 3 * 5, today: 5, people: { A: { balance: 15, today: 5 }, B: { balance: 15, today: 5 } } });
-    // the guest's ベル row: both wallets, the pair's day
-    expect(buildWeekView(reduce(perfectWeek()), 'G', now).wallet).toMatchObject({ balance: 30, today: 10 });
+    // the guest's ベル row: its own wallet, empty (no Health data); the members' as theirs
+    expect(buildWeekView(reduce(perfectWeek()), 'G', now).wallet).toEqual({ balance: 0, today: 0, people: v.wallet.people });
     const rings = v.people.A.rings;
     expect(Object.keys(rings)).toEqual(['pear', 'peach', 'cherry', 'apple']);
     expect(rings).toEqual({
@@ -126,6 +126,21 @@ describe('the Sunday harvest recaps the week', () => {
     expect(b.harvest).toBeNull();
     expect(b.wallet).toEqual(a.wallet);
   });
+
+  it('the guest’s recap as a member’s: its tap its own, the week closed by both members’ (the user, 2026-11-25)', () => {
+    const r = perfectWeek();
+    const now = ms(D[6], '20:00');
+    const tap = (...who: ('A' | 'B' | 'G')[]) => plus(r, { events: who.map((w, i) => ev(jst(D[6], `19:4${i}`), w, 'harvest', { week: WK })) });
+    const open = buildWeekView(reduce(r), 'G', now);
+    expect(open.harvest?.confirmedBy).toEqual([]);
+    expect(open.host).toMatchObject({ key: 'host.harvest_ready', params: { bells: 70 } });
+    // the guest's tap and one member's: still open, the guest's host line on the other member
+    const g = buildWeekView(reduce(tap('G', 'A')), 'G', now);
+    expect(g.harvest?.confirmedBy).toEqual(['A', 'G']);
+    expect(g.host).toEqual({ key: 'host.harvest_waiting', params: { name: g.people.B.villagerName } });
+    expect(buildWeekView(reduce(tap('G', 'A')), 'B', now).host).toMatchObject({ key: 'host.harvest_ready' });
+    expect(buildWeekView(reduce(tap('A', 'B')), 'G', now).harvest).toBeNull();
+  });
 });
 
 describe('locks: earnings change until the Wednesday 04:00 lock, then they are fixed', () => {
@@ -165,7 +180,6 @@ describe('buys: one of the two rewards, at its price, from the buyer’s own wal
   it('a buy takes from its buyer’s wallet alone: おやつ 20, 外食 35', () => {
     const p = at([spend(jst(MON, '10:00'), 'A', 's1'), spend(jst(MON, '10:01'), 'B', 's2', 'dinner')]);
     expect(p.balance).toEqual({ A: 50, B: 35 });
-    expect(p.total).toBe(85);
     expect(p.earned).toBe(140);
     expect(p.spends.map((x) => [x.spendId, x.by, x.item, x.bells])).toEqual([['s1', 'A', 'snack', 20], ['s2', 'B', 'dinner', 35]]);
   });
@@ -276,7 +290,6 @@ describe('each member’s wallet from the first day (their own ベル and half o
     // A's 45: the おやつ; B's 45 can't pay a 70 外食 (A's wallet never helps)
     expect(p.spends.map((x) => [x.spendId, x.by, x.bells])).toEqual([['s1', 'A', 40]]);
     expect(p.balance).toEqual({ A: 5, B: 45 });
-    expect(p.total).toBe(50);
     expect(p.earned).toBe(90);
     expect(buildWeekView(reduce(plus(r, { events: [old(jst('2026-11-10', '20:00'), 'A', 's1')] })), 'B', ms('2026-11-10', '23:00')).wallet)
       .toEqual({ balance: 45, today: 5, people: { A: { balance: 5, today: 5 }, B: { balance: 45, today: 5 } } });
@@ -296,7 +309,7 @@ describe('each member’s wallet from the first day (their own ベル and half o
     const now = ms('2026-11-12', '23:00');
     expect(walletAt(reduce(more), now).balance).toEqual({ A: 45 + 5 + 4, B: 45 + 5 });
     expect(buildWeekView(reduce(more), 'A', now).wallet).toEqual({ balance: 54, today: 4, people: { A: { balance: 54, today: 4 }, B: { balance: 50, today: 0 } } });
-    expect(buildWeekView(reduce(more), 'G', now).wallet).toMatchObject({ balance: 104, today: 4 });
+    expect(buildWeekView(reduce(more), 'G', now).wallet).toEqual({ balance: 0, today: 0, people: { A: { balance: 54, today: 4 }, B: { balance: 50, today: 0 } } });
   });
 
   it('a buy’s `day`: covered by its buyer’s days up to it, shown as its day; else its Tokyo day', () => {

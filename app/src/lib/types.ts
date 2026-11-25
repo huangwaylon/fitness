@@ -30,7 +30,7 @@ export type ShopItemId = 'snack' | 'dinner';
 interface PurseView {
   /** What it holds: earned minus the accepted buys (never negative: a buy above it is ignored on read). */
   balance: number;
-  /** Today's ベル into it so far (a member's own and half of ふたりでぜんぶ; the guest's: the pair's). */
+  /** Today's ベル into it so far (a member's own and half of ふたりでぜんぶ; the guest's: none). */
   today: number;
 }
 
@@ -89,8 +89,8 @@ export interface HarvestView {
   togetherDays: number;
   /** bells.A + bells.B + bells.together. */
   totalBells: number;
-  /** Who tapped 「受け取る」 (a ceremony only). */
-  confirmedBy: PersonId[];
+  /** Who tapped 「受け取る」 (a ceremony only; the week closes once both members have, the guest's tap its own). */
+  confirmedBy: Who[];
 }
 
 /** The guest as the island draws it (docs/design.md "The guest"): its own villager and name, 「ゲスト」 by default. */
@@ -115,7 +115,7 @@ export interface WeekView {
   weekKey: WeekKey;
   today: LocalDate;
   people: Record<PersonId, PersonWeekView>;
-  /** The wallets; `balance`/`today` are the viewer's own (the guest's phone: both members' together). */
+  /** The wallets; `balance`/`today` are the viewer's own (the guest's: empty, no Health data to earn with). */
   wallet: WalletView;
   /** Present from Sunday 19:30 until both tapped 「受け取る」. */
   harvest: HarvestView | null;

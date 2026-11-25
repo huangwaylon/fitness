@@ -3,7 +3,7 @@
   // at once (Sheet's `pop`). One scroller: プロフィール (read-only, a row a person: ProfileSection), 姿 (the look's
   // portrait, the よびな; 変更 → the 姿 level: the closet and the villagers, one dresser), サウンド, 言語 (one dropdown), 季節 (the whole island's look: SeasonSection),
   // and 図鑑 (one row: this closes, the ずかん's sheet in its place; its ‹ reopens this where it was); the guest's the
-  // same (2026-11-06), with a line saying it's visiting. The bots are the menu's ボット (components/bots), the island is
+  // same. The bots are the menu's ボット (components/bots), the island is
   // arranged in /editor, not here. 姿 pushes a level with ‹ (its edits are sent as it's left, with a 取り消す banner
   // here); ✕, the backdrop and Esc close it, and the next opening starts at its top.
   import Icon from '../ui/Icon.svelte';
@@ -26,7 +26,7 @@
   import { i18n, t } from '#lib/i18n/index.ts';
   import '#lib/i18n/rooms.ts'; // its strings, loaded with it
   import { cue } from '#lib/sound/cues.ts';
-  import { isGuest, mine } from '#lib/ui-state/viewer.ts';
+  import { mine } from '#lib/ui-state/viewer.ts';
   import { lastSentAt, unsentStuck } from '#lib/sync/queue.ts';
   import { formatSyncTime } from '#lib/i18n/format.ts';
   import { dayKey, minuteNow } from '#lib/time/clock.ts';
@@ -61,8 +61,6 @@
    *  hold or fresh. (The view recomputes as one is queued or acked, the minute as one waits: the count follows it.) */
   const unsent = $derived((void week.view, week.demo ? 0 : unsentStuck(minuteNow().getTime())));
   const sentAt = $derived((void week.view, lastSentAt()));
-  /** The guest's phone (docs/design.md "The guest"): a line saying it's visiting. */
-  const guest = $derived(isGuest(view));
 
   async function go(to: 'look') {
     if (!stack.length) savedTop = body?.scrollTop ?? 0;
@@ -124,7 +122,6 @@
           <span class="prl">{me.villagerName}{#if wornName}<small data-look-worn>{wornName}</small>{/if}</span>
           <button type="button" class="btn small paper" data-push="look" data-sfx="page" onclick={() => go('look')}>{t('panel.change')}</button>
         </div>
-        {#if guest}<p class="guest" data-guest-note>{t('guest.note')}</p>{/if}
       </section>
       <section class="sec" aria-labelledby="sec-sound"><h3 id="sec-sound" class="sec-label">{t('panel.sound')}</h3><SoundSection /></section>
       <section class="sec" aria-labelledby="sec-lang"><h3 id="sec-lang" class="sec-label">{t('panel.lang')}</h3><LangSection /></section>
@@ -163,5 +160,4 @@
   /* a row that goes somewhere (図鑑): an icon, the label, a chevron */
   .go .ic { flex: none; display: flex; width: 40px; justify-content: center; }
   .go .chev { flex: none; display: flex; color: var(--text-soft); }
-  .guest { margin: 6px 4px 0; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); line-height: var(--lh); }
 </style>

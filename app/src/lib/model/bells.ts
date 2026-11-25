@@ -133,8 +133,6 @@ export const ownDayBells = (w: WeekBells, p: PersonId, i: number): number => w[p
 interface WalletState {
   /** What each member can spend now: their own wallet. */
   balance: Record<PersonId, number>;
-  /** Both wallets: the guest's ベル row. */
-  total: number;
   /** Everything earned, both people. */
   earned: number;
   /** The economy's weeks up to now, oldest first. */
@@ -197,7 +195,7 @@ export function walletAt(s: State, now: number): WalletState {
   }
   const balance = { A: earnedBy('A', today) - spent.A, B: earnedBy('B', today) - spent.B };
   const earned = days.reduce((n, x) => n + x.A + x.B, 0);
-  const v: WalletState = { balance, total: balance.A + balance.B, earned, weeks, spends };
+  const v: WalletState = { balance, earned, weeks, spends };
   walletMemo.set(s, { now, v });
   return v;
 }

@@ -124,7 +124,6 @@ describe('the wallets over random buys and voids', () => {
         for (const p of PEOPLE) expect(w.balance[p]).toBeGreaterThanOrEqual(0);
         if (now >= sheet.end) {
           expect(w.balance).toEqual({ A: o.balance('A'), B: o.balance('B') });
-          expect(w.total).toBe(w.balance.A + w.balance.B);
         }
         // A day pays 0–4 per person + がんばり 0–2, plus 2 when both met all four.
         for (const d of o.ledger.days) {

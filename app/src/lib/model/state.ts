@@ -113,7 +113,7 @@ export interface State {
   body: Record<PersonId, Record<BodyMetric, Map<LocalDate, Timed<number>[]>>>;
   /** Accepted `spend_void`s (by either person, once per buy, after it). */
   spendVoids: { at: number; person: Who; spendId: string }[];
-  harvests: { at: number; person: PersonId; week: WeekKey }[];
+  harvests: { at: number; person: Who; week: WeekKey }[];
   /** The island's finds (`find`: catches and pick-ups for the ずかん), in server order. Never read by the economy. */
   finds: { at: number; person: Who; kind: FindKind; id: string }[];
   /** Each person's day tallies (`tally`: the ずかん's counts, model/tally.ts), in server order, replaced rows included
@@ -588,8 +588,8 @@ type Data = Record<string, unknown>;
 /** `person`: whose data the event changes (a goal's `data.person`, else the sender: the guest's, `G`, too). */
 type OnEvent = (s: State, person: Who, at: number, d: Data) => void;
 type MemberEvent = (s: State, person: PersonId, at: number, d: Data) => void;
-/** A handler of the members' own records (the harvest's ceremony over their wallets, a goal, the tree's checks): the
- *  guest's row of it is ignored (no wallet earning, no goal, no tree of its own: it has no Health data). */
+/** A handler of the members' own records (a goal, the tree's checks): the guest's row of it is ignored (no goal, no
+ *  tree of its own: it has no Health data). */
 const members = (fn: MemberEvent): OnEvent => (s, person, at, d) => {
   if (isPersonId(person)) fn(s, person, at, d);
 };
@@ -628,10 +628,11 @@ const ON_EVENT: Record<Exclude<EventType, RawEvent>, OnEvent> = {
     if (!sp || sp.at > at || s.spendVoids.some((v) => v.spendId === spendId)) return;
     put(s, 'spendVoids', { at, person, spendId });
   },
-  harvest: members((s, person, at, d) => {
+  // anyone's 受け取る (the guest's too: its recap seen; the week closes with both members': model/week.ts)
+  harvest(s, person, at, d) {
     const week = normDate(d.week);
     if (week) put(s, 'harvests', { at, person, week });
-  }),
+  },
   find(s, person, at, d) {
     if (isFind(d)) put(s, 'finds', { at, person, kind: d.kind as FindKind, id: d.id as string });
   },
