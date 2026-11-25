@@ -134,7 +134,8 @@ AI-generated イメージ (Z-Image-Turbo, Apache-2.0, run locally) of every gene
 generic food's picture or show a category tile; Kalori menus hotlink Kalori's (`images.ts kaloriImg`). Pipeline:
 `food-data/images/fi.py` (docstring: commands, prompt, layout).
 - **Inputs**: `food-data/images/table/*.json` (one row per visual concept, `{key, ja, desc, items}`);
-  `food-data/images/pmatch.py` + `products.txt` match products by name and OFF tags (doubtful: the tile). Renders
+  `food-data/images/pmatch.py` + `products.txt` match products by name and OFF tags (doubtful: the tile; lookalike
+  guards and the 2026-11-25 audit in its docstring). Renders
   cached in `$FOOD_IMG_RAW`. Checks (`FI_CHECKS=1`, a vision model) not run yet; `food-data/images/shipped.json`.
 - **Pack**: webp sprite sheets in `app/static/food-img/`, append-only, content-hashed; its `index.json` maps ids to
   cells (`lib/food/images.ts` `imgOf`); the app build cuts product ids into `off.json` (`scripts/food-shards.ts`,

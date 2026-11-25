@@ -12,6 +12,13 @@ Confidence (CONFIDENT or more ships): a hand-written word 3 (a weak `~` word or 
 of its kind (drink, sweet, seasoning, meal) or its tags name the same picture; -1 when its tags say another kind, or
 a word of another kind sits beside it and the product's category sides with neither (or with that word, which then
 wins); -1 from the OFF generic_name instead of the name. A context rule's `-` drops the word.
+
+Lookalike guards (the 2026-11-25 audit, F6: a labelled sample 90 % right before, the classes below fixed): a word that
+must stand alone hides the shorter words it ends with (玉ねぎ: not ねぎ); a sweet or drink word a token starts with
+counts only where the script changes or 5+ letters long (プリン|グルス), and never in a token that is only a flavour
+(ミルクティー味); -1 for two foods joined in one word (野沢菜ごはん&豚しゃぶ) and for a weak word after a name it
+doesn't know (甘食 キャラメル); none for a raw food's picture beside a cooked or processed mark or a dish (raw), for a
+dish's picture in a mix's or sauce's name (_MIX: 炊き込みご飯の素, パスタソース) and for a maker's product of another kind.
 """
 import re, sys, unicodedata
 from pathlib import Path
@@ -36,13 +43,19 @@ def kind(cat):
 _KANA = [('芋', 'いも'), ('玉子', 'たまご'), ('卵', 'たまご'), ('葱', 'ねぎ'), ('海老', 'えび'), ('烏賊', 'いか'), ('鮭', 'さけ'),
          ('しゃけ', 'さけ'), ('胡麻', 'ごま'), ('昆布', 'こんぶ'), ('醤油', 'しょうゆ'), ('味噌', 'みそ'), ('から揚げ', '唐揚げ'), ('からあげ', '唐揚げ'),
          ('餃子', 'ぎょうざ'), ('ギョーザ', 'ぎょうざ'), ('焼売', 'しゅうまい'),
-         ('シュウマイ', 'しゅうまい'), ('ー', ''), ('・', '')]
+         ('シュウマイ', 'しゅうまい'), ('豆腐', 'とうふ'), ('珈琲', 'こーひー'), ('ー', ''), ('・', '')]
 # a name's last bits that say nothing of the food: sizes, counts, brackets, marks, cuts and packs
 _JUNK = re.compile(r'([^\w]|\d+(\.\d+)?(g|ml|kg|l|個|枚|本|袋|食|粒|切|切れ|貫|人前|p|入|入り|コ|分)+|内容量.*|[!！?？☆★♪〈〉<>【】\[\]「」『』'
                    r'（）()／/、,.。~〜%％+＋&＆-]|大|小|(?<!最)中|ミニ|特大|徳用|業務用|お徳用|スライス|切り落とし|切り落し|切落し|切落とし|詰め合わせ|詰合せ|セット|風|生食用|刺身用|加熱用|焼肉用|味付|解凍品|冷凍品|加工品|タイプ|きれはし|切れ端|訳あり|ハーフ|増量|小パック|大パック|ファミリーパック|mini|big|プレミアム|デラックス|カップ|甘塩味|甘塩|うす塩|薄塩|甘口|中辛|辛口|\d+)+$')
 # a prefix that says nothing of the food's form (北海道バター, 生モッツァレラ): the word counts as its whole token
 _MOD = re.compile(r'(国産|国内産|\w{1,4}?県?産|北海道|九州|沖縄|京都|信州|天然|有機|オーガニック|特選|厳選|上|純|本|極|新|旬|生|無塩|減塩|有塩|塩|'
                   r'塩味|甘口|辛口|手造り|手作り|自家製|ちっちゃい|大粒|小粒|冷凍|無添加|骨取り|骨なし|皮なし|皮付き|あらびき|都)+')
+# a cooked, processed or flavoured food's mark beside a raw food's word (炭火焼軟骨, ボイルえび, みかん 缶詰, いちご&ミルク)
+_COOKED = re.compile(r'揚|焼|煮|燻|炒|蒸|干|漬|炙|乾|缶|佃|味|風|酢|飴|おろし|刻み|ふらい|てんぷら|天ぷら|すもく|ぼいる|ゆで|茹|'
+                     r'そふと|ちんみ|珍味|ふれく|じゃむ|ぴゅれ|しらっぷ|しろっぷ|じゅす|そす|ぜり|ちっぷ|すなっく|ぷりん|けき|くっき|'
+                     r'ちょこ|みるく|くりむ|ばた|たれ|だれ|どれっしんぐ|ぱん|ぱい|おかき|せんべい|ぐみ|ぷろていん|はちみつ|加工|みそ|すちむ|おかか')
+# a mix, a sauce or a seasoning named after a dish (炊き込みご飯の素, パスタソース): never the dish's picture
+_MIX = re.compile(r'の素|のもと|しずにんぐ|cookdo|くっくどぅ|ぱすたそす|あえるぱすた|炒め用')
 _FLAVOUR = re.compile(r'(味|風味|フレーバー|テイスト|仕立て|仕立)$')
 
 
@@ -65,7 +78,7 @@ def _script(c):
 def tokens(name, brand=''):
     """A name's tokens [(token, a part of a space-separated word)]: split at spaces, then at 【】「」 / ・ & marks;
     brackets' contents and junk gone, and the brand's own token (はま寿司 甘口醤油) unless it is all (おかめ納豆)."""
-    s = re.sub(r'[（(][^）)]*[）)]', '', unicodedata.normalize('NFKC', name))
+    s = re.sub(r'[（(〈《][^）)〉》]*[）)〉》]', '', unicodedata.normalize('NFKC', name))
     b = pnorm(brand) if brand else ''
     out = []
     for word in s.split():
@@ -86,6 +99,8 @@ class Rules:
         self.catalog = catalog or {}
         self.cats = cats or {}  # picture key -> its category
         self.kinds = {}  # picture key -> its kind, where products.txt says other than its category
+        self.raw = set()  # pictures of a raw food (a cooked token or a dish beside it: not this picture)
+        self.makers = []  # (a brand, the kind of all it makes): a picture of another kind is never its product's
         for line in text.splitlines():
             line = line.split('#')[0].strip()
             if not line:
@@ -94,6 +109,12 @@ class Rules:
             if lhs.startswith('kind '):
                 for k in key.split('|'):
                     self.kinds[k] = lhs[5:].strip()
+                continue
+            if lhs == 'raw':
+                self.raw.update(key.split('|'))
+                continue
+            if lhs.startswith('maker '):
+                self.makers += [(pnorm(b).replace(' ', ''), key) for b in lhs[6:].split('|')]
                 continue
             key = None if key == '-' else key
             if lhs.startswith('tag '):
@@ -144,8 +165,10 @@ class Rules:
                 hit = len(w) >= 2 and self._word(w)
                 if not hit or hit[1] or hit[2] or (hit[3] and ti) or self.kind_of(hit[0]) not in ('sweet', 'drink'):
                     continue
-                if _script(body[e - 1]) == _script(body[e]) and len(w) < 3:
-                    continue
+                if not body[e:].strip('ー'):
+                    break  # a token that is only a flavour (ミルクティー味) is not the product
+                if _script(body[e - 1]) == _script(body[e]) and (len(w) < 3 or not fl and len(w) < 5):
+                    continue  # no flavour ending: a short word only where the script changes (プリン|グルス, チョコバ|ッキー)
                 out.append(((True, len(w), -ti), hit[0], w, hit[5] - (not fl), tok[e:], ' '.join(toks[:ti] + toks[ti + 1:])))
                 break
         return sorted(out, key=lambda c: c[0], reverse=True)
@@ -159,7 +182,7 @@ class Rules:
                 continue
             key, whole, weak, first, tail, conf = hit
             if (whole and st) or (first and ti):
-                continue
+                return None  # a word that must stand alone hides the shorter ones it ends with (玉ねぎ: not ねぎ)
             if st and len(tok) - st < 3 and not tail and _script(tok[st - 1]) != 'x' and all(
                     _script(c) == _script(tok[st - 1]) for c in tok[st:]):
                 continue
@@ -174,6 +197,17 @@ class Rules:
         return None
 
     def match(self, name, cat='その他', brand='', tags=(), generic=''):
+        """-> (picture key or None, confidence, why): _match's, none when the brand is a maker of another kind."""
+        key, conf, why = self._match(name, cat, brand, tags, generic)
+        if key and self.kind_of(key) == 'meal' and _MIX.search(pnorm(name)):
+            return None, 0, f'{why}: a mix or a sauce'
+        b = pnorm(brand).replace(' ', '') if brand else ''
+        mk = next((k for m, k in self.makers if b and m in b), None)
+        if key and mk and self.kind_of(key) not in (mk, None):
+            return None, 0, f'{why}: a {mk} maker'
+        return key, conf, why
+
+    def _match(self, name, cat, brand, tags, generic):
         """-> (picture key or None, confidence, why). Only a key with confidence >= CONFIDENT is a match. The best
         candidate a context rule's `-` leaves (-1 if its tags' category, off.pick_cat, is of another kind); when the
         rest of the name holds a word of another kind (キャラメル|サンド, 島かりんとう|黒糖), the product's category
@@ -183,15 +217,24 @@ class Rules:
         ck = kind(cat)
         low = pnorm(name)
         for b, key in self.brands:
-            if b in low:
+            if b in low or b in low.replace(' ', ''):
                 return self._judge(key, 3, cat, tag_key, f'brand {b}')
         for src, text, cost in (('name', name, 0), ('generic', generic, 1)):
             if not text:
                 continue
-            for _, key, w, conf, near, rest in self.candidates(text, brand):
+            cands = self.candidates(text, brand)
+            # two foods joined (野沢菜ごはん&豚しゃぶ): the parts of a word naming two pictures
+            joined = {self._context(c[2], c[1], low) for t, part in tokens(text, brand) if part
+                      for c in self.candidates(t)[:1] if c[0][0]} - {None}
+            for (strong, _, nti), key, w, conf, near, rest in cands:
                 key = self._context(w, key, low)
                 if key is None:
                     continue
+                if key in self.raw and (_COOKED.search(low.replace(w, '', 1)) or any(
+                        c[0][0] and self._context(c[2], c[1], low) not in self.raw | {None} for c in self.candidates(rest))):
+                    return None, 0, f'{src} {w}: cooked, or beside a dish'
+                if not strong and nti and not any(c[0][2] == 0 and c[1] for c in cands):
+                    conf -= 1  # a flavour after a name it doesn't know (甘食 キャラメル)
                 qk = self.kind_of(key)
                 if tk and qk and tk != qk:
                     conf -= 1
@@ -203,7 +246,10 @@ class Rules:
                     alt = [o for o in other[rest] if ck and self.kind_of(o[0]) == ck]
                     if alt:
                         key, w, conf = alt[0]
+                        if key in self.raw:  # a raw food beside a food of another kind (即席みそ汁 あさり)
+                            return None, 0, f'{src} {w}: beside a dish'
                     conf -= 1
+                conf -= 2 * (len(joined) > 1)  # two foods joined: neither picture
                 return self._judge(key, conf - cost, cat, tag_key, f'{src} {w}')
         if tag_key:
             return self._judge(tag_key, 3, cat, tag_key, 'tag')

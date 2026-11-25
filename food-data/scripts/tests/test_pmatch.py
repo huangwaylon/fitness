@@ -24,9 +24,16 @@ tag en:soy-sauces = soy
 brand ハリボー = gummy
 コーラ = cola
 kind sweet = karaage2
+^たまねぎ|^玉ねぎ = onion
+~ねぎ = leek
+~えび = prawn
+プリン = pudding
+raw = prawn|leek|onion
+maker 湖池屋 = sweet
 """
 CATS = {'bread': 'パン', 'cheese': '乳製品', 'milktea': '飲料', 'bagel': 'パン', 'sandwich': '主食', 'caramel': '菓子・デザート',
-        'karaage': '主菜', 'fishkaraage': '主菜', 'chips': '菓子・デザート', 'soy': '調味料', 'gummy': '菓子・デザート', 'cola': '飲料'}
+        'karaage': '主菜', 'fishkaraage': '主菜', 'chips': '菓子・デザート', 'soy': '調味料', 'gummy': '菓子・デザート', 'cola': '飲料',
+        'onion': '野菜', 'leek': '野菜', 'prawn': '魚介', 'pudding': '菓子・デザート'}
 
 
 class RulesTest(unittest.TestCase):
@@ -63,6 +70,25 @@ class RulesTest(unittest.TestCase):
         self.assertEqual(self.key('ブレッド屋 食パン', brand='ブレッド屋'), 'bread')
         self.assertEqual(self.R.kinds, {'karaage2': 'sweet'})
 
+    def test_lookalike_guards(self):
+        # a whole-token word hides the shorter words it ends with (玉ねぎ is no ねぎ)
+        self.assertEqual(self.key('玉ねぎ'), 'onion')
+        self.assertIsNone(self.key('ノンオイル玉ねぎ'))
+        # a raw food's picture: not after a cooked mark, nor beside a dish
+        self.assertEqual(self.key('えび', '魚介'), 'prawn')
+        self.assertIsNone(self.key('ボイルえび', '魚介'))
+        # a sweet maker's product never shows a meal
+        self.assertEqual(self.key('ポテトチップス', '菓子・デザート', '湖池屋'), 'chips')
+        self.assertIsNone(self.key('ベーグル', 'パン', '湖池屋'))
+        # two foods joined, a flavour after a name it doesn't know, a prefix word inside a longer word
+        self.assertIsNone(self.key('食パン&ベーグル'))
+        self.assertEqual(self.key('キャラメル', '菓子・デザート'), 'caramel')
+        self.assertIsNone(self.key('甘食 キャラメル'))
+        self.assertIsNone(self.key('プリングルスうましお', '菓子・デザート'))
+        # a mix named after a dish never shows the dish
+        self.assertEqual(self.key('若鶏の唐揚げ'), 'karaage')
+        self.assertIsNone(self.key('唐揚げの素'))
+
 
 class ProductsTxtTest(unittest.TestCase):
     """The committed rules: every key a shipped picture, and the lookalike classes stay fixed."""
@@ -82,7 +108,19 @@ class ProductsTxtTest(unittest.TestCase):
                            ('クラフトシスコーン', 'mext-01137'), ('明太子パスタソース', 'dishes-tarako-spa'), ('やきそば弁当', 'mext-01060'),
                            ('贅沢ふかひれスープ', None), ('チキンと野菜のチーズクリームパスタ', None), ('鶏膝なんこつ旨塩焼', 'eatout-yakitori_nankotsu'),
                            ('かに風味つまみかまぼこ', 'mext-10376'), ('つけ麺用魚介豚骨', 'eatout-tsukemen'),
-                           ('塩こんぶ', 'mext-09022'), ('宮崎マンゴーのたまご', None), ('スパゲッティ ナポリタン', 'dishes-napolitan')]:
+                           ('塩こんぶ', 'mext-09022'), ('宮崎マンゴーのたまご', None), ('スパゲッティ ナポリタン', 'dishes-napolitan'),
+                           # round F6 (2026-11-25): a labelled sample's lookalikes
+                           ('産直じゃがいものサラダ', 'dishes-potato-salad'), ('サラダえび', 'mext-10468'), ('紋甲いかそうめん', None),
+                           ('九州の味 ごまとうふ', 'mext-02056'), ('プリン珈琲ゼリー', 'mext-15088'), ('すみれ味噌スープ', None),
+                           ('骨取り白身魚のソテー', None), ('サクラマスといくらの棒寿司', 'maff_kyodo-44_9_tokushima'),
+                           ('海苔キムチ', None), ('黒はんぺん', None), ('炭火焼無限軟骨', None), ('ちぎり揚いか', None),
+                           ('即席みそ汁 あさり', 'mext-17049'), ('カレーカシュー', None), ('まぐろたたき', None), ('鶏ごぼうごはん', 'dishes-takikomi-gohan'),
+                           ('サトウのごはん あきたこまち', 'mext-01088'), ('ベルギーワッフル', None), ('お芋わかきもかもめの玉子', None),
+                           ('兵四郎のおこし〈黒糖きな粉〉', 'mext-15043'), ('アーモンド 効果 オリジナル', 'sub-plant-milk'),
+                           ('いかおくら', None), ('えび塩焼き', None), ('柏もち', 'maff_kyodo-43_15_yamaguchi'), ('ボイルいか', None),
+                           ('完熟トマトのミートソース', 'mext-17033'), ('予約でいっぱいの店のボンゴレビアンコ', None),
+                           ('うどん・そばつゆ ミヤジマ', None), ('マリエ塩バター', None),
+                           ('おさつどきっ ミルクティー味', None), ('かっぱえびせん', None), ('スイートコーン', 'mext-06180')]:
             k, conf, why = self.R.match(name)
             self.assertEqual(k if conf >= pmatch.CONFIDENT else None, want, f'{name}: {k} {conf} {why}')
 
