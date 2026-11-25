@@ -6,7 +6,7 @@
 // (remind.ts remindersOf), so nothing is ever cancelled. Free of the Workers runtime (test/push.test.ts: node:sqlite, a
 // fake push service through `deps`, a fake clock).
 import type { Who } from '../../app/src/lib/contract/api.ts';
-import type { TodoListView } from '../../app/src/lib/contract/todo.ts';
+import type { TodoItemView } from '../../app/src/lib/contract/todo.ts';
 import type { PushPresence, PushStatus, PushSubscribeInput, TodoPushPayload } from '../../app/src/lib/contract/push.ts';
 import { endpointOk, epOf, keysOk, outcomeOf, reasonOf } from '../../its/worker/src/push.ts';
 import { pushRequest, type Vapid } from '../../its/worker/src/webpush.ts';
@@ -49,8 +49,8 @@ export interface PusherIO {
   vapid: Vapid | null;
   /** Read at each use (a test sets the object's pushDeps after it is made). */
   deps(): PushDeps;
-  /** The lists as the record holds them now (store.ts todoLists). */
-  todos(): TodoListView[];
+  /** The items as the record holds them now (store.ts todoItems). */
+  todos(): TodoItemView[];
   log(l: 1 | 2 | 3, d: PushLine): void;
 }
 

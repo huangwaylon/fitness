@@ -31,6 +31,8 @@
 //                       cron's, logged ledger.drift)
 //   ledger-retire [dry] the shop's rows and the day tallies older than 36 days deleted (dump first; only with no
 //                       drift), the stored ledger the record's alone; the daily prune keeps new shop rows 2 days
+//   todo-migrate [dry]  やること's lists made items of the one list, once (src/todoMigrate.ts; backup first; `dry`:
+//                       the counts only, nothing written; a second run changes nothing)
 //   tomb-prune [dry]    the removals older than 60 days deleted, as the 03:00 cron does (contract/tomb.ts; `dry`:
 //                       the count and their ids only)
 //   wallet              each person's かいがら as the stored ledger keeps them (h, seq, at), the fold beside it
@@ -301,6 +303,10 @@ switch (cmd) {
   case 'tomb-prune':
     console.log(JSON.stringify(await signed({ op: 'tomb_prune', ...(arg === 'dry' ? { dry: true } : {}) })));
     break;
+  // やること's lists made items of the one list (src/store.ts todoMigrate; `dry`: counted, nothing written)
+  case 'todo-migrate':
+    console.log(JSON.stringify(await signed({ op: 'todo_migrate', ...(arg === 'dry' ? { dry: true } : {}) })));
+    break;
   case 'wallet':
   case 'ledgercheck':
     console.log(JSON.stringify(await signed({ op: cmd })));
@@ -335,6 +341,6 @@ switch (cmd) {
     await load((await readDump(readFileSync(arg))).rows);
     break;
   default:
-    console.error('commands: counts | backup | bookmark [ms] | restore <bookmark> | rev | dump | load <file> | verify-dump [date] | held [person] | promote <person> <date> <metric> [value] | shopcheck [fix] | decorcheck [fix] | adjust <who> <v> <note> | img-set <who> <custom> <file> [--ig] [--dry-run] | island-prune [dry] | ledger [who] | ledgercheck | ledger-retire [dry] | wallet | walletset <who> <h> <note> | inbody <person> <date> <muscle_kg> <smm_kg> | places | places-pull [--recent] [--force] | places-details <file> | places-ids <file> | tomb-prune [dry]  [--test]');
+    console.error('commands: counts | backup | bookmark [ms] | restore <bookmark> | rev | dump | load <file> | verify-dump [date] | held [person] | promote <person> <date> <metric> [value] | shopcheck [fix] | decorcheck [fix] | adjust <who> <v> <note> | img-set <who> <custom> <file> [--ig] [--dry-run] | island-prune [dry] | ledger [who] | ledgercheck | ledger-retire [dry] | wallet | walletset <who> <h> <note> | inbody <person> <date> <muscle_kg> <smm_kg> | places | places-pull [--recent] [--force] | places-details <file> | places-ids <file> | tomb-prune [dry] | todo-migrate [dry]  [--test]');
     process.exit(1);
 }

@@ -195,9 +195,6 @@ export const DEVICE = {
   /** localStorage: the same shape: やること's reminders on this phone (components/todo/push.ts, lib/push/phone.ts; off by
    *  default): on once the relay took the subscription (the one itsPush's Worker has too). Never synced. */
   todoPush: 'island.todoPush',
-  /** localStorage: `{at, ms}`: the list やること closed on and when (components/todo/TodoSheet.svelte): a reopening within
-   *  10 min shows it, across a relaunch; read once. */
-  todoLeft: 'island.todoLeft',
   /** localStorage: `1`: the installed app asked the browser to keep its storage (sync/persist.ts: once). */
   persistAsked: 'island.persistAsked',
   /** localStorage: the Tokyo day (days since the epoch) this phone last logged its storage's use (sync/persist.ts
@@ -294,12 +291,12 @@ let listener: ((p: StorageProblem) => void) | null = null;
 
 /** localStorage keys of what's gone: ききみみ's (its levels, timer, games copy, ずかん, story, stages… and its mic's),
  *  retired with it on 2026-11-16; ボット's メニュー tab's last status (its row is 定期処理's since 2026-11-24); the live
- *  socket's ticketless fallback (2026-11-24). Each load
+ *  socket's ticketless fallback (2026-11-24); the やること list a close left (one list since 2026-11-25). Each load
  *  removes them (routes/+layout.ts; nothing once they're gone). */
 const RETIRED = ['island.kikimimiLv', 'island.kikimimiTimer', 'island.kikimimiGames', 'island.kikimimiRecent', 'island.kikiZukan',
   'island.kikiWeekGoal', 'island.kikiSame', 'island.kikiJa', 'island.kikiStory', 'island.kikiOnboarded', 'island.kikiStage',
   'island.kikiLandmarks', 'island.kikiMada', 'island.kikiTiles', 'island.mic', 'island.micProbe', 'island.botsLast.kalori',
-  'island.liveTicket'] as const;
+  'island.liveTicket', 'island.todoLeft'] as const;
 
 /** The retired keys removed from this phone's localStorage (none there: nothing happens). */
 export function clearRetired(kv: KV | null = local): void {

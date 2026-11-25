@@ -36,10 +36,10 @@ describe('the reminder’s text', () => {
     expect(whenOf('2026-11-24', 'am', tokyo('2026-11-26T08:00'), 'ja')).toBe('11/24（火）');
   });
 
-  it('the payload: the item’s text (cut at 80), {when} · {list}, the item’s tag and where a tap goes', () => {
-    const [r] = remindersOf([{ id: 'dl', title: '家のこと', ord: 0, items: [{ id: 'di', text: 'x'.repeat(90), ord: 0, done: false, due: '2026-11-24T09:30', rem: 'eve', to: ['A'] }] }]);
-    expect(payloadOf(r, 'ja')).toEqual({ v: 1, kind: 'todo', title: `${'x'.repeat(79)}…`, body: '明日 9:30 · 家のこと', tag: 'di', open: { to: 'todo', list: 'dl', item: 'di' } });
-    expect(remindersOf([{ id: 'dl', title: 'L', ord: 0, items: [{ id: 'd1', text: 'a', ord: 0, done: true, due: '2026-11-24', rem: 'am', to: ['A'] }, { id: 'd2', text: 'b', ord: 0, done: false, due: '2026-11-24' }] }])).toEqual([]);
+  it('the payload: the item’s text (cut at 80), {when}, the item’s tag and where a tap goes', () => {
+    const [r] = remindersOf([{ id: 'di', text: 'x'.repeat(90), ord: 0, done: false, due: '2026-11-24T09:30', rem: 'eve', to: ['A'] }]);
+    expect(payloadOf(r, 'ja')).toEqual({ v: 1, kind: 'todo', title: `${'x'.repeat(79)}…`, body: '明日 9:30', tag: 'di', open: { to: 'todo', item: 'di' } });
+    expect(remindersOf([{ id: 'd1', text: 'a', ord: 0, done: true, due: '2026-11-24', rem: 'am', to: ['A'] }, { id: 'd2', text: 'b', ord: 0, done: false, due: '2026-11-24' }])).toEqual([]);
   });
 });
 
@@ -57,7 +57,7 @@ describe('the pusher', () => {
 
   const make = (v: Vapid | null = vapid) => new Pusher({
     sql: db.sql, now: () => now, vapid: v, deps: () => ({ hosts: ['web.push.apple.com'], fetch: svc.fetch }),
-    todos: () => store.todoLists(), log: (l, d) => lines.push([l, d])
+    todos: () => store.todoItems(), log: (l, d) => lines.push([l, d])
   });
   beforeEach(async () => {
     vi.useFakeTimers({ toFake: ['Date'] });
@@ -83,8 +83,7 @@ describe('the pusher', () => {
     return p;
   };
   const send = (who: W, data: object) => store.handle({ key: keyOf[who], action: 'event', id: `e${++n}`, type: 'todo', data }, 100) as Record<string, unknown>;
-  const list = () => send('A', { id: 'dlist01', at: now, title: '家のこと', ord: 0 });
-  const item = (extra: object, who: W = 'A', id = 'ditem01') => send(who, { id, at: now + ++n, list: 'dlist01', text: '歯医者', ord: 0, done: 0, ...extra });
+  const item = (extra: object, who: W = 'A', id = 'ditem01') => send(who, { id, at: now + ++n, text: '歯医者', ord: 0, done: 0, ...extra });
   const tick = async (t: number) => {
     clock(t);
     return pusher.tick(t);
@@ -137,7 +136,6 @@ describe('the pusher', () => {
   });
 
   it('a reminder fires once at its minute, to each phone of each of its people; nothing for no subscription, no reminder', async () => {
-    list();
     item({ due: '2026-11-24T15:00', rem: 'b10', to: ['A', 'G'] });
     item({ due: '2026-11-24T16:00' }, 'A', 'ditem02');
     expect(pusher.next()).toBeNull(); // no phone yet
@@ -149,9 +147,9 @@ describe('the pusher', () => {
     expect(pusher.next()).toBe(fire);
     expect(await tick(fire - 60_000)).toEqual({ sent: 0, failed: 0 });
     expect(await tick(fire)).toEqual({ sent: 3, failed: 0 });
-    expect(delivered().map((d) => d[1])).toEqual(['15:00（10分後） · 家のこと', '15:00（10分後） · 家のこと', '15:00（10分後） · 家のこと']);
+    expect(delivered().map((d) => d[1])).toEqual(['15:00（10分後）', '15:00（10分後）', '15:00（10分後）']);
     expect(delivered().map((d) => d[0].replace(/\d+$/, '')).sort()).toEqual(['A', 'A', 'G']);
-    expect(svc.delivered[0].message).toMatchObject({ kind: 'todo', title: '歯医者', tag: 'ditem01', open: { to: 'todo', list: 'dlist01', item: 'ditem01' } });
+    expect(svc.delivered[0].message).toMatchObject({ kind: 'todo', title: '歯医者', tag: 'ditem01', open: { to: 'todo', item: 'ditem01' } });
     expect(lines.filter((l) => l[1].op === 'send')).toHaveLength(3);
     expect(JSON.stringify(lines)).not.toContain('歯医者');
     expect(JSON.stringify(lines)).not.toContain('web.push');
@@ -161,7 +159,6 @@ describe('the pusher', () => {
   });
 
   it('re-read at its minute: done, removed or re-dated before it, nothing then; an edited time fires again at the new one', async () => {
-    list();
     await phone('A');
     const f1 = fireAt('2026-11-24T10:00', 'at')!;
     item({ due: '2026-11-24T10:00', rem: 'at', to: ['A'] });
@@ -188,7 +185,6 @@ describe('the pusher', () => {
   });
 
   it('more than 10 min late: skipped, said once; an op that came 5 min late still fires', async () => {
-    list();
     await phone('A');
     const f = fireAt('2026-11-24T10:00', 'at')!;
     item({ due: '2026-11-24T10:00', rem: 'at', to: ['A'] });
@@ -208,7 +204,6 @@ describe('the pusher', () => {
   });
 
   it('a 404/410 drops the phone; a 5xx tried again 30 s later, then 60 s, never past 10 min; a 403 not retried', async () => {
-    list();
     const a1 = await phone('A');
     await phone('B');
     item({ due: '2026-11-24T10:00', rem: 'at', to: ['A', 'B'] });
@@ -244,7 +239,6 @@ describe('the pusher', () => {
   });
 
   it('push off: nothing scheduled', async () => {
-    list();
     await phone('A');
     item({ due: '2026-11-24T10:00', rem: 'at', to: ['A'] });
     expect(make(null).next()).toBeNull();

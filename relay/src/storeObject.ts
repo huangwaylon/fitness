@@ -88,7 +88,7 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
       now: () => Date.now(),
       vapid: vapidOf(env.VAPID_PUBLIC, env.VAPID_PRIVATE),
       deps: () => this.pushDeps,
-      todos: () => this.core.todoLists(),
+      todos: () => this.core.todoItems(),
       log: (l, d) => this.log([{ e: 'todo.push', l, d }])
     });
     // ボット → 定期処理 (jobsKeeper.ts): the rings and the GitHub / gym copy, in this object's storage
@@ -434,6 +434,7 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
    * - `ledger {log?, limit?}`: the stored ledgers, part by part (`log: who`: the ops applied, newest first); `ledgercheck`:
    *   each against the fold of the rows (while kept) and its log's chain (store.ts ledgerCheck); `ledger_retire
    *   {confirm: 'retire-ledger-rows', dry?}`: the shop's rows and the old day tallies deleted (store.ts ledgerRetire);
+   * - `todo_migrate {dry?}`: やること's lists made items of the one list (store.ts todoMigrate; idempotent);
    * - `held {person?}`: the values an ingest held back (a past day's 0 over a value above it: never served);
    *   `promote {person, date, metric, value?}`: one made a row of the day's history (its latest now);
    * - `dump {limit?, after?, all?}`: the rows a page at a time (the backup, docs/ops/runbook.md#9-the-record; `all`: at once)
@@ -534,6 +535,9 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
       // the removals past their keep deleted (`dry`: counted, their ids; store.ts tombPrune)
       case 'tomb_prune':
         return { ok: true, ...this.core.tombPrune(o.dry === true) };
+      // やること's lists made one list's items, once (store.ts todoMigrate; `dry`: counted only)
+      case 'todo_migrate':
+        return this.core.todoMigrate(o);
       case 'walletset':
         return this.core.walletSet(o);
       // the stored ledgers (ledger.ts): read (`log: who`, its ops), and the daily check by hand

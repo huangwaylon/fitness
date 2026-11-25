@@ -1,6 +1,6 @@
 // The service worker's notifications (notify.ts): the sender's title, body and tag shown as they came (cut to their
 // bounds), the generic line when a push can't be read, and a tap: an open window focused and told where to open
-// (保養所, or やること at an item), else the app opened at ?open=its / ?open=todo&list=…&item=….
+// (保養所, or やること at an item), else the app opened at ?open=its / ?open=todo&item=….
 import { describe, expect, it, vi } from 'vitest';
 import example from '../../../its/contract-example.json';
 import { notificationFor, openApp, showPush } from './notify.ts';
@@ -27,25 +27,26 @@ describe('notificationFor', () => {
 });
 
 describe('a やること reminder', () => {
-  const todo = { v: 1, kind: 'todo', title: '歯医者', body: '明日 9:30 · 家のこと', tag: 'ditem0001', open: { to: 'todo', list: 'dlist0001', item: 'ditem0001' } };
+  const todo = { v: 1, kind: 'todo', title: '歯医者', body: '明日 9:30', tag: 'ditem0001', open: { to: 'todo', item: 'ditem0001' } };
   it('opens やること at the item; no badge', async () => {
     const n = notificationFor(data(JSON.stringify(todo)), '/fitness/');
-    expect(n).toMatchObject({ title: '歯医者', options: { body: '明日 9:30 · 家のこと', tag: 'ditem0001', data: { url: '/fitness/?open=todo&list=dlist0001&item=ditem0001', open: todo.open } } });
+    expect(n).toMatchObject({ title: '歯医者', options: { body: '明日 9:30', tag: 'ditem0001', data: { url: '/fitness/?open=todo&item=ditem0001', open: todo.open } } });
     const reg = { showNotification: vi.fn(async () => {}) }, nav = { setAppBadge: vi.fn(async () => {}) };
     await showPush(reg, nav, data(JSON.stringify(todo)), '/');
     expect(nav.setAppBadge).not.toHaveBeenCalled();
-    // a test notification: やること, no list; ids that aren't ids dropped
+    // a test notification: やること, no item; an id that isn't one dropped; an older relay's `list` ignored
     expect(notificationFor(data(JSON.stringify({ ...todo, kind: 'test', open: { to: 'todo' } })), '/').options.data).toEqual({ url: '/?open=todo', open: { to: 'todo' } });
-    expect(notificationFor(data(JSON.stringify({ ...todo, open: { to: 'todo', list: '../x', item: 'ditem0001' } })), '/').open).toEqual({ to: 'todo' });
+    expect(notificationFor(data(JSON.stringify({ ...todo, open: { to: 'todo', item: '../x' } })), '/').open).toEqual({ to: 'todo' });
+    expect(notificationFor(data(JSON.stringify({ ...todo, open: { to: 'todo', list: 'dlist0001', item: 'ditem0001' } })), '/').open).toEqual({ to: 'todo', item: 'ditem0001' });
   });
-  it('a tap: the open window told the list and item, else the app opened there', async () => {
+  it('a tap: the open window told the item, else the app opened there', async () => {
     const mine = { url: 'https://island.test/fitness/', focus: vi.fn(async () => {}), postMessage: vi.fn() };
     const clients = { matchAll: vi.fn(async () => [mine]), openWindow: vi.fn(async () => null) };
     await openApp(clients, '/fitness/', { url: 'x', open: todo.open });
-    expect(mine.postMessage).toHaveBeenCalledWith({ k: 'open', to: 'todo', list: 'dlist0001', item: 'ditem0001' });
+    expect(mine.postMessage).toHaveBeenCalledWith({ k: 'open', to: 'todo', item: 'ditem0001' });
     clients.matchAll.mockResolvedValueOnce([]);
     await openApp(clients, '/fitness/', { url: 'x', open: todo.open });
-    expect(clients.openWindow).toHaveBeenCalledWith('/fitness/?open=todo&list=dlist0001&item=ditem0001');
+    expect(clients.openWindow).toHaveBeenCalledWith('/fitness/?open=todo&item=ditem0001');
   });
 });
 

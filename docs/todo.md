@@ -1,40 +1,69 @@
-# やること (to-do lists)
+# やること (the to-do list)
 
-Shared to-do lists from the leaf menu's やること pill ([design](design.md#island) "Menu"): lists of one-line items, done
-or not. Everyone edits everything, the guest too, live on every phone, queued offline.
+One shared to-do list, from the leaf menu's やること pill and the HUD's disc ([design](design.md#island)): one-line
+items, each with an optional note, due date and reminder, done or not. Everyone edits everything, the guest too, live on
+every phone, queued offline. (Lists until 2026-11-25: [the move](#the-move-from-lists).)
 
 ## Files
 
 | Part | Where |
 |---|---|
-| Op, checks, merge, cap, fold | `app/src/lib/contract/todo.ts`, due/reminder rules `contract/todoDue.ts` |
-| The record's side | `relay/src/store.ts` (via the contract); reminders `relay/src/pusher.ts`, `remind.ts`, `pushRoute.ts` |
-| Sheet, store, strings | `app/src/lib/components/todo/`, `app/src/lib/i18n/todo.*` |
+| Op, checks, merge, cap, fold | `app/src/lib/contract/todo.ts`, due/reminder rules and the disc's count `contract/todoDue.ts` |
+| The record's side | `relay/src/store.ts` (via the contract); reminders `relay/src/pusher.ts`, `remind.ts`, `pushRoute.ts`; the move `relay/src/todoMigrate.ts` |
+| Sheet, disc, peek, store, strings | `app/src/lib/components/todo/`, `app/src/lib/i18n/todo.*` |
 | Push opt-in; one subscription a phone; a tap's routing | `todo/push.svelte.ts`, `TodoNotify.svelte`; `lib/push/phone.ts`; `service-worker/notify.ts` |
 
 ## The sheet
 
-`TodoSheet.svelte`: the lists → a list (‹, ⋯ rename / delete with 取り消す). An item's Tick is shared (one done state);
-tapping its text opens 編集 · 上へ · 下へ · 削除 (reorder by buttons, not drag, so it never fights the sheet's scroll).
-While the add field is focused, 今日 · 明日 · 日付… chips date the next adds. 編集 (`DueFields.svelte`) sets 期限 and,
-with one, 通知 (whom, when). 「この端末に通知」 (`TodoNotify`) subscribes this phone; one subscription per phone serves
-保養所 too, released only when both prefs are off. A reminder's tap opens the sheet at the item
-(`?open=todo&list=…&item=…`). A reopening within 10 min of the close shows the list it closed on (kept in localStorage, so a PWA relaunch
-remembers too), a later one the lists. An empty list shows no 「0 / 0」.
+`TodoSheet.svelte`: the items in order. An item's Tick is shared (one done state); tapping its text opens 編集 · 上へ ·
+下へ · 削除 (reorder by buttons, not drag, so it never fights the sheet's scroll; 削除 with 取り消す). A note shows its first
+3 lines, soft, under the text. While the add field is focused, 今日 · 明日 · 日付… chips date the next adds. 編集
+(`DueFields.svelte`) sets the text, メモ, 期限 and, with one, 通知 (whom, when). A row's date: today in leaf text, overdue
+in coral text. 「完了した項目を削除」 takes the done ones (one 取り消す). 「この端末に通知」 (`TodoNotify`) subscribes this phone;
+one subscription per phone serves 保養所 too, released only when both prefs are off. `todoSheet.show({item})` (the peek,
+a reminder's tap: `?open=todo&item=…`) flashes the item.
 
-### The panel
+## The disc and the peek
 
-No longer in the menu (the grid: [design](design.md#island)); what is due shows on the HUD's todo disc.
-`dueLabel.ts` `duePanelOf` keeps the rows' rules.
+`TodoDisc.svelte`, left of the dumbbell in the HUD row (in the first load; its count folded from the model's rows, not
+through the sheet's store): a 44 px cream disc with the checklist icon and a badge, the undone items due today or before
+(yuzu; coral with anything overdue). Nothing due today or before: nothing drawn (tomorrow's alone never lights it). The
+badge pops once when its number changes, never loops; nothing per frame. The disc has no text but the number (VoiceOver:
+`island.todoDue`, kana: the HUD zone).
+
+A tap opens `TodoPeek.svelte` (its own chunk, fetched once something is due) under it, the disc yuzu: 前の日 (dates in
+coral text) / 今日 / 明日 rows in kanji, each with its Tick (sent after the undo snackbar's 4 s; 取り消す or a second tap
+takes it back; the row stays struck through until the peek shuts), its text (opens the sheet at the item) and its time;
+at most 6 rows, then 「ほか N件」; 「やることを開く ›」. A second tap, a tap elsewhere (not the snackbar), Esc or a sheet
+shuts it.
 
 ## The data
 
-`todo` events ([backend.md#events](backend.md#events)), each the thing's whole state: a list `{id, at, title, ord}`, an
-item `{id, at, list, text, ord, done, due?, rem?, to?}`, a removal `{id, at, rm: true}` (final). Titles ≤ 40, texts ≤ 200 chars.
+`todo` events ([backend.md#events](backend.md#events)), each the item's whole state: `{id, at, text, note?, ord, done,
+due?, rem?, to?}`, a removal `{id, at, rm: true}` (final). Texts ≤ 200 chars (one clean line), notes ≤ 2000 (lines kept,
+`cleanNote`).
 
 - Merge (`TodoBook`): per id the later `at`, then G over B over A; a removal beats everything.
-- The record makes a row only on creation; an item's list never changes (`todo moved`); a list's removal deletes its
-  items; **at most 500** lists and items standing (`todo full`). Not `calm`: changes are fetched at once.
+- The record makes a row only on creation; **at most 500** items standing (`todo full`). Not `calm`: changes are
+  fetched at once.
+- An older build's list op (`{title}` or `{list}`, `todoLegacy`) is acknowledged and dropped; phones never read one.
+
+### The move from lists
+
+Until 2026-11-25 the data was lists `{id, at, title, ord}` and items `{…, list}`. `todo-migrate` (`relay/scripts/
+record.ts`, the admin's `todo_migrate`, `store.ts todoMigrate` over `todoMigrate.ts`), in one transaction:
+
+- each standing list becomes one item **under the list's id** and its maker: title → text, ord kept;
+- its items → the note, one a line, open ones first in list order, then done ones as 「✓ 」 lines; a dated item's line
+  ends with its due, 「牛乳（11/24 15:00）」;
+- the item takes the earliest open due, with that item's reminder if it had one; the other reminders go (their dates
+  stay in their lines); done when the list had items and all were done;
+- a note past 2000 chars keeps the lines that fit and ends 「…ほか N件」; an item whose list is gone is dropped;
+- the old rows are deleted, `todo.migrate` logged (counts only), the phones told, the alarm re-armed. A second run
+  changes nothing; `dry` counts only. A `load` of an older dump keeps its lists as they were: run it again after.
+
+Order: backup → relay deploy → `todo-migrate dry` → `todo-migrate` → app deploy (COMPAT 3: older pages reload at a
+safe moment; until then they show none of the items).
 
 ## Due dates and reminders
 
@@ -57,8 +86,8 @@ Web Push from the record's object with its-bot's VAPID pair (`VAPID_PUBLIC` in w
   re-read (gone, done or changed: nothing sent). Up to 10 min late (`LATE_MS`) it still goes, else `skip late`.
 - **Once:** `push_sent` (kept 7 days) stops repeats; failures retry from 30 s, doubling (`push_retry`), within
   `LATE_MS`.
-- **Message:** title the item's text, body `{when} · {list}`, tag the item's id. Log `todo.push`, never the text or
-  endpoint.
+- **Message:** title the item's text, body `{when}`, tag the item's id, `open {to: 'todo', item}`. Log `todo.push`,
+  never the text or endpoint.
 
-Tests: `relay/test/todo.test.ts`, `relay/test/push.test.ts`, `app/src/lib/contract/todo.test.ts`, `todoDue.test.ts`,
-`app/e2e/todo.spec.ts`, `app/e2e/todo-due.spec.ts`.
+Tests: `relay/test/todo.test.ts` (with the move), `relay/test/push.test.ts`, `app/src/lib/contract/todo.test.ts`,
+`todoDue.test.ts`, `components/todo/*.test.ts`, `app/e2e/todo.spec.ts`, `app/e2e/todo-due.spec.ts` (the disc and peek).

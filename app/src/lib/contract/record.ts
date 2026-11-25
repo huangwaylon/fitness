@@ -13,7 +13,7 @@ import { layoutOpOf } from './layout.ts';
 import { boardOpOf } from './board.ts';
 import { isPackType, packOpOf, packSlot } from './pack.ts';
 import { isWedType, wedOpOf, wedSlot } from './wedding.ts';
-import { todoOpOf, todoSlot } from './todo.ts';
+import { todoLegacy, todoOpOf, todoSlot } from './todo.ts';
 import { hikeOpOf, hikeSlot, hikeTrkOf, hikeTrkSlot } from './hike.ts';
 import { hikeStartOf, hikeStartSlot } from './hikeStart.ts';
 import { foodCustomOp, foodOp, foodRecipeOp, foodRepeatOp } from './food.ts';
@@ -46,8 +46,9 @@ export function validEventData(type: string, d: Rec, now: number): boolean {
   // the wedding board (contract/wedding.ts: its texts already clean, its `at` not over a day past the record's, never
   // `imported` or a note's `was`: the admin's load's and the record's own)
   if (isWedType(type)) return wedOpOf(type, d, { now }) !== null;
-  // やること's lists and items (contract/todo.ts: its texts already clean, its `at` not over a day past the record's)
-  if (type === 'todo') return todoOpOf(d, now) !== null;
+  // やること's items (contract/todo.ts: its texts already clean, its `at` not over a day past the record's); an older
+  // build's list op passes, to be acknowledged and dropped (todoLegacy: the record's book reads it as stale)
+  if (type === 'todo') return todoOpOf(d, now) !== null || todoLegacy(d);
   // トレイル's own hikes and their tracks (contract/hike.ts: its texts already clean, its `at` not over a day past the
   // record's; a track's points in range)
   if (type === 'hike') return hikeOpOf(d, now) !== null;
@@ -256,7 +257,7 @@ export function prefTaken(key: unknown, v: unknown): boolean {
  *   `trip_note` its trip (contract/pack.ts PackBook decides whether it replaces);
  * - a `wtask` and a `wdone` op: its task's id, a `wconf` its key, the `wnote` one for the board (contract/wedding.ts
  *   WedBook decides whether it replaces);
- * - a `todo` op: its list's or item's id (contract/todo.ts TodoBook decides whether it replaces);
+ * - a `todo` op: its item's id (contract/todo.ts TodoBook decides whether it replaces);
  * - a `hike` op: its hike's id (contract/hike.ts HikeBook decides whether it replaces), a `hike_trk` its hike's (sent once),
  *   a `hike_start` its trail's slug (the latest to arrive wins, contract/hikeStart.ts);
  * - a `food` op: its entry's id, a `food_repeat` op its repeat's, a `food_recipe` op its recipe's, a `food_custom` op

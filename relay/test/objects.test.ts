@@ -340,8 +340,7 @@ describe('IslandStore', () => {
     // today's backup not up (no state): the alarm is now
     expect(st.alarm()).toBe(NOW);
     const ev = (id: string, data: object) => s.apiMeta(JSON.stringify({ key: KEY_B, action: 'event', id, type: 'todo', data }));
-    ev('e1', { id: 'dlist01', at: NOW, title: 'L', ord: 0 });
-    ev('e2', { id: 'ditem01', at: NOW, list: 'dlist01', text: '牛乳', ord: 0, done: 0, due: '2026-11-02T15:00', rem: 'at', to: ['A'] });
+    ev('e2', { id: 'ditem01', at: NOW, text: '牛乳', ord: 0, done: 0, due: '2026-11-02T15:00', rem: 'at', to: ['A'] });
     await settle();
     expect(st.alarm()).toBe(NOW);
     // the alarm: no reminder due yet, the backup run (no token here: skipped for the day), then the reminder's minute
@@ -351,7 +350,7 @@ describe('IslandStore', () => {
     const fire = fireAt('2026-11-02T15:00', 'at')!;
     expect(st.alarm()).toBe(fire);
     // an edit moves it; the cron's kick leaves the earlier reminder be
-    ev('e3', { id: 'ditem01', at: NOW + 1, list: 'dlist01', text: '牛乳', ord: 0, done: 0, due: '2026-11-02T14:00', rem: 'b10', to: ['A'] });
+    ev('e3', { id: 'ditem01', at: NOW + 1, text: '牛乳', ord: 0, done: 0, due: '2026-11-02T14:00', rem: 'b10', to: ['A'] });
     await settle();
     const f2 = fireAt('2026-11-02T14:00', 'b10')!;
     expect(st.alarm()).toBe(f2);
@@ -361,7 +360,7 @@ describe('IslandStore', () => {
     calls = {};
     await s.alarm();
     await settle();
-    expect(svc.delivered.map((d) => d.message)).toEqual([expect.objectContaining({ kind: 'todo', title: '牛乳', body: '14:00（10分後） · L' })]);
+    expect(svc.delivered.map((d) => d.message)).toEqual([expect.objectContaining({ kind: 'todo', title: '牛乳', body: '14:00（10分後）' })]);
     expect(added()).toEqual([expect.objectContaining({ e: 'todo.push', l: 1, d: expect.objectContaining({ op: 'send', who: 'A', code: 'ok', status: 201 }) })]);
     // nothing pending, the day's backup done: the next slot's start (03:00 Tokyo), never none
     const slot = Date.parse('2026-11-02T18:00:00.000Z');

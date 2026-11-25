@@ -2,7 +2,7 @@
 // todoDue.ts fireAt), the message in each language, a failed push's next try. The sending, the subscriptions and the
 // ledger are pusher.ts's; the alarm is the record's object's (storeObject.ts). Tokyo times throughout.
 import type { Who } from '../../app/src/lib/contract/api.ts';
-import type { TodoListView } from '../../app/src/lib/contract/todo.ts';
+import type { TodoItemView } from '../../app/src/lib/contract/todo.ts';
 import { dayOf, dueOf, fireAt, LATE_MS, type Rem } from '../../app/src/lib/contract/todoDue.ts';
 import { clockAt, localDateAt } from '../../app/src/lib/contract/tokyo.ts';
 import type { TodoPushLang, TodoPushPayload } from '../../app/src/lib/contract/push.ts';
@@ -10,8 +10,6 @@ import type { TodoPushLang, TodoPushPayload } from '../../app/src/lib/contract/p
 /** One standing, not-done item's reminder. */
 export interface Reminder {
   id: string;
-  list: string;
-  listTitle: string;
   text: string;
   due: string;
   rem: Rem;
@@ -19,13 +17,13 @@ export interface Reminder {
   fire: number;
 }
 
-/** Every reminder an item not done holds now (a list's removal took its items: todoLists hides them). */
-export function remindersOf(lists: TodoListView[]): Reminder[] {
+/** Every reminder an item not done holds now. */
+export function remindersOf(items: TodoItemView[]): Reminder[] {
   const out: Reminder[] = [];
-  for (const l of lists) for (const it of l.items) {
+  for (const it of items) {
     if (it.done || !it.due || !it.rem || !it.to) continue;
     const fire = fireAt(it.due, it.rem);
-    if (fire !== null) out.push({ id: it.id, list: l.id, listTitle: l.title, text: it.text, due: it.due, rem: it.rem, to: it.to, fire });
+    if (fire !== null) out.push({ id: it.id, text: it.text, due: it.due, rem: it.rem, to: it.to, fire });
   }
   return out;
 }
@@ -68,8 +66,8 @@ const cut = (s: string, n: number): string => ([...s].length > n ? `${[...s].sli
 /** The decrypted message for one reminder, in the subscription's language (never logged). */
 export function payloadOf(r: Reminder, lang: TodoPushLang): TodoPushPayload {
   return {
-    v: 1, kind: 'todo', title: cut(r.text, TITLE_MAX), body: `${whenOf(r.due, r.rem, r.fire, lang)} · ${r.listTitle}`, tag: r.id,
-    open: { to: 'todo', list: r.list, item: r.id }
+    v: 1, kind: 'todo', title: cut(r.text, TITLE_MAX), body: whenOf(r.due, r.rem, r.fire, lang), tag: r.id,
+    open: { to: 'todo', item: r.id }
   };
 }
 

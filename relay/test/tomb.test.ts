@@ -43,7 +43,7 @@ describe('removals expire', () => {
     const piece = `d${now.toString(36)}000`;
     expect(send('A', 'decor', { sc: 't', id: piece, at: at(), item: 'f1', x: 0, z: 0, f: 0, p: now })).toMatchObject({ ok: true });
     expect(send('A', 'decor', { sc: 't', id: piece, at: at(), rm: true }, 'rm-tent')).toMatchObject({ ok: true });
-    expect(send('B', 'todo', { id: 'dshop01', at: at(), title: '買い物', ord: 0 })).toMatchObject({ ok: true });
+    expect(send('B', 'todo', { id: 'dshop01', at: at(), text: '買い物', ord: 0, done: 0 })).toMatchObject({ ok: true });
     expect(send('B', 'todo', { id: 'dshop01', at: at(), rm: true }, 'rm-todo')).toMatchObject({ ok: true });
     expect(send('A', 'pack', { trip: 'okinawa', id: '_capnew04', at: at(), kind: 'item', cat: 'gear', ord: 5, name: { ja: 'かさ' }, by: 'A' })).toMatchObject({ ok: true });
     expect(send('A', 'pack', { trip: 'okinawa', id: '_capnew04', at: at(), rm: true }, 'rm-pack')).toMatchObject({ ok: true });
@@ -93,7 +93,7 @@ describe('removals expire', () => {
     // a queued edit from before the removal
     expect(send('B', 'board', { id: post, at: T0 + 500, p: T0, t: 'まえ' })).toEqual({ ok: true, duplicate: true });
     expect(send('A', 'food', { id: 'fmeal001', at: T0 + 2500, d: '2026-09-01', m: 'l', g: 99, f: RICE })).toEqual({ ok: true, duplicate: true });
-    expect(send('B', 'todo', { id: 'dshop01', at: T0 + 6500, title: 'まえ', ord: 0 })).toEqual({ ok: true, duplicate: true });
+    expect(send('B', 'todo', { id: 'dshop01', at: T0 + 6500, text: 'まえ', ord: 0, done: 0 })).toEqual({ ok: true, duplicate: true });
     // a fresh edit from a cache that never saw the removal: the id tells the item's age
     expect(send('B', 'board', { id: post, at: now, p: T0, t: 'いま' })).toEqual({ ok: true, duplicate: true });
     expect(send('A', 'decor', { sc: 't', id: piece, at: now, item: 'f1', x: 1, z: 1, f: 0, p: now })).toEqual({ ok: true, duplicate: true });

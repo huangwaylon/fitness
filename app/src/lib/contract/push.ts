@@ -34,13 +34,13 @@ export interface PushEndpointInput { endpoint: string }
 export interface PushReply { ok: true; push: PushStatus }
 
 /** The decrypted message (JSON). Title and body are written by the relay in the subscription's language: title the
- *  item's text, body `{when} · {list}` (e.g. 「明日 9:30 · 家のこと」); `tag` the item's id (a re-fire after an edit
- *  replaces the shown one; `todo-test` for a test); `open` where a tap goes (やること on that list, the item flashed). */
+ *  item's text, body `{when}` (e.g. 「明日 9:30」); `tag` the item's id (a re-fire after an edit replaces the shown
+ *  one; `todo-test` for a test); `open` where a tap goes (やること, the item flashed). */
 export interface TodoPushPayload {
   v: 1;
   kind: 'todo' | 'test';
   title: string;
   body: string;
   tag: string;
-  open: { to: 'todo'; list?: string; item?: string };
+  open: { to: 'todo'; item?: string };
 }

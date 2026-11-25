@@ -37,8 +37,9 @@ both. A change to one of these is a conscious decision: edit the line, don't let
   Push only for 保養所 holds (opt-in per phone, members; its/README.md "Push"), やること reminders (opt-in per item and
   phone; [todo](todo.md)), and a local notification during a hike ([hiking](hiking.md#in-hike-map)). Why: a hold lapses
   in 30 min; everything else needs no alert.
-- **To-do lists: one op per thing.** A `todo` event holds a list's or item's whole state, latest per id wins; everyone
-  (guest too) edits everything ([todo](todo.md)). Why: the simplest offline-safe model, as the packing list.
+- **To-do: one shared list, one op per item.** A `todo` event holds an item's whole state (a note for detail),
+  latest per id wins; everyone (guest too) edits everything ([todo](todo.md)). Why: the simplest offline-safe model, as
+  the packing list; lists were folded into one on 2026-11-25 (the user: one list, each old list an item with a note).
 - **Registered hikes.** `hike` (whole state, latest wins) and `hike_trk` (the simplified track, sent once, 60 KB cap)
   are separate; a YAMAP link is read by the relay (`POST /hiking`) which writes nothing. Why: a rename never resends a
   track; the record stays the one writer path.

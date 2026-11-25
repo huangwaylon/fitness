@@ -31,8 +31,7 @@ async function phoneA(type: BrowserType, use: Record<string, unknown>, net: () =
   const proxy = await relayProxy(RELAY, routes.answer, net, reqs);
   await rec.pair(routes.context, 'A');
   const at = rec.now();
-  rec.event('A', 'todo', { id: 'dshop001', at, title: 'かいもの', ord: 0 });
-  ['たまご', 'ぎゅうにゅう', 'パン'].forEach((text, i) => rec.event('A', 'todo', { id: `dshop001i${i}`, at: at + 1 + i, list: 'dshop001', text, ord: i, done: 0 }));
+  ['たまご', 'ぎゅうにゅう', 'パン'].forEach((text, i) => rec.event('A', 'todo', { id: `dshop001i${i}`, at: at + 1 + i, text, ord: i, done: 0 }));
   await routePlaces(routes.context as unknown as Page);
   const dir = mkdtempSync(join(tmpdir(), 'launch-'));
   const { userAgent, deviceScaleFactor, isMobile, hasTouch } = use as Record<string, never>;

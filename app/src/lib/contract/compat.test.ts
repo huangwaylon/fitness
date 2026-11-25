@@ -16,7 +16,10 @@ import { ROOM_PROTOCOL } from './ticket.ts';
 const EPOCHS: Record<number, { LIVE_V: number; LIVE_VS: readonly number[]; ROOM_PROTOCOL: string }> = {
   1: { LIVE_V: 3, LIVE_VS: [3], ROOM_PROTOCOL: 'island-v1' },
   // 2026-11-25: the shared field (contract/farm.ts): `farm` rows {ops} with time-based plants; an older page can't read them
-  2: { LIVE_V: 3, LIVE_VS: [3], ROOM_PROTOCOL: 'island-v1' }
+  2: { LIVE_V: 3, LIVE_VS: [3], ROOM_PROTOCOL: 'island-v1' },
+  // 2026-11-25: やること's one list (contract/todo.ts): items `{text, note?}` with no list; an older page shows none of
+  // them and its list ops are dropped by the record
+  3: { LIVE_V: 3, LIVE_VS: [3], ROOM_PROTOCOL: 'island-v1' }
 };
 
 /** Each LIVE_REV: live-protocol.ts's code as it shipped (`fp`: liveShape) and what an older page makes of the change. */

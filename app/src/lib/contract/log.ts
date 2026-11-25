@@ -321,6 +321,8 @@ export const LOG_EVENTS = {
   // `POST /hiking` (relay/src/hikeRoute.ts): a YAMAP link read, its outcome, the raw and kept points and the time; never
   // the link, its id or anything of the answer
   "hike.import": { src: 'r', f: { ms: 'n', ok: 'b', err: ['unauthorized', 'bad_request', 'bad_link', 'not_found', 'too_large', 'capped', 'timeout', 'upstream'], pts: 'n', kept: 'n' } },
+  // やること's move from lists to one list (relay/src/store.ts todoMigrate, the admin's todo_migrate): counts only
+  "todo.migrate": { src: 'r', f: { dry: 'b', lists: 'n', items: 'n', done: 'n', orphans: 'n', cut: 'n', due: 'n', rem: 'n' } },
   // やること's reminders and the phones' subscriptions (relay/src/pusher.ts): a push's outcome, a subscription kept,
   // forgotten or dropped (its push service's 404/410), a reminder missed by more than 10 min; `ep` 6 hex of the
   // endpoint's SHA-256, never the endpoint or the item's text

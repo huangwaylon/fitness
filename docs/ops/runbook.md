@@ -158,6 +158,8 @@ revert` + push (`scripts/deploy-order.ts` refuses older runs), or the Pages dash
   `ledger.drift`), `walletset <A|B|G> <h> <note>` (only when asked; backup first), `ledger-retire [dry]` (once; dump
   and `dry` first; refused on a drift).
 - **`tomb-prune [dry]`**, **`island-prune [dry]`**: the 03:00 prunes now.
+- **`todo-migrate [dry]`**: やること's old lists made items of the one list, once ([todo](../todo.md#the-move-from-lists));
+  backup first, relay deployed before the app; idempotent. Run again after `load`ing a dump from before 2026-11-25.
 - **`img-set <A|B|G> <custom id> <file> [--ig] [--dry-run]`** (384 px, metadata stripped), **`inbody <A|B> <date>
   <muscle_kg> <smm_kg>`**.
 - **`held [A|B]`**, **`promote <person> <date> <metric> [value]`**: held-back zeros; promote one to the day's latest.

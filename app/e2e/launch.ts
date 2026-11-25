@@ -173,7 +173,7 @@ export const SHEETS = {
   trips: { taps: [MENU, ['[data-hud-travel]', 'dialog[open] [data-travel]']], data: 'dialog[open] [data-travel] [data-trip]' },
   hikes: { taps: [MENU, ['[data-hud-hiking]', 'dialog[open] [data-hiking]']], data: 'dialog[open] [data-hiking] [data-trail]' },
   places: { taps: [MENU, ['[data-hud-places]', 'dialog[open] [data-places]']], data: 'dialog[open] [data-places] [data-place-row]' },
-  todo: { taps: [MENU, ['[data-hud-todo]', 'dialog[open] [data-todo]']], data: 'dialog[open] [data-todo] [data-todo-open]' }
+  todo: { taps: [MENU, ['[data-hud-todo]', 'dialog[open] [data-todo]']], data: 'dialog[open] [data-todo] [data-todo-item]' }
 } as const;
 export type Sheet = keyof typeof SHEETS;
 

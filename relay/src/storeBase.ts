@@ -24,8 +24,8 @@ export interface StoreIO {
   /** A stored row that isn't JSON (or not an object) was skipped, at `where` (a fold's name): the log's warning
    *  (`store.corrupt`), once a request per place. */
   corrupt?(where: string): void;
-  /** The stored ledger's events to the log (ledgerReady's `ledger.seed`, ledgerCheck's `ledger.drift`, farmKept's `farm.refused`). */
-  log?(e: 'ledger.seed' | 'ledger.drift' | 'farm.refused' | 'share', d: Record<string, string | number | boolean>): void;
+  /** Events to the log: the stored ledger's (ledgerReady's `ledger.seed`, ledgerCheck's `ledger.drift`, farmKept's `farm.refused`), todoMigrate's `todo.migrate`. */
+  log?(e: 'ledger.seed' | 'ledger.drift' | 'farm.refused' | 'share' | 'todo.migrate', d: Record<string, string | number | boolean>): void;
   /** A `todo` row was kept (やること's reminders: the object re-arms its alarm, pusher.ts). */
   onTodo?(): void;
 }

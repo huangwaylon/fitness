@@ -51,3 +51,15 @@ export function dayOf(due: string, today: LocalDate): 'past' | 'today' | 'tomorr
   if (!d) return null;
   return d.date < today ? 'past' : d.date === today ? 'today' : d.date === nextDay(today) ? 'tomorrow' : 'later';
 }
+
+/** The HUD disc's number (components/todo/TodoDisc.svelte): the undone items due on or before `today`; `over`: some
+ *  before it. */
+export function dueCount(items: readonly { done: boolean; due?: string }[], today: LocalDate): { n: number; over: boolean } {
+  let n = 0, over = false;
+  for (const it of items) {
+    const day = !it.done && it.due ? dayOf(it.due, today) : null;
+    if (day === 'past') (n++, (over = true));
+    else if (day === 'today') n++;
+  }
+  return { n, over };
+}

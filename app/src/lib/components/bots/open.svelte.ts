@@ -22,21 +22,21 @@ export function openIts(): void {
   if (botTabs().includes('its')) botsSheet.show('its');
 }
 
-/** A やること reminder's tap: the sheet on its list at the item (anyone: the guest too). */
-export function openTodo(at: { list?: string; item?: string }): void {
+/** A やること reminder's tap: the sheet at the item (anyone: the guest too). */
+export function openTodo(at: { item?: string }): void {
   todoSheet.show(at);
 }
 
 /** The service worker's word that a notification was tapped while the app was open ({k: 'open', to: 'its'},
- *  {to: 'todo', list?, item?}; a hike's {to: 'hike'} is hiking/open.svelte.ts listenHike's); the listener's removal. (A tap that opens the app comes as `?open=…`: Hud reads it
+ *  {to: 'todo', item?}; a hike's {to: 'hike'} is hiking/open.svelte.ts listenHike's); the listener's removal. (A tap that opens the app comes as `?open=…`: Hud reads it
  *  once after boot.) */
 export function listenOpen(): () => void {
   const sw = typeof navigator === 'undefined' ? undefined : navigator.serviceWorker;
   const on = (e: MessageEvent) => {
-    const d = e.data as { k?: unknown; to?: unknown; list?: unknown; item?: unknown } | null;
+    const d = e.data as { k?: unknown; to?: unknown; item?: unknown } | null;
     if (d?.k !== 'open') return;
     if (d.to === 'its') openIts();
-    else if (d.to === 'todo') openTodo({ list: typeof d.list === 'string' ? d.list : undefined, item: typeof d.item === 'string' ? d.item : undefined });
+    else if (d.to === 'todo') openTodo({ item: typeof d.item === 'string' ? d.item : undefined });
   };
   sw?.addEventListener('message', on);
   return () => sw?.removeEventListener('message', on);

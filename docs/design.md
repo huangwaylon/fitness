@@ -37,7 +37,7 @@ Top to bottom: the HUD row, a sync chip only when sync fails, the 3D scene ([Wor
 news. One finger scrolls from まえ (home, the health lawn) to おく, two pinch-zoom, a tap on empty ground walks my
 villager.
 
-- **HUD row:** the health button and the menu, top-right at `--hud-top`; nothing else in the sky.
+- **HUD row:** [やること's disc](todo.md#the-disc-and-the-peek) (only when due), health, menu; top-right at `--hud-top`.
 - **Menu** (`island/HudMenu.svelte`, `ui-state/menuGrid.ts`): the leaf drops a fixed 3×3 grid, the same for everyone:
   毎日 — やること → [todo.md](todo.md), 英語 → [english.md](english.md), ベル (my wallet's number) → [the panel](#panel);
   お出かけ — 旅行 → [Trips](#trips), 地図 → [places.md](places.md), 登山 → [hiking.md](hiking.md); ほか — 結婚式 →

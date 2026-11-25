@@ -5,7 +5,7 @@ import { isRec } from '../../app/src/lib/contract/guards.ts';
 import { decorAccept, decorOpOf, type DecorEntry } from '../../app/src/lib/contract/decor.ts';
 import { isTentPiece, tentAccept, tentOpOf, type TentEntry } from '../../app/src/lib/contract/tent.ts';
 import { isRoomScope, isStanding, layoutAccept, layoutOpOf, type LayoutEntry } from '../../app/src/lib/contract/layout.ts';
-import { TodoBook, todoLists, todoRowOf, type TodoListView, type TodoVerdict } from '../../app/src/lib/contract/todo.ts';
+import { TodoBook, todoItems, todoRowOf, type TodoItemView, type TodoVerdict } from '../../app/src/lib/contract/todo.ts';
 import { HikeBook, hikeRowOf, hikeTrkAccept, type HikeVerdict } from '../../app/src/lib/contract/hike.ts';
 import { boardAccept, boardOpOf, type BoardEntry } from '../../app/src/lib/contract/board.ts';
 import { PackBook, packRowOf, PACK_TYPES, type PackVerdict } from '../../app/src/lib/contract/pack.ts';
@@ -186,15 +186,15 @@ export class StoreBooks {
     return b.accept(row, tasks);
   }
 
-  /** A `todo` op against every list and item the record holds (contract/todo.ts TodoBook accept: at most TODO_MAX
+  /** A `todo` op against every item the record holds (contract/todo.ts TodoBook accept: at most TODO_MAX
    *  standing, so the whole book is small). */
   todoTarget(me: Who, d: Rec): TodoVerdict {
     const row = todoRowOf('todo', d, me);
     return row ? this.todoBook().accept(row) : { v: 'stale' };
   }
-  /** The lists as the record holds them (やること's reminders: pusher.ts). */
-  todoLists(): TodoListView[] {
-    return todoLists(this.todoBook());
+  /** The items as the record holds them (やること's reminders: pusher.ts). */
+  todoItems(): TodoItemView[] {
+    return todoItems(this.todoBook());
   }
   todoBook(): TodoBook {
     const b = new TodoBook();

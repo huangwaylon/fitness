@@ -1,6 +1,7 @@
 <script lang="ts">
   // 島's HUD, NH island-view light: the sky clean, one small cluster in its top-right corner (docs/design.md "Island"):
-  // [the health button] [the menu]. The health button (NH's dumbbell) → けんこう and ごはん's sheet (HealthSheet: two
+  // [やること's disc, only with something due] [the health button] [the menu]. The disc (todo/TodoDisc.svelte) counts
+  // what's due today or before and peeks at them. The health button (NH's dumbbell) → けんこう and ごはん's sheet (HealthSheet: two
   // tabs); the menu (NH's leaf, at the screen's side) drops its fixed grid of tiles under it (HudMenu): ベル (my wallet's
   // balance, the guest's 0; today's +N flashing by the leaf as coins land) → the island panel (ごほうび), the
   // others (やること, 英語, 旅行, 地図, 登山, 結婚式, ボット, 設定) each open their own sheet, at once (each sheet's chunk
@@ -15,6 +16,7 @@
   import PreviewPill from './PreviewPill.svelte';
   import HudHealth from './HudHealth.svelte';
   import HudMenu from './HudMenu.svelte';
+  import TodoDisc from '../todo/TodoDisc.svelte';
   import { trips } from '../travel/open.svelte.ts';
   import { weddingSheet } from '../wedding/open.svelte.ts';
   import { todoSheet } from '../todo/open.svelte.ts';
@@ -86,6 +88,7 @@
 <!-- (.ribbon-wrap: the HUD's box, by its old name: the 3D island measures it for the sky under it) -->
 <div class="ribbon-wrap">
   <div class="hud-row">
+    <TodoDisc />
     <HudHealth onopen={() => kenkou.show()} />
     <HudMenu bells={balance} {today} {later} expanded={panelOpen} onbells={() => (opened = panelOpen = true)}
       onsettings={() => { settingsMounted = true; settingsOpen = true; }} />
@@ -129,7 +132,7 @@
   }
   /* only the controls take taps: the sky between them lets a tap through (the sun, the moon, a wish) */
   .ribbon-wrap > :global(*:not(.hud-row)), .hud-row > :global(*) { pointer-events: auto; }
-  /* [the health button] [the menu]: one cluster in the top-right corner, inset 14px or the safe area's side (a
+  /* [the disc] [the health button] [the menu]: one cluster in the top-right corner, inset 14px or the safe area's side (a
      landscape notch), 6px apart; the dumbbell's pill --hud-side wide, the menu's
      44px disc at the right end (its pills drop under it along the screen's side); the row is under the safe area
      (--hud-top), so the Dynamic Island stays clear above it, and the sky's left clear for the sun, the moon and the

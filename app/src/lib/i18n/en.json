@@ -28,6 +28,7 @@
   "fruit.apple": "Steps",
   "fruit.pear": "Move",
   "island.health": "Health",
+  "island.todoDue": "To-do: {n} due",
   "island.food": "Meals",
   "island.bells": "Treats · Bells {bells} · today {today}",
   "island.bellsRow": "Bells",

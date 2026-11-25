@@ -6,7 +6,7 @@ import { isRec } from '../../app/src/lib/contract/guards.ts';
 import { decorOpOf } from '../../app/src/lib/contract/decor.ts';
 import { tentOpOf } from '../../app/src/lib/contract/tent.ts';
 import { layoutOpOf } from '../../app/src/lib/contract/layout.ts';
-import { TodoBook, todoRowOf, todoSlot } from '../../app/src/lib/contract/todo.ts';
+import { TodoBook, todoLegacy, todoRowOf, todoSlot } from '../../app/src/lib/contract/todo.ts';
 import { HikeBook, hikeRowOf, hikeSlot } from '../../app/src/lib/contract/hike.ts';
 import { boardBeats, boardOpOf } from '../../app/src/lib/contract/board.ts';
 import { isPackType, PackBook, packRowOf, packSlot } from '../../app/src/lib/contract/pack.ts';
@@ -161,6 +161,17 @@ export class StoreDump {
         return 'had';
       }
     }
+    // a dump from before やること's one list (2026-11-25): its lists and items kept as they were, for the admin's
+    // todo_migrate to make items of (docs/todo.md "The move from lists"); the slot's row kept if it has one
+    if (type === 'todo' && todoLegacy(d)) {
+      const slot = todoSlot(d);
+      if (!slot || this.b.slotRow(slot)) {
+        sql.exec('INSERT OR IGNORE INTO ids (id) VALUES (?)', id);
+        return 'had';
+      }
+      this.b.put(id, at, person, type, raw || '{}', slot, null);
+      return 'added';
+    }
     if (isPackType(type) || isWedType(type) || type === 'todo' || type === 'hike') {
       const v = isPackType(type)
         ? this.loadBeats(packSlot(type, person, d), 'pack', new PackBook(), packRowOf, packRowOf(type, d, person))
@@ -216,7 +227,7 @@ export class StoreDump {
 
   /** What a phone's op would have dropped with a row a load took as it was (the live path's drops, after the whole
    *  batch, so the order its rows came in doesn't matter): a purged wedding task's tick, a removed packing item's
-   *  ticks, a removed to-do list's items, a removed hike's track. (A removal's own row is never dropped, 2026-11-08: a phone that cached the post before it would show it for
+   *  ticks, a removed to-do list's items (an old dump's), a removed hike's track. (A removal's own row is never dropped, 2026-11-08: a phone that cached the post before it would show it for
    *  good, its delta saying nothing of it.) */
   pruneLoaded(): void {
     const sql = this.b.io.sql;

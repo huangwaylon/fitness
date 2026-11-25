@@ -1,48 +1,64 @@
-// やること, the shared to-do lists (docs/todo.md, docs/backend.md#events `todo`). One event type, built
-// like the packing list (contract/pack.ts): one op per thing, its whole state, the latest `at` wins (then G over B over
-// A), a removal is final, so the record and every phone reach the same lists whatever order the ops come in.
-// - A list: `{id, at, title, ord}`; an item: `{id, at, list, text, ord, done, due?, rem?, to?}` (its list never
-//   changes); a removal `{id, at, rm: true}` (a list's takes its items with it: the record drops their rows).
+// やること, the one shared to-do list (docs/todo.md, docs/backend.md#events `todo`). One event type, built like the
+// packing list (contract/pack.ts): one op per item, its whole state, the latest `at` wins (then G over B over A), a
+// removal is final, so the record and every phone reach the same list whatever order the ops come in.
+// - An item: `{id, at, text, note?, ord, done, due?, rem?, to?}`; a removal `{id, at, rm: true}`.
+// - `note`: free text under the item, line breaks kept (a migrated list's items, 2026-11-25: relay/src/todoMigrate.ts).
 // - An item's optional due (`YYYY-MM-DD` or `YYYY-MM-DDTHH:MM`, Tokyo) and reminder (`rem`, fitting the due's kind, and
 //   `to`, who gets it: 1–3 distinct people), contract/todoDue.ts. Whole state too: every write carries them forward,
 //   one without them clears them.
-// - Anyone writes anything (the guest too: contract/guest.ts). At most TODO_MAX lists and items standing.
+// - Anyone writes anything (the guest too: contract/guest.ts). At most TODO_MAX items standing.
+// - The lists before 2026-11-25 (a list `{id, at, title, ord}`, an item `{…, list}`): todoLegacy. The record
+//   acknowledges an older build's op of that shape and drops it; the phones never read one.
 // Shared by the record (relay/src/store.ts), the model (model/state.ts) and the sheet's store
 // (components/todo/todo.svelte.ts); pure and dependency-free (the plain text rules: contract/text.ts).
 import type { Who } from '../types.ts';
-import { cleanLine } from './text.ts';
+import { BREAKS, cleanLine, STRIP } from './text.ts';
 import { AHEAD_MS, isMs, newOpId, only } from './ops.ts';
 import { beats, Book, foldOnce, type Queued, type Verdict } from './book.ts';
 import { dueOf, remFits, type Rem } from './todoDue.ts';
 
 type Rec = Record<string, unknown>;
 
-/** A list's title at most, an item's text (characters: code points; one clean line each). */
-export const TODO_TITLE = 40;
+/** An item's text at most (characters: code points; one clean line), its note's (lines kept). */
 export const TODO_TEXT = 200;
-/** At most this many lists and items standing (a removal's row uncounted): a new one past them is refused (`full`). */
+export const TODO_NOTE = 2000;
+/** At most this many items standing (a removal's row uncounted): a new one past them is refused (`full`). */
 const TODO_MAX = 500;
 const ID = /^d[0-9a-z]{6,24}$/;
 const ORD_MAX = 1e9;
 const isTodoId = (v: unknown): v is string => typeof v === 'string' && ID.test(v);
 
-/** A new list's or item's id. */
+/** A new item's id. */
 export const newTodoId = (at: number): string => newOpId('d', at);
 
-type TodoList = { id: string; at: number; title: string; ord: number; list?: undefined; rm?: undefined };
-type TodoItem = { id: string; at: number; list: string; text: string; ord: number; done: 0 | 1; due?: string; rem?: Rem; to?: Who[]; rm?: undefined };
-type TodoRm = { id: string; at: number; list?: undefined; rm: true };
-type TodoOp = TodoList | TodoItem | TodoRm;
+/** An item's op. @public (relay/src/todoMigrate.ts) */
+export type TodoItem = { id: string; at: number; text: string; note?: string; ord: number; done: 0 | 1; due?: string; rem?: Rem; to?: Who[]; rm?: undefined };
+type TodoRm = { id: string; at: number; rm: true };
+type TodoOp = TodoItem | TodoRm;
 /** A `todo` row as the record holds it, with who sent it. */
 export type TodoRow = { type: 'todo'; who: Who; op: TodoOp };
 
-/** An op's data with its texts cleaned as the record keeps them (one clean line): the record cleans what it's sent,
- *  then checks it (todoOpOf). */
+/** A note as the record keeps it: line breaks `\n`, STRIP stripped, tabs a space, each line's end trimmed, no runs of
+ *  blank lines, the whole trimmed, at most `max` characters. '' when nothing is left. Idempotent. */
+export function cleanNote(raw: unknown, max = TODO_NOTE): string {
+  if (typeof raw !== 'string') return '';
+  const lines = raw.normalize('NFC').replace(BREAKS, '\n').replace(STRIP, '').replace(/\t/g, ' ').split('\n').map((l) => l.replace(/\s+$/u, ''));
+  const s = lines.filter((l, i) => l !== '' || (i > 0 && lines[i - 1] !== '')).join('\n').replace(/^\s+|\s+$/gu, '');
+  const cps = Array.from(s);
+  return cps.length > max ? cps.slice(0, max).join('').replace(/\s+$/u, '') : s;
+}
+
+/** An op's data with its texts cleaned as the record keeps them (the text one clean line, the note cleanNote, an empty
+ *  one gone): the record cleans what it's sent, then checks it (todoOpOf). */
 export function todoClean(d: Rec): Rec {
   if (d.rm !== undefined) return d;
   const out: Rec = { ...d };
-  if (typeof d.title === 'string') out.title = cleanLine(d.title, TODO_TITLE);
   if (typeof d.text === 'string') out.text = cleanLine(d.text, TODO_TEXT);
+  if (typeof d.note === 'string') {
+    const n = cleanNote(d.note);
+    if (n) out.note = n;
+    else delete out.note;
+  }
   return out;
 }
 
@@ -57,10 +73,9 @@ export function todoOpOf(d: Rec, now?: number): TodoOp | null {
   if (!isTodoId(d.id) || !isMs(d.at) || (now !== undefined && d.at > now + AHEAD_MS)) return null;
   const id = d.id, at = d.at;
   if (d.rm !== undefined) return d.rm === true && only(d, ['id', 'at', 'rm']) ? { id, at, rm: true } : null;
-  if (!isOrd(d.ord)) return null;
-  if (d.list === undefined) return only(d, ['id', 'at', 'title', 'ord']) && isClean(d.title, TODO_TITLE) ? { id, at, title: d.title, ord: d.ord } : null;
-  if (!only(d, ['id', 'at', 'list', 'text', 'ord', 'done', 'due', 'rem', 'to']) || !isTodoId(d.list) || !isClean(d.text, TODO_TEXT) || (d.done !== 0 && d.done !== 1)) return null;
-  const item: TodoItem = { id, at, list: d.list, text: d.text, ord: d.ord, done: d.done };
+  if (!isOrd(d.ord) || !only(d, ['id', 'at', 'text', 'note', 'ord', 'done', 'due', 'rem', 'to']) || !isClean(d.text, TODO_TEXT) || (d.done !== 0 && d.done !== 1)) return null;
+  if (d.note !== undefined && (typeof d.note !== 'string' || d.note === '' || cleanNote(d.note) !== d.note)) return null;
+  const item: TodoItem = { id, at, text: d.text, ...(d.note !== undefined && { note: d.note as string }), ord: d.ord, done: d.done };
   if (d.due === undefined) return d.rem === undefined && d.to === undefined ? item : null;
   const due = dueOf(d.due);
   if (!due) return null;
@@ -69,6 +84,10 @@ export function todoOpOf(d: Rec, now?: number): TodoOp | null {
   if (!remFits(due, d.rem) || !isTo(d.to)) return null;
   return { ...item, rem: d.rem, to: [...d.to] };
 }
+
+/** An op of the lists before 2026-11-25 (a list `{title}`, an item `{list}`): an older build's, acknowledged and
+ *  dropped by the record (contract/record.ts), never kept. */
+export const todoLegacy = (d: Rec): boolean => isTodoId(d.id) && isMs(d.at) && d.rm === undefined && (typeof d.title === 'string' || typeof d.list === 'string');
 
 /** A row read from its type, data and sender (null: not a `todo`, or malformed). */
 export const todoRowOf = (type: string, d: Rec, who: Who): TodoRow | null => {
@@ -80,13 +99,11 @@ export const todoRowOf = (type: string, d: Rec, who: Who): TodoRow | null => {
 /** The slot a `todo` row fills: its id's. */
 export const todoSlot = (d: Rec): string | null => (isTodoId(d.id) ? `todo|${d.id}` : null);
 
-/** What the record does with a row (contract/book.ts Verdict): `append` (a list's removal drops its items' slots),
- *  `stale`, `full` (TODO_MAX standing) or `moved` (a set that turns a list into an item, or moves an item to another
- *  list: refused). */
-export type TodoVerdict = Verdict<TodoRow, 'full' | 'moved'>;
+/** What the record does with a row (contract/book.ts Verdict): `append`, `stale` or `full` (TODO_MAX standing). */
+export type TodoVerdict = Verdict<TodoRow, 'full'>;
 
-/** The lists and items as the record holds them (each id's latest row). */
-export class TodoBook extends Book<TodoRow, 'full' | 'moved'> {
+/** The items as the record holds them (each id's latest row). */
+export class TodoBook extends Book<TodoRow, 'full'> {
   protected slotOf(r: TodoRow): string {
     return `todo|${r.op.id}`;
   }
@@ -95,23 +112,16 @@ export class TodoBook extends Book<TodoRow, 'full' | 'moved'> {
   }
 
   accept(r: TodoRow): TodoVerdict {
-    const slot = this.slotOf(r), op = r.op;
-    const held = this.rows.get(slot) ?? null;
+    const held = this.rows.get(this.slotOf(r)) ?? null;
     // a removal is final: whatever comes after it changes nothing
     if (held?.op.rm) return { v: 'stale' };
     if (held && !beats(r, held)) return { v: 'stale' };
     if (!held) {
-      // only a creation makes a row (an edit's or a removal's thing is gone, or never was); an item only in a list held
-      if (op.rm) return { v: 'stale' };
-      if (op.list !== undefined) {
-        const l = this.rows.get(`todo|${op.list}`);
-        if (!l || l.op.rm || l.op.list !== undefined) return { v: 'stale' };
-      }
+      // only a creation makes a row (an edit's or a removal's item is gone, or never was)
+      if (r.op.rm) return { v: 'stale' };
       if (this.count('n') >= TODO_MAX) return { v: 'full' };
-    } else if (!op.rm && op.list !== held.op.list) return { v: 'moved' };
-    const drop: string[] = [];
-    if (op.rm && held && held.op.list === undefined) for (const [s, x] of this.rows) if (x.op.list === op.id) drop.push(s);
-    return { v: 'append', row: r, drop };
+    }
+    return { v: 'append', row: r, drop: [] };
   }
 }
 
@@ -122,26 +132,18 @@ export const todoFold = (rows: Iterable<TodoEntry>): TodoBook => new TodoBook().
 /** A model's list folded, once per list (the sheet's store). */
 export const todoBookOf = foldOnce(todoFold);
 
-/** An item as the sheet shows it; `due`, `rem`, `to` only when set (contract/todoDue.ts). */
-export interface TodoItemView { id: string; text: string; ord: number; done: boolean; due?: string; rem?: Rem; to?: Who[] }
-export interface TodoListView { id: string; title: string; ord: number; items: TodoItemView[] }
+/** An item as the sheet shows it; `note`, `due`, `rem`, `to` only when set (contract/todoDue.ts). */
+export interface TodoItemView { id: string; text: string; note?: string; ord: number; done: boolean; due?: string; rem?: Rem; to?: Who[] }
 
-const byOrd = <T extends { ord: number; id: string }>(a: T, b: T): number => a.ord - b.ord || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0);
-
-/** The lists by `ord`, each with its items by `ord` (an item whose list is gone is hidden with it). */
-export function todoLists(book: TodoBook): TodoListView[] {
-  const lists = new Map<string, TodoListView>();
-  const items: (TodoItemView & { list: string })[] = [];
+/** The items by `ord` (then id). */
+export function todoItems(book: TodoBook): TodoItemView[] {
+  const out: TodoItemView[] = [];
   for (const { op } of book.rows.values()) {
     if (op.rm) continue;
-    if (op.list === undefined) lists.set(op.id, { id: op.id, title: op.title, ord: op.ord, items: [] });
-    else items.push({
-      id: op.id, list: op.list, text: op.text, ord: op.ord, done: op.done === 1,
+    out.push({
+      id: op.id, text: op.text, ...(op.note !== undefined && { note: op.note }), ord: op.ord, done: op.done === 1,
       ...(op.due !== undefined && { due: op.due }), ...(op.rem !== undefined && { rem: op.rem, to: op.to })
     });
   }
-  for (const { list, ...it } of items) lists.get(list)?.items.push(it);
-  const out = [...lists.values()].sort(byOrd);
-  for (const l of out) l.items.sort(byOrd);
-  return out;
+  return out.sort((a, b) => a.ord - b.ord || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
 }

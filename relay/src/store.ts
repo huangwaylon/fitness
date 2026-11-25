@@ -26,6 +26,7 @@ import { isRec } from '../../app/src/lib/contract/guards.ts';
 import { localDateAt, prevDay } from '../../app/src/lib/contract/tokyo.ts';
 import { isRoomScope, scopeMayWrite } from '../../app/src/lib/contract/layout.ts';
 import { todoClean } from '../../app/src/lib/contract/todo.ts';
+import { migrate, oldOf } from './todoMigrate.ts';
 import { hikeClean } from '../../app/src/lib/contract/hike.ts';
 import { HIKE_TRK_CHARS } from '../../app/src/lib/contract/hikeTrack.ts';
 import { cleanText } from '../../app/src/lib/contract/board.ts';
@@ -529,7 +530,7 @@ export class StoreCore {
       : isPackType(body.type) ? packClean(body.type, sent)
       // the wedding board's titles, categories and settings: one clean line each (contract/wedding.ts wedClean)
       : isWedType(body.type) ? wedClean(body.type, sent)
-      // やること's titles and items: one clean line each (contract/todo.ts todoClean)
+      // やること's items: the text one clean line, the note's lines kept (contract/todo.ts todoClean)
       : body.type === 'todo' ? todoClean(sent)
       // トレイル's hikes: the name and area one clean line, the notes clean (contract/hike.ts hikeClean)
       : body.type === 'hike' ? hikeClean(sent)
@@ -598,8 +599,8 @@ export class StoreCore {
       if (isPackType(type) || isWedType(type) || type === 'todo' || type === 'hike') {
         // a trip's packing list (each person only their own ticks; the trip's cap: contract/pack.ts PackBook) or the
         // wedding board (a subtask only under a task held, the cap: contract/wedding.ts WedBook): an op beaten by the one held is acknowledged;
-        // kept as the rules keep it (a note saved over one it wasn't edited from carries that one); やること's lists
-        // (anyone's: a list's removal drops its items, the cap: contract/todo.ts TodoBook); トレイル's hikes (anyone's: a
+        // kept as the rules keep it (a note saved over one it wasn't edited from carries that one); やること's items
+        // (anyone's, the cap: contract/todo.ts TodoBook); トレイル's hikes (anyone's: a
         // removal drops its track, the cap: contract/hike.ts HikeBook)
         const kind = isPackType(type) ? 'pack' : isWedType(type) ? 'wedding' : type === 'todo' ? 'todo' : 'hike';
         const v = kind === 'pack' ? this.books.packTarget(me, type, data) : kind === 'wedding' ? this.books.wedTarget(me, type, data) : kind === 'todo' ? this.books.todoTarget(me, data) : this.books.hikeTarget(me, data);
@@ -837,9 +838,43 @@ export class StoreCore {
 
   // ---------------------------------------------------------------- its parts' admin reads and ops
 
-  /** The lists as the record holds them (やること's reminders: pusher.ts). */
-  todoLists(): ReturnType<StoreBooks['todoLists']> {
-    return this.books.todoLists();
+  /** The items as the record holds them (やること's reminders: pusher.ts). */
+  todoItems(): ReturnType<StoreBooks['todoItems']> {
+    return this.books.todoItems();
+  }
+
+  /** The admin's `todo_migrate {dry?}` (docs/todo.md "The move from lists"): every list of the old shape made one item
+   *  under its id (todoMigrate.ts), the lists' and their items' rows deleted, in one transaction; nothing of the old
+   *  shape left, a second run changes nothing. Counts only (never a text); `dry`: counted, nothing written. The phones
+   *  are told (the new rows fetched); the alarm re-armed (onTodo). */
+  todoMigrate(o: Rec = {}): { ok: true; dry: boolean; lists: number; items: number; done: number; orphans: number; cut: number; due: number; rem: number } {
+    const dry = o.dry === true;
+    let last = '';
+    const r = this.io.tx(() => {
+      const lists: Parameters<typeof migrate>[0] = [], items: Parameters<typeof migrate>[1] = [], slots: string[] = [];
+      for (const row of this.io.sql.exec<{ person: string; data: string; slot: string | null }>("SELECT person, data, slot FROM events WHERE type = 'todo'").toArray()) {
+        const x = this.base.rowRec(row.data, 'todo');
+        const old = x && isWho(row.person) ? oldOf(x, row.person) : null;
+        if (!old) continue;
+        if ('list' in old) lists.push(old.list);
+        else items.push(old.item);
+        if (row.slot) slots.push(row.slot);
+      }
+      const { moved, orphans } = migrate(lists, items, this.io.now());
+      if (!dry) {
+        for (const sl of slots) this.io.sql.exec('DELETE FROM events WHERE slot = ?', sl);
+        for (const m of moved) this.base.put(`todo-mig-${m.op.id}`, (last = this.base.nextAt()), m.who, 'todo', JSON.stringify(m.op), `todo|${m.op.id}`, null);
+      }
+      const sum = (f: (m: (typeof moved)[number]) => number) => moved.reduce((n, m) => n + f(m), 0);
+      return { ok: true as const, dry, lists: moved.length, items: sum((m) => m.items), done: sum((m) => m.done), orphans, cut: sum((m) => m.cut), due: sum((m) => (m.op.due ? 1 : 0)), rem: sum((m) => (m.op.rem ? 1 : 0)) };
+    });
+    const { ok: _ok, ...counts } = r;
+    this.io.log?.('todo.migrate', counts);
+    if (last) {
+      this.io.notify({ what: 'event', who: 'A', at: last, rev: this.base.rev() });
+      this.io.onTodo?.();
+    }
+    return r;
   }
   /** The admin's `decorcheck` (storeBooks.ts). */
   decorCheck(o: Rec = {}): Record<string, unknown> {
