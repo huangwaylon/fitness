@@ -40,6 +40,9 @@ export const ACTION_MS: Record<Action, number> = {
   nod: 700, bow: 1100, proud: 1100, laugh: 900, twirl: 900, dance: 1600, wiggle: 800, point: 1400
 };
 export const FADE_MS = 150;
+/** The quickest back-and-forth a moment has (ms a cycle: a laugh's shake, a wiggle's sway): ten frames at the island's
+ *  30 fps, so it reads as a motion, not a buzz (poses.test: no moment's joint turns back faster). */
+export const SHAKE_MS = 330;
 /** The high five's raised arm and the warm-up's top (forward, up past level: radians) for a villager: its arms are
  *  short under a big head, so up and well forward, beside the head and in front of it, where the island's camera
  *  sees them. A player's reach higher (player3d/tune.ts). */
@@ -774,14 +777,15 @@ export function action(a: Action, u: number): { p: Pose; w: number } {
       return { p, w };
     }
     case 'laugh': {
-      // the head back, the shoulders shaking with it, the hands at the belly
-      const on = Math.min(smooth01(u / 160), smooth01((T - u) / 220)), sh = Math.sin((u / 110) * TAU) * on;
-      p.j.Head = [-0.3 * on, 0, 0.04 * sh];
-      p.j.Spine_1 = [-0.12 * on + 0.05 * sh, 0, 0];
-      p.j.Clavicle_L = [0, 0, -0.12 * sh];
-      p.j.Clavicle_R = [0, 0, -0.12 * sh];
+      // the head back, the shoulders shaking with it, the hands at the belly: a chuckle a SHAKE_MS (a 110 ms shake and
+      // its 18 Hz bob were a buzz at the island's 30 fps, a violent jitter on a tall body: the user, 2026-11-25)
+      const on = Math.min(smooth01(u / 160), smooth01((T - u) / 220)), ph = (u / SHAKE_MS) * TAU, sh = Math.sin(ph) * on;
+      p.j.Head = [-0.3 * on, 0, 0.03 * sh];
+      p.j.Spine_1 = [-0.12 * on + 0.04 * sh, 0, 0];
+      p.j.Clavicle_L = [0, 0, -0.1 * sh];
+      p.j.Clavicle_R = [0, 0, -0.1 * sh];
       arms(p, ARMS - 0.05 * sh, -0.5 * on, 0.9 * on);
-      p.y = 0.15 * Math.abs(sh);
+      p.y = 0.12 * (0.5 - 0.5 * Math.cos(ph)) * on;
       return { p, w };
     }
     case 'twirl': {
@@ -811,12 +815,14 @@ export function action(a: Action, u: number): { p: Pose; w: number } {
       return { p, w };
     }
     case 'wiggle': {
-      // a wiggle: the hips and the body swaying side to side, quick, the arms out a little
-      const on = Math.min(smooth01(u / 140), smooth01((T - u) / 200)), s = Math.sin((u / 200) * TAU) * on;
-      p.j.Spine_1 = [0, 0.3 * s, 0.18 * s];
-      p.j.Spine_2 = [0, 0.15 * s, 0.1 * s];
-      p.j.Head = [0, -0.2 * s, -0.15 * s];
-      p.j.TailRoot = [0, 0.6 * s, 0];
+      // a wiggle: the body rocking side to side and settling, as the 2D sprite's (±7°, dying away), the arms out a
+      // little; a sway a SHAKE_MS (a 200 ms one, the body twisted 0.45 rad, shook a tall player or visitor's head 24 u
+      // side to side at 5 Hz: the user, 2026-11-25)
+      const on = Math.min(smooth01(u / 140), smooth01((T - u) / 200)), s = Math.sin((u / SHAKE_MS) * TAU) * on * (1 - 0.6 * (u / T));
+      p.j.Spine_1 = [0, 0.06 * s, 0.15 * s];
+      p.j.Spine_2 = [0, 0.03 * s, 0.06 * s];
+      p.j.Head = [0, -0.04 * s, -0.08 * s];
+      p.j.TailRoot = [0, 0.4 * s, 0];
       arms(p, ARMS - 0.35 * on, 0, 0.3 * on);
       return { p, w };
     }
