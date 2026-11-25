@@ -18,7 +18,7 @@ import { KIND_LIST, kindDef } from './catalog.ts';
 import { isOutdoor, kindOf, loadOutdoor, outdoorPiece, outdoorReady, outdoorSeatOn, wantsOutdoor, type OutdoorPiece } from './outdoor.ts';
 import { defaultLayout, objMid, withChanges, type Obj } from './model.ts';
 import { isSmallKind, isSurfaceKind, topOf } from './tops.ts';
-import { clear, findPath, navOf, seatsOf, walkable } from './nav.ts';
+import { archTiles, clear, findPath, navOf, seatsOf, walkable } from './nav.ts';
 import { validate } from './validate.ts';
 import { anchorsOf, shapeOf } from '../components/villager3d/seats3d.ts';
 import { placeObjects } from '../components/world3d/objects.ts';
@@ -144,6 +144,19 @@ describe('its kinds on the island', () => {
       expect(lamps.length).toBeGreaterThan(15);
       for (const p of lamps) expect(roomLamp({ code: '', ...p })?.e).toEqual(p.e);
       expect(roomLamp({ code: 'f14207', ...PIECES.f14207 })).toBeNull(); // the glowing-moss stool: it glows, no light
+    });
+    it('an arch’s tiles: its way through (all 4 half tiles walked) and its posts (the rest), turned too', () => {
+      const l = defaultLayout(), at = (k: string, f: Obj['f']): Obj => ({ id: 'arch', k, x: 6, z: 20, f });
+      // the torii (3 × 1): its middle tile, a post either side; turned a quarter, along z
+      expect(archTiles(l, at('nh-f13631', 0))).toEqual({ pass: [[7, 20]], posts: [[6, 20], [8, 20]] });
+      expect(archTiles(l, at('nh-f13631', 1))).toEqual({ pass: [[6, 21]], posts: [[6, 20], [6, 22]] });
+      expect(archTiles(l, at('nh-f13631', 2))).toEqual({ pass: [[7, 20]], posts: [[6, 20], [8, 20]] });
+      // the gazebo (3 × 3): its cross walked, its corners its posts
+      const g = archTiles(l, at('nh-f14106', 0))!;
+      expect(g.posts).toEqual([[6, 20], [8, 20], [6, 22], [8, 22]]);
+      expect(g.pass).toEqual([[7, 20], [6, 21], [7, 21], [8, 21], [7, 22]]);
+      // anything else: none
+      expect(archTiles(l, at('nh-f14074', 0))).toBeNull();
     });
     it('an arch (the torii, the castle gate, the 2021 arch) is walked under: its posts block, its middle doesn’t, turned too', () => {
       for (const code of ['f13631', 'f13581', 'f13543']) {

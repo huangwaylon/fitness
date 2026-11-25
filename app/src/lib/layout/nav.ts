@@ -80,15 +80,34 @@ export function blockBox(layout: Layout, o: Obj): Box | null {
   const nx = o.n?.[0] ?? 0, nz = o.n?.[1] ?? 0, [x0, z0] = originOf(layout, o);
   return { x0: tileX(x0) + nx, x1: tileX(x0 + w) + nx, y0: tileZ(z0) + nz, y1: tileZ(z0 + d) + nz };
 }
-/** What an object blocks of the walk (u, unpadded): its block box, but an arch's (an outdoor piece with a way through,
- *  #lib/pass.ts) its posts' half tiles in it, so the walk goes under it. */
+/** An arch's half tiles (an outdoor piece with a way through, #lib/pass.ts), off its footprint's middle (tiles, the
+ *  island's frame: the island's z runs into it, the model's front toward us, so a room's turned middle with its z the
+ *  other way); null for anything else. */
+function archCells(o: Pick<Obj, 'k' | 'f'>) {
+  const p = outdoorPiece(o.k);
+  return p?.pa ? passCells(p.w, p.d, o.f, p.pa).map((c) => ({ x: c.x, z: -c.z, pass: c.pass })) : null;
+}
+/** An arch's tiles (a torii, a gate, a gazebo: an outdoor piece with a way through), by their [x, z]: its way-through
+ *  tiles (all 4 half tiles walked through) and its posts' (the rest), as the walk sees them (walkBoxes); null for
+ *  anything else. Its posts stand on the ground; its way through may span water (the user, 2026-11-25). */
+export function archTiles(layout: Layout, o: Obj): { pass: [number, number][]; posts: [number, number][] } | null {
+  const cells = archCells(o);
+  if (!cells) return null;
+  const [w, d] = footOf(layout, o), [x0, z0] = originOf(layout, o);
+  const shut = new Set<number>();
+  for (const c of cells) if (!c.pass) shut.add(Math.floor(c.z + d / 2) * w + Math.floor(c.x + w / 2));
+  const pass: [number, number][] = [], posts: [number, number][] = [];
+  for (let j = 0; j < d; j++) for (let i = 0; i < w; i++) (shut.has(j * w + i) ? posts : pass).push([x0 + i, z0 + j]);
+  return { pass, posts };
+}
+/** What an object blocks of the walk (u, unpadded): its block box, but an arch's its posts' half tiles in it, so the
+ *  walk goes under it. */
 function walkBoxes(layout: Layout, o: Obj): Box[] {
-  const b = blockBox(layout, o), p = b && outdoorPiece(o.k);
-  if (!b || !p?.pa) return b ? [b] : [];
-  // (the island's z runs into it, the model's front toward us: a room's turned middle with its z the other way)
+  const b = blockBox(layout, o), cells = b && archCells(o);
+  if (!b || !cells) return b ? [b] : [];
   const [mx, mz] = objMid(layout, o), H = CELL / 2;
-  return passCells(p.w, p.d, o.f, p.pa).filter((c) => !c.pass).map((c) => {
-    const x = mx + c.x * TILE, z = mz - c.z * TILE;
+  return cells.filter((c) => !c.pass).map((c) => {
+    const x = mx + c.x * TILE, z = mz + c.z * TILE;
     return { x0: Math.max(b.x0, x - H), x1: Math.min(b.x1, x + H), y0: Math.max(b.y0, z - H), y1: Math.min(b.y1, z + H) };
   });
 }
