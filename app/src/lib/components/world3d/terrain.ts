@@ -262,9 +262,10 @@ void main(){
   }
   // fresh water: a darker earthy rim on the bank, the bed sandy at the edge going deep blue-green
   // where a river meets the sea (its stem runs on out past the shore, layout/river.ts) its bed and its bank's rim fade
-  // into the seabed's over the shore, as its channel shallows into it (layout/height.ts): no dark band out to sea
+  // into the seabed's over its last ~40u to the shore, as its channel shallows into it (layout/height.ts) and its water
+  // takes on the sea's shallows (FRESH_FRAG toSea): no dark band out to sea, no dark bed under the mouth's clear water
   float dw = dW + 0.8*gn(p/6.0, 27);
-  float sea = smoothstep(-10.0, 6.0, dL) * float(tier == 0);
+  float sea = smoothstep(-40.0, 0.0, dL) * float(tier == 0);
   c = mix(c, c*vec3(0.78,0.74,0.62), (1.0 - smoothstep(0.0, 3.5, dw)) * step(0.0, dw) * 0.6 * (1.0 - sea));
   vec3 wb = mix(vec3(0.72,0.66,0.48), vec3(0.20,0.42,0.48), smoothstep(-1.0, -12.0, dW));
   wb *= 1.0 + 0.08*fbm(p/7.0, 33, 3);
@@ -338,9 +339,12 @@ void main() {
   vec4 f = texture2D(uSdfA, (p - uGrid.xy) / uGrid.zw);
   float dW = (f.b * 2.0 - 1.0) * uFar;
   float edge = smoothstep(-1.2, -2.0, dW);
-  // a river on the sea's level runs out into the sea: its surface (a little over the sea's) fades into it over its last
-  // few u, the sea's own water there under it already (the sea is drawn 6u in), not cut square at the shore
-  edge *= 1.0 - vLow * smoothstep(-7.0, -0.5, (f.r * 2.0 - 1.0) * uFar);
+  // a river on the sea's level runs out into the sea: over its last ~35u it takes on the sea's shallows (their turquoise,
+  // see-through as they are), then fades out across the sea's own water there under it (the sea is drawn 6u in): one
+  // water at the mouth, no darker block cut square at the shore
+  float dL = (f.r * 2.0 - 1.0) * uFar;
+  float toSea = vLow * smoothstep(-40.0, -10.0, dL);
+  edge *= 1.0 - vLow * smoothstep(-8.0, 2.0, dL);
   if (edge <= 0.0) discard;
   float still = vFlow.z, foot = vFlow.w, lip = vPath.w;
   // the hand-made river's look (water.ts RIVER_FRAG): streaks on the length along the stem and across it, so a bend
@@ -372,7 +376,8 @@ void main() {
   float fn = noise(p * 0.35 + vec2(0.0, -uTime * 1.6)) * 0.6 + noise(p * 0.9 - uTime * 2.2) * 0.4;
   float fa = smoothstep(0.0, 0.6, foot) * (0.5 + 0.5 * fn);
   col = mix(col, vec3(0.96, 0.99, 1.0), clamp(fa * 1.25, 0.0, 1.0));
-  gl_FragColor = finish(col, mix(0.74, 0.96, max(lip * lip, fa)) * edge);
+  col = mix(col, vec3(0.44, 0.89, 0.91), toSea);
+  gl_FragColor = finish(col, mix(mix(0.74, 0.96, max(lip * lip, fa)), 0.3, toSea) * edge);
 }`;
 const FALLS_VERT = /* glsl */ `
 ${BEND_GLSL}
