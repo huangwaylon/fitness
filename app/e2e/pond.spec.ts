@@ -153,7 +153,7 @@ test('the ずかん lists every fish, the fresh waters’ and the sea’s, in NH
   await expect(page.locator('[data-zukan="fish"]')).toContainText(`0 / ${total}`);
   await page.locator('[data-zukan="fish"]').click();
   await expect(page.locator('.tile.unknown')).toHaveCount(total);
-  expect(await page.locator('.tile').first().getAttribute('data-entry')).toBe('bitterling');
+  expect(await page.locator('.tile[data-entry]').first().getAttribute('data-entry')).toBe('bitterling');
 });
 
 test('water bugs: a pondskater skates on fresh water on a summer day; a tap nets it (a ずかん bug)', async ({ page }) => {
