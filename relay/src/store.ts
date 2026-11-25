@@ -628,7 +628,8 @@ export class StoreCore {
       // lower send (a second phone's, a queue that waited) never takes back a catch a sale counted (contract/tally.ts)
       if (type === 'tally') kept = this.books.tallyKept(me, data);
       if (type === 'island') kept = this.books.islandKept(me, data);
-      // the field: the ops it allows, a harvest at the record's yield (contract/farm.ts farmStep); none: refused
+      // the field: the ops it allows at the row's `at`, a harvest at the record's yield (contract/farm.ts farmStep); none:
+      // refused
       const farm = type === 'farm' ? this.shop.farmKept(me, data) : null;
       if (type === 'farm') {
         if (!farm) return fail('bad_request', 'farm refused');
@@ -640,11 +641,8 @@ export class StoreCore {
         kept = this.books.tallyKept(me, data, 'tally_back');
         if (!backCovered(this.books.heldTally(me, String(data.date)), (JSON.parse(kept) as { counts: Record<string, number> }).counts)) return fail('bad_request', 'tally short');
       }
-      // the field's waterings that count, kept on their plots before the island days go (farmWaterNote): an island
-      // day's, and a plant's or a harvest's after one that day
-      if (type === 'island') this.shop.islandWaterNote(kept);
-      if (farm) this.shop.farmWaterNote(farm.f, farm.data.ops.flatMap((op) => (op.o === 'dig' ? [] : [op.p])));
-      const at = this.base.nextAt();
+      // (a farm row's `at` the one it was judged at: farmKept)
+      const at = farm?.at ?? this.base.nextAt();
       if (drop) this.io.sql.exec('DELETE FROM events WHERE slot = ?', `board|${drop}`);
       for (const sl of bookDrop) this.io.sql.exec('DELETE FROM events WHERE slot = ?', sl);
       if (type === 'decor' && data.sc === 'r' && typeof data.at === 'number') this.books.dropVoided(data.at);

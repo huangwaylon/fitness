@@ -69,8 +69,9 @@ describe('the stored ledger', () => {
         } else if (x < 0.66) {
           t.send(who, 'buy_starts', { crop: 'tomato', n: 2, v: 2 * FARM.startBuy });
         } else if (x < 0.76) {
-          const p = pick(plots), o = pick(['plant', 'plant', 'harvest', 'dig']);
-          t.send(who, 'farm', { d: today, ops: [o === 'plant' ? { o, p, c: 'tomato', src: 'start' } : o === 'harvest' ? { o, p, n: 1 } : { o, p }] });
+          // (anyone's plot: the field is shared)
+          const p = pick(plots), o = pick(['plant', 'plant', 'harvest', 'water', 'dig']);
+          t.send(who, 'farm', { ops: [o === 'plant' ? { o, p, c: 'tomato', src: 'start' } : o === 'harvest' ? { o, p, n: 1 } : { o, p }] });
         } else if (x < 0.84) {
           const to = WHO.filter(() => r() < 0.6);
           if (to.length) t.send(who, 'sg_reward', { g: `sg-game-${String(Math.floor(r() * 5)).padStart(4, '0')}`, v: 1 + Math.floor(r() * 900), to, d: today });
@@ -241,8 +242,9 @@ describe('the stored ledger', () => {
     t.send('A', 'tally', { date: '2026-11-04', counts: { 'fish:whale-shark': 1 } });
     t.send('A', 'sell', { species: 'fish:whale-shark', n: 1, v: sellPrice('fish:whale-shark')! });
     t.send('A', 'buy_starts', { crop: 'tomato', n: 1, v: FARM.startBuy });
-    const ack = t.store.handle({ key: KEY_A, action: 'event', id: 'f1', type: 'farm', data: { d: '2026-11-04', ops: [{ o: 'plant', p: P, c: 'tomato', src: 'start' }] } }, 100) as Record<string, any>;
-    expect(ack.field).toMatchObject({ seq: 2, v: { p: [[P, { who: 'A', c: 'tomato', from: '2026-11-05' }]], n: {} } });
+    const ack = t.store.handle({ key: KEY_A, action: 'event', id: 'f1', type: 'farm', data: { ops: [{ o: 'plant', p: P, c: 'tomato', src: 'start' }] } }, 100) as Record<string, any>;
+    // (ripe FARM.growMs after the row's `at`, the field's own)
+    expect(ack.field).toMatchObject({ seq: 2, v: [[P, { c: 'tomato', t: Date.parse(ack.field.at) + FARM.growMs }]] });
     expect(ack.ledgers.A.hp.v.p).toEqual([]);
     const first = t.store.handle({ key: KEY_C, action: 'snapshot' }, 100) as Record<string, any>;
     expect(first.field).toEqual(ack.field);
@@ -254,7 +256,7 @@ describe('the stored ledger', () => {
     expect(t.store.ledgerRetire({ confirm: 'retire-ledger-rows' })).toMatchObject({ ok: true, shop: 3 });
     expect(count()).toBe(0);
     // (the field as kept: its plant still there, dug up by its op judged against it)
-    expect(t.send('A', 'farm', { d: '2026-11-04', ops: [{ o: 'dig', p: P }] }).ok).toBe(true);
+    expect(t.send('A', 'farm', { ops: [{ o: 'dig', p: P }] }).ok).toBe(true);
     expect(t.read().A.hp.v.p).toEqual([['goods:tomato-start', 1]]);
     expect(t.store.shopCheck()).toEqual({ ok: true, farm: 'kept' });
   });

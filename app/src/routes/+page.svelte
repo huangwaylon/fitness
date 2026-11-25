@@ -28,8 +28,10 @@
   import { localDateAt } from '#lib/time/dates.ts';
   import { minuteNow } from '#lib/time/clock.ts';
   import type { Who } from '#lib/types.ts';
-  import { emptyPlotOf, farmToday, plantHint } from '#lib/components/island/farm.ts';
-  import { islandDay } from '#lib/components/island/ambientClock.ts';
+  import { plantHint } from '#lib/components/island/farm.ts';
+  import { farmOfState } from '#lib/model/farm.ts';
+  import { freePlots } from '#lib/world/farmPlan.ts';
+  import { layoutPlots } from '#lib/layout/field.ts';
   import { layout as layoutStore } from '#lib/store/layout.svelte.ts';
   import { DEVICE, localKV, readJson, writeJson } from '#lib/sync/storage.ts';
   import { LIVE_URL, liveRelay, pageVer } from '#lib/sync/live.ts';
@@ -65,14 +67,13 @@
     timers.clear();
   });
 
-  /** しずえ's first-time farm line (once a phone, FARM_HINT_MS): the first time I hold starts and a plot of mine is empty. */
+  /** しずえ's first-time farm line (once a phone, FARM_HINT_MS): the first time I hold starts and a plot is empty. */
   const FARM_HINT_MS = 12_000;
   let farmHint = $state<'wait' | 'shown' | 'gone'>(readJson(localKV(), DEVICE.farmHint) ? 'gone' : 'wait');
   const canPlant = $derived.by(() => {
     const m = week.model;
     if (farmHint === 'gone' || !m) return false;
-    const { farm } = farmToday(m.state, islandDay());
-    return !!plantHint(m.state, m.me, farm) && emptyPlotOf(layoutStore.current, farm, m.me);
+    return !!plantHint(m.state, m.me) && freePlots(layoutPlots(layoutStore.current), farmOfState(m.state)) > 0;
   });
   $effect(() => {
     if (farmHint !== 'wait' || !canPlant || ui.overlay) return;

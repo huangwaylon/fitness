@@ -6,6 +6,7 @@ import { describe, expect, it } from 'vitest';
 import { foldEvents, reduce, type State } from './state.ts';
 import { shopView } from './shop.ts';
 import { zukanTotals } from './tally.ts';
+import { farmOfState } from './farm.ts';
 import { sellPrice } from '#lib/contract/shop.ts';
 import type { Ledgers } from '#lib/contract/ledger.ts';
 import type { EventRow } from '#lib/contract/api.ts';
@@ -69,5 +70,23 @@ describe('the shop and the ずかん from the stored ledger', () => {
     expect(t.all.get('fish:koi')).toBe(5);
     // (without ledgers: the rows)
     expect(zukanTotals({ tallies: base.tallies }).by.A.get('fish:koi')).toBe(3);
+  });
+});
+
+describe('the field from the stored one', () => {
+  const P = 'fd:f.0.0', Q = 'fd:f.1.0';
+  const field = { seq: 3, at: at('08:00'), v: [[P, { c: 'tomato', t: Date.parse(at('14:00')) }]] };
+  const base = { ...reduce({ metrics: [], events: [] }), field } as State;
+
+  it('its plots, never the farm rows’ fold; an unsent row stepped on it as the record will, an acked one already in it', () => {
+    expect([...farmOfState(base).plots.keys()]).toEqual([P]);
+    const later = foldEvents(base, [
+      ev(at('10:00'), 'A', 'farm', { ops: [{ o: 'plant', p: Q, c: 'tomato', src: 'start' }] }, 'fu'),
+      ev(at('10:01'), 'A', 'farm', { ops: [{ o: 'dig', p: P }] }, 'fa')
+    ], null, new Set(['fu']))!;
+    const f = farmOfState(later);
+    // (Q planted by the unsent row; the acked dig of P is the stored field's to say: P still there)
+    expect([...f.plots.keys()].sort()).toEqual([P, Q]);
+    expect([...(f.net.A ?? [])]).toEqual([['goods:tomato-start', -1]]);
   });
 });

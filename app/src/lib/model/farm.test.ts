@@ -1,95 +1,78 @@
-// The fields as the phones fold them (model/farm.ts farmOfState): the State's farm rows by contract/farm.ts farmStep, a
-// kept row as kept, a queued one judged. A list that starts with the rows the last fold had folds on from them (a tap,
-// a poll), with the same field as a fold from the start.
-import { describe, expect, it, vi } from 'vitest';
-import { emptyFarm, farmJson, type FarmData, type FarmOp } from '#lib/contract/farm.ts';
+// The field as the phones show it (model/farm.ts farmOfState): the relay's stored field and this phone's unsent farm
+// rows stepped on it as the record will (judged at each row's `at`, the wet days the State's); an acknowledged row is
+// the stored field's already.
+import { describe, expect, it } from 'vitest';
+import { FARM, fieldJson, type FarmData, type Plot } from '#lib/contract/farm.ts';
+import type { FieldWire } from '#lib/contract/ledger.ts';
 import type { Who } from '#lib/types.ts';
-import type { FarmRow } from './farm.ts';
+import { farmOfState, wetOf, type FarmRow } from './farm.ts';
 
-const steps = vi.hoisted(() => ({ n: 0 }));
-vi.mock('#lib/contract/farm.ts', async (orig) => {
-  const m = await orig<typeof import('#lib/contract/farm.ts')>();
-  return { ...m, farmStep: (...a: Parameters<typeof m.farmStep>) => (steps.n++, m.farmStep(...a)) };
-});
-const { farmStep } = await import('#lib/contract/farm.ts');
-const { farmOfState } = await import('./farm.ts');
-
-const islandDays = [{ data: { date: '2026-11-05', watered: ['fd:f.0.0', 'fd:f.1.0'] } }], wet = ['2026-11-09'], farmWater: { p: string; date: string }[] = [];
-/** The fold from the start, as farmOfState did before it kept one. */
-function whole(rows: readonly FarmRow[]) {
-  const f = emptyFarm();
-  const watered = (p: string, d: string) => wet.includes(d) || islandDays.some((x) => x.data.date === d && x.data.watered.includes(p));
-  for (const r of rows) farmStep(f, r.person, r.data, r.queued ? { watered, pocket: () => Infinity } : undefined);
-  return farmJson(f);
-}
-
-/** Seeded rows: plants, harvests and digs on 6 plots by two people over days from 2026-11-01. */
-function rowsOf(n: number, seed = 7): FarmRow[] {
-  const rand = () => ((seed = (seed * 1103515245 + 12345) % 2 ** 31) / 2 ** 31);
-  return Array.from({ length: n }, (_, i): FarmRow => {
-    const d = `2026-11-${String(1 + Math.floor(i / 3)).padStart(2, '0')}`;
-    const ops = Array.from({ length: 1 + Math.floor(rand() * 3) }, (): FarmOp => {
-      const p = `fd:f.${Math.floor(rand() * 6)}.0`, k = rand();
-      return k < 0.5 ? { o: 'plant', p, c: 'tomato', src: 'start' } : k < 0.8 ? { o: 'harvest', p, n: 2 } : { o: 'dig', p };
-    });
-    return { at: i, person: (rand() < 0.5 ? 'A' : 'B') as Who, data: { d, ops } as FarmData };
-  });
-}
+const T = Date.UTC(2026, 10, 4, 3); // 2026-11-04 12:00 Tokyo
+const H = 3_600_000;
+const P = 'fd:f.0.0', Q = 'fd:f.1.0', R = 'fd:f.2.0';
+const wire = (plots: [string, Plot][], seq = 1): FieldWire => ({ seq, at: new Date(T).toISOString(), v: plots });
+const row = (at: number, ops: FarmData['ops'], unsent = true, person: Who = 'A'): FarmRow => ({ at, person, data: { ops }, queued: true, ...(unsent ? { unsent } : {}) });
 
 describe('farmOfState', () => {
-  it('folds on from the rows it last folded: a tap folds its queued row only, a poll its new rows; the field as a whole fold', () => {
-    const all = rowsOf(60);
-    const queued = (k: number): FarmRow => ({ at: 100 + k, person: 'A', data: { d: '2026-11-21', ops: [{ o: 'plant', p: `fd:f.${k % 6}.0`, c: 'tomato', src: 'start' }] }, queued: true });
-    for (let k = 1; k <= all.length; k += 7) {
-      const kept = all.slice(0, k);
-      for (const list of [kept, [...kept, queued(k)], [...kept, queued(k + 1)]]) {
-        steps.n = 0;
-        const got = farmJson(farmOfState({ farm: list, islandDays, wet, farmWater }));
-        const folded = steps.n;
-        expect(got).toEqual(whole(list));
-        // (k > 1: the kept rows up to the last list's folded already; each list here a new array)
-        if (k > 1) expect(folded).toBe(list === kept ? 7 : list.length - k);
-      }
-    }
+  // P ripe at T + 1 h (planted 5 h before T), Q ripe already, R empty
+  const field = wire([[P, { c: 'tomato', t: T + H }], [Q, { c: 'carrot', t: T - H }]]);
+  const none: FarmRow[] = [], dry: string[] = [];
+
+  it('the stored field’s plots, no pocket changes; none heard: an empty field', () => {
+    const f = farmOfState({ farm: none, wet: dry, field });
+    expect(fieldJson(f)).toEqual(field.v);
+    expect(f.net).toEqual({});
+    expect(farmOfState({ farm: none, wet: dry }).plots.size).toBe(0);
   });
 
-  it('a list of other rows (a whole reduce, another person) folds from the start', () => {
-    const a = rowsOf(30, 1), b = rowsOf(30, 2);
-    farmOfState({ farm: a, islandDays, wet, farmWater });
-    // and the same rows as new objects (a reduce of the same sheet)
-    for (const list of [b, b.map((r) => ({ ...r }))]) {
-      steps.n = 0;
-      const got = farmJson(farmOfState({ farm: list, islandDays, wet, farmWater }));
-      expect(steps.n).toBe(30);
-      expect(got).toEqual(whole(b));
-    }
+  it('an unsent row stepped on it at its `at`: a plant, a watering, a harvest at its yield, the pocket’s changes; a refused op dropped', () => {
+    const rows = [
+      row(T, [{ o: 'plant', p: R, c: 'wheat', src: 'start' }, { o: 'water', p: P }, { o: 'harvest', p: Q, n: 3 }]),
+      // (P not ripe yet at T + 30 min: no harvest)
+      row(T + H / 2, [{ o: 'harvest', p: P, n: 3 }])
+    ];
+    const f = farmOfState({ farm: rows, wet: dry, field });
+    expect(f.plots.get(R)).toEqual({ c: 'wheat', t: T + FARM.growMs });
+    expect(f.plots.get(P)).toEqual({ c: 'tomato', t: T + H, w: true });
+    expect(f.plots.get(Q)).toEqual({ c: 'carrot', t: T + FARM.growMs, r: true });
+    expect([...f.net.A!]).toEqual([['goods:wheat-start', -1], ['goods:carrot', 1]]);
+    // (the stored field left as it was)
+    expect(fieldJson(farmOfState({ farm: none, wet: dry, field }))).toEqual(field.v);
   });
 
-  it('never changes the field it folded on from (a later fold of a longer list leaves the earlier result as it was)', () => {
-    const all = rowsOf(40, 3);
-    const first = farmOfState({ farm: all.slice(0, 20), islandDays, wet, farmWater });
-    const before = farmJson(first);
-    farmOfState({ farm: all, islandDays, wet, farmWater });
-    farmOfState({ farm: [...all.slice(0, 20), { ...all[20], queued: true }], islandDays, wet, farmWater });
-    expect(farmJson(first)).toEqual(before);
+  it('a harvest yields the most on a wet day (the State’s `wet` rows) or watered', () => {
+    const harvest = [row(T, [{ o: 'harvest', p: Q, n: 1 }])];
+    expect(farmOfState({ farm: harvest, wet: ['2026-11-04'], field }).net.A?.get('goods:carrot')).toBe(FARM.maxYield);
+    const watered = wire([[Q, { c: 'carrot', t: T - H, w: true }]], 2);
+    expect(farmOfState({ farm: harvest, wet: dry, field: watered }).net.A?.get('goods:carrot')).toBe(FARM.maxYield);
   });
 
-  it('a kept harvest stays at its kept n; a queued one is reckoned by the watering rule (its plant day watered)', () => {
-    // planted 11-05 (watered that day: islandDays), ripe 11-06
-    const plant: FarmRow = { at: 1, person: 'A', data: { d: '2026-11-05', ops: [{ o: 'plant', p: 'fd:f.0.0', c: 'carrot', src: 'start' }] } };
-    const harvest = (queued?: true): FarmRow => ({ at: 2, person: 'A', data: { d: '2026-11-06', ops: [{ o: 'harvest', p: 'fd:f.0.0', n: 1 }] }, ...(queued && { queued }) });
-    expect(farmOfState({ farm: [plant, harvest()], islandDays, wet, farmWater }).net.A?.get('goods:carrot')).toBe(1);
-    expect(farmOfState({ farm: [plant, harvest(true)], islandDays, wet, farmWater }).net.A?.get('goods:carrot')).toBe(3);
+  it('an acknowledged row is the stored field’s to say: never stepped again', () => {
+    const f = farmOfState({ farm: [row(T, [{ o: 'dig', p: P }], false), row(T, [{ o: 'dig', p: Q }], true, 'B')], wet: dry, field });
+    expect([...f.plots.keys()]).toEqual([P]);
+    expect([...f.net.B!]).toEqual([['goods:carrot-start', 1]]);
+    expect(f.net.A).toBeUndefined();
   });
 
-  it('a plot\'s farm_water stands for its island day once that is gone (the record keeps only yesterday\'s and today\'s)', () => {
-    // planted 11-07, ripe 11-08, harvested (queued) 11-20: no island day of 11-07 left
-    const plant: FarmRow = { at: 1, person: 'A', data: { d: '2026-11-07', ops: [{ o: 'plant', p: 'fd:f.2.0', c: 'carrot', src: 'start' }] } };
-    const harvest: FarmRow = { at: 2, person: 'A', data: { d: '2026-11-20', ops: [{ o: 'harvest', p: 'fd:f.2.0', n: 1 }] }, queued: true };
-    const n = (fw: { p: string; date: string }[]) => farmOfState({ farm: [plant, harvest], islandDays: [], wet: [], farmWater: fw }).net.A?.get('goods:carrot');
-    expect(n([])).toBe(1);
-    expect(n([{ p: 'fd:f.2.0', date: '2026-11-07' }])).toBe(3);
-    // another plot's, or the plot's of another day (an earlier plant's): no
-    expect(n([{ p: 'fd:f.3.0', date: '2026-11-07' }, { p: 'fd:f.2.0', date: '2026-11-06' }])).toBe(1);
+  it('memoised per State lists: the same field again; with no unsent row, the stored one itself', () => {
+    const rows = [row(T, [{ o: 'water', p: P }])];
+    const a = farmOfState({ farm: rows, wet: dry, field });
+    expect(farmOfState({ farm: rows, wet: dry, field })).toBe(a);
+    expect(farmOfState({ farm: [...rows], wet: dry, field })).not.toBe(a);
+    const kept = [row(T, [{ o: 'water', p: P }], false)];
+    expect(farmOfState({ farm: kept, wet: dry, field })).toBe(farmOfState({ farm: none, wet: dry, field }));
+  });
+
+  it('an older relay’s field (not a plot list): an empty one', () => {
+    expect(farmOfState({ farm: none, wet: dry, field: { seq: 9, at: field.at, v: { p: [], n: {} } } }).plots.size).toBe(0);
+  });
+});
+
+describe('wetOf', () => {
+  it('the wet days of the list, memoised per list', () => {
+    const wet = ['2026-11-04'];
+    const w = wetOf({ wet });
+    expect([w('2026-11-04'), w('2026-11-05')]).toEqual([true, false]);
+    expect(wetOf({ wet })).toBe(w);
   });
 });

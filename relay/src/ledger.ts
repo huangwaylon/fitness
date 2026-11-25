@@ -5,9 +5,9 @@
 // record (store.ts) reads a person's parts, steps them by the contract's rules and writes the parts that moved, in the
 // op's transaction. The field (contract/farm.ts: each plot's plant) is one more row, `F|field`, the same way: judged
 // and stepped by each farm row, served as a reply's `field`. Free of the Workers runtime (test/ledger.test.ts).
-import { emptyLedger, LEDGER_PARTS, partInto, partJson, type Ledger, type LedgerPart, type Ledgers } from '../../app/src/lib/contract/ledger.ts';
+import { emptyLedger, LEDGER_PARTS, partInto, partJson, type FieldWire, type Ledger, type LedgerPart, type Ledgers } from '../../app/src/lib/contract/ledger.ts';
 import type { Who } from '../../app/src/lib/contract/api.ts';
-import { farmFromJson, farmJson, type Farm } from '../../app/src/lib/contract/farm.ts';
+import { fieldFromJson, fieldJson, type Farm } from '../../app/src/lib/contract/farm.ts';
 import type { Sql } from './store.ts';
 
 export const LEDGER_TABLES = [
@@ -27,8 +27,6 @@ export type LedgerRow = [string, string, number, string, string];
 const isPart = (p: unknown): p is LedgerPart => (LEDGER_PARTS as readonly unknown[]).includes(p);
 /** The field's row: its `who` and `part`. */
 const FIELD = ['F', 'field'] as const;
-/** The field as a reply carries it (its plots: contract/farm.ts farmJson, no pocket changes), its `seq` and `at`. */
-export interface FieldWire { seq: number; at: string; v: unknown }
 
 export class LedgerStore {
   /** The parts written since the caller last cleared it (`who|part`: a request's, its ack's `ledgers`). */
@@ -62,29 +60,30 @@ export class LedgerStore {
     return l;
   }
 
-  /** The field as kept (its pockets' changes empty: the ledgers hold the pockets), or null when none is (not seeded). */
+  /** The field as kept (its pockets' changes empty: the ledgers hold the pockets), or null when none is (not seeded, or
+   *  an older relay's shape). */
   field(): Farm | null {
     const r = this.sql.exec<{ v: string }>('SELECT v FROM ledger WHERE who = ? AND part = ?', ...FIELD).toArray()[0];
     if (!r) return null;
     try {
-      return farmFromJson(JSON.parse(r.v));
+      return fieldFromJson(JSON.parse(r.v));
     } catch {
       return null;
     }
   }
 
-  /** The field written (its plots), its `seq` one more, at `at`. */
+  /** The field written (its plots), its `seq` one more (never back to 1: a phone keeps the highest), at `at`. */
   setField(f: Farm, at: string): void {
     this.sql.exec(
       'INSERT INTO ledger (who, part, seq, at, v) VALUES (?, ?, 1, ?, ?) ON CONFLICT (who, part) DO UPDATE SET seq = seq + 1, at = excluded.at, v = excluded.v',
-      ...FIELD, at, JSON.stringify(farmJson({ plots: f.plots, net: {} }))
+      ...FIELD, at, JSON.stringify(fieldJson(f))
     );
     this.written.add(FIELD.join('|'));
   }
 
-  /** The field let go (seeded again at the next read: a rollback's rows folded in). */
-  dropField(): void {
-    this.sql.exec('DELETE FROM ledger WHERE who = ? AND part = ?', ...FIELD);
+  /** Whether a field row is kept, of any shape. */
+  hasField(): boolean {
+    return this.sql.exec('SELECT 1 AS x FROM ledger WHERE who = ? AND part = ?', ...FIELD).toArray().length > 0;
   }
 
   /** The field as a reply carries it: when written this request (`written`), or changed after `since`; else none. */
@@ -167,7 +166,7 @@ export class LedgerStore {
       try { x = JSON.parse(v); } catch { continue; }
       const field = who === FIELD[0] && part === FIELD[1];
       if (!field && (!(WHO as readonly unknown[]).includes(who) || !isPart(part) || !partInto(emptyLedger(), part, x))) continue;
-      if (field && !farmFromJson(x)) continue;
+      if (field && !fieldFromJson(x)) continue;
       this.sql.exec('INSERT OR REPLACE INTO ledger (who, part, seq, at, v) VALUES (?, ?, ?, ?, ?)', who as string, part as string, seq as number, at, v);
       n++;
     }

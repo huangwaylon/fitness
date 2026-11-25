@@ -1,14 +1,13 @@
 // The かいがら side of the record (store.ts): the stored ledger (ledger.ts) seeded, stepped and checked against the rows'
-// fold, the wallets, the field (contract/farm.ts) and its waterings, the admin's corrections.
+// fold, the wallets, the field (contract/farm.ts), the admin's corrections.
 import { isId, isWho, movesWallet, type Who } from '../../app/src/lib/contract/api.ts';
 import { isRec } from '../../app/src/lib/contract/guards.ts';
 import { addDays, localDateAt, prevDay } from '../../app/src/lib/contract/tokyo.ts';
 import { adjustOf, caughtOf, isShopEvent, rewardOf, shopLedger, shopRowOf, SHOP_EVENTS, type LedgerEvent, type Ledger, type ShopRow, type TallyDay, isPocketKey } from '../../app/src/lib/contract/shop.ts';
-import { emptyFarm, FARM, farmFromJson, farmJson, farmOf, farmStep, farmWaterOf, type Farm, type FarmData } from '../../app/src/lib/contract/farm.ts';
+import { emptyFarm, farmOf, farmStep, fieldJson, type Farm, type FarmData } from '../../app/src/lib/contract/farm.ts';
 import { isTally } from '../../app/src/lib/contract/tally.ts';
-import { isIslandDay } from '../../app/src/lib/contract/island.ts';
-import { LedgerStore, WHO, type FieldWire } from './ledger.ts';
-import { emptyLedger, ledgerRefusal, ledgerStep, pocketMoves, pruneGames, tallyStep, type Ledger as Stored, type LedgerPart, type Ledgers } from '../../app/src/lib/contract/ledger.ts';
+import { LedgerStore, WHO } from './ledger.ts';
+import { emptyLedger, ledgerRefusal, ledgerStep, pocketMoves, pruneGames, tallyStep, type FieldWire, type Ledger as Stored, type LedgerPart, type Ledgers } from '../../app/src/lib/contract/ledger.ts';
 import { PRUNE_BATCH } from './nightly.ts';
 import type { Bind } from './storeSchema.ts';
 import { StoreBase, type Rec } from './storeBase.ts';
@@ -25,26 +24,25 @@ const RETIRE_CONFIRM = 'retire-ledger-rows';
 /** The wallets' `seq` from the stored ledger (walletsFor): its `hp` count past this, above any running ledger's. */
 const WALLET_SEQ_FROM = 1_000_000;
 
-/** The running field's meta key, named by the growth rules its plots' `from` were reckoned under (contract/farm.ts
- *  FARM): a rule change finds no copy and folds the rows again, once (review 11/14: a 3-day copy refused 1-day harvests). */
-const FARM_META = `farm|g${FARM.growDays}r${FARM.regrowDays}`;
+/** The meta key that marks the stored field as this relay's rules' (contract/farm.ts: shared plots, 6 h growth since
+ *  2026-11-25). Another relay's key at the start (older rules, a rollback) means a field and rows this one didn't
+ *  reckon: the field is folded again from the rows, at once. */
+const FARM_META = 'farm|t6h';
 
 export class StoreShop {
   constructor(private readonly b: StoreBase, private readonly ledger: LedgerStore) {
-    const io = b.io;
-    // another relay's copy of the field (a rollback to other rules, or to before FARM_META) means rows this copy lacks:
-    // both go, and the first farm op folds them again (review 11/14 r3: a dig kept by the older relay, harvested again)
-    // (the stored field too, while the farm rows are kept to fold: never once the ledger is the record's alone)
-    if (io.sql.exec("SELECT 1 FROM meta WHERE (k = 'farm' OR k LIKE 'farm|%') AND k != ? LIMIT 1", FARM_META).toArray().length) {
-      io.sql.exec("DELETE FROM meta WHERE k = 'farm' OR k LIKE 'farm|%'");
-      if (!io.sql.exec("SELECT 1 FROM meta WHERE k = 'ledger_only'").toArray().length) this.ledger.dropField();
-    }
+    const sql = b.io.sql;
+    // (one transaction: a refold cut short leaves the other relay's key, so the next start folds again)
+    if (sql.exec("SELECT 1 FROM meta WHERE (k = 'farm' OR k LIKE 'farm|%') AND k != ? LIMIT 1", FARM_META).toArray().length) b.io.tx(() => {
+      sql.exec("DELETE FROM meta WHERE k = 'farm' OR k LIKE 'farm|%'");
+      this.fieldRefold();
+    });
   }
 
-  /** The field's running copy let go (a load or an import brought rows past it: folded again at the next read). The
-   *  stored ledgers stay as they are (a load never moves one: ledger.ts; a load into an empty record seeds them again). */
+  /** A load or an import brought rows the stored field never saw: folded again (fieldRefold). The stored ledgers stay
+   *  as they are (a load never moves one: ledger.ts; a load into an empty record seeds them again). */
   shopForget(): void {
-    this.b.io.sql.exec("DELETE FROM meta WHERE k = 'farm' OR k LIKE 'farm|%'");
+    this.fieldRefold();
   }
 
   /** The wallets a phone is told (a reply's `wallets`, an older build's number): `who`'s of them (all by default),
@@ -67,7 +65,7 @@ export class StoreShop {
     if (!kept) return { ok: true, farm: 'none' };
     if (this.ledgerOnly()) return { ok: true, farm: 'kept' };
     const fold = this.farmFold();
-    const farm = plotsJson(kept) === plotsJson(fold) ? 'same' : 'differs';
+    const farm = JSON.stringify(fieldJson(kept)) === JSON.stringify(fieldJson(fold)) ? 'same' : 'differs';
     if (o.fix === true && farm === 'differs') this.farmNote(fold, this.b.nextAt());
     return { ok: true, farm };
   }
@@ -166,9 +164,9 @@ export class StoreShop {
 
   /** A kept row into the stored ledgers it moves (made ready before it went: ledgerReady), each step logged: a tally's
    *  or a give-back's growth over the row it replaced (`was`), the shop's rows and a correction (the sender's), a
-   *  reward (each recipient it paid), the field's goods (`farm`: the sender's field net before and after). A shop row
+   *  reward (each recipient it paid), the field's goods (`farm`: the batch's step, its net the sender's moves). A shop row
    *  the stored ledger refuses where the running one kept it: a drift, logged (the daily check shows it). */
-  ledgerNote(me: Who, id: string, at: string, type: string, kept: string, was: Record<string, number> | null, rewardTo: readonly Who[], farm: { f: Farm; before: ReadonlyMap<string, number> } | null): void {
+  ledgerNote(me: Who, id: string, at: string, type: string, kept: string, was: Record<string, number> | null, rewardTo: readonly Who[], farm: { f: Farm } | null): void {
     const t = Date.parse(at), d = this.b.rowRec(kept, 'shop');
     // (only the parts an op may move are read: a sale's `hp`, a buy's and `w`, a reward's and `g`, a tally's and `z`)
     const parts: LedgerPart[] = type === 'buy' ? ['hp', 'w'] : type === 'sg_reward' ? ['hp', 'g'] : type === 'tally' || type === 'tally_back' ? ['hp', 'z'] : ['hp'];
@@ -186,9 +184,7 @@ export class StoreShop {
       if (isTally(d)) step(me, (l, m) => tallyStep(l, d.counts, was, type === 'tally_back', m));
     } else if (type === 'farm') {
       if (!farm) return;
-      const net = farm.f.net[me] ?? new Map<string, number>();
-      const moves = [...new Set([...net.keys(), ...farm.before.keys()])].map((k) => [k, (net.get(k) ?? 0) - (farm.before.get(k) ?? 0)] as const);
-      step(me, (l, m) => pocketMoves(l, moves, m));
+      step(me, (l, m) => pocketMoves(l, [...(farm.f.net[me] ?? [])], m));
     } else if (isShopEvent(type) || type === 'shop_adjust') {
       const row = shopRowOf(type, d);
       if (row) step(me, (l, m) => {
@@ -356,140 +352,81 @@ export class StoreShop {
   // ---------------------------------------------------------------- the field
 
   /** The field (contract/farm.ts) as the record keeps it: the stored field (ledger.ts `F|field`), stepped by each farm
-   *  row (farmNote), its pockets' changes empty (the ledgers hold the pockets: a step's are its own). Seeded once, when
-   *  there is none: from the running copy (meta FARM_META, an older relay's), else folded from the rows (a load into an
-   *  empty record, new growth rules, a rollback's copy found at the start). */
+   *  row (farmNote), its pockets' changes empty (the ledgers hold the pockets: a step's are its own); seeded from the
+   *  rows when there is none (or of an older relay's shape). */
   farmState(): Farm {
-    const kept = this.ledger.field();
-    if (kept) return kept;
-    let f: Farm | null = null;
-    const raw = this.b.meta(FARM_META);
-    if (raw) {
-      try { f = farmFromJson(JSON.parse(raw)); } catch { /* folded */ }
-    }
-    f ??= this.farmFold();
-    f = { plots: f.plots, net: {} };
-    this.farmNote(f, this.b.nextAt());
+    return this.ledger.field() ?? this.fieldSeed();
+  }
+
+  /** The field folded from the rows and stored (its `seq` on from the one it replaces), FARM_META marking it ours. */
+  private fieldSeed(): Farm {
+    const f: Farm = { plots: this.farmFold().plots, net: {} };
+    const at = this.b.nextAt();
+    this.farmNote(f, at);
+    this.b.setMeta(FARM_META, at);
     return f;
   }
 
-  /** The field folded from its rows, each as kept (farmState's start, and shopcheck's). */
+  /** The stored field folded again now, if there is one or any farm row (the phones read the stored field, so never
+   *  left for the next farm op): another relay's at the start, a load's rows. Not once the ledger is the record's
+   *  alone (no rows to fold). */
+  fieldRefold(): void {
+    if (this.ledgerOnly()) return;
+    if (this.ledger.hasField() || this.b.io.sql.exec("SELECT 1 FROM events WHERE type = 'farm' LIMIT 1").toArray().length) this.fieldSeed();
+  }
+
+  /** The field folded from its rows, each as kept at its `at` (farmState's seed, and shopcheck's). */
   farmFold(): Farm {
     const f = emptyFarm();
-    for (const r of this.b.io.sql.exec<{ person: string; data: string }>("SELECT person, data FROM events WHERE type = 'farm' ORDER BY at, seq").toArray()) {
+    for (const r of this.b.io.sql.exec<{ person: string; at: string; data: string }>("SELECT person, at, data FROM events WHERE type = 'farm' ORDER BY at, seq").toArray()) {
       const x = this.b.rowRec(r.data, 'farm');
       const d = x ? farmOf(x) : null;
-      if (d && isWho(r.person)) farmStep(f, r.person, d);
+      if (d && isWho(r.person)) farmStep(f, r.person, d, Date.parse(r.at));
     }
     return f;
   }
 
-  /** A farm batch of `me`'s judged against the field and their pocket (their running shop ledger: tallies and the
-   *  field's goods less sold, with the starts bought), the waterings the island days hold and the wet days: the field
-   *  after it, the row as kept and `me`'s field net before it (farmNote's), or null when no op stands. */
-  farmKept(me: Who, d: Rec): { f: Farm; data: FarmData; before: ReadonlyMap<string, number> } | null {
+  /** A farm batch of `me`'s judged at the record's next `at` (the row's: the stored field and a fold of the rows agree)
+   *  against the field, their pocket (the stored ledger's) and the wet days (`wet|<date>` rows): the field after it
+   *  (its net `me`'s moves), the row as kept and its `at`, or null when no op stands. */
+  farmKept(me: Who, d: Rec): { f: Farm; data: FarmData; at: string } | null {
     const f = this.farmState();
-    // (the sender's pocket as the stored ledger holds it)
     this.ledgerReady(me);
     const l = this.ledger.read(me, ['hp'])!;
-    const before = new Map(f.net[me]);
-    const days = new Map<string, Set<string> | true>();
-    const watered = (p: string, date: string): boolean => {
-      let w = days.get(date);
-      if (w === undefined) days.set(date, (w = this.wateredOn(date)));
-      return w === true || w.has(p) || this.waterOf(p) === date;
+    const wet = new Map<string, boolean>();
+    const isWet = (date: string): boolean => {
+      let w = wet.get(date);
+      if (w === undefined) wet.set(date, (w = this.b.slotRow(`wet|${date}`) !== null));
+      return w;
     };
-    const data = farmStep(f, me, farmOf(d)!, { watered, pocket: (k) => l.p.get(k) ?? 0 });
-    return data ? { f, data, before } : null;
-  }
-
-  /** What was watered on `date`: everything (a wet day), else the plots in anyone's island day of it (a plot's
-   *  farm_water aside: waterOf). */
-  wateredOn(date: string): Set<string> | true {
-    return this.b.slotRow(`wet|${date}`) ? true : this.islandWatered(date);
-  }
-
-  /** The plots in anyone's island day of `date` (the record keeps yesterday's and today's: islandPrune). */
-  islandWatered(date: string): Set<string> {
-    const out = new Set<string>();
-    for (const who of ['A', 'B', 'G']) {
-      const r = this.b.slotRow(`island|${who}|${date}`);
-      const x = r ? this.b.rowRec(r.data, 'island') : null;
-      if (x && Array.isArray(x.watered)) for (const id of x.watered) if (typeof id === 'string' && id.startsWith('fd:')) out.add(id);
-    }
-    return out;
-  }
-
-  /** The day plot `p`'s farm_water row says it was watered (contract/farm.ts farmWaterOf), or null. */
-  waterOf(p: string): string | null {
-    const r = this.b.slotRow(`farm_water|${p}`);
-    const x = r ? this.b.rowRec(r.data, 'farm') : null;
-    return (x && farmWaterOf(x)?.date) ?? null;
+    const at = this.b.nextAt();
+    const data = farmStep(f, me, farmOf(d)!, Date.parse(at), { wet: isWet, pocket: (k) => l.p.get(k) ?? 0 });
+    return data ? { f, data, at } : null;
   }
 
   /**
-   * Each plant of `ps` on field `f` watered the day before it ripens (the island days the record holds, or `row`: the
-   * island day being kept) kept as a `farm_water` of the record's own (its plot's slot; a wet day needs none: its row
-   * stays), so its yield outlives the island days: what was written. In the caller's transaction.
+   * The daily prune (index.ts at 03:00 Tokyo, the admin's `island_prune`): the `island` rows of days before yesterday
+   * deleted (contract/island.ts: nothing reads them, the record refuses them) and the old daily rules' `farm_water`
+   * rows (unread since 2026-11-25), `max` at most (`more`: some left). Never another type's row. `dry`: counted only.
    */
-  farmWaterNote(f: Farm, ps: Iterable<string>, row?: { date: string; watered: readonly string[] }): number {
-    let n = 0;
-    const days = new Map<string, Set<string>>();
-    for (const p of ps) {
-      const pl = f.plots.get(p);
-      if (!pl) continue;
-      const day = addDays(pl.from, -1);
-      if (this.waterOf(p) === day) continue;
-      let w = days.get(day);
-      if (!w) days.set(day, (w = this.islandWatered(day)));
-      if (!w.has(p) && !(row?.date === day && row.watered.includes(p))) continue;
-      const at = this.b.nextAt();
-      // (the record's own row, as a wet day's: its person a placeholder)
-      this.b.put(`fw-${Date.parse(at)}-${p}`, at, 'A', 'farm_water', JSON.stringify({ p, date: day }), `farm_water|${p}`, null);
-      n++;
-    }
-    return n;
-  }
-
-  /** An island day being kept (its JSON): the field's plots it waters, farmWaterNote. */
-  islandWaterNote(json: string): void {
-    const d = this.b.rowRec(json, 'island');
-    if (!d || !isIslandDay(d)) return;
-    const ps = d.watered.filter((id) => id.startsWith('fd:'));
-    if (ps.length) this.farmWaterNote(this.farmState(), ps, d);
-  }
-
-  /**
-   * The daily prune (index.ts at 03:00 Tokyo, the admin's `island_prune`): each plant's watering that counts kept
-   * first (farmWaterNote over the whole field: a backfill, idempotent), then the `island` rows of days before
-   * yesterday deleted, `max` at most (`more`: some left; contract/island.ts: nothing reads them, the record refuses
-   * them). Never another type's row. `dry`: the backfill only; `old` the rows that would go.
-   */
-  islandPrune(dry = false, max = PRUNE_BATCH): { stamped: number; old: number; deleted: number; more: boolean } {
+  islandPrune(dry = false, max = PRUNE_BATCH): { old: number; deleted: number; more: boolean } {
     const before = prevDay(localDateAt(this.b.io.now()));
-    // (the slot's unique index: the `island|` range, never a scan of the table)
-    const where = "slot >= 'island|' AND slot < 'island}' AND type = 'island' AND substr(slot, -10) < ?";
-    const r = this.b.io.tx(() => {
-      const f = this.farmState();
-      const stamped = this.farmWaterNote(f, [...f.plots.keys()]);
-      if (dry) return { stamped, old: this.b.io.sql.exec<{ n: number }>(`SELECT COUNT(*) AS n FROM events WHERE ${where}`, before).toArray()[0]?.n ?? 0, deleted: 0, more: false };
-      const d = this.b.dropBatch(where, [before], max);
-      return { stamped, old: d.n, deleted: d.n, more: d.more };
+    // (the slot's unique index: the `island|` and `farm_water|` ranges, never a scan of the table)
+    const island = "slot >= 'island|' AND slot < 'island}' AND type = 'island' AND substr(slot, -10) < ?";
+    const water = "slot >= 'farm_water|' AND slot < 'farm_water}' AND type = 'farm_water'";
+    return this.b.io.tx(() => {
+      if (dry) return { old: this.b.io.sql.exec<{ n: number }>(`SELECT COUNT(*) AS n FROM events WHERE (${island}) OR (${water})`, before).toArray()[0]?.n ?? 0, deleted: 0, more: false };
+      const d = this.b.dropBatch(island, [before], max);
+      const w = d.more ? { n: 0, more: true } : this.b.dropBatch(water, [], max - d.n);
+      return { old: d.n + w.n, deleted: d.n + w.n, more: d.more || w.more };
     });
-    if (r.stamped) this.b.io.notify({ what: 'event', who: 'A', at: new Date(this.b.lastAt).toISOString(), rev: this.b.rev() });
-    return r;
   }
 
-  /** A farm row kept (its `at`): the field after it stored (its pocket changes: the stored ledger's, ledgerNote), and
-   *  into meta FARM_META too, an older relay's copy (a rollback's). */
+  /** A farm row kept (its `at`): the field after it stored (its pocket changes: the stored ledger's, ledgerNote). */
   farmNote(f: Farm, at: string): void {
     this.ledger.setField(f, at);
-    this.b.setMeta(FARM_META, JSON.stringify(farmJson({ plots: f.plots, net: {} })));
   }
 }
-
-/** The field's plots as text, in plot order (a stored field and a fold compare so). */
-const plotsJson = (f: Farm): string => JSON.stringify([...f.plots].sort(([a], [b]) => (a < b ? -1 : 1)));
 
 /** A person's shop folded from their rows (shopFold): their tallies' totals less the give-backs, the
  *  give-backs, the ledger of their shop rows (contract/shop.ts). */

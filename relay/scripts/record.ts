@@ -22,7 +22,7 @@
 //                       (its: settings present, dates, bookings, events, seen; gym: the version, days, interval)
 //   held [A|B]          the values an ingest held back (a past day's 0 over a value above it), never served
 //   promote <person> <date> <metric> [value]   a held value made a row of the day's history (its latest now)
-//   shopcheck [fix]     the running field against the fold of the farm rows; `fix`: the fold's taken
+//   shopcheck [fix]     the stored field against the fold of the farm rows; `fix`: the fold's taken
 //   decorcheck [fix]    the decor caps' kept counts against the rows'; `fix`: the rows' taken
 //   adjust <A|B|G> <v> <note>   a correction of that person's かいがら: a `shop_adjust` row of `v` (either sign, the
 //                       user's call only; undone by another of −v), its id printed (contract/shop.ts adjustOf)
@@ -293,7 +293,7 @@ switch (cmd) {
     console.log(JSON.stringify(await signed({ op: 'adjust', id: `adjust-${randomUUID()}`, who, v: Number(v), note: note.join(' ') })));
     break;
   }
-  // the island days before yesterday deleted, the plants' waterings kept first (`dry`: those only, and the count)
+  // the island days before yesterday and the old farm_water rows deleted (`dry`: the count only)
   case 'island-prune':
     console.log(JSON.stringify(await signed({ op: 'island_prune', ...(arg === 'dry' ? { dry: true } : {}) })));
     break;

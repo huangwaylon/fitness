@@ -32,7 +32,6 @@
   import { FIELD_MAX, fieldOf, fieldS, fieldPlots } from '#lib/layout/field.ts';
   import { farmOfState } from '#lib/model/farm.ts';
   import { week } from '#lib/store/week.svelte.ts';
-  import type { Who } from '#lib/types.ts';
   import { t } from '#lib/i18n/index.ts';
   import '#lib/i18n/sheets.ts';
   import { testHooks } from '#lib/ui-state/testMode.ts';
@@ -532,17 +531,12 @@
   function setVariant(s: string) {
     if (one) commit(restyle(store.current, one.id, s), '変更した');
   }
-  const FIELD_OWNERS: [Who, string][] = [['A', 'ウェイ'], ['B', 'うめ'], ['G', 'ゲスト']];
-  /** Whose plants stand on a field (the record keeps them if it's deleted or shrunk: docs/farming.md): 「ウェイ 12株」. */
-  function plantsOn(o: Obj): string {
+  /** How many plants stand on a field (the record keeps them if it's deleted or shrunk: docs/farming.md). */
+  function plantsOn(o: Obj): number {
     const m = week.model;
-    if (!m) return '';
-    const plots = farmOfState(m.state).plots, n: Partial<Record<Who, number>> = {};
-    for (const t of fieldPlots(o)) {
-      const pl = plots.get(t.p);
-      if (pl) n[pl.who] = (n[pl.who] ?? 0) + 1;
-    }
-    return FIELD_OWNERS.filter(([w]) => n[w]).map(([w, name]) => `${name} ${n[w]}株`).join('・');
+    if (!m) return 0;
+    const plots = farmOfState(m.state).plots;
+    return fieldPlots(o).filter((t) => plots.has(t.p)).length;
   }
   const EDGE_NAME: Record<Edge, string> = { front: '手前', back: '奥', left: '左', right: '右' };
   /** An edge a tile out or in (shift: a chunk's 8, as far as it can go): one action, its ops one burst (commit); what's
@@ -772,15 +766,10 @@
         {#if one.k === 'field'}
           {@const f = fieldOf(one.s)}
           {@const planted = plantsOn(one)}
-          <!-- a field (layout/field.ts, docs/farming.md): its owner and its size -->
-          <label class="row small">持ち主
-            <select data-field-owner value={f.who} onchange={(e) => setVariant(fieldS({ ...f, who: (e.target as HTMLSelectElement).value as Who }))}>
-              {#each FIELD_OWNERS as [w, name] (w)}<option value={w}>{name}</option>{/each}
-            </select>
-          </label>
+          <!-- a field (layout/field.ts, docs/farming.md): its size -->
           <label class="row small">横 <input data-field-w type="number" min="1" max={FIELD_MAX} value={f.w} onchange={(e) => setVariant(fieldS({ ...f, w: Number((e.target as HTMLInputElement).value) || 1 }))} /></label>
           <label class="row small">奥行き <input data-field-d type="number" min="1" max={FIELD_MAX} value={f.d} onchange={(e) => setVariant(fieldS({ ...f, d: Number((e.target as HTMLInputElement).value) || 1 }))} /></label>
-          {#if planted}<p class="small" data-field-plants>作物があります（{planted}）。削除しても作物は記録に残ります。</p>{/if}
+          {#if planted}<p class="small" data-field-plants>作物があります（{planted}株）。削除しても作物は記録に残ります。</p>{/if}
         {:else if d?.variants && one.k !== 'goal-tree' && one.k !== 'spot'}
           <label class="row small">種類
             <select value={one.s ?? d.variants[0]} onchange={(e) => setVariant((e.target as HTMLSelectElement).value)}>

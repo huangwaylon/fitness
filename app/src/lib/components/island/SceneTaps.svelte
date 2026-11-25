@@ -61,20 +61,20 @@
   import { pieceSpeaker, sceneryOf } from './scenery.svelte.ts';
   import type { SaySpeaker } from '#lib/world/say.ts';
   import { cropName, openPicker, popAt } from './farmUi.svelte.ts';
-  import { farmTap, plantingRun } from '#lib/world/farmTap.ts';
-  import { farmToday } from './farm.ts';
-  import { islandDay } from './ambientClock.ts';
+  import { farmTap, leftHM, plantingRun } from '#lib/world/farmTap.ts';
+  import { farmNow } from './farm.ts';
   import { loadNames } from './catchLine.ts';
-  import { CROPS, FARM, plantsOf, seedKey } from '#lib/contract/farm.ts';
+  import { CROPS, FARM, needsWater, seedKey } from '#lib/contract/farm.ts';
+  import { heardWater } from './farmLive.svelte.ts';
   import { cue } from '#lib/sound/cues.ts';
   import { layoutPlots, plotAt, plotsAround } from '#lib/layout/field.ts';
   import { tileAt, tileMid } from '#lib/layout/grid.ts';
   import { layout as layoutStore } from '#lib/store/layout.svelte.ts';
   import { week } from '#lib/store/week.svelte.ts';
-  import { dig, harvestMany, plantMany, waterAll, type Seed } from '#lib/store/farm.svelte.ts';
+  import { dig, harvestMany, plantMany, water as waterPlots, type Seed } from '#lib/store/farm.svelte.ts';
   import { undoBanner } from '#lib/store/actions.ts';
-  import { shopView } from '#lib/model/shop.ts';
   import type { Who } from '#lib/types.ts';
+  import { shopView } from '#lib/model/shop.ts';
 
   interface Props {
     /** The .if-scene element (the listener's home; the stage, orb and clouds are found inside it). */
@@ -587,26 +587,22 @@
 
   /**
    * A tap on a plot (docs/farming.md "Playing", world/farmTap.ts): it acts where it is (nobody walks; my villager turns
-   * to it), the tapped plot deciding: my ripe plant harvests all my ripe ones in its 3 × 3 (a plate a crop), a plant
-   * waters the plants there whose watering counts (NH's golden can, on every phone: the shared day's `watered`), a miss
-   * harvests my ripe ones near it, my empty plot plants my empty plots of its 3 × 3 (with 取り消す; the crop: `forced`,
-   * the picker's pick, else this planting run's, else the one kind I hold, else the picker, whose pick runs this again),
-   * else a word (who watered it; ほる on my own plant); the verb pops over the plot (FarmPop). False: no field there.
+   * to it), any plot anyone's: the ripe plants of its 3 × 3 harvest (a plate a crop), a plant's tap waters the growing
+   * ones there (NH's golden can), an empty plot plants the 3 × 3's empty plots (with 取り消す; the crop: `forced`, the
+   * picker's pick, else this planting run's, else the one kind I hold, else the picker, whose pick runs this again),
+   * else a word (the time to ripe; ほる); the verb pops over the plot (FarmPop). False: no field there.
    */
   function farmAt(x: number, z: number, forced?: Seed): boolean {
     const m = week.model, layout = site.layout ?? layoutStore.current;
     const [c, r] = tileAt(x, z);
-    const plot = layout ? plotAt(layout, c, r) : undefined;
-    if (!m || !layout || !plot) return false;
-    const date = week.view?.today ?? islandDay();
-    const { farm, watered } = farmToday(m.state, date);
+    const tile = layout ? plotAt(layout, c, r) : undefined;
+    if (!m || !layout || !tile) return false;
+    const { farm, now, wet } = farmNow(m.state);
     const pocket = shopView(m.state, m.me).pocket, have = (k: string) => pocket.get(k) ?? 0;
     const kinds = (['start', 'crop'] as const).flatMap((src) => CROPS.flatMap((c) => (have(seedKey(c, src)) > 0 ? [{ c, src }] : [])));
-    const run = plantRun.crop(performance.now());
-    const pl = farm.plots.get(plot.p), mine = plantsOf(farm, m.me);
-    const around = plotsAround(layout, plot).map((n) => ({ ...n, plant: farm.plots.get(n.p) }));
-    const by = date === islandDay() ? shared.day.watered[plot.p] : undefined;
-    const act = farmTap({ me: m.me, plot, plant: pl, around, date, watered, by, seed: forced ?? run, kinds, have, mine });
+    const around = plotsAround(layout, tile).map((n) => ({ ...n, plant: farm.plots.get(n.p) }));
+    const plot = around.find((n) => n.p === tile.p)!;
+    const act = farmTap({ plot, around, now, wet, seed: forced ?? plantRun.crop(performance.now()), kinds, have });
     const there = act.a === 'harvest' ? around.find((n) => n.p === act.ops[0].p)! : plot;
     const [px, pz] = tileMid(there.c, there.r);
     if (act.a !== 'pick') turnTo(px);
@@ -618,29 +614,33 @@
         // NH's pick-up: a puff where I tapped, a sparkle over each plant picked (40 ms apart), one pop a tap (a semitone
         // up each quick tap after), a plate a crop counting up
         const ops = act.ops;
-        harvestMany(date, ops);
+        harvestMany(ops);
         const [tx, tz] = tileMid(plot.c, plot.r);
         spawn({ kind: 'grass', x: tx, y: tz });
         ops.forEach((o, i) => {
           const n = around.find((a) => a.p === o.p)!, [sx, sz] = tileMid(n.c, n.r);
           later(() => harvestSparkle(sx, sz), i * 40);
         });
-        const now = performance.now();
-        harvestRun = { k: now - harvestRun.at <= HARVEST_RUN_MS ? Math.min(5, harvestRun.k + 1) : 0, at: now };
+        const t0 = performance.now();
+        harvestRun = { k: t0 - harvestRun.at <= HARVEST_RUN_MS ? Math.min(5, harvestRun.k + 1) : 0, at: t0 };
         cue('scene-harvest', { step: harvestRun.k });
         const [ux, uy] = w.screenU(px, pz, 4);
         void Promise.all([import('./harvestPlate.ts'), loadNames()]).then(([{ showHarvest }]) => showHarvest(ux, uy, ops), () => {});
         return true;
       }
       case 'water':
-        waterAll(act.ids);
+        // the record's ops, and the partner told at once (one `act` over the room: their phone waters the same 3 × 3
+        // there, farmLive.svelte.ts); a drop over each plant watered (40 ms apart, ≤ 9), one splash and sound
+        waterPlots(act.ps);
+        shared.share({ kind: 'act', act: 'water', id: plot.p });
+        plotDrops(act.ps.map((p) => around.find((a) => a.p === p)!));
         spawn({ kind: 'flower', x: px, y: pz, lift: 8, v: '#8FD0F5' });
         sceneSfx('water');
-        pop(t('world.farm.water', { n: act.ids.length, k: FARM.maxYield }));
+        pop(t('world.farm.water', { n: act.ps.length, k: FARM.maxYield }));
         return true;
       case 'plant': {
         // one event held for its 取り消す (the shop's banner); the shovel and a puff over the tapped plot
-        const { ps, c: crop, src } = act, sent = plantMany(date, ps, crop, src), n = ps.length;
+        const { ps, c: crop, src } = act, sent = plantMany(ps, crop, src), n = ps.length;
         if (!sent.ok) return true;
         // (its 取り消す ends the run too)
         const res = plantRun.planted({ c: crop, src }, performance.now(), sent);
@@ -648,7 +648,7 @@
         fx3d('swing', px, pz, 0, { v: 'shovel' });
         sceneSfx('dig');
         // one word, the banner with its とりけす (world kana), even if the names never load (then the start's own name)
-        const banner = (name: string) => undoBanner(t('world.farm.planted', { name, n, mine: mine + n, cap: FARM.cap }), res, { world: true });
+        const banner = (name: string) => undoBanner(t('world.farm.planted', { name, n }), res, { world: true });
         void loadNames().then(() => banner(cropName(crop)), () => banner(t(`farm.start.${crop}`)));
         return true;
       }
@@ -662,30 +662,21 @@
       case 'none':
         pop(t('world.farm.noSeed'));
         return true;
-      case 'cap':
-        pop(t('world.farm.cap', { cap: FARM.cap }));
-        return true;
       default: {
-        // (my own plant without my name; ほる with it: its start back, 取り消す puts it back)
-        const who = whoName(act.who), c = act.c, n = act.left;
-        if (!c) pop(t('world.farm.whose', { who }));
-        else {
-          const digUp = act.dig ? () => {
-            const res = dig(date, plot.p);
-            if (!res.ok) return;
-            spawn({ kind: 'grass', x: px, y: pz });
-            fx3d('swing', px, pz, 0, { v: 'shovel' });
-            sceneSfx('dig');
-            undoBanner(t('world.farm.dug', { name: cropName(c) }), res, { world: true });
-          } : undefined;
-          named(() => {
-            const name = cropName(c);
-            // (thanks only for help: its owner watering their own plant is no 「…が みずを やってくれた」 to the partner)
-            pop(act.by && act.by !== m.me && act.by !== act.who ? t('world.farm.wateredBy', { who: whoName(act.by) })
-              : n ? t(act.who === m.me ? 'world.farm.leftMine' : 'world.farm.left', { who, name, k: act.watered ? FARM.maxYield : 1 })
-              : act.watered ? t('world.farm.watered') : t('world.farm.ripe', { who, name }), digUp);
-          });
-        }
+        // its time to ripe and watering; ほる: its start back to me, 取り消す puts it back
+        const c = act.c, { h, m: min } = leftHM(act.left);
+        const digUp = () => {
+          const res = dig(plot.p);
+          if (!res.ok) return;
+          spawn({ kind: 'grass', x: px, y: pz });
+          fx3d('swing', px, pz, 0, { v: 'shovel' });
+          sceneSfx('dig');
+          undoBanner(t('world.farm.dug', { name: cropName(c) }), res, { world: true });
+        };
+        named(() => {
+          const left = t(h && min ? 'world.farm.inHM' : h ? 'world.farm.inH' : 'world.farm.inM', { h, m: min });
+          pop(t(act.watered ? 'world.farm.leftWet' : 'world.farm.left', { name: cropName(c), left }), digUp);
+        });
         return true;
       }
     }
@@ -695,8 +686,30 @@
   let harvestRun = { k: 0, at: -Infinity };
   /** The planting run (world/farmTap.ts plantingRun): the crop planted again without asking for a minute. */
   const plantRun = plantingRun();
-  /** A player's villager name (the farm's words). */
-  const whoName = (who: Who): string => (who === 'G' ? week.view?.guest.villagerName : week.view?.people[who].villagerName) ?? who;
+
+  /** A drop over each plot (40 ms apart). */
+  const plotDrops = (ts: readonly { c: number; r: number }[]) =>
+    ts.forEach((n, i) => {
+      const [sx, sz] = tileMid(n.c, n.r);
+      later(() => fx3d('drops', sx, sz, 0), i * 40);
+    });
+  /** The partner's plot tap watered (its `act` `water`, just now): the 3 × 3's plants that wanted it shown watered here
+   *  at once (farmLive.svelte.ts, till the synced field has their ops), their villager turned to it, a drop over each
+   *  (the tapped plot's at least) and the sound. */
+  function partnerWatered(p: string, who: Who, t: number) {
+    const m = week.model, layout = site.layout ?? layoutStore.current, tile = layout && layoutPlots(layout).find((n) => n.p === p);
+    if (!m || !layout || !tile) return;
+    const { farm, now } = farmNow(m.state);
+    const dry = plotsAround(layout, tile).filter((n) => {
+      const pl = farm.plots.get(n.p);
+      return pl && needsWater(pl, now);
+    });
+    heardWater(dry.map((n) => n.p), t);
+    const [x, z] = tileMid(tile.c, tile.r);
+    partnerTurnTo(x, who, t);
+    plotDrops(dry.length ? dry : [tile]);
+    sceneSfx('water', [x, z]);
+  }
 
   /** A harvested plant's sparkle (a world tap's ripple). */
   const harvestSparkle = (x: number, z: number) => fx3d('sparkle', x, z, 6, { size: 0.6, v: '#FFE27A' });
@@ -841,8 +854,9 @@
         echo3d(e.id);
         spawn({ kind: 'bush', x: b.x, y: b.z, lift: b.h * 0.62, v: shed(season) });
         sceneSfx('bush', [b.x, b.z]);
+      } else if (e.kind === 'act' && e.act === 'water' && e.id?.startsWith('fd:')) {
+        partnerWatered(e.id, e.who, e.t);
       } else if (e.kind === 'world' && e.op === 'watered') {
-        if (e.id.startsWith('fd:')) return plotsWatered(e.who, e.id, e.t);
         const f = flowerById(e.id);
         if (!f) return;
         partnerTurnTo(f.x, e.who, e.t);
@@ -852,31 +866,6 @@
       }
     })
   );
-
-  /** The partner's or the guest's 水やり of plots (a tap's 3 × 3), each plot its own news: gathered a
-   *  person PLOTS_WET_MS, then their villager turns to the first, drops over each (≤ 9, 40 ms apart), one sound there,
-   *  and a heart over them when one is my plant (docs/farming.md "Playing": who watered). */
-  const PLOTS_WET_MS = 400;
-  const wets = new Map<Who, { ids: string[]; t: number }>();
-  function plotsWatered(who: Who, id: string, t: number) {
-    const was = wets.get(who);
-    if (was) return void was.ids.push(id);
-    wets.set(who, { ids: [id], t });
-    later(() => {
-      const b = wets.get(who), layout = site.layout ?? layoutStore.current, m = week.model;
-      wets.delete(who);
-      if (!b || !layout || !enabled()) return;
-      const tiles = new Map(layoutPlots(layout).map((p) => [p.p, p]));
-      const at = b.ids.flatMap((p) => (tiles.has(p) ? [tileMid(tiles.get(p)!.c, tiles.get(p)!.r)] : [])).slice(0, 9);
-      if (!at.length) return;
-      const cx = at.reduce((s, p) => s + p[0], 0) / at.length, cz = at.reduce((s, p) => s + p[1], 0) / at.length;
-      partnerTurnTo(at[0][0], who, b.t);
-      at.forEach(([x, z], i) => later(() => fx3d('drops', x, z, 0), i * 40));
-      sceneSfx('water', [cx, cz]);
-      const plots = m && farmToday(m.state, week.view?.today ?? islandDay()).farm.plots;
-      if (m && b.ids.some((p) => plots?.get(p)?.who === m.me)) fx3d('hearts', cx, cz, 10, { size: 0.6 });
-    }, PLOTS_WET_MS);
-  }
 
   // The listeners live on the scene (a click after a drag never comes: gestures.ts swallows it).
   $effect(() => {

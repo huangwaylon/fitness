@@ -19,7 +19,8 @@ export interface IslandDayData {
   puts: [string, string, number, number][];
   /** Shakes that left something: [tree, drop, t]. */
   shakes: [string, IslandDrop, number][];
-  /** The flowers watered (world/world.ts FLOWERS ids: `fl:<x>:<z>`) and the field's plants (`fd:<id>`: contract/farm.ts). */
+  /** The flowers watered (world/world.ts FLOWERS ids: `fl:<x>:<z>`; an older build's field plots `fd:<id>` too, unread:
+   *  a plot's watering is a `farm` op since 2026-11-25, contract/farm.ts). */
   watered: string[];
   /** Wishes: the morning each brings its fragment → how many. */
   wishes: Record<string, number>;

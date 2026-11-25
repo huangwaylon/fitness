@@ -19,8 +19,8 @@ import { tentFavsOk, tentOpOf, type TentEntry } from '#lib/contract/tent.ts';
 import { roomSaveOf, type RoomSaveOp } from '#lib/contract/roomSave.ts';
 import { isRoomScope, layoutOpOf, type LayoutEntry } from '#lib/contract/layout.ts';
 import { shopRowOf, type LedgerEvent, type ShopRowAt } from '#lib/contract/shop.ts';
-import type { Ledgers } from '#lib/contract/ledger.ts';
-import { farmOf, farmWaterOf, type FarmWater } from '#lib/contract/farm.ts';
+import type { FieldWire, Ledgers } from '#lib/contract/ledger.ts';
+import { farmOf } from '#lib/contract/farm.ts';
 import { checkOf, type CheckOp } from '#lib/contract/checks.ts';
 import type { FarmRow } from './farm.ts';
 import { isBirth, isProfileKey, isSex, PROFILE_KEYS, type ProfileKey, type Sex } from '#lib/contract/profile.ts';
@@ -184,17 +184,14 @@ export interface State {
    *  a queued one marked `queued`; the pockets and かいがら are their fold over the tallies (model/shop.ts). Never read
    *  by the economy. */
   shop: ShopRowAt[];
-  /** The field's rows (`farm`: contract/farm.ts), whose, in server order, a queued one marked `queued`; the field and
-   *  what it puts in the pockets are their fold (model/farm.ts). Never read by the economy. */
+  /** The field's rows (`farm`: contract/farm.ts), whose, in server order, a queued one marked `queued`: the unsent ones
+   *  stepped on the stored `field` (model/farm.ts). Never read by the economy. */
   farm: FarmRow[];
   /** The members' hand-set daily checks (`check`: contract/checks.ts), in server order, replaced rows included (a
    *  check's latest by `t` wins: model/checks.ts). Read by the economy (scoring/bells.ts: RULES.checks, 0 for now). */
   checks: (CheckOp & { at: number; person: PersonId })[];
-  /** The wet days (`wet`: the record's own, contract/wet.ts): every plant watered. */
+  /** The wet days (`wet`: the record's own, contract/wet.ts): a plant started or ripe on one yields the most. */
   wet: LocalDate[];
-  /** The plants' waterings the day before ripe (`farm_water`: the record's own, contract/farm.ts farmWaterOf), in
-   *  server order, replaced ones included (each a true day: model/farm.ts wateredOf). */
-  farmWater: FarmWater[];
   /** Each person's prefs; the guest's (`G`) only ever hold its locale, name, villager and kcal goal (contract/guest.ts). */
   prefs: Record<Who, Prefs>;
   /** The island's weather (`pref weatherMode`: the last anyone set, the guest too; unset, `real`): Tokyo's real sky or the game's. */
@@ -224,6 +221,9 @@ export interface State {
   /** The relay's stored ledgers as last heard (docs/backend.md#the-ledger: sync/cache.ts), or none (an older relay:
    *  the phones fold the rows, model/shop.ts, model/tally.ts). Set by view.ts composeModel, never by a reduce. */
   ledgers?: Ledgers;
+  /** The relay's stored field as last heard (docs/backend.md#the-ledger: sync/cache.ts), or none (an older relay: only
+   *  the unsent farm rows show, model/farm.ts). Set by view.ts composeModel, never by a reduce. */
+  field?: FieldWire;
 }
 
 /** How many rows are stamped at or before t: with `rev`, identifies the rows a locked week's earnings depend on. */
@@ -384,7 +384,6 @@ function reduceAll(r: SnapshotRows, rev: string | null, queued?: ReadonlySet<str
     shop: [],
     farm: [],
     wet: [],
-    farmWater: [],
     prefs: { A: {}, B: {}, G: {} },
     dailyGoals: { A: noGoals(), B: noGoals() },
     lastSync: { A: null, B: null },
@@ -674,10 +673,8 @@ const ON_EVENT: Record<Exclude<EventType, RawEvent>, OnEvent> = {
   wet(s, _person, _at, d) {
     if (typeof d.date === 'string' && DATE_RE.test(d.date) && !s.wet.includes(d.date)) put(s, 'wet', d.date);
   },
-  farm_water(s, _person, _at, d) {
-    const w = farmWaterOf(d);
-    if (w) put(s, 'farmWater', w);
-  },
+  // (an older record's plot watering: watering is a farm op since 2026-11-25)
+  farm_water() {},
   check: members((s, person, at, d) => {
     // a member's own check on its own day (contract/checks.ts; the guest's never: the record refuses it)
     const op = checkOf(d);

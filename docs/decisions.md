@@ -197,9 +197,9 @@ both. A change to one of these is a conscious decision: edit the line, don't let
 ## Content, art and sound
 - **Scenery is cosmetic and local;** only finds, tallies and the island day are written. Nothing on the island pays ベル.
 - **Shaking a tree:** a third tap within 1.2 s ([design](design.md#shaking-a-tree)).
-- **Farming:** NH 2.0 vegetables, a field each, ripe the next Tokyo day, 3 if watered else 1
-  ([farming](farming.md)); only a field's owner plants and harvests, anyone waters; every action is a plot's tap. The
-  cadence (`FARM.regrowDays`, `FARM.cap`) is the lever, never a price. No fruit trees: tree fruit means fitness.
+- **Farming:** NH 2.0 vegetables on shared fields, ripe 6 hours after planting or a harvest, 3 if watered else 1
+  ([farming](farming.md)); anyone plants, waters, harvests or digs any plot (2026-11-25); every action is a plot's tap.
+  The cadence (`FARM.growMs`) is the lever, never a price. No fruit trees: tree fruit means fitness.
 - **Mushrooms are cosmetic:** no ずかん page; sold as goods.
 - **NH's calendar and critters:** one rule per dated event in `world/events.ts` ([design](design.md#critters)).
 - **Birthdays** are in `PEOPLE` (`config/rules.ts`); the wedding date is the 結婚式 board's (`time/holidays.ts`).

@@ -229,35 +229,27 @@ describe('the phone and the record agree (contract/shop.ts caughtOf: one fold, n
   });
 });
 
-describe('the fields in the pocket (contract/farm.ts)', () => {
+// The field's rows in the pocket: the stored ledger has the acknowledged ones' (contract/ledger.ts pocketMoves, the
+// record's), this phone's unsent ones step on the stored field (model/farm.ts) and their changes go on top.
+describe('the field in the pocket (contract/farm.ts)', () => {
   const P = 'fd:field-A.0.0', Q = 'fd:field-A.1.0';
-  const D3 = '2026-11-07';
-  const rows: EventRow[] = [
-    ev(at('09:00'), 'A', 'tally', { date: D, counts: { 'fish:koi': 2 } }),
-    ev(at('09:01'), 'A', 'sell', { species: 'fish:koi', n: 2, v: 80 }),
-    ev(at('09:02'), 'A', 'buy_starts', { crop: 'tomato', n: 3, v: 42 }),
-    ev(at('09:03'), 'A', 'farm', { d: D, ops: [{ o: 'plant', p: P, c: 'tomato', src: 'start' }, { o: 'plant', p: Q, c: 'tomato', src: 'start' }] }),
-    ev(at('09:04'), 'B', 'island', { date: D, taken: [], puts: [], shakes: [], watered: [P], wishes: {} }), // P's plant day
-    ev(at('09:05', D3), 'A', 'farm', { d: D3, ops: [{ o: 'harvest', p: P, n: 2 }] }),
-    ev(at('09:06', D3), 'A', 'sell', { species: 'goods:tomato', n: 1, v: 18 })
-  ];
+  const T = Date.parse(at('12:00'));
+  const part = (v: unknown) => ({ seq: 1, at: at('08:00'), v });
+  // (A holds 3 starts; P's tomato ripe since an hour)
+  const base = { ...reduce({ metrics: [], events: [] }), ledgers: { A: { hp: part({ h: 100, p: [['goods:tomato-start', 3]] }) } }, field: part([[P, { c: 'tomato', t: T - 3_600_000 }]]) };
+  const farm = (ops: object[], id: string) => ev(at('12:00'), 'A', 'farm', { ops }, id);
 
-  it('bought starts in, planted ones out, a harvest’s vegetables in, sold like any catch', () => {
-    const s = reduce({ metrics: [], events: rows }, null);
-    const a = shopView(s, 'A');
-    expect(Object.fromEntries(a.pocket)).toEqual({ 'goods:tomato': 1, 'goods:tomato-start': 1 });
-    expect(a.shells).toBe(80 - 42 + 18);
+  it('an unsent plant takes a start, an unsent harvest gives its yield (rain: the most); an acked one is the ledger’s already', () => {
+    const rows = [farm([{ o: 'plant', p: Q, c: 'tomato', src: 'start' }], 'f1'), farm([{ o: 'harvest', p: P, n: 3 }], 'f2')];
+    const later = foldEvents(base, rows, null, new Set(['f1', 'f2']))!;
+    expect(Object.fromEntries(shopView(later, 'A').pocket)).toEqual({ 'goods:tomato-start': 2, 'goods:tomato': 1 });
+    expect(shopView({ ...later, wet: [D] }, 'A').pocket.get('goods:tomato')).toBe(3);
+    expect(Object.fromEntries(shopView(foldEvents(base, rows, null, new Set())!, 'A').pocket)).toEqual({ 'goods:tomato-start': 3 });
   });
 
-  it('a queued harvest at the yield the record will give (the waterings), a plant on another’s plant refused', () => {
-    const s = reduce({ metrics: [], events: rows.slice(0, 5) }, null);
-    const later = foldEvents(s, [
-      ev(at('09:05', D3), 'A', 'farm', { d: D3, ops: [{ o: 'harvest', p: P, n: 3 }, { o: 'harvest', p: Q, n: 3 }] }),
-      ev(at('09:06', D3), 'B', 'farm', { d: D3, ops: [{ o: 'plant', p: P, c: 'carrot', src: 'start' }] })
-    ], null)!;
-    expect(shopView(later, 'A').pocket.get('goods:tomato')).toBe(3 + 1);
-    expect(shopView(later, 'B').pocket.size).toBe(0);
-    expect(later.farm.at(-1)?.queued).toBe(true);
+  it('a harvest of an unripe plant, or of none, is the record’s to refuse: nothing', () => {
+    const later = foldEvents(base, [farm([{ o: 'harvest', p: Q, n: 3 }], 'f3')], null, new Set(['f3']))!;
+    expect(Object.fromEntries(shopView(later, 'A').pocket)).toEqual({ 'goods:tomato-start': 3 });
   });
 });
 

@@ -84,7 +84,8 @@ describe('the events indexes (migration 4)', () => {
       ["SELECT seq, person, data FROM events WHERE type = 'board'"],
       ["SELECT count(*) AS n FROM events WHERE type = 'wtask'"],
       ["SELECT type, data FROM events WHERE type IN ('tally', 'tally_back') AND person = ?", 'A'],
-      ["SELECT person, data FROM events WHERE type = 'farm' ORDER BY at, seq"],
+      ["SELECT person, at, data FROM events WHERE type = 'farm' ORDER BY at, seq"],
+      ["SELECT 1 FROM events WHERE type = 'farm' LIMIT 1"],
       ["SELECT type, data FROM events WHERE type IN ('spend', 'spend_void') AND instr(data, ?) > 0", 'x'],
       ['SELECT data FROM events WHERE type = ?', 'pack']
     ]) expect(plan(sql, ...b), sql).toContain('events_type_person');

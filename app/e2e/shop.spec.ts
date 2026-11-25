@@ -396,9 +396,9 @@ test('the guest’s 全部売る and 全部買う: its own pocket and かいが�
 
 // かう's 苗 (Counter.svelte, stock.ts startsFill): rows as うる's, a row's tap a field of that crop, − / + one; the bar
 // what's picked, or how many かいがら short, the price on 買う.
-test('苗 in rows: a tap fills my free plots, − / + one; past my かいがら the bar says how many short and 買う is disabled', async ({ page }) => {
-  // my 2 × 2 field (4 plots, none planted), a tomato start held, 86 かいがら
-  await seed(page, [['decor', { sc: 'o', id: 'field-A', at: 1.79e12, k: 'field', x: 10, z: 17, f: 0, s: 'a-2x2' }, 'A'], tally({ 'fish:sea-bass': 5 }),
+test('苗 in rows: a tap fills the free plots, − / + one; past my かいがら the bar says how many short and 買う is disabled', async ({ page }) => {
+  // a 2 × 2 field (4 plots, none planted), a tomato start held, 86 かいがら
+  await seed(page, [['decor', { sc: 'o', id: 'field-A', at: 1.79e12, k: 'field', x: 10, z: 17, f: 0, s: 'f-2x2' }, 'A'], tally({ 'fish:sea-bass': 5 }),
     ['sell', { species: 'fish:sea-bass', n: 5, v: 100 }, 'A'], ['buy_starts', { crop: 'tomato', n: 1, v: 14 }, 'A']]);
   await page.goto(`shop${Q}`);
   await expect.poll(() => shells(page)).toBe(86);
@@ -444,8 +444,8 @@ test('苗 in rows: a tap fills my free plots, − / + one; past my かいがら 
 
 // (stock.ts startsFill, holdDelay: the rules; here the wiring, on the page's clock)
 test('苗: another crop’s held starts never fill a row’s tap; + held down repeats, quicker, to 99 at most; leaving it stops', async ({ page }) => {
-  // my 2 × 2 field, four carrot starts dug up and held
-  await seed(page, [['decor', { sc: 'o', id: 'field-A', at: 1.79e12, k: 'field', x: 10, z: 17, f: 0, s: 'a-2x2' }, 'A'], tally({ 'fish:sea-bass': 5 }),
+  // a 2 × 2 field, four carrot starts dug up and held
+  await seed(page, [['decor', { sc: 'o', id: 'field-A', at: 1.79e12, k: 'field', x: 10, z: 17, f: 0, s: 'f-2x2' }, 'A'], tally({ 'fish:sea-bass': 5 }),
     ['sell', { species: 'fish:sea-bass', n: 5, v: 100 }, 'A'], ['buy_starts', { crop: 'carrot', n: 4, v: 56 }, 'A']]);
   await page.clock.install({ time: new Date('2026-11-04T12:00:00+09:00') });
   await page.goto(`shop${Q}`);

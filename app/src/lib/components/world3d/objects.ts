@@ -77,8 +77,8 @@ export interface Day {
   board?: boolean;
   /** The day (Tokyo's `YYYY-MM-DD`): a crop's stage (layout/garden.ts cropStage), the cedars' festive lights. */
   date?: string;
-  /** The fields' plots (docs/farming.md, island/farm.ts): a plot id → its plant's model (fieldPlant) and whether
-   *  it was watered today (its soil dark), or an empty one's faint ＋ (`hint`); a plot not here is bare dry soil. */
+  /** The fields' plots (docs/farming.md, island/farm.ts farmScene): a plot id → its plant's model and whether its
+   *  soil is wet (dark), or an empty one's faint ＋ (`hint`); a plot not here is bare dry soil. */
   farm?: ReadonlyMap<string, { m?: string; wet?: boolean; hint?: string }>;
 }
 
@@ -167,7 +167,7 @@ export function placeObjects(layout: Layout, day: Day): { insts: Inst[]; standin
         out.push({ id: `${o.id}:soil`, model: 'garden/crop-soil', x, z, scale: DECOR_U, yaw });
         thing(id === 'pumpkin' && n >= 3 ? `garden/crop-pumpkin-${o.s ?? 'orange'}-${n}` : `garden/crop-${id}-${n}`, DECOR_U);
       } else if (o.k === 'field') {
-        // a field: NH's tilled soil a plot (dark once watered), its plant on it, or my empty one's faint ＋
+        // a field: NH's tilled soil a plot (dark once watered), its plant on it, or an empty one's faint ＋
         for (const t of fieldPlots(o)) {
           const [px, pz] = tileMid(t.c, t.r), at = day.farm?.get(t.p);
           out.push({ id: `${o.id}:${t.p}`, model: 'garden/crop-soil', x: px, z: pz, scale: DECOR_U, ...(at?.wet ? { tint: WET_SOIL } : {}) });

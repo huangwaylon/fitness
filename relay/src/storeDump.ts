@@ -104,8 +104,8 @@ export class StoreDump {
       // (rows the running shop ledgers and the caps' counts never saw: folded again at the next op)
       if (out.events) {
         this.pruneLoaded();
-        this.shop.shopForget();
         if (empty && !rows.ledger) this.ledger.clear();
+        this.shop.shopForget();
         this.b.io.sql.exec("DELETE FROM meta WHERE k = 'decor_live'");
       }
       return out;

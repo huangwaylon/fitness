@@ -166,7 +166,7 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
   /** RPC from the Worker's cron (index.ts): the nightly jobs not done today (nightly.ts; at 03:00 Tokyo, then from
    *  04:15 each tick's catch-up, `late`): the stored ledgers' check (store.ts ledgerCheck: a drift logged
    *  `ledger.drift`, never fixed), the ended 共有リンク's sweep (share.ts sweep), the island days before yesterday
-   *  (store.ts islandPrune, the plants' waterings kept first), the shop's old rows and day tallies (ledgerPrune), the
+   *  (store.ts islandPrune, with the old farm_water rows), the shop's old rows and day tallies (ledgerPrune), the
    *  removals past their keep (tombPrune), each prune PRUNE_BATCH rows a run. A job that threw: `do.error`; the day's
    *  counts once, `cron.nightly`, when the last one finishes. */
   async nightly(late = false): Promise<{ ok: true; ran: string[]; failed: string[]; left: string[] }> {
@@ -426,7 +426,7 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
    * - `restore {bookmark}`: restore the record to that bookmark (the object restarts; every phone refetches: a new epoch);
    * - `rev`: start a new epoch (every phone drops its cache and fetches everything);
    * - `decorcheck {fix?}`: the decor caps' kept counts against the rows' (store.ts decorCheck);
-   * - `shopcheck {fix?}`: the running field against the fold of the farm rows (store.ts shopCheck);
+   * - `shopcheck {fix?}`: the stored field against the fold of the farm rows (store.ts shopCheck);
    * - `adjust {id, who, v, note}`: a correction of `who`'s かいがら (`v`, either sign: a `shop_adjust` row, store.ts
    *   adjust); `walletset {id, who, h, note}`: their stored かいがら made `h`, logged (store.ts walletSet);
    * - `inbody {id, who, date, muscle_kg, smm_kg}`: a member's InBody sheet, their estimates' calibration (store.ts inbody);
@@ -516,7 +516,7 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
         return { ok: true, rows: this.core.heldRows(typeof o.person === 'string' ? o.person : undefined) };
       case 'promote':
         return this.core.promoteHeld(o);
-      // the running field against the fold of the farm rows (`fix`: the fold's taken)
+      // the stored field against the fold of the farm rows (`fix`: the fold's taken)
       case 'shopcheck':
         return this.core.shopCheck(o);
       // a correction of someone's かいがら (store.ts adjust; undone by another of −v)
@@ -528,7 +528,7 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
       // the かいがら as the stored ledgers keep them, the fold beside them (store.ts), and one set (walletset)
       case 'wallet':
         return this.core.wallets();
-      // the island days before yesterday deleted, the plants' waterings kept first (`dry`: those only; store.ts islandPrune)
+      // the island days before yesterday and the old farm_water rows deleted (`dry`: counted only; store.ts islandPrune)
       case 'island_prune':
         return { ok: true, ...this.core.islandPrune(o.dry === true) };
       // the removals past their keep deleted (`dry`: counted, their ids; store.ts tombPrune)

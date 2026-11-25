@@ -127,18 +127,14 @@ export function validEventData(type: string, d: Rec, now: number): boolean {
       const r = rewardOf(d), today = localDateAt(now);
       return r !== null && r.d <= today && r.d >= oldestDay(now);
     }
-    case 'farm': {
-      // the field (contract/farm.ts): its day the sender's, from TALLY_PAST_DAYS before the record's to tomorrow
-      // (2026-11-21: from yesterday only, a phone offline over two midnights lost its farm row, and its sells after it;
-      // an older day grows nothing a dig and a replant on yesterday's didn't); each op is the record's to judge against
-      // the field and the pocket (farmStep)
-      const f = farmOf(d);
-      return f !== null && f.d >= oldestDay(now) && f.d <= nextDay(localDateAt(now));
-    }
+    case 'farm':
+      // the field (contract/farm.ts): well-formed ops (an older build's day ignored), each the record's to judge at the
+      // row's `at` against the field and the sender's pocket (farmStep)
+      return farmOf(d) !== null;
     case 'wet':
       // a wet day: the record's own (relay/src/store.ts wetTick), never a phone's
     case 'farm_water':
-      // a plot's watering the day before it ripens (contract/farm.ts farmWaterOf): the record's own, never a phone's
+      // a plot's watering under the old daily rules: the record's own (retired 2026-11-25: old rows only), never a phone's
     case 'shop_adjust':
       // a correction of someone's かいがら (contract/shop.ts adjustOf): the admin's only (relay/src/store.ts adjust),
       // never any key's, the guest's included
@@ -189,7 +185,7 @@ export function spendOf(d: Rec, at: number): { spendId: string; item: ShopItemId
   return { spendId: d.spendId, item: d.item as ShopItemId, bells, day };
 }
 
-/** How many days before the record's a tally, a give-back, a farm row or a reward may be dated: a phone offline that
+/** How many days before the record's a tally, a give-back or a reward may be dated: a phone offline that
  *  long still sends them. @public (relay/test/shop.test.ts) */
 export const TALLY_PAST_DAYS = 35;
 const oldestDay = (now: number) => localDateAt(now - TALLY_PAST_DAYS * 86_400_000);
@@ -289,7 +285,7 @@ export function eventSlot(type: EventType | string, sender: Who, subject: Who, d
     case 'wet':
       return typeof d.date === 'string' ? `wet|${d.date}` : null;
     case 'farm_water':
-      // (a plot's latest: an earlier cycle's watering never counts again)
+      // (old rows only, retired 2026-11-25: a plot's latest)
       return typeof d.p === 'string' ? `farm_water|${d.p}` : null;
     case 'room_save':
       return roomSaveSlot(d);

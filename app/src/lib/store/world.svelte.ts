@@ -24,9 +24,6 @@ import { caught } from '#lib/quiet.ts';
 const LIVE_MS = 12_000;
 /** Kept for a day: at most this many changes. */
 const MAX = 600;
-/** A batch of mine goes to the relay at most this many a second (its bucket: relay/src/room.ts BURST 20, PER_SEC 20,
- *  over it `busy` and backoffs), the rest of the room's traffic (a walk, a catch) under it still. */
-const DRIP = 15;
 
 interface WorldNews {
   e: DayEvent;
@@ -130,7 +127,6 @@ class SharedWorld {
     if (demo !== this.#demo || me !== this.#me) {
       this.#day = null;
       this.#wishes = null;
-      this.#drip = []; // (another person's: never sent as this one)
     }
     this.#relay = relay;
     this.#lines.clear();
@@ -457,37 +453,6 @@ class SharedWorld {
     return a;
   }
 
-  /** Several shared-world changes of mine at once (a plot tap's 3 × 3), each folded and kept as
-   *  `share`'s, with one `rev` and one row for them all; to the relay DRIP a second, while the day and I are the same.
-   *  How many were new. */
-  shareMany(list: readonly Extract<Shared, { kind: 'world' }>[]): number {
-    const me = this.#me ?? 'A', t = this.now(), d = this.#today();
-    const out: Shared[] = [];
-    for (const i of list) {
-      const e = { ...i, who: me, t } as DayEvent;
-      if (!apply(d, e, this.#me).fresh) continue;
-      this.#keep(e);
-      out.push(i);
-    }
-    if (!out.length) return 0;
-    this.rev++;
-    this.#sendRow();
-    if (this.#dripDay !== d.day) this.#drip = [];
-    this.#dripDay = d.day;
-    this.#drip.push(...out);
-    if (!this.#dripping) this.#dripOn();
-    return out.length;
-  }
-  #drip: Shared[] = [];
-  /** The day the drip's changes are of: past it they're dropped (the relay would count them on its new day). */
-  #dripDay = 0;
-  #dripping: ReturnType<typeof setTimeout> | null = null;
-  #dripOn(): void {
-    if (tokyoDayNum(this.now()) !== this.#dripDay) this.#drip = [];
-    for (const i of this.#drip.splice(0, DRIP)) this.#relay?.send(i);
-    this.#dripping = this.#drip.length ? setTimeout(() => this.#dripOn(), 1000) : null;
-  }
-
   /** The partner's changes as they arrive (and the day's when this phone opens: not `live`). */
   on(fn: (n: WorldNews) => void): () => void {
     this.#subs.add(fn);
@@ -508,9 +473,6 @@ class SharedWorld {
     this.#rowWaits = false;
     this.#recordRows = null;
     this.#events = [];
-    this.#drip = [];
-    if (this.#dripping) clearTimeout(this.#dripping);
-    this.#dripping = null;
     this.#subs.clear();
     this.#hearSubs.clear();
     this.#lines.clear();

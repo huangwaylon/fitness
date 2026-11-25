@@ -70,7 +70,7 @@ export function procScene(name: string): Group | null {
       return g;
     }
     case 'proc/plot-plus': {
-      // an empty plot of mine while I hold starts (island/farm.ts farmScene): a flat cream ＋ on the soil's top, one
+      // an empty plot while I hold starts (island/farm.ts farmScene): a flat cream ＋ on the soil's top, one
       // mesh (one draw for every plot: instanced), facing up; never a plant's model, so it reads "plant here", not
       // "planted". Its night glow: nightLift.ts
       const a = 1.6, w = 0.45;

@@ -1,12 +1,12 @@
-// The fields' controls on this phone (docs/farming.md "Playing"): the picker (FarmPicker), opened by a tap on my empty
+// The fields' controls on this phone (docs/farming.md "Playing"): the picker (FarmPicker), opened by a tap on an empty
 // plot with two or more kinds held and no crop chosen (SceneTaps), whose pick runs that tap again with it; and the verb a
-// plot's tap pops over it (FarmPop), with ほる on my own plant.
+// plot's tap pops over it (FarmPop), with ほる on a plant.
 import { seedKey, type Crop, type FarmSrc } from '#lib/contract/farm.ts';
 import { pickSeed, type Seed } from '#lib/store/farm.svelte.ts';
 import { t } from '#lib/i18n/index.ts';
 
 /** A tap's word over its plot: px from the scene's top-left (the plot's top, as the tap saw it); `n` new each pop;
- *  `dig`: ほる's (my own plant), its button over the word. */
+ *  `dig`: ほる's (a growing plant), its button over the word. */
 interface FarmPopAt { text: string; x: number; y: number; n: number; dig?: () => void }
 
 export const farmUi = $state<{ picker: boolean; pop: FarmPopAt | null }>({ picker: false, pop: null });

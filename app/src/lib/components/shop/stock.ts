@@ -19,7 +19,7 @@ import { ITEMS, codeOfFind } from '../tent/items.ts';
 export const packOf: UnitOf = (item) => ITEMS[item]?.pk?.[0];
 
 /** What the stock reads of the State: the finds, and what model/shop.ts reads (the buys' times). */
-export type StockState = Pick<State, 'finds' | 'shop' | 'tallies' | 'farm' | 'islandDays' | 'wet' | 'farmWater' | 'ledgers'>;
+export type StockState = Pick<State, 'finds' | 'shop' | 'tallies' | 'farm' | 'wet' | 'field' | 'ledgers'>;
 
 /** The room codes `who` could place before `start` (epoch ms): the island's finds, and their own buys (each its time:
  *  model/shop.ts ownedAt, the stored ledger's or the rows'). */
@@ -60,7 +60,7 @@ export function buyPiece(item: string, stock: readonly string[]): SendResult & {
 
 /** The most of one start 苗 takes at once (store/farm.svelte.ts buyStarts). */
 export const MAX_STARTS = 99;
-/** 苗's row tap for a crop: a field of it, my `free` plots (empty, under the field's cap) less the starts of that crop I
+/** 苗's row tap for a crop: a field of it, the `free` plots (empty) less the starts of that crop I
  *  `hold`. Another crop's starts, held or picked, never count: a row's tap is that crop's whole field, a mix is + and −.
  *  At least 1 (no field, or full: one), at most MAX_STARTS. */
 export const startsFill = (free: number, hold: number): number => Math.min(MAX_STARTS, Math.max(1, free - hold));
@@ -71,7 +71,7 @@ export const HOLD_MS = 400, HOLD_MIN_MS = 30;
 const HOLD_STEP_MS = 80;
 export const holdDelay = (k: number): number => (k ? Math.max(HOLD_MIN_MS, Math.round(HOLD_STEP_MS * 0.9 ** (k - 1))) : HOLD_MS);
 
-/** Whether かう shows 苗 before the day's stock: my free plots want more starts than I hold (a planting trip's
+/** Whether かう shows 苗 before the day's stock: the free plots want more starts than I hold (a planting trip's
  *  errand; else they sit after the stock, a header chip away). */
 export const startsFirst = (free: number, held: number): boolean => free > held;
 

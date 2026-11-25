@@ -1,39 +1,38 @@
-// The fields' writes on this phone (docs/farming.md): my plants, harvests and digs as `farm` ops, shown at once (the
-// model folds the queued row as the record will judge it: model/farm.ts) and sent as one event per Tokyo day held
-// FARM_HOLD_MS (a plot's 3 × 3 planted, a dig and the shop's 苗に戻す UNDO_MS: their 取り消す), each added to the held
-// one (its data replaced); a tap's 水やり (the shared day's); the starts bought at the shop's かう (`buy_starts`, with the
-// shop's 5 s 取り消す); the picker's last pick (kept on this phone).
+// The field's writes on this phone (docs/farming.md): my plants, waterings, harvests and digs as `farm` ops, shown at
+// once (the model steps the unsent row on the stored field as the record will judge it: model/farm.ts) and sent as one
+// event held FARM_HOLD_MS (a plot's 3 × 3 planted, a dig and the shop's 苗に戻す UNDO_MS: their 取り消す), each added to
+// the held one (its data replaced); the starts bought at the shop's かう (`buy_starts`, with the shop's 5 s 取り消す);
+// the picker's last pick (kept on this phone).
 import { week } from './week.svelte.ts';
-import { world } from './world.svelte.ts';
 import type { SendResult } from './backend.ts';
 import { UNDO_MS, together } from './actions.ts';
 import { newId } from '#lib/sync/queue.ts';
 import { CROPS, FARM, isFarmCrop, type Crop, type FarmOp, type FarmSrc } from '#lib/contract/farm.ts';
 import { localKV, readJson, writeJson } from '#lib/sync/storage.ts';
-import type { LocalDate } from '#lib/types.ts';
 
 /** A batch waits this long for the next tap (a row of plots planted is one event). */
 const FARM_HOLD_MS = 2000;
 
-/** A batch: its day, its ops and when it goes (`until`), and its event in the queue (`r`: its data replaced as ops join
+/** A batch: its ops and when it goes (`until`), and its event in the queue (`r`: its data replaced as ops join
  *  or leave it, one fold of the model a tap). Each send's undo and hold keep their own batch, so a later batch never
  *  strands them. */
-interface Batch { d: LocalDate; ops: FarmOp[]; until: number; r: SendResult }
+interface Batch { ops: FarmOp[]; until: number; r: SendResult }
 let held: Batch | null = null;
 
-/** `more` ops on day `d` into the held batch (its event's data replaced) while it holds and has room, else a new one:
+/** `more` ops into the held batch (its event's data replaced) while it holds and has room, else a new one:
  *  held `holdMs` at least. Its undo takes these ops back out; its hold holds the batch (an undo banner touched:
  *  store/actions.ts undoBanner). Both false / 0 once the batch was sent. */
-function add(d: LocalDate, more: FarmOp[], holdMs = FARM_HOLD_MS): SendResult {
+function add(more: FarmOp[], holdMs = FARM_HOLD_MS): SendResult {
+  if (!more.length) return { ok: false };
   const now = Date.now();
   let b = held;
   const ops = b ? [...b.ops, ...more] : more, until = Math.max(b?.until ?? 0, now + holdMs);
-  if (b && b.d === d && b.until > now && ops.length <= FARM.batchMax && b.r.replace?.({ d, ops }, until - now)) {
+  if (b && b.until > now && ops.length <= FARM.batchMax && b.r.replace?.({ ops }, until - now)) {
     b.ops = ops;
     b.until = until;
   } else {
-    held = b = { d, ops: more, until: now + holdMs, r: { ok: false } };
-    b.r = week.send('farm', { d, ops: more }, { holdMs });
+    held = b = { ops: more, until: now + holdMs, r: { ok: false } };
+    b.r = week.send('farm', { ops: more }, { holdMs });
     if (!b.r.ok || !b.r.undo) {
       held = null;
       return { ok: b.r.ok };
@@ -55,24 +54,21 @@ function add(d: LocalDate, more: FarmOp[], holdMs = FARM_HOLD_MS): SendResult {
 function takeBack(b: Batch, ops: readonly FarmOp[]): boolean {
   if (!ops.every((o) => b.ops.includes(o))) return false;
   const rest = b.ops.filter((o) => !ops.includes(o));
-  if (rest.length ? !b.r.replace?.({ d: b.d, ops: rest }, Math.max(0, b.until - Date.now())) : !b.r.undo?.()) return false;
+  if (rest.length ? !b.r.replace?.({ ops: rest }, Math.max(0, b.until - Date.now())) : !b.r.undo?.()) return false;
   b.ops = rest;
   if (!rest.length && held === b) held = null;
   return true;
 }
 
-/** A plant, or a plot tap's ripe plants of its 3 × 3 (world/farmTap.ts), held 2 s for the next tap: one replace of
- *  the held batch a tap. */
-export const plant = (d: LocalDate, p: string, c: Crop, src: FarmSrc): SendResult => add(d, [{ o: 'plant', p, c, src }]);
-export const harvestMany = (d: LocalDate, ops: readonly { p: string; n: number }[]): SendResult => add(d, ops.map(({ p, n }) => ({ o: 'harvest', p, n })));
+/** A plant, or a plot tap's ripe plants or plants to water of its 3 × 3 (world/farmTap.ts), held 2 s for the next
+ *  tap: one replace of the held batch a tap. */
+export const plant = (p: string, c: Crop, src: FarmSrc): SendResult => add([{ o: 'plant', p, c, src }]);
+export const harvestMany = (ops: readonly { p: string; n: number }[]): SendResult => add(ops.map(({ p, n }) => ({ o: 'harvest', p, n })));
+export const water = (ps: readonly string[]): SendResult => add(ps.map((p) => ({ o: 'water', p })));
 /** Held for their 取り消す (UNDO_MS): ほる (a plot's word), the shop's 苗に戻す, a plot tap's 3 × 3 planted. */
-export const dig = (d: LocalDate, p: string): SendResult => add(d, [{ o: 'dig', p }], UNDO_MS);
-export const digMany = (d: LocalDate, ps: readonly string[]): SendResult => add(d, ps.map((p) => ({ o: 'dig', p })), UNDO_MS);
-export const plantMany = (d: LocalDate, ps: readonly string[], c: Crop, src: FarmSrc): SendResult => add(d, ps.map((p) => ({ o: 'plant', p, c, src })), UNDO_MS);
-
-/** These plants watered today (a tap's 3 × 3): one change of the shared day, one day row
- *  (store/world.svelte.ts shareMany). */
-export const waterAll = (ids: readonly string[]): number => world.shareMany(ids.map((id) => ({ kind: 'world', op: 'watered', id })));
+export const dig = (p: string): SendResult => add([{ o: 'dig', p }], UNDO_MS);
+export const digMany = (ps: readonly string[]): SendResult => add(ps.map((p) => ({ o: 'dig', p })), UNDO_MS);
+export const plantMany = (ps: readonly string[], c: Crop, src: FarmSrc): SendResult => add(ps.map((p) => ({ o: 'plant', p, c, src })), UNDO_MS);
 
 /** Starts from the shop's かう: `n` of each crop at FARM.startBuy each (the record checks the cover): one `buy_starts` a
  *  crop, all in one group (kept all or none, relay store.ts group, as the shop's ぜんぶ), one undo. */

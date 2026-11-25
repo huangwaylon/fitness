@@ -17,8 +17,8 @@ const seed = (page: Page, day: string, events: Seed[]) =>
 /** This page's own events of a type (not the seeds'). */
 const sent = (page: Page, type: string) => page.evaluate((type) => (JSON.parse(localStorage.getItem('island-demo.events') ?? '{"events":[]}').events as { id: string; type: string; data: Record<string, unknown> }[])
   .filter((e) => e.type === type && !e.id.startsWith('seed-')).map((e) => e.data), type);
-/** ウェイ's field (a farmer: the ask comes). */
-const FIELD: Seed = ['decor', { sc: 'o', id: 'field-A', at: 1.79e12, k: 'field', x: 10, z: 17, f: 0, s: 'a-2x2' }, 'A'];
+/** A field (the island farms: the ask comes). */
+const FIELD: Seed = ['decor', { sc: 'o', id: 'field-A', at: 1.79e12, k: 'field', x: 10, z: 17, f: 0, s: 'f-2x2' }, 'A'];
 const talk = (page: Page) => page.locator('[data-fx="talk"].placed');
 
 async function up(page: Page, url: string, who: string) {

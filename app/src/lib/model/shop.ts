@@ -8,7 +8,7 @@
 //
 // With the relay's stored ledger (docs/backend.md#the-ledger, State `ledgers`): the person's parts as the record keeps
 // them and this phone's unsent ops stepped on top (contract/ledger.ts, as the record will): no fold of the history.
-// Without one (an older relay), the fold.
+// Without one (an older relay), the fold (the field's part only this phone's unsent rows: model/farm.ts).
 //
 // Cost: one pass over the tallies (model/tally.ts, memoised) and the person's shop rows, memoised per row list.
 import type { LocalDate, Who } from '#lib/types.ts';
@@ -16,11 +16,12 @@ import { caughtOf, isSellable, rowConcerns, shopLedger, shopStep, type Ledger, t
 import type { Wallets } from '#lib/contract/api.ts';
 import { dayTallies, unsentTallies, type TallyRow } from './tally.ts';
 import { farmOfState, type FarmRow } from './farm.ts';
-import type { Farm, FarmWater } from '#lib/contract/farm.ts';
+import type { Farm } from '#lib/contract/farm.ts';
+import type { FieldWire } from '#lib/contract/ledger.ts';
 import { copyLedger, emptyLedger, ledgerStep, partInto, pocketMoves, LEDGER_PARTS, type Ledger as Stored, type Ledgers } from '#lib/contract/ledger.ts';
 
 /** What the fold reads of the model's State (model/state.ts: never imported here, so the shop never reaches ベル). */
-interface ShopState { tallies: readonly TallyRow[]; shop: readonly ShopRowAt[]; farm: readonly FarmRow[]; islandDays: readonly { data: { date: LocalDate; watered: readonly string[] } }[]; wet: readonly LocalDate[]; farmWater: readonly FarmWater[]; wallets?: Wallets; ledgers?: Ledgers }
+interface ShopState { tallies: readonly TallyRow[]; shop: readonly ShopRowAt[]; farm: readonly FarmRow[]; wet: readonly LocalDate[]; field?: FieldWire; wallets?: Wallets; ledgers?: Ledgers }
 
 export interface ShopView {
   /** `kind:id` → how many the pocket holds (only the sellable kinds, only more than none). */
@@ -59,7 +60,7 @@ function storedOf(l: Ledgers[Who]): Stored | null {
 const viewMemo = new WeakMap<object, WeakMap<ShopState['shop'], WeakMap<ShopState['tallies'], WeakMap<Farm, ShopView>>>>();
 
 /** `who`'s shop from their stored ledger (ledgers' parts) and this phone's unsent ops: shop rows, tallies, the field's
- *  rows (their pocket changes: the field with them less the field without). */
+ *  rows (their pocket changes: the field's `net`, model/farm.ts, as the stored field holds none). */
 function storedView(s: ShopState, who: Who, stored: Stored, key: object): ShopView {
   const farm = farmOfState(s);
   const a = viewMemo.get(key) ?? viewMemo.set(key, new WeakMap()).get(key)!;
@@ -69,10 +70,8 @@ function storedView(s: ShopState, who: Who, stored: Stored, key: object): ShopVi
   if (hit) return hit;
   const l = copyLedger(stored);
   unsentTallies(l, s.tallies, who);
-  if (s.farm.some((r) => r.unsent && r.person === who)) {
-    const without = farmOfState({ ...s, farm: keptFarm(s.farm) }).net[who] ?? new Map<string, number>(), net = farm.net[who] ?? new Map<string, number>();
-    pocketMoves(l, [...new Set([...net.keys(), ...without.keys()])].map((k) => [k, (net.get(k) ?? 0) - (without.get(k) ?? 0)] as const));
-  }
+  const net = farm.net[who];
+  if (net) pocketMoves(l, net);
   const now = Date.now();
   for (const r of s.shop) if (r.unsent && rowConcerns(r, who)) ledgerStep(l, r, r.at || now);
   const pocket = new Map<string, number>();
@@ -81,10 +80,6 @@ function storedView(s: ShopState, who: Who, stored: Stored, key: object): ShopVi
   c.set(farm, view);
   return view;
 }
-
-const keptMemo = new WeakMap<ShopState['farm'], ShopState['farm']>();
-/** The field's rows the record has (not unsent), the same list for the same rows (farmOfState's memo holds). */
-const keptFarm = (rows: ShopState['farm']): ShopState['farm'] => keptMemo.get(rows) ?? keptMemo.set(rows, rows.filter((r) => !r.unsent)).get(rows)!;
 
 /** `who`'s pocket, かいがら and bought pieces. Memoised per State lists. */
 export function shopView(s: ShopState, who: Who): ShopView {

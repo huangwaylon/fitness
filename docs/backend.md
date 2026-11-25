@@ -48,7 +48,7 @@ Exactly `EVENT_TYPES`; anything else or a bad shape is `bad_request`. `data` ≤
 | `food*` | `food.ts` | [food-data.md](food-data.md); own entries only, recipes/custom foods shared |
 | `sell`, `buy`, `buy_starts`, `sg_reward` | `shop.ts`, `stock.ts` | [The shop](design.md#the-shop); `pocket short` / `wallet short` |
 | `shop_adjust` | `shop.ts adjustOf` | <a id="shop-adjust"></a>admin-only かいがら correction `{v, note}` (`record.ts adjust`); undone by −v |
-| `farm`, `wet`, `farm_water` | `farm.ts` | [farming.md](farming.md#rules-the-records); `wet` from the weather cron |
+| `farm`, `wet` | `farm.ts`, `wet.ts` | [farming.md](farming.md#rules-the-records): judged at the row's `at`; `wet` from the weather cron; old `farm_water` rows unread, pruned nightly |
 | `listen`, `eflag`, `eflag_done` | `listen.ts`, `eflag.ts` | [english.md](english.md#progress); `listen` private (`rowsFor`) |
 | `inbody` | `bodyEst.ts` | admin-only InBody sheet (`record.ts inbody`) |
 | `pack*`, `trip_note` | `pack.ts` | [travel.md](travel.md#packing-list-relay), [private values](travel.md#private-values) |
@@ -140,7 +140,9 @@ and tab (`dev`; 4002 replaces it). Ops merge commutatively per id.
 - **Health rows:** every `metrics` row is kept forever (`keepMetrics` refuses any statement that would drop one).
 - <a id="the-ledger"></a><a id="the-wallet"></a>**The stored ledger** (`relay/src/ledger.ts`, `contract/ledger.ts`):
   rows per person and part (`hp` かいがら + pocket, `w` pieces, `g` games, `z` ずかん; `F|field` plots) with `seq`,
-  stepped by each op in its transaction, never below 0; `ledger_log` 60 days; `ledgercheck` at 03:00.
+  stepped by each op in its transaction, never below 0; `ledger_log` 60 days; `ledgercheck` at 03:00. `F|field` is
+  always the fold of the `farm` rows (each at its `at`); meta `farm|t6h` marks it this relay's rules': another key at
+  the start (older rules, a rollback) refolds it at once, its `seq` rising.
 - **Snapshot size:** a year of three is ~50–100k rows (3–6 MB): paged.
 - **Restore:** `/api` is `unavailable` until the restart; a new epoch. Backups: [runbook §6](ops/runbook.md#6-backups).
 

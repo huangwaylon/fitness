@@ -13,7 +13,7 @@ const START = at('2026-11-09T00:00:00+09:00');
 const catOf = (code: string) => ITEMS[code].cat!;
 type S = Pick<State, 'finds' | 'shop'>;
 /** A State of finds and buys (the rest empty: model/shop.ts reads the buys' times). */
-const st = (x: S): StockState => ({ tallies: [], farm: [], islandDays: [], wet: [], farmWater: [], ...x });
+const st = (x: S): StockState => ({ tallies: [], farm: [], wet: [], ...x });
 const find = (code: string, when: number, person: 'A' | 'B' | 'G' = 'A'): S['finds'][number] => ({ at: when, person, kind: 'item', id: catOf(code) });
 const buy = (item: string, when: number, person: 'A' | 'B' | 'G' = 'B'): ShopRowAt => ({ type: 'buy', data: { item, price: buyPrice(item)!, d: '2026-11-08' }, at: when, person });
 
@@ -87,7 +87,7 @@ describe('かう’s tiles past my かいがら', () => {
   });
 });
 
-describe('苗 first (startsFirst): when my free plots want more starts than I hold', () => {
+describe('苗 first (startsFirst): when the free plots want more starts than I hold', () => {
   it('first with plots to fill, after the stock with none (no field, full, or enough held)', () => {
     expect(startsFirst(4, 1)).toBe(true);
     expect(startsFirst(4, 4)).toBe(false);
@@ -96,7 +96,7 @@ describe('苗 first (startsFirst): when my free plots want more starts than I ho
 });
 
 describe('苗’s row tap (startsFill): a field of that crop', () => {
-  it('my free plots less the starts of that crop I hold (another crop’s never count); at least one, at most MAX_STARTS', () => {
+  it('the free plots less the starts of that crop I hold (another crop’s never count); at least one, at most MAX_STARTS', () => {
     expect(startsFill(38, 0)).toBe(38);
     expect(startsFill(38, 5)).toBe(33);
     // (r2's repro: 4 free plots and dug-up carrot starts held, wheat's row was 1; the carrots aren't wheat's: 4)

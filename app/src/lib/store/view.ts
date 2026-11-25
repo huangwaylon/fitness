@@ -13,7 +13,7 @@ export interface ComposedModel {
   me: Who;
   now: number;
   /** What `state` was reduced from: an unchanged input reuses it (the minute tick only moves `now`). */
-  readonly from?: { rows: SnapshotCache['rows']; demo: SnapshotCache['demo']; extra: string; unsent: string; rev: string | null; wallets: SnapshotCache['wallets']; ledgers: SnapshotCache['ledgers'] };
+  readonly from?: { rows: SnapshotCache['rows']; demo: SnapshotCache['demo']; extra: string; unsent: string; rev: string | null; wallets: SnapshotCache['wallets']; ledgers: SnapshotCache['ledgers']; field: SnapshotCache['field'] };
 }
 
 /**
@@ -44,25 +44,26 @@ export function composeModel(cache: SnapshotCache, queue: readonly QueuedEvent[]
   const now = Math.max(clientNow + cache.skewMs, floor);
   const baseRev = cache.demo || !cache.rev ? null : `${cache.rev}@${cache.rowsAt}`;
   const rev = baseRev === null || (extra.length && Date.parse(extra[0][0]) <= lastLockAt(now)) ? null : baseRev;
-  const from = { rows: cache.rows, demo: cache.demo, extra: JSON.stringify(extra), unsent: [...unsent].join(), rev, wallets: cache.wallets, ledgers: cache.ledgers };
+  const from = { rows: cache.rows, demo: cache.demo, extra: JSON.stringify(extra), unsent: [...unsent].join(), rev, wallets: cache.wallets, ledgers: cache.ledgers, field: cache.field };
   const p = prev?.from;
-  if (prev && p && p.rows === from.rows && p.demo === from.demo && p.extra === from.extra && p.unsent === from.unsent && p.rev === from.rev && p.wallets === from.wallets && p.ledgers === from.ledgers && prev.me === cache.me) {
+  if (prev && p && p.rows === from.rows && p.demo === from.demo && p.extra === from.extra && p.unsent === from.unsent && p.rev === from.rev && p.wallets === from.wallets && p.ledgers === from.ledgers && p.field === from.field && prev.me === cache.me) {
     return { state: prev.state, me: cache.me, now, from };
   }
   // The cached rows' state is reduced once per row set; the queued rows are folded over a copy of it (a tap
   // re-reduces nothing).
   const base = reduceRows(cache.rows, baseRev);
   const folded = extra.length ? (foldEvents(base, extra, rev, unsent) ?? reduce({ ...cache.rows, events: [...cache.rows.events, ...extra] }, rev, new Set(extra.map((e) => e[2])), unsent)) : base;
-  // (the relay's かいがら wallets and stored ledgers beside the rows: a copy, never the reduced State itself; the same
+  // (the relay's かいがら wallets, stored ledgers and field beside the rows: a copy, never the reduced State itself; the same
   // copy while none changes, as bells.ts caches per State)
-  const state = cache.wallets || cache.ledgers ? withRelay(folded, cache.wallets, cache.ledgers) : folded;
+  const state = cache.wallets || cache.ledgers ? withRelay(folded, cache.wallets, cache.ledgers, cache.field) : folded;
   return { state, me: cache.me, now, from };
 }
 
-let walleted: { of: State; wallets: SnapshotCache['wallets']; ledgers: SnapshotCache['ledgers']; state: State } | null = null;
-function withRelay(of: State, wallets: SnapshotCache['wallets'], ledgers: SnapshotCache['ledgers']): State {
-  if (walleted?.of !== of || walleted.wallets !== wallets || walleted.ledgers !== ledgers) {
-    walleted = { of, wallets, ledgers, state: { ...of, ...(wallets ? { wallets } : {}), ...(ledgers ? { ledgers } : {}) } };
+type Relay = Pick<SnapshotCache, 'wallets' | 'ledgers' | 'field'>;
+let walleted: { of: State; state: State } & Relay | null = null;
+function withRelay(of: State, wallets: Relay['wallets'], ledgers: Relay['ledgers'], field: Relay['field']): State {
+  if (walleted?.of !== of || walleted.wallets !== wallets || walleted.ledgers !== ledgers || walleted.field !== field) {
+    walleted = { of, wallets, ledgers, field, state: { ...of, ...(wallets ? { wallets } : {}), ...(ledgers ? { ledgers } : {}), ...(field ? { field } : {}) } };
   }
   return walleted.state;
 }

@@ -1,26 +1,31 @@
-// The fields (docs/farming.md): starts in my pocket, planted on my field by a tap on it (its 3 × 3; the picker with two
-// kinds or more); the next day the plant is ripe and a tap harvests it, three for one watered on the plant day;
-// the vegetables sell at the shop; the partner sees my plants and waters them, never harvests them; ほる over my own
-// plant's word digs it up; the shop's 苗 sends plants off every field back to starts. On `?demo`: the
-// demo's events in localStorage (a field put down in the editor, a catch sold, the starts bought, as their writes have
-// them). The plots are tapped by their world points (a field's tile middles: layout/grid.ts tileMid).
+// The fields (docs/farming.md): everyone's plots. Starts in my pocket, planted by a tap on any empty plot (its 3 × 3;
+// the picker with two kinds or more); six hours on the plant is ripe and anyone's tap harvests it, three for one watered
+// while growing; the vegetables sell at the shop; anyone waters, harvests or digs (ほる over a plant's word); the shop's
+// 苗 sends plants off every field back to starts; the scene redraws a plant at its next stage by one timer. On `?demo`:
+// the demo's events in localStorage (a field put down in the editor, a catch sold, the starts bought, as their writes
+// have them; a farm row unsent, as the phones step those on the record's field). The plots are tapped by their world
+// points (a field's tile middles: layout/grid.ts tileMid).
 import { expect, test, type Page } from './fixtures.ts';
 import { islandUp, quiet, tapAt, tapWorld, type W3 } from './island.ts';
 import { LIVE_V } from '../src/lib/contract/live-protocol.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
-type Seed = [type: string, data: object, who: 'A' | 'B' | 'G'];
-/** The demo's events of a day (as the writes keep them). */
+/** An event: its type, data, sender and its time (`HH:MM` that day; else 00:00, in list order: keep them ascending). */
+type Seed = [type: string, data: object, who: 'A' | 'B' | 'G', hm?: string];
+/** The demo's events of a day (as the writes keep them; a farm row unsent: model/farm.ts steps only those without a
+ *  stored field). */
 const seed = (page: Page, day: string, events: Seed[]) =>
   page.addInitScript(([day, list]) => {
     if (localStorage.getItem('island-demo.events')) return;
-    const at = Date.parse(`${day}T09:00:00+09:00`);
-    const rows = list.map(([type, data, person], i) => ({ id: `seed-${i}`, type, data, queuedAt: at + i, tries: 0, nextAt: 0, ackedAt: at + i, person }));
+    const rows = list.map(([type, data, person, hm], i) => {
+      const at = Date.parse(`${day}T${hm ?? '00:00'}:00+09:00`) + i;
+      return { id: `seed-${i}`, type, data, queuedAt: at, tries: 0, nextAt: 0, ...(type === 'farm' ? {} : { ackedAt: at }), person };
+    });
     localStorage.setItem('island-demo.events', JSON.stringify({ day, events: rows }));
   }, [day, events] as const);
-/** ウェイ's field: 2 × 2 on まえ's lawn east of the path (tiles 10–11 × 17–18: nothing in front of it on screen, うめ at
- *  her spot, a goal tree's canopy, a flower's tap area). */
-const FIELD: Seed = ['decor', { sc: 'o', id: 'field-A', at: 1.79e12, k: 'field', x: 10, z: 17, f: 0, s: 'a-2x2' }, 'A'];
+/** A field: 2 × 2 on まえ's lawn east of the path (tiles 10–11 × 17–18: nothing in front of it on screen, うめ at her
+ *  spot, a goal tree's canopy, a flower's tap area). */
+const FIELD: Seed = ['decor', { sc: 'o', id: 'field-A', at: 1.79e12, k: 'field', x: 10, z: 17, f: 0, s: 'f-2x2' }, 'A'];
 /** A plot's id and its world point (its tile's middle: the grid's x0 and z0 −90, 30 a tile). */
 const plot = (i: number, j = 0) => ({ p: `fd:field-A.${i}.${j}`, x: -90 + (10 + i) * 30 + 15, z: -90 + (17 + j) * 30 + 15 });
 const D = '2026-11-04';
@@ -43,13 +48,19 @@ const pops = (page: Page) => page.evaluate(() => (window as unknown as { __pops:
 const farmRows = (page: Page) => page.evaluate(() => (JSON.parse(localStorage.getItem('island-demo.events') ?? '{"events":[]}').events as { id: string; type: string; data: { ops: { o: string; p: string; n?: number }[] } }[])
   .filter((e) => e.type === 'farm' && !e.id.startsWith('seed-')).flatMap((e) => e.data.ops));
 
-/** A 3 × 2 field of mine a tile west of FIELD's (tiles 9–11 × 17–18) and its plots. */
-const WIDE: Seed = ['decor', { sc: 'o', id: 'field-A', at: 1.79e12, k: 'field', x: 9, z: 17, f: 0, s: 'a-3x2' }, 'A'];
+/** A 3 × 2 field a tile west of FIELD's (tiles 9–11 × 17–18; an older build's variant, its owner ignored) and its plots. */
+const WIDE: Seed = ['decor', { sc: 'o', id: 'field-A', at: 1.79e12, k: 'field', x: 9, z: 17, f: 0, s: 'b-3x2' }, 'A'];
 const wide = (i: number, j = 0) => ({ ...plot(i - 1, j), p: `fd:field-A.${i}.${j}` });
 const plants = (ps: string[], c = 'tomato') => ps.map((p) => ({ o: 'plant', p, c, src: 'start' }));
+const water = (ps: string[]) => ps.map((p) => ({ o: 'water', p }));
+/** The page owns its clock, at 06:00 on D: seeds at 05:xx keep their times (a queued row is stamped after the demo's
+ *  own rows, which end 40 minutes before the page's now: store/view.ts composeModel) and fastForward grows them. One
+ *  page a test: another page's model would stamp them anew. */
+const at6 = (page: Page) => page.clock.install({ time: new Date(`${D}T06:00:00+09:00`) });
+const SIX = '?demo&weather=clear';
 const swings = (page: Page) => page.evaluate(() => (window as unknown as { __fx3: { log(): { kind: string }[] } }).__fx3.log().filter((e) => e.kind === 'swing').length);
 
-test('starts bought at the shop’s かう; one kind held: a tap on my empty plot plants its 3 × 3 at once, the tapped one first, the pop counting against the cap; none left, a word; no はたけ button', async ({ page, context }) => {
+test('starts bought at the shop’s かう; one kind held: a tap on an empty plot plants its 3 × 3 at once, the tapped one first; none left, a word; no はたけ button', async ({ page, context }) => {
   await seed(page, D, [FIELD, ...POCKET.slice(0, 2)]);
   // three tomato starts from かう's 苗 (3 × 14), by the list's own name, kanji
   await page.goto(`shop?demo&date=${D}T12:00`);
@@ -59,7 +70,7 @@ test('starts bought at the shop’s かう; one kind held: a tap on my empty plo
   await page.locator('[data-shop-tab="buy"]').click();
   await expect(page.locator('[data-shop-start="tomato"] .nm')).toHaveText('トマトの苗');
   // the rule, under the starts (the sheet's kanji)
-  await expect(page.locator('[data-shop-farm-rule]')).toHaveText('水をやった翌日に3つ収穫（水なしは1つ）。雨も、だれの水やりでもOK');
+  await expect(page.locator('[data-shop-farm-rule]')).toHaveText('6時間で実る。水をやると3つ収穫（水なしは1つ）。雨の日もOK。畑はみんなのもの');
   for (let i = 0; i < 3; i++) await page.locator('[data-shop-more="tomato"]').click();
   // one bar: the pinned one names the crop and buys them
   await expect(page.locator('[data-shop-starts-offer]')).toHaveAttribute('data-shop-starts-offer', '42');
@@ -75,22 +86,22 @@ test('starts bought at the shop’s かう; one kind held: a tap on my empty plo
   await expect(page.locator('[data-say-open]')).toBeVisible();
   await expect(page.locator('[data-farm-open], [data-farm-held]')).toHaveCount(0);
   if (SHOTS) await page.screenshot({ path: `${SHOTS}/island-no-button.png` });
-  // one kind held: no picker; its 3 × 3's empty plots of mine, the tapped one, then the nearest, as many as I hold
+  // one kind held: no picker; its 3 × 3's empty plots, the tapped one, then the nearest, as many as I hold
   await tapWorld(page, plot(0).x, plot(0).z);
   await expect(page.locator('[data-farm-picker]')).toHaveCount(0);
   // one word, the banner's (world kana, with the world's とりけす), no pop
-  await expect(page.locator('.banner[role="status"] .txt')).toHaveText('トマトを 3かぶ うえた（3/40）');
+  await expect(page.locator('.banner[role="status"] .txt')).toHaveText('トマトを 3かぶ うえた');
   await expect(page.locator('.banner[role="status"]').getByRole('button')).toHaveText('とりけす');
   await expect.poll(() => farmRows(page), { timeout: 10_000 }).toEqual(plants([plot(0).p, plot(1).p, plot(0, 1).p]));
   // one swing of the shovel a tap
   expect(await swings(page)).toBe(1);
-  // none left: the fourth plot says so (the plants beside it aren't watered by a tap on my empty plot)
+  // none left: the fourth plot says so (the plants beside it aren't watered by a tap on an empty plot)
   await tapWorld(page, plot(1, 1).x, plot(1, 1).z);
   await expect.poll(() => pops(page)).toEqual(['なえが ない！ おみせで かえるよ']);
   await expect(page.locator('[data-farm-picker]')).toHaveCount(0);
   await expect(page.locator('[data-fx="say"]')).toHaveCount(0);
   expect(await farmRows(page)).toHaveLength(3);
-  // うめ (no plot of hers) has no farm button either
+  // うめ has no farm button either
   const b = await context.newPage();
   await b.goto(`?demo&as=B&date=${D}T12:00`);
   await islandUp(b);
@@ -125,104 +136,98 @@ test('two kinds held: an empty plot opens the picker; a tap on another plot whil
   await page.locator('[data-farm-pick="start:tomato"]').click();
   await expect(picker).toHaveCount(0);
   // the second plot's 3 × 3 (its column and the middle one)
-  await expect(page.locator('.banner[role="status"] .txt')).toHaveText('トマトを 4かぶ うえた（4/40）');
+  await expect(page.locator('.banner[role="status"] .txt')).toHaveText('トマトを 4かぶ うえた');
   await expect.poll(() => farmRows(page), { timeout: 10_000 }).toEqual(plants([wide(2).p, wide(1).p, wide(2, 1).p, wide(1, 1).p]));
   // the run's crop: the first plot now plants tomatoes without asking
   await tapWorld(page, wide(0).x, wide(0).z);
-  await expect(page.locator('.banner[role="status"] .txt')).toHaveText('トマトを 2かぶ うえた（6/40）');
+  await expect(page.locator('.banner[role="status"] .txt')).toHaveText('トマトを 2かぶ うえた');
   await expect(picker).toHaveCount(0);
   await expect.poll(() => farmRows(page), { timeout: 10_000 }).toHaveLength(6);
   // the picker lights the last pick, first
   await expect.poll(() => page.evaluate(() => localStorage.getItem('island-demo.farm.seed'))).toBe('{"c":"tomato","src":"start"}');
 });
 
-test('a mixed 3 × 3: a tap on my empty plot harvests first, the next plants, a tap on a plant waters', async ({ page }) => {
-  const D3 = '2026-11-07';
-  await seed(page, D3, [
+test('a mixed 3 × 3: a tap on an empty plot harvests first, the next plants, a tap on a plant waters', async ({ page }) => {
+  await seed(page, D, [
     WIDE, ...POCKET, ['buy_starts', { crop: 'tomato', n: 3, v: 42 }, 'A'],
-    // ripe at the west corner; growing at the east back corner (planted today, ripe tomorrow: its watering counts)
-    ['farm', { d: D, ops: plants([wide(0).p]) }, 'A'],
-    ['farm', { d: D3, ops: plants([wide(2, 1).p]) }, 'A']
+    // ripe at 11:30 at the west corner; うめ's at the east back corner at 11:59
+    ['farm', { ops: plants([wide(0).p]) }, 'A', '05:30'],
+    ['farm', { ops: plants([wide(2, 1).p]) }, 'B', '05:59']
   ]);
   await catchPops(page);
-  await page.goto(`?demo&date=${D3}T12:00&weather=clear`);
+  await page.addInitScript(() => {
+    // (うめ's tab there, as far as the demo's relay knows: an act goes only to someone present)
+    const acts: string[] = ((window as unknown as { __acts: string[] }).__acts = []), bc = new BroadcastChannel('island-demo-relay');
+    bc.onmessage = (e) => {
+      if (e.data?.k === 'hi' && e.data.who === 'A') bc.postMessage({ k: 'hi', who: 'B' });
+      if (e.data?.k === 'm' && e.data.m.kind === 'act' && e.data.m.act === 'water') acts.push(e.data.m.id);
+    };
+  });
+  await at6(page);
+  await page.goto(SIX);
   await islandUp(page);
+  await page.clock.fastForward('05:40:00');
   await quiet(page);
-  // the middle (empty, mine): the ripe one first
+  // the middle (empty): the ripe one first
   await tapWorld(page, wide(1).x, wide(1).z);
   await expect(page.locator('[data-fx="catch"] .catch-plate')).toHaveAttribute('aria-label', /トマトを しゅうかく！ ×1/);
   // again: never the can; the harvest's tomato is a second kind (a vegetable plants too), so the picker, whose pick
-  // plants my empty plots of its 3 × 3, the tapped one first, then the nearest
+  // plants the empty plots of its 3 × 3, the tapped one first, then the nearest
   await tapWorld(page, wide(1).x, wide(1).z);
   await page.locator('[data-farm-pick="start:tomato"]').click();
-  await expect(page.locator('.banner[role="status"] .txt')).toHaveText('トマトを 4かぶ うえた（6/40）');
+  await expect(page.locator('.banner[role="status"] .txt')).toHaveText('トマトを 4かぶ うえた');
   // the とりけす snackbar over the harvest's plate at the bottom, never on it
   await expect.poll(async () => {
     const [b, plate] = [await page.locator('.banner[role="status"]').boundingBox(), await page.locator('[data-catch-stack] > .slot').first().boundingBox()];
     return !!b && !!plate && b.y + b.height <= plate.y;
   }).toBe(true);
   if (SHOTS) await page.screenshot({ path: `${SHOTS}/plant-3x3-pop.png` });
-  await expect.poll(() => farmRows(page), { timeout: 10_000 }).toEqual([{ o: 'harvest', p: wide(0).p, n: 1 }, ...plants([wide(1).p, wide(2).p, wide(1, 1).p, wide(0, 1).p])]);
-  // a plant: the can over its 3 × 3's dry ones (the new plants there and the growing one; the west one's out of reach)
+  // a plant: the can over its 3 × 3's growing, unwatered ones (the new plants there and うめ's; the west one's out of
+  // reach), a drop over each and the can's own
   await tapWorld(page, wide(2, 1).x, wide(2, 1).z);
-  await expect.poll(() => pops(page)).toEqual(['4かぶに みずやり・あした 3こ']);
-  const watered = await page.evaluate(() => (JSON.parse(localStorage.getItem('island-demo.world.A') ?? '{}').events as { kind: string; op?: string; id?: string }[]).filter((e) => e.kind === 'world' && e.op === 'watered').map((e) => e.id));
-  expect(watered.sort()).toEqual([wide(1).p, wide(2).p, wide(1, 1).p, wide(2, 1).p].sort());
+  await expect.poll(() => pops(page)).toEqual(['4かぶに みずやり・3こ みのる']);
+  await expect.poll(async () => (await farmRows(page)).length, { timeout: 10_000 }).toBe(9);
+  const ops = await farmRows(page);
+  expect(ops.slice(0, 5)).toEqual([{ o: 'harvest', p: wide(0).p, n: 1 }, ...plants([wide(1).p, wide(2).p, wide(1, 1).p, wide(0, 1).p])]);
+  expect(ops.slice(5).map((o) => `${o.o} ${o.p}`).sort()).toEqual(water([wide(1).p, wide(2).p, wide(1, 1).p, wide(2, 1).p]).map((o) => `${o.o} ${o.p}`).sort());
+  const drops = () => page.evaluate(() => (window as unknown as { __fx3: { log(): { kind: string }[] } }).__fx3.log().filter((e) => e.kind === 'drops').length);
+  await expect.poll(drops).toBe(5);
+  // the partner told at once: one `act` over the room (the demo's relay: sync/live-local.ts' BroadcastChannel)
+  await expect.poll(() => page.evaluate(() => (window as unknown as { __acts: string[] }).__acts)).toEqual([wide(2, 1).p]);
 });
 
-test('a day on: ripe, watered on its plant day it gives three, harvested by a tap a row off; sold at the shop for 54 かいがら; the partner waters, never harvests', async ({ page, context }) => {
-  const D1 = '2026-11-05';
-  await seed(page, D1, [
+test('six hours on: ripe, watered by うめ while growing it gives three, harvested by a tap a row off (54 かいがら); a growing one watered, then its time to ripe', async ({ page }) => {
+  await seed(page, D, [
     FIELD, ...POCKET,
-    ['farm', { d: D, ops: [{ o: 'plant', p: plot(0).p, c: 'tomato', src: 'start' }] }, 'A'],
-    // the second planted today: ripe tomorrow
-    ['farm', { d: D1, ops: [{ o: 'plant', p: plot(1).p, c: 'tomato', src: 'start' }] }, 'A'],
-    // うめ watered the first on its plant day
-    ['island', { date: D, taken: [], puts: [], shakes: [], watered: [plot(0).p], wishes: {} }, 'B']
+    ['farm', { ops: plants([plot(0).p]) }, 'A', '05:30'],
+    ['farm', { ops: water([plot(0).p]) }, 'B', '05:40'],
+    // ripe at 11:59
+    ['farm', { ops: plants([plot(1).p]) }, 'A', '05:59']
   ]);
-  await page.goto(`?demo&date=${D1}T12:00&weather=clear`);
+  await catchPops(page);
+  await at6(page);
+  await page.goto(SIX);
   await islandUp(page);
+  await page.clock.fastForward('05:40:00');
   await quiet(page);
-  // a row's miss: a tap on my empty plot behind it harvests my ripe plant there (the growing one on the diagonal stays)
+  // a row's miss: a tap on the empty plot behind it harvests the ripe plant there (the growing one on the diagonal stays)
   await tapWorld(page, plot(0, 1).x, plot(0, 1).z);
   await expect(page.locator('[data-fx="catch"] .catch-plate')).toHaveAttribute('aria-label', /トマトを しゅうかく！ ×3・54かいがら/);
   await expect.poll(() => farmRows(page)).toEqual([{ o: 'harvest', p: plot(0).p, n: 3 }]);
-  // the shop buys them: 3 × 18
-  await page.goto(`shop?demo&date=${D1}T12:00`);
-  await expect(page.locator('[data-shop]')).toBeVisible();
-  const before = Number(await page.locator('[data-shop]').getAttribute('data-shells'));
-  await page.waitForFunction(() => !!(window as unknown as { __shop?: object }).__shop);
-  await page.evaluate(() => (window as unknown as { __shop: { talk(): void } }).__shop.talk());
-  await page.locator('[data-shop-tab="sell"]').click();
-  const tomato = page.locator('[data-shop-catch="goods:tomato"]');
-  await expect(tomato).toHaveAttribute('data-n', '3');
-  for (let i = 0; i < 3; i++) await tomato.click();
-  await page.locator('[data-shop-sell]').click();
-  await expect.poll(async () => Number(await page.locator('[data-shop]').getAttribute('data-shells'))).toBe(before + 54);
-
-  // うめ's phone (a clear sky): my plants are on her island; she waters the growing one, and can't harvest mine
-  const b = await context.newPage();
-  await catchPops(b);
-  await b.goto(`?demo&as=B&date=${D1}T12:00&weather=clear`);
-  await islandUp(b);
-  await quiet(b);
-  await tapWorld(b, plot(1).x, plot(1).z);
+  // the growing one: the can over it and the one growing back
+  await tapWorld(page, plot(1).x, plot(1).z);
   // (its word shown before the next tap: FarmPop is a lazy chunk, loaded by the first pop, and a pop replaced before
   // it's in is never drawn)
-  await expect.poll(() => pops(b)).toEqual(['2かぶに みずやり・あした 3こ']);
-  // watered now: a word, no harvest
-  await tapWorld(b, plot(1).x, plot(1).z);
-  await expect.poll(() => pops(b)).toEqual(['2かぶに みずやり・あした 3こ', expect.stringMatching(/の トマト・あした 3こ$/)]);
-  // her tap watered both (the one growing back counts from its harvest day); never ほる on my plant
-  await expect(b.locator('[data-farm-dig]')).toHaveCount(0);
-  const watered = await b.evaluate(() => (JSON.parse(localStorage.getItem('island-demo.world.B') ?? '{}').events as { kind: string; op?: string; id?: string }[]).filter((e) => e.kind === 'world' && e.op === 'watered').map((e) => e.id));
-  expect(watered.sort()).toEqual([plot(0).p, plot(1).p].sort());
-  expect((await farmRows(b)).filter((o) => o.o === 'harvest')).toHaveLength(1);
+  await expect.poll(() => pops(page)).toEqual(['2かぶに みずやり・3こ みのる']);
+  // watered now: a word with its time to ripe (19 minutes less the seconds since, up to ten)
+  await tapWorld(page, plot(1).x, plot(1).z);
+  await expect.poll(() => pops(page)).toEqual(['2かぶに みずやり・3こ みのる', 'トマト・あと 20ぷん・みずやり ずみ']);
+  await expect.poll(async () => (await farmRows(page)).filter((o) => o.o === 'water').map((o) => o.p).sort()).toEqual([plot(0).p, plot(1).p].sort());
 });
 
 test('a plot under a goal tree’s canopy is the plot’s; the canopy off the field still opens its tree', async ({ page }) => {
-  // ウェイ's 6 × 3 field beside うめ's goal tree (14, 10): its east plots lie under the tree's canopy on screen
-  const beside: Seed = ['decor', { sc: 'o', id: 'field-A', at: 1.79e12, k: 'field', x: 10, z: 11, f: 0, s: 'a-6x3' }, 'A'];
+  // a 6 × 3 field beside うめ's goal tree (14, 10): its east plots lie under the tree's canopy on screen
+  const beside: Seed = ['decor', { sc: 'o', id: 'field-A', at: 1.79e12, k: 'field', x: 10, z: 11, f: 0, s: 'f-6x3' }, 'A'];
   // a tomato and a carrot: two kinds, so the picker
   await seed(page, D, [beside, ...POCKET.slice(0, 2), ['buy_starts', { crop: 'tomato', n: 1, v: 14 }, 'A'], ['buy_starts', { crop: 'carrot', n: 1, v: 14 }, 'A']]);
   await catchPops(page);
@@ -246,7 +251,7 @@ test('a plot under a goal tree’s canopy is the plot’s; the canopy off the fi
   await expect(page.locator('.detail')).toHaveCount(0);
   await page.locator('[data-farm-pick="start:tomato"]').click();
   await expect.poll(() => farmRows(page), { timeout: 10_000 }).toEqual([{ o: 'plant', p: under[0].p, c: 'tomato', src: 'start' }]);
-  await expect(page.locator('.banner[role="status"] .txt')).toHaveText('トマトを 1かぶ うえた（1/40）');
+  await expect(page.locator('.banner[role="status"] .txt')).toHaveText('トマトを 1かぶ うえた');
   // the canopy's top, no field under it: the tree's popup
   await tapAt(page, (w) => {
     const r = ['A', 'B'].map((t) => w.__world3d.box('goal', t)).find((r) => r && r.width > 0 && r.top > 0);
@@ -255,35 +260,33 @@ test('a plot under a goal tree’s canopy is the plot’s; the canopy off the fi
   await expect(page.locator('.detail')).toHaveCount(1);
 });
 
-test('a first tap on a growing plant names its crop, never a raw key (the names load first)', async ({ page }) => {
-  const D1 = '2026-11-05';
-  await seed(page, D1, [
+test('a first tap on a growing plant names its crop (the names load first) and its time to ripe in hours and minutes', async ({ page }) => {
+  await seed(page, D, [
     FIELD, ...POCKET.slice(0, 2), ['buy_starts', { crop: 'pumpkin', n: 1, v: 14 }, 'A'],
-    ['farm', { d: D1, ops: [{ o: 'plant', p: plot(0).p, c: 'pumpkin', src: 'start' }] }, 'A'],
-    // watered today already: the tap's a word, not the can
-    ['island', { date: D1, taken: [], puts: [], shakes: [], watered: [plot(0).p], wishes: {} }, 'A']
+    // ripe at 11:30; watered already: the tap's a word, not the can
+    ['farm', { ops: plants([plot(0).p], 'pumpkin') }, 'A', '05:30'],
+    ['farm', { ops: water([plot(0).p]) }, 'A', '05:40']
   ]);
   await catchPops(page);
-  await page.goto(`?demo&date=${D1}T12:00&weather=clear`);
+  await at6(page);
+  await page.goto(SIX);
   await islandUp(page);
   await quiet(page);
   await tapWorld(page, plot(0).x, plot(0).z);
-  await expect.poll(() => pops(page)).toEqual(['カボチャ・あした 3こ']);
+  await expect.poll(() => pops(page)).toEqual(['カボチャ・あと 5じかん 30ぷん・みずやり ずみ']);
   expect((await pops(page)).join()).not.toMatch(/beach\.name\./);
 });
 
-test('a harvest tap takes my ripe plants of its 3 × 3 with one pop and a sparkle each; the next tap’s count joins the same plate', async ({ page }) => {
-  const D3 = '2026-11-07';
-  // WIDE's six plots ripe tomatoes, none watered: 1 each
+test('anyone’s tap harvests: うめ takes the ripe plants of its 3 × 3 with one pop and a sparkle each; the next tap’s count joins the same plate', async ({ page }) => {
+  // WIDE's six plots ripe tomatoes (ウェイ's planting), none watered: 1 each
   const at = wide;
   const six = [0, 1, 2].flatMap((i) => [at(i), at(i, 1)]);
-  await seed(page, D3, [
-    WIDE, ...POCKET.slice(0, 2), ['buy_starts', { crop: 'tomato', n: 6, v: 84 }, 'A'],
-    ['farm', { d: D, ops: six.map((t) => ({ o: 'plant', p: t.p, c: 'tomato', src: 'start' })) }, 'A']
-  ]);
+  await seed(page, D, [WIDE, ['farm', { ops: plants(six.map((t) => t.p)) }, 'A', '05:30']]);
   await page.addInitScript(() => ((window as { __cues?: string[] }).__cues = []));
-  await page.goto(`?demo&date=${D3}T12:00&weather=clear`);
+  await at6(page);
+  await page.goto(`${SIX}&as=B`);
   await islandUp(page);
+  await page.clock.fastForward('06:00:00');
   await quiet(page);
   const sparkles = () => page.evaluate(() => (window as unknown as { __fx3: { log(): { kind: string; size?: number }[] } }).__fx3.log().filter((e) => e.kind === 'sparkle' && e.size === 0.6).length);
   // the corner's 3 × 3: four plants, one tap
@@ -303,46 +306,58 @@ test('a harvest tap takes my ripe plants of its 3 × 3 with one pop and a sparkl
   expect(cues).not.toContain('scene-catch');
 });
 
-test('the partner’s watering of my plants plays on my island: drops over each, one heart; my tap there then says who', async ({ page }) => {
-  const D1 = '2026-11-05';
-  await seed(page, D1, [
-    FIELD, ...POCKET,
-    ['farm', { d: D1, ops: [{ o: 'plant', p: plot(0).p, c: 'tomato', src: 'start' }, { o: 'plant', p: plot(1).p, c: 'tomato', src: 'start' }] }, 'A']
-  ]);
-  await catchPops(page);
-  await page.goto(`?demo&date=${D1}T12:00&weather=clear`);
+test('a plant is drawn anew at its next stage by one timer: stage 0, then 1 a third of the way', async ({ page }) => {
+  // planted 05:58: stage 1 from 07:58
+  await seed(page, D, [FIELD, ['farm', { ops: plants([plot(0).p]) }, 'A', '05:58']]);
+  await at6(page);
+  await page.goto(SIX);
   await islandUp(page);
-  await quiet(page);
-  const fx = () => page.evaluate(() => (window as unknown as { __fx3: { log(): { kind: string }[] } }).__fx3.log().map((e) => e.kind).filter((k) => k === 'drops' || k === 'hearts').sort());
-  expect(await fx()).toEqual([]);
-  // うめ's phone waters both (one tap, its 3 × 3: one news a plot), as the demo's relay brings it (sync/live-local.ts:
-  // another tab's BroadcastChannel; hers in front would hide this one, whose island then plays nothing), just now on
-  // the island's clock
-  await page.evaluate(([ids, v, t0]) => {
-    const bc = new BroadcastChannel('island-demo-relay'), t = t0 + Date.now() - performance.timeOrigin;
-    ids.forEach((id, i) => bc.postMessage({ k: 'm', m: { v, kind: 'world', op: 'watered', id, who: 'B', t: t + i } }));
-    setTimeout(() => bc.close(), 1000);
-  }, [[plot(0).p, plot(1).p], LIVE_V, Date.parse(`${D1}T12:00:00+09:00`)] as const);
-  await expect.poll(fx, { timeout: 5000 }).toEqual(['drops', 'drops', 'hearts']);
-  await tapWorld(page, plot(0).x, plot(0).z);
-  await expect.poll(() => pops(page)).toEqual([expect.stringMatching(/が みずを やってくれた$/)]);
+  const model = () => page.evaluate((p) => (window as unknown as { __world3d: W3 }).__world3d.where(p)?.model ?? null, plot(0).p);
+  await expect.poll(model).toBe('garden/crop-tomato-0');
+  await page.clock.fastForward('01:50:00');
+  await expect.poll(model).toBe('garden/crop-tomato-0');
+  await page.clock.fastForward('00:10:00');
+  await expect.poll(model).toBe('garden/crop-tomato-1');
 });
 
-test('my growing plant’s word offers ほる (44 pt, at the word’s right end, deaf for 300 ms, held while touched); it digs, とりけす puts it back', async ({ page }) => {
-  const D1 = '2026-11-05';
-  await seed(page, D1, [
+test('the partner’s watering plays on my island at once: a drop over each plant, and they read watered before the sync', async ({ page }) => {
+  await seed(page, D, [FIELD, ...POCKET, ['farm', { ops: plants([plot(0).p, plot(1).p]) }, 'A', '05:30']]);
+  await catchPops(page);
+  await at6(page);
+  await page.goto(SIX);
+  await islandUp(page);
+  await quiet(page);
+  const drops = () => page.evaluate(() => (window as unknown as { __fx3: { log(): { kind: string }[] } }).__fx3.log().filter((e) => e.kind === 'drops').length);
+  expect(await drops()).toBe(0);
+  // うめ's tap on the first plot, as the demo's relay brings it (sync/live-local.ts: another tab's BroadcastChannel), just
+  // now: one `act`, her 3 × 3 watered here too
+  await page.evaluate(([p, v]) => {
+    const bc = new BroadcastChannel('island-demo-relay');
+    bc.postMessage({ k: 'm', m: { v, kind: 'act', act: 'water', id: p, who: 'B', t: Date.now() } });
+    setTimeout(() => bc.close(), 1000);
+  }, [plot(0).p, LIVE_V] as const);
+  await expect.poll(drops, { timeout: 5000 }).toBe(2);
+  // watered: my tap is a word, and sends nothing (her ops are the record's)
+  await tapWorld(page, plot(1).x, plot(1).z);
+  await expect.poll(() => pops(page)).toEqual(['トマト・あと 5じかん 30ぷん・みずやり ずみ']);
+  expect(await farmRows(page)).toEqual([]);
+});
+
+test('a growing plant’s word offers ほる to anyone (44 pt, at the word’s right end, deaf for 300 ms, held while touched); it digs, とりけす puts it back', async ({ page }) => {
+  await seed(page, D, [
     FIELD, ...POCKET,
-    ['farm', { d: D1, ops: plants([plot(0).p], 'pumpkin') }, 'A'],
-    // watered today already: the tap's a word, not the can
-    ['island', { date: D1, taken: [], puts: [], shakes: [], watered: [plot(0).p], wishes: {} }, 'A']
+    // うめ's pumpkin (ripe at 11:40), watered: my tap's a word, not the can
+    ['farm', { ops: plants([plot(0).p], 'pumpkin') }, 'B', '05:40'],
+    ['farm', { ops: water([plot(0).p]) }, 'B', '05:45']
   ]);
-  await page.goto(`?demo&date=${D1}T12:00&weather=clear`);
+  await at6(page);
+  await page.goto(SIX);
   await islandUp(page);
   await quiet(page);
   await tapWorld(page, plot(0).x, plot(0).z);
   const dig = page.locator('[data-farm-dig]');
   await expect(dig).toBeVisible();
-  await expect(page.locator('[data-farm-pop]')).toHaveText('カボチャ・あした 3こ');
+  await expect(page.locator('[data-farm-pop]')).toHaveText('カボチャ・あと 5じかん 40ぷん・みずやり ずみ');
   const [d, w] = [await dig.boundingBox(), await page.locator('[data-farm-pop]').boundingBox()];
   expect(Math.min(d!.width, d!.height)).toBeGreaterThanOrEqual(44);
   // inline at the word's right end, not over the plots behind it
@@ -374,8 +389,8 @@ test('my growing plant’s word offers ほる (44 pt, at the word’s right end,
   await expect.poll(() => farmRows(page), { timeout: 10_000 }).toEqual([{ o: 'dig', p: plot(0).p }]);
 });
 
-test('the shop’s 苗: my plants off every field (a field moved) back to starts in one row, with 取り消す', async ({ page }) => {
-  await seed(page, D, [FIELD, ...POCKET, ['farm', { d: D, ops: plants(['fd:field-A.5.5', 'fd:field-A.6.5']) }, 'A']]);
+test('the shop’s 苗: anyone’s plants off every field (a field moved) back to starts in one row, with 取り消す', async ({ page }) => {
+  await seed(page, D, [FIELD, ...POCKET, ['farm', { ops: plants(['fd:field-A.5.5']) }, 'A', '09:00'], ['farm', { ops: plants(['fd:field-A.6.5']) }, 'B', '09:10']]);
   await page.goto(`shop?demo&date=${D}T12:00`);
   await page.waitForFunction(() => !!(window as unknown as { __shop?: object }).__shop);
   await page.evaluate(() => (window as unknown as { __shop: { talk(): void } }).__shop.talk());

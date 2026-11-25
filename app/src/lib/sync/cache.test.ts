@@ -6,7 +6,7 @@ import { movesWallet, type SnapshotRows } from '#lib/contract/api.ts';
 import { LIVE, configureStorage, onStorageProblem, type KV, type StorageProblem } from './storage.ts';
 import { configureTransport } from './transport.ts';
 import { enqueue, flush, queued } from './queue.ts';
-import { addLedgers, addWallets, applySnapshot, dropWallets, cacheWritten, configureCache, loadCache, refreshSnapshot, saveCache, SEG_ROWS } from './cache.ts';
+import { addField, addLedgers, addWallets, applySnapshot, dropWallets, cacheWritten, configureCache, loadCache, refreshSnapshot, saveCache, SEG_ROWS } from './cache.ts';
 import { newestLedgers, newestWallets } from './wallets.ts';
 import { readEarly } from './cacheEarly.ts';
 import { setKey } from './pairing.ts';
@@ -445,3 +445,30 @@ describe('the stored ledgers', () => {
   });
 });
 
+// The relay's stored field (docs/backend.md#the-ledger): kept with the ledgers, its highest seq; its change moves since.
+describe('the stored field', () => {
+  const at = (h: string) => `2026-11-02T${h}:00:00.000Z`;
+  const field = (seq: number, when: string, v: unknown = []) => ({ seq, at: when, v });
+  it('a first fetch keeps it; a poll keeps it unless it brings a newer one; none with no ledgers (an older relay)', async () => {
+    reply = () => ({ ok: true, me: 'A', now: at('05'), rev: 'r1', rows: rows(), ledgers: {}, field: field(2, at('01')) });
+    await refreshSnapshot();
+    reply = () => ({ ok: true, me: 'A', now: at('06'), rev: 'r1', rows: { metrics: [], events: [] }, ledgers: {} });
+    let r = await refreshSnapshot();
+    expect(r.ok && r.cache.field).toEqual(field(2, at('01')));
+    reply = () => ({ ok: true, me: 'A', now: at('07'), rev: 'r1', rows: { metrics: [], events: [] }, ledgers: {}, field: field(3, at('06')) });
+    r = await refreshSnapshot();
+    expect(r.ok && [r.cache.field?.seq, r.cache.since]).toEqual([3, at('06')]);
+    expect(addField(field(2, at('07')))?.field?.seq).toBe(3);
+    expect(addField(field(4, at('08')))?.field?.seq).toBe(4);
+    reply = () => ({ ok: true, me: 'A', now: at('09'), rev: 'r1', rows: { metrics: [], events: [] } });
+    r = await refreshSnapshot();
+    expect(r.ok && r.cache.field).toBeUndefined();
+  });
+  it('one of an older relay’s shape (not a plot list) never kept over a plot list, whatever its seq', async () => {
+    reply = () => ({ ok: true, me: 'A', now: at('05'), rev: 'r1', rows: rows(), ledgers: {}, field: field(9, at('01'), { p: [], n: {} }) });
+    const r = await refreshSnapshot();
+    expect(r.ok && r.cache.field).toBeUndefined();
+    expect(addField(field(1, at('06')))?.field?.seq).toBe(1);
+    expect(addField(field(9, at('07'), { p: [], n: {} }))?.field?.seq).toBe(1);
+  });
+});

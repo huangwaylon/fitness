@@ -41,7 +41,7 @@ const ALLOW: Record<string, string[]> = {
   scoring: ['types', 'time', 'config'],
   model: DOMAIN,
   // the island's layout (docs/island-layout.md): pure, over the contract's ops
-  layout: ['types', 'contract', 'random'],
+  layout: ['contract', 'random'],
   // the meal log's food catalog (lib/food/index.ts): pure but for its loader, over the contract's snapshot
   food: ['contract'],
   // ごはん's barcode scan (lib/scan: the code's keys, the camera, the decoder, Open Food Facts' answer as a food item,

@@ -5,7 +5,7 @@
   // a section's 全部 all of it (shop/sell.ts); the starts 苗 apart, with no 全部 (they're held to plant); the button says
   // what the sale comes to. A row counts picked/held (「2/5」).
   // かう: the day's stock (shop/stock.ts: it changes daily), a piece past my かいがら dimmed with how many short, and the
-  // fields' starts in rows as うる's: first when my free plots want them (stock.ts startsFirst), else after the stock with
+  // fields' starts in rows as うる's: first when the free plots want them (stock.ts startsFirst), else after the stock with
   // a 苗へ chip in its header to jump there (the order as the tab opened); the button says what it costs. Section headers stick while their rows scroll. A sell or a buy shows at once with 取り消す
   // (store/actions.ts undoBanner). The title bar is the kit's (タヌキ商店, my かいがら, ✕); the twins don't talk in here (their balloon is the room's). A piece picked is the room's too
   // (its card's: `pick`, `why`, `buy`).
@@ -33,8 +33,7 @@
   import Sheet from '../ui/Sheet.svelte';
   import { askNow } from '../island/vegAsk.svelte.ts';
   import { minuteNow } from '#lib/time/clock.ts';
-  import { fillPlan, orphans } from '#lib/world/farmPlan.ts';
-  import { islandDay } from '../island/ambientClock.ts';
+  import { freePlots, orphans } from '#lib/world/farmPlan.ts';
   import { site } from '../island/site.svelte.ts';
   import { layoutPlots } from '#lib/layout/field.ts';
   import { layout as layoutStore } from '#lib/store/layout.svelte.ts';
@@ -107,7 +106,7 @@
     pick = pick === code ? null : code;
     cue('tick');
   }
-  // ---- かう's 苗 (docs/farming.md): the six starts, always in stock, in rows: a row's tap a field of that crop (my free
+  // ---- かう's 苗 (docs/farming.md): the six starts, always in stock, in rows: a row's tap a field of that crop (the free
   // plots less its starts I hold; again: none; stock.ts startsFill), − / + one (+ held down repeats: holdDelay), up to
   // MAX_STARTS; 買う buys them at once, all or none (one group: store/farm.svelte.ts buyStarts)
   let starts = $state<Partial<Record<Crop, number>>>({});
@@ -118,21 +117,22 @@
     const cs = CROPS.filter((c) => starts[c]);
     return cs.length === 1 ? cs[0] : null;
   });
-  /** My plots a start could go in now (empty, under the field's cap: world/farmPlan.ts fillPlan), and the starts I hold. */
+  /** The plots a start could go in now (empty: world/farmPlan.ts freePlots), and the starts I hold. */
   const free = $derived.by(() => {
     const m = week.model;
-    return m ? fillPlan(layoutPlots(site.layout ?? layoutStore.current), farmOfState(m.state), m.me, FARM.cap).length : 0;
+    return m ? freePlots(layoutPlots(site.layout ?? layoutStore.current), farmOfState(m.state)) : 0;
   });
   const heldOf = (c: Crop) => shop.pocket.get(startKey(c)) ?? 0;
-  /** My plants on plots no field covers now (a field moved or shrunk in /editor: world/farmPlan.ts orphans): kept,
-   *  not drawn, counted toward the cap; 苗に戻す digs them all up, their starts back (never on its own: both phones
-   *  would race). */
+  /** The plants on plots no field covers now (a field moved or shrunk in /editor: world/farmPlan.ts orphans): kept,
+   *  not drawn; anyone's 苗に戻す digs them up (one event's worth a tap), their starts to the digger (never on its own:
+   *  the phones would race). */
   const off = $derived.by(() => {
     const m = week.model;
-    return m ? orphans(farmOfState(m.state), m.me, layoutPlots(site.layout ?? layoutStore.current)) : [];
+    return m ? orphans(farmOfState(m.state), layoutPlots(site.layout ?? layoutStore.current)) : [];
   });
   function backToStarts() {
-    if (off.length) undoBanner(t('farm.dugBack', { n: String(off.length) }), digMany(week.view?.today ?? islandDay(), off));
+    const ps = off.slice(0, FARM.batchMax);
+    if (ps.length) undoBanner(t('farm.dugBack', { n: String(ps.length) }), digMany(ps));
   }
   const held = $derived(CROPS.reduce((a, c) => a + heldOf(c), 0));
   /** 苗 first, as the tab opened: a buy (or its 取り消す) never moves the list under the finger. */

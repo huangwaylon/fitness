@@ -1,9 +1,10 @@
-// The fields as each phone shows them (docs/farming.md): the plants (contract/farm.ts farmStep over the `farm` rows, a
-// kept row as kept, a queued one judged as the record will), what was watered (the island days' `watered`, anyone's,
-// yesterday's and today's; the plots' `farm_water` days; a wet day's every plot) and what the fields put in or took out
-// of each pocket (model/shop.ts adds it). Pure. Never ベル: the economy never imports this.
+// The field as each phone shows it (docs/farming.md): the relay's stored field (docs/backend.md#the-ledger, State
+// `field`: every acknowledged farm row in it) and this phone's unsent farm rows stepped on it as the record will
+// (contract/farm.ts farmStep, judged at each row's `at`), whose pocket changes are the only `net` (model/shop.ts adds
+// them: the stored ledger has the rest). Pure. Never ベル: the economy never imports this.
 import type { LocalDate, Who } from '#lib/types.ts';
-import { emptyFarm, farmStep, type Farm, type FarmData, type FarmWater, type Watered } from '#lib/contract/farm.ts';
+import { emptyFarm, farmStep, fieldFromJson, type Farm, type FarmData, type WetDay } from '#lib/contract/farm.ts';
+import type { FieldWire } from '#lib/contract/ledger.ts';
 
 /** One person's `farm` row (model/state.ts `farm`). */
 export interface FarmRow {
@@ -11,67 +12,51 @@ export interface FarmRow {
   person: Who;
   data: FarmData;
   queued?: true;
-  /** Not acknowledged by the record yet (the stored ledger doesn't hold it: model/shop.ts). */
+  /** Not acknowledged by the record yet (the stored field and ledger don't hold it). */
   unsent?: true;
 }
 
-/** What the fold reads of the model's State (never imported here: the shop's fold reads this, and never the economy). */
-interface FarmState { farm: readonly FarmRow[]; islandDays: readonly { data: { date: LocalDate; watered: readonly string[] } }[]; wet: readonly LocalDate[]; farmWater: readonly FarmWater[] }
+/** What the field reads of the model's State (never imported here: the shop's fold reads this, and never the economy). */
+interface FarmState { farm: readonly FarmRow[]; wet: readonly LocalDate[]; field?: FieldWire }
 
-const wateredMemo = new WeakMap<FarmState['islandDays'], WeakMap<FarmState['wet'], WeakMap<FarmState['farmWater'], Watered>>>();
-
-/** Whether a plot was watered on a day by the State's rows: in anyone's island day of it or its farm_water's day, or
- *  every plot on a wet day. */
-export function wateredOf(s: Pick<FarmState, 'islandDays' | 'wet' | 'farmWater'>): Watered {
-  let byWet = wateredMemo.get(s.islandDays);
-  if (!byWet) wateredMemo.set(s.islandDays, (byWet = new WeakMap()));
-  let byFw = byWet.get(s.wet);
-  if (!byFw) byWet.set(s.wet, (byFw = new WeakMap()));
-  const hit = byFw.get(s.farmWater);
-  if (hit) return hit;
-  const days = new Map<LocalDate, Set<string>>();
-  // (a plot's farm_water: a true day, whichever row replaced it)
-  const add = (date: LocalDate, id: string) => {
-    let set = days.get(date);
-    if (!set) days.set(date, (set = new Set()));
-    set.add(id);
-  };
-  for (const w of s.farmWater) add(w.date, w.p);
-  // (a day's rows only grow: contract/island.ts mergeIslandDay unions the waterings, so every row's count)
-  for (const r of s.islandDays) {
-    if (!r.data.watered.some((id) => id.startsWith('fd:'))) continue;
-    for (const id of r.data.watered) add(r.data.date, id);
+const wetMemo = new WeakMap<FarmState['wet'], WetDay>();
+/** Whether a Tokyo day was wet by the State's `wet` rows. Memoised per list. */
+export function wetOf(s: Pick<FarmState, 'wet'>): WetDay {
+  let w = wetMemo.get(s.wet);
+  if (!w) {
+    const days = new Set(s.wet);
+    wetMemo.set(s.wet, (w = (d) => days.has(d)));
   }
-  const wet = new Set(s.wet);
-  const w: Watered = (p, date) => wet.has(date) || (days.get(date)?.has(p) ?? false);
-  byFw.set(s.farmWater, w);
   return w;
 }
 
-const farmMemo = new WeakMap<FarmState['farm'], WeakMap<Watered, Farm>>();
+/** No stored field heard (an older relay): an empty one. */
+const NONE = emptyFarm();
+const stored = new WeakMap<FieldWire, Farm>();
+const storedOf = (f: FieldWire | undefined): Farm => {
+  if (!f) return NONE;
+  let hit = stored.get(f);
+  if (!hit) stored.set(f, (hit = fieldFromJson(f.v) ?? emptyFarm()));
+  return hit;
+};
 
-/** The fold of the last list's kept rows (as kept: no watering read): a list that starts with the same row objects
- *  folds on from it, so a tap (a queued row replaced) or a poll (a row or two more) folds only its new rows, not the
- *  year's (the State's lists are never changed in place: model/state.ts). Never handed out: a copy is. */
-let kept = { rows: [] as readonly FarmRow[], f: emptyFarm() };
-const copyFarm = (f: Farm): Farm => ({ plots: new Map(f.plots), net: Object.fromEntries(Object.entries(f.net).map(([w, m]) => [w, new Map(m)])) });
+const memo = new WeakMap<Farm, WeakMap<FarmState['farm'], WeakMap<FarmState['wet'], Farm>>>();
 
-/** The fields: each plot's plant and each person's pocket changes. Memoised per State lists. */
+/** The field: each plot's plant and each person's pocket changes by this phone's unsent rows. Memoised per State
+ *  lists (a frame's reads are lookups); never to be changed by the caller. */
 export function farmOfState(s: FarmState): Farm {
-  const watered = wateredOf(s);
-  let byW = farmMemo.get(s.farm);
-  if (!byW) farmMemo.set(s.farm, (byW = new WeakMap()));
-  const hit = byW.get(watered);
-  if (hit) return hit;
-  const rows = s.farm;
-  let n = rows.findIndex((r) => r.queued);
-  if (n < 0) n = rows.length;
-  if (kept.rows.length > n || kept.rows.some((r, i) => rows[i] !== r)) kept = { rows: [], f: emptyFarm() };
-  for (let i = kept.rows.length; i < n; i++) farmStep(kept.f, rows[i].person, rows[i].data);
-  kept = { rows: rows.slice(0, n), f: kept.f };
-  const f = copyFarm(kept.f);
-  // (a queued row as the record will judge it: its harvests at their yield; the pocket the phone's own check, before)
-  for (const r of rows.slice(n)) farmStep(f, r.person, r.data, r.queued ? { watered, pocket: () => Infinity } : undefined);
-  byW.set(watered, f);
+  const base = storedOf(s.field);
+  const byRows = memo.get(base) ?? memo.set(base, new WeakMap()).get(base)!;
+  const byWet = byRows.get(s.farm) ?? byRows.set(s.farm, new WeakMap()).get(s.farm)!;
+  let f = byWet.get(s.wet);
+  if (f) return f;
+  f = base;
+  const judge = { wet: wetOf(s), pocket: () => Infinity };
+  for (const r of s.farm) {
+    if (!r.unsent) continue;
+    if (f === base) f = { plots: new Map(base.plots), net: {} };
+    farmStep(f, r.person, r.data, r.at, judge);
+  }
+  byWet.set(s.wet, f);
   return f;
 }

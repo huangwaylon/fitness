@@ -13,6 +13,7 @@ import { validate } from './validate.ts';
 import { KIND_LIST } from './catalog.ts';
 import { planTap } from '../components/island/tapWalk.ts';
 import type { LayoutEntry, LayoutOp } from '#lib/contract/layout.ts';
+import { fieldOf as fieldDef, fieldS } from './field.ts';
 import {
   BRIDGE, CAMPSITE, DECOR_SLOTS, FLOWERS, GOAL_TREES, HEDGE_XS, HEDGE_Z, HOMES, ROCK, SCENERY, TAPE_DECK
 } from '#lib/world/world.ts';
@@ -491,5 +492,13 @@ describe('a home turns with its owner’s look', () => {
     // a member's move of it keeps its facing (the owner's)
     const moved = layoutOf([as('A', { sc: 'o', id: 'home-B', at: T0, k: 'home', x: 5, z: 29, f: 2 })]);
     expect(moved.objects.get('home-B')!.f).toBe(l.objects.get('home-B')!.f);
+  });
+});
+
+describe('a field’s variant (field.ts)', () => {
+  test('its size, everyone’s: an older variant’s owner ignored, anything else the default', () => {
+    expect(fieldS({ w: 3, d: 2 })).toBe('f-3x2');
+    expect([fieldDef('f-3x2'), fieldDef('b-3x2'), fieldDef('g-16x1')]).toEqual([{ w: 3, d: 2 }, { w: 3, d: 2 }, { w: 16, d: 1 }]);
+    for (const s of [undefined, '3x2', 'f-17x2', 'f-0x2', 'z-3x2']) expect(fieldDef(s)).toEqual({ w: 10, d: 4 });
   });
 });

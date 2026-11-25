@@ -1,7 +1,7 @@
 <script lang="ts">
   // The picker (docs/farming.md "Playing"): what I hold to plant, a small cream card at the island's bottom left. Each
   // cell is its crop's own art and name, a start with NH's seedling on it (the six starts' art is one seedling), and how
-  // many; the last pick first and lit (kept on this phone). Opened by a tap on my empty plot with two or more kinds held
+  // many; the last pick first and lit (kept on this phone). Opened by a tap on an empty plot with two or more kinds held
   // and no crop chosen this planting run; its pick plants that plot's 3 × 3 (SceneTaps). It shuts on a pick, its ✕, a
   // tap outside it (a tap on another empty plot opens it again, for that plot), Esc or a sheet opening.
   import OfficialArt from '../characters/OfficialArt.svelte';

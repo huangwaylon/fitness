@@ -1,5 +1,5 @@
 // おねがい on this phone (docs/farming.md "おねがい"; the rules: vegRequest.ts): my ask now (who stands there asking,
-// for a farmer only: a plot of mine on the layout, a plant of mine or a vegetable in my pocket), whether its asker has
+// while the island has a field or my pocket a vegetable), whether its asker has
 // said it and whether I handed it over today (this phone's day record, as Wendell's and Franklin's), and the hand-over:
 // the one vegetable sold to them at its price (store/actions.ts sell: the shop's own event, the record's checks), the
 // day's garden piece a find (recordFind). Read by the visitor (visitor.svelte.ts) and the shop's 全部売る (askNow: the ask's vegetable kept).
@@ -8,8 +8,7 @@ import { SCENE } from '#lib/sync/storage.ts';
 import { week } from '#lib/store/week.svelte.ts';
 import { sell } from '#lib/store/actions.ts';
 import { shopView } from '#lib/model/shop.ts';
-import { farmOfState } from '#lib/model/farm.ts';
-import { CROPS, cropKey, plantsOf } from '#lib/contract/farm.ts';
+import { CROPS, cropKey } from '#lib/contract/farm.ts';
 import { layoutPlots } from '#lib/layout/field.ts';
 import { layout as layoutStore } from '#lib/store/layout.svelte.ts';
 import { site } from './site.svelte.ts';
@@ -28,19 +27,18 @@ export function markVeg(date: string, p: { asked?: boolean; done?: boolean }): v
   rev++;
 }
 
-/** Whether I farm: a plot of mine, a plant of mine, or a vegetable in my pocket. */
+/** Whether I can farm: the island has a field, or my pocket a vegetable. */
 function farmer(): boolean {
   const m = week.model;
   if (!m) return false;
   void site.rev;
   const l = site.layout ?? layoutStore.current;
-  if (l && layoutPlots(l).some((x) => x.who === m.me)) return true;
-  if (plantsOf(farmOfState(m.state), m.me)) return true;
+  if (l && layoutPlots(l).length) return true;
   const pocket = shopView(m.state, m.me).pocket;
   return CROPS.some((c) => (pocket.get(cropKey(c)) ?? 0) > 0);
 }
 
-/** My ask from `by` (who stands there) on `date`, or null: they don't ask, I don't farm, or it's handed over. */
+/** My ask from `by` (who stands there) on `date`, or null: they don't ask, I can't farm, or it's handed over. */
 export function myAsk(by: VisitorId | null, date: string): VegRequest | null {
   const m = week.model;
   if (!by || !m || !asks(by, date)) return null;

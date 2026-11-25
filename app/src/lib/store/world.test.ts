@@ -54,46 +54,6 @@ describe('the shared island on this phone', () => {
     expect(caught(world.day, 'fresh:99')?.who).toBe('B');
   });
 
-  it('a batch of mine (a plot tap’s 3 × 3 watered): one rev and one row for all, the relay 15 a second at most, what I had already left out', () => {
-    const r = fakeRelay();
-    world.attach(r.live, 'A');
-    const rows: { watered: string[] }[] = [];
-    world.sink = (_date, row) => rows.push(row);
-    world.rows([]);
-    world.share({ kind: 'world', op: 'watered', id: 'fd:field-A.0.0' });
-    r.sent.length = rows.length = 0;
-    const ids = Array.from({ length: 80 }, (_, k) => `fd:field-A.${k % 10}.${Math.floor(k / 10)}`);
-    const rev = world.rev;
-    expect(world.shareMany(ids.map((id) => ({ kind: 'world' as const, op: 'watered' as const, id })))).toBe(79);
-    expect(world.rev).toBe(rev + 1);
-    expect(rows).toHaveLength(1);
-    expect(rows[0].watered).toHaveLength(80);
-    expect(Object.keys(world.day.watered)).toHaveLength(80);
-    const perSecond: number[] = [];
-    for (let s = 0, was = 0; s < 8; s++, vi.advanceTimersByTime(1000)) perSecond.push(r.sent.length - was), (was = r.sent.length);
-    expect(perSecond).toEqual([15, 15, 15, 15, 15, 4, 0, 0]);
-    expect(new Set(r.sent.map((i) => (i as { id: string }).id))).toEqual(new Set(ids.slice(1)));
-    // nothing new: nothing at all
-    expect(world.shareMany([{ kind: 'world', op: 'watered', id: ids[3] }])).toBe(0);
-    expect(world.rev).toBe(rev + 1);
-  });
-
-  it('a batch’s drip ends with its day and with me: none of it goes into the relay’s next day or as another person', () => {
-    const r = fakeRelay();
-    world.attach(r.live, 'A');
-    world.rows([]);
-    const many = (n: number, f: string) => Array.from({ length: n }, (_, k) => ({ kind: 'world' as const, op: 'watered' as const, id: `fd:${f}.${k % 10}.${Math.floor(k / 10)}` }));
-    vi.setSystemTime(Date.UTC(2026, 10, 1, 14, 59, 58)); // 23:59:58 Tokyo
-    world.shareMany(many(40, 'field-A'));
-    vi.advanceTimersByTime(5000);
-    expect(r.sent).toHaveLength(30); // 23:59:58 and :59; from midnight none
-    r.sent.length = 0;
-    world.shareMany(many(40, 'field-B'));
-    world.attach(r.live, 'B');
-    vi.advanceTimersByTime(5000);
-    expect(r.sent).toHaveLength(15);
-  });
-
   it('a catch goes on my day row too; the partner’s row has a critter caught: my try at it is refused, nothing sent', () => {
     const r = fakeRelay();
     world.attach(r.live, 'A');

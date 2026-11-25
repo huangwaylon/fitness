@@ -78,7 +78,7 @@
   import { ktx2Stats } from './ktx2.ts';
   import { placeObjects, type Inst, type Standin } from './objects.ts';
   import { gardenReady, loadGarden, wantsGarden } from './garden.ts';
-  import { farmScene, farmToday, plantHint } from '../island/farm.ts';
+  import { farmNow as farmAt, farmScene, plantHint } from '../island/farm.ts';
   import { week } from '#lib/store/week.svelte.ts';
   import { rooms } from '#lib/store/tent.svelte.ts';
   import { homeTod } from './home.ts';
@@ -906,13 +906,21 @@
    *  was up, the phones' launches drew the island whole 27-30 garden models after `loaded`, perf.boot late; a failed fetch: asked again at the next layout or mount). */
   const askGarden = (lay: Layout) => void (!gardenIn && wantsGarden(lay, date) && loadGarden().then(() => (gardenIn = true), () => {}));
   askGarden(layoutNow());
-  /** The fields today (island/farm.ts): each plot's plant and wet soil, from the record's rows and today's live
-   *  watering and sky; while I hold starts (and have room under the cap), my empty plots' faint sprouts. */
+  /** The fields now (island/farm.ts): each plot's plant and wet soil; while I hold starts, the empty plots' faint ＋.
+   *  Placed again at the next stage change (`next`): one timer, never a poll (`farmTick`). */
+  let farmTick = $state(0);
   const farmNow = $derived.by(() => {
+    void farmTick;
     const m = week.model, lay = sceneLayout();
     if (!m || !date) return null;
-    const { farm, watered } = farmToday(m.state, date);
-    return farmScene(lay, farm, date, watered, plantHint(m.state, m.me, farm));
+    const { farm, now, wet } = farmAt(m.state);
+    return { ...farmScene(lay, farm, now, wet, !!plantHint(m.state, m.me)), now };
+  });
+  $effect(() => {
+    const f = farmNow;
+    if (f?.next == null) return;
+    const id = setTimeout(() => farmTick++, Math.max(0, f.next - f.now) + 50);
+    return () => clearTimeout(id);
   });
   /** (a string: the placement below reruns only when the fields' look changed, not on each fold's new farmNow) */
   const farmSig = $derived(farmNow?.sig ?? '');
