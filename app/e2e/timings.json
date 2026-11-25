@@ -1400,5 +1400,10 @@
  "editor-touch.spec.ts › the phone layout: the plan full-bleed, the bar, the dock, every control a finger wide, nothing past 393 px": 3100,
  "editor-touch.spec.ts › a tap selects, a finger drags it, 回す, 複製, 削除, 取り消す; the move kept after a reload": 3900,
  "editor-touch.spec.ts › 置く: picked from the sheet, a tap puts it down; 塗る: one finger paints; two fingers pinch and paint nothing": 3400,
- "editor-touch.spec.ts › 川: a tap on a knot picks it and 点を消す takes it away; a finger drags a knot a tile at a time; ✕ leaves the river as it was": 3400
+ "editor-touch.spec.ts › 川: a tap on a knot picks it and 点を消す takes it away; a finger drags a knot a tile at a time; ✕ leaves the river as it was": 3400,
+ "editor-chrome.spec.ts › desktop @chromium › the badge: ライブ with the edits not yet sent counted": 9000,
+ "editor-chrome.spec.ts › desktop @chromium › the palette: \"/\" to its search, kana or romaji finds 石灯籠, Enter picks it; placed and inspected in kanji": 9000,
+ "editor-chrome.spec.ts › desktop @chromium › Escape mid-move puts it back and clears the partner’s ghost; mid-stroke saves nothing": 9000,
+ "editor-chrome.spec.ts › phone › the badge in the top bar; 全体 fits the island between the bars; another’s home turns only for them (ゲストの家)": 9000,
+ "editor-chrome.spec.ts › phone › 置く’s search: the keyboard’s typing moves nothing, 鳥居 found by romaji, a tap picks it": 9000
 }

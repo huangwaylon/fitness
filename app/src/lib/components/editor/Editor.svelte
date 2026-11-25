@@ -10,6 +10,10 @@
   import { onMount, untrack } from 'svelte';
   import { layout as store } from '#lib/store/layout.svelte.ts';
   import { kindDef, type KindDef } from '#lib/layout/catalog.ts';
+  import { OWNER_NAME, labelOf } from '#lib/layout/labels.ts';
+  import { queued } from '#lib/sync/queue.ts';
+  import { liveBadge } from './liveBadge.ts';
+  import './kanjiNames.ts';
   import { loadOutdoor, outdoorReady } from '#lib/layout/outdoor.ts';
   import { roomIconUrl } from './roomIcon.ts';
   import { GRID, PATHS, TILE, type Kind } from '#lib/layout/grid.ts';
@@ -222,7 +226,7 @@
       c.height = Math.round(H * dpr);
     }
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    draw(ctx, { layout: cur, view, w: W, h: H, grid, selected, hover, moved, ghost, brush: brushAt, box, issues, focus, auto, icon, river: riverLine ? stems : null, coast });
+    draw(ctx, { layout: cur, view, w: W, h: H, grid, selected, hover, moved, ghost, brush: brushAt, box, issues, focus, auto, icon, river: riverLine ? stems : null, coast, inset: phone ? { top: topH, bottom: dockH } : undefined });
   });
 
   // the issues, a moment after a change, and where the visitor stands while no usable mark of theirs is down (spots.ts
@@ -324,7 +328,7 @@
       work = r.layout;
       return true;
     }
-    commit(r.layout, `${placing.ja}を置いた`);
+    commit(r.layout, `${labelOf(placing.k)}を置いた`);
     if (placing.fixed) setTool('select');
     return false;
   }
@@ -430,7 +434,7 @@
       const next = work;
       work = null;
       // (put down over the island as it was when it began: its pieces sent over the island as it is now)
-      if (next) commit(revert(store.current, next, d.before!), `${kindDef(next.objects.get(d.ids![0])?.k ?? '')?.ja ?? ''}を${d.ids!.length > 1 ? `${d.ids!.length}個` : ''}置いた`);
+      if (next) commit(revert(store.current, next, d.before!), `${labelOf(next.objects.get(d.ids![0])?.k ?? '')}を${d.ids!.length > 1 ? `${d.ids!.length}個` : ''}置いた`);
     } else if (d.mode === 'paint' || d.mode === 'cliff') {
       const next = work;
       work = null;
@@ -442,7 +446,7 @@
     } else if (d.mode === 'move' && d.ids?.length) {
       let next = move(store.current, d.ids, d.dc ?? 0, d.dr ?? 0);
       if (d.turn) next = rotate(next, d.ids, d.turn, me);
-      commit(next, d.ids.length > 1 ? `${d.ids.length}個動かした` : `${kindDef(store.current.objects.get(d.ids[0])?.k ?? '')?.ja ?? ''}を動かした`);
+      commit(next, d.ids.length > 1 ? `${d.ids.length}個動かした` : `${labelOf(store.current.objects.get(d.ids[0])?.k ?? '', d.ids[0])}を動かした`);
       dragEnd(d.ids);
     } else if (d.mode === 'box' && hover) {
       const ids = inBox(cur, d.tile[0], d.tile[1], hover[0], hover[1]);
@@ -522,7 +526,8 @@
     if (cmd) return;
     switch (e.key) {
       case 'Escape':
-        if (drag?.mode === 'move') drag = null;
+        // (a drag given up: a move's ghosts on the partner's plan cleared, a stroke or a run never saved)
+        if (drag) dropDrag();
         else if (tool !== 'select') setTool('select');
         else selected = new Set();
         break;
@@ -565,7 +570,11 @@
         view = zoomAt(view, W / 2, H / 2, 0.8);
         break;
       case '0':
-        view = fitView(W, H, extentOf(store.current).land);
+        fitAll();
+        break;
+      case '/':
+        e.preventDefault();
+        (document.querySelector('[data-palette-search]') as HTMLInputElement | null)?.focus();
         break;
     }
   }
@@ -578,7 +587,7 @@
     const homes = [...selected].filter((id) => /^home-/.test(id));
     for (const id of homes) {
       const who = id.slice(-1);
-      if (who !== me) say(`${who === 'B' ? 'うめ' : who === 'A' ? 'ウェイ' : 'お客さん'}の家はその人だけが回せます`);
+      if (who !== me) say(`${OWNER_NAME[who as 'A' | 'B' | 'G']}の家はその人だけが回せます`);
       else if (next.objects.get(id)?.f === store.current.objects.get(id)?.f) say('ここでは回せません（扉がふさがるため）');
     }
     commit(next, '回した');
@@ -596,7 +605,7 @@
   function removeSel() {
     const fixed = [...selected].map((id) => cur.objects.get(id)).filter((o) => o && !removable(o));
     commit(remove(store.current, selected), `${selected.size - fixed.length}個削除した`);
-    if (fixed.length) say(`${fixed.map((o) => kindDef(o!.k)?.ja).join('・')}は削除できません`);
+    if (fixed.length) say(`${fixed.map((o) => labelOf(o!.k, o!.id)).join('・')}は削除できません`);
     selected = new Set([...selected].filter((id) => store.current.objects.has(id)));
   }
   function setTool(t: Tool) {
@@ -736,15 +745,37 @@
     };
   });
 
+  /** The whole island in view (desktop: 0; a phone: 全体), a phone's between its top bar and its dock. */
+  function fitAll() {
+    const v = fitView(W, H - (phone ? topH + dockH : 0), extentOf(store.current).land);
+    view = phone ? { ...v, oy: v.oy + topH } : v;
+  }
+  let topH = $state(0), dockH = $state(0);
+
+  // the badge: the relay's socket as it is (connected, coming back, offline) and the edits the record hasn't taken yet
+  // (the write queue's layout ops: queue.ts; looked at again at each change, each status and every few seconds)
+  let connected = $state(false);
+  let online = $state(navigator.onLine);
+  // (called at once with the status as it is)
+  $effect(() => relay?.onStatus((s) => (connected = s.connected)));
+  let tick = $state(0);
+  onMount(() => {
+    const on = () => (online = navigator.onLine), t = setInterval(() => tick++, 3000);
+    addEventListener('online', on);
+    addEventListener('offline', on);
+    return () => (clearInterval(t), removeEventListener('online', on), removeEventListener('offline', on));
+  });
+  const unsent = $derived((void week.view, void sent, void tick, void connected, queued().filter((e) => e.type === 'decor').length));
+  const badge = $derived(liveBadge(!!relay && connected, !!relay && online, unsent));
+
   const present = (d: KindDef) => !!d.fixed && [...cur.objects.values()].some((o) => o.k === d.k);
   const footText = (o: Obj) => footOf(cur, o).join('×');
-  const WHO_NAME = { A: 'ウェイ', B: 'うめ', G: 'ゲスト' } as const;
 </script>
 
 <div class="ed sheet-copy" class:phone data-editor data-tool={tool} data-layout={phone ? 'phone' : 'desktop'}>
   {#if !phone}
     <aside class="tools">
-      <h1>島のエディター <small>{WHO_NAME[me]}</small></h1>
+      <h1>島のエディター <small>{OWNER_NAME[me]}</small></h1>
       <div class="row" role="group" aria-label="tools">
         <button type="button" aria-pressed={tool === 'select'} onclick={() => setTool('select')} title="V">選択</button>
         <button type="button" aria-pressed={tool === 'paint'} onclick={() => setTool('paint')} title="B">塗る</button>
@@ -805,7 +836,7 @@
       <div class="status" data-status>
         <span>送信 {sent}</span>
         {#if hover}<span>マス {hover[0]}, {hover[1]} · {BRUSH_NAME[cur.kind(hover[0], hover[1])]} {cur.tier(hover[0], hover[1])}段</span>{/if}
-        <span>{relay ? 'ライブ' : 'オフライン'}</span>
+        <span class="live {badge.state}" data-live={badge.state} data-unsent={unsent}>{badge.text}</span>
       </div>
     {/if}
   </main>
@@ -823,9 +854,9 @@
     </aside>
   {:else if tool !== 'river'}
     <!-- a phone: the bar, the card or a sheet, the dock (docs/island-layout.md "The editor") -->
-    <header class="top">
+    <header class="top" bind:clientHeight={topH}>
       <h1>島のエディター</h1>
-      {#if !relay}<span class="off">オフライン</span>{/if}
+      <span class="live {badge.state}" data-live={badge.state} data-unsent={unsent}>{badge.short}</span>
       {@render history()}
       <button type="button" class="b3d" data-show3d aria-pressed={show3d} onclick={() => ((show3d = !show3d), (sheet = null))}>3D</button>
     </header>
@@ -847,7 +878,7 @@
           {@const iu = placing.icon ? iconUrl(placing.icon) : null}
           <div class="placing" data-placing={placing.k}>
             {#if iu}<img src={iu} alt="" />{/if}
-            <strong>{placing.ja}</strong>
+            <strong>{labelOf(placing.k)}</strong>
             {#if placing.variants}
               <select bind:value={placeS} aria-label="種類">{#each placing.variants as v (v)}<option value={v}>{variantName(placing.k, v)}</option>{/each}</select>
             {/if}
@@ -860,7 +891,10 @@
         {/if}
       </div>
     {/if}
-    <nav class="dock" aria-label="道具">
+    {#if !sheet && !show3d}
+      <button type="button" class="fit" data-fit aria-label="島の全体を見る" onclick={fitAll}><Icon name="map" size={18} stroke={2.4} /><span>全体</span></button>
+    {/if}
+    <nav class="dock" aria-label="道具" bind:clientHeight={dockH}>
       <button type="button" data-dock="select" aria-pressed={tool === 'select' && !sheet} onclick={() => setTool('select')}>選択</button>
       <button type="button" data-dock="place" aria-pressed={sheet === 'palette' || (tool === 'place' && !sheet)} onclick={() => (sheet === 'palette' ? (sheet = null) : ((show3d = false), (sheet = 'palette')))}>置く</button>
       <button type="button" data-dock="paint" aria-pressed={tool === 'paint' && !sheet} onclick={() => setTool('paint')}>塗る</button>
@@ -913,7 +947,7 @@
     {#if one}
       {@const d = kindDef(one.k)}
       <section class="inspect" data-inspect>
-        <div class="ihead"><h2>{d?.ja} <small>{footText(one)}<span class="oid"> · {one.id}</span></small></h2>{@render deselect()}</div>
+        <div class="ihead"><h2>{labelOf(one.k, one.id)} <small>{footText(one)}<span class="oid"> · {one.id}</span></small></h2>{@render deselect()}</div>
         {#if one.k === 'field'}
           {@const f = fieldOf(one.s)}
           {@const planted = plantsOn(one)}
@@ -1027,7 +1061,16 @@
     background: color-mix(in srgb, var(--c-paper) 94%, transparent); border-bottom: 2px solid var(--c-lip);
   }
   .top h1 { font-size: 16px; margin-right: auto; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .off { font-size: 13px; font-weight: 700; color: var(--c-ink-soft); }
+  .live { white-space: nowrap; font-weight: 700; display: inline-flex; align-items: center; gap: 4px; }
+  .live::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: #e2553d; flex: none; }
+  .live.on::before { background: #3fae5a; }
+  .live.wait::before { background: #d7a323; }
+  .top .live { font-size: 13px; color: var(--c-ink-soft); flex: none; }
+  .ed .fit {
+    position: absolute; z-index: 3; top: calc(var(--ui-top) + 66px); right: calc(10px + var(--safe-right)); display: inline-flex; align-items: center; gap: 4px;
+    border-radius: 999px; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.18);
+  }
+  .sheet[data-sheet='palette'] { height: 62%; }
   .phone .hist { min-width: 44px; justify-content: center; padding: 6px; }
   .phone .hist span:not(.flip) { display: none; }
   .ed .b3d { min-width: 52px; }

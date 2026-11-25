@@ -7,7 +7,7 @@
   // しまの おおきさ (layout/resize.ts): the land's size, an edge a tile out or in (shift: 8), what's in the way listed
   // with 「動かす」 (moved inside first; a fixed piece never deleted). The stepper under the pointer (or the finger) shows
   // its new coast on the plan (`hover`).
-  import { kindDef } from '#lib/layout/catalog.ts';
+  import { labelOf } from '#lib/layout/labels.ts';
   import Phrases from '../ui/Phrases.svelte';
   import { EDGES, landSize, resizedCodes, type Blocker } from '#lib/layout/resize.ts';
   import type { Layout } from '#lib/layout/model.ts';
@@ -53,7 +53,7 @@
       <p><Phrases text={`${EDGE_NAME[p.edge]}を${p.by > 0 ? '広げる' : '狭める'}には邪魔な物があります（${p.blocked.length}個）`} /><small>★は消せない物: 動かすのみ</small></p>
       <ul>
         {#each p.blocked as b (b.id)}
-          <li><button type="button" data-blocker={b.id} class:stuck={p.stuck.includes(b.id)} aria-pressed={selected.has(b.id)} onclick={() => onshow(b.id)}>{b.fixed ? '★ ' : ''}{kindDef(b.k)?.ja ?? b.k}<small>{b.id}{p.stuck.includes(b.id) ? ' · 動かせない' : ''}</small></button></li>
+          <li><button type="button" data-blocker={b.id} class:stuck={p.stuck.includes(b.id)} aria-pressed={selected.has(b.id)} onclick={() => onshow(b.id)}>{b.fixed ? '★ ' : ''}{labelOf(b.k, b.id)}<small>{b.id}{p.stuck.includes(b.id) ? ' · 動かせない' : ''}</small></button></li>
         {/each}
       </ul>
       <div class="row">

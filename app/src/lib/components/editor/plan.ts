@@ -86,6 +86,8 @@ export interface Draw {
   auto?: readonly AutoSpot[];
   /** The rivers' drawn lines and their turns' arcs (layout/river.ts), marked over the tiles; none: not shown. */
   river?: readonly Stem[] | null;
+  /** The plan's edges under the chrome (a phone's top bar and dock, px): labels kept clear of them. */
+  inset?: { top: number; bottom: number };
   icon(key: string): HTMLImageElement | null;
 }
 
@@ -157,7 +159,7 @@ export function draw(ctx: CanvasRenderingContext2D, d: Draw): void {
       ctx.fillRect(x + 1, y + 1, T - 2, T - 2);
     }
   }
-  if (d.river) drawRiver(ctx, v, d.river);
+  if (d.river) drawRiver(ctx, v, d.river, { w: d.w, top: d.inset?.top ?? 0, bottom: d.h - (d.inset?.bottom ?? 0) });
   if (d.coast) drawCoast(ctx, d, d.coast, cA, cB, rA, rB);
   // the objects: big ones first (a thing on a table's top after its table), the selected last
   const objs = [...l.objects.values()].sort((a, b) => {
@@ -260,7 +262,7 @@ function drawCoast(ctx: CanvasRenderingContext2D, d: Draw, g: Uint8Array, cA: nu
 /** The rivers as the 3D island draws them (layout/river.ts), over their tiles: the band's banks faint, the centreline,
  *  each turn's arc orange with its radius (in tiles) at its middle and a spoke from its centre, so a painter sees where
  *  the curves go. */
-function drawRiver(ctx: CanvasRenderingContext2D, v: View, stems: readonly Stem[]): void {
+function drawRiver(ctx: CanvasRenderingContext2D, v: View, stems: readonly Stem[], open: { w: number; top: number; bottom: number }): void {
   ctx.save();
   ctx.lineJoin = ctx.lineCap = 'round';
   for (const s of stems) {
@@ -313,11 +315,15 @@ function drawRiver(ctx: CanvasRenderingContext2D, v: View, stems: readonly Stem[
       ctx.font = 'bold 12px system-ui, sans-serif';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
+      // (inside the open plan: never under a phone's top bar or dock, nor cut at a side; none while its arc is out of it)
+      const half = ctx.measureText(label).width / 2 + 4, ly = (my + cy) / 2;
+      if (ly < open.top - 40 || ly > open.bottom + 40) continue;
+      const lx = Math.min(Math.max((mx + cx) / 2, half), open.w - half), y = Math.min(Math.max(ly, open.top + 10), open.bottom - 10);
       ctx.lineWidth = 3;
       ctx.strokeStyle = '#fff';
-      ctx.strokeText(label, (mx + cx) / 2, (my + cy) / 2);
+      ctx.strokeText(label, lx, y);
       ctx.fillStyle = '#a34a00';
-      ctx.fillText(label, (mx + cx) / 2, (my + cy) / 2);
+      ctx.fillText(label, lx, y);
     }
   }
   ctx.restore();
@@ -350,14 +356,17 @@ function drawObj(ctx: CanvasRenderingContext2D, d: Draw, o: Obj, selected: boole
     ctx.stroke();
     const style = l.homes[o.id === 'home-B' ? 'B' : o.id === 'home-G' ? 'G' : 'A'];
     ctx.fillStyle = '#4a3a2c';
-    ctx.font = `700 ${Math.max(9, Math.min(15, T * 0.45))}px "Zen Maru Gothic", system-ui, sans-serif`;
+    const f1 = Math.max(9, Math.min(15, T * 0.45)), f2 = Math.max(8, Math.min(12, T * 0.32));
+    ctx.font = `700 ${f1}px "Zen Maru Gothic", system-ui, sans-serif`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    if (home) {
-      ctx.fillText(`${name}の家`, x + W / 2, y + H / 2 - T * 0.15);
-      ctx.font = `500 ${Math.max(8, Math.min(12, T * 0.32))}px system-ui, sans-serif`;
-      ctx.fillText(style.m === 'campsite' ? 'テント' : style.m.startsWith('tent') ? 'テント' : '家', x + W / 2, y + H / 2 + T * 0.32);
-    } else ctx.fillText(name, x + W / 2, y + H / 2);
+    // (inside the box: the two lines a line apart, the look's word only where both fit)
+    const two = home && H - 6 > f1 + f2 + 2;
+    ctx.fillText(home ? `${name}の家` : name, x + W / 2, y + H / 2 - (two ? f2 * 0.6 : 0), W - 6);
+    if (two) {
+      ctx.font = `500 ${f2}px system-ui, sans-serif`;
+      ctx.fillText(style.m === 'campsite' || style.m.startsWith('tent') ? 'テント' : '家', x + W / 2, y + H / 2 + f1 * 0.6, W - 6);
+    }
     // the door: a notch on the front edge
     const door = doorOf(l, o).at, [dx, dy] = toScreen(v, door[0], door[1]);
     ctx.fillStyle = '#7a4f2c';

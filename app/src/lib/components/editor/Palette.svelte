@@ -1,8 +1,11 @@
 <script lang="ts">
   // The editor's palette (docs/island-layout.md "The editor"): every placeable kind by group, a row of the groups to jump
-  // to (the list is long: 394 outdoor pieces once the catalogue is in), and the piece being placed's 種類. The desktop's
-  // left column, the phone's 置く sheet.
+  // to (the list is long: 394 outdoor pieces once the catalogue is in), a search over their names (search.ts: kanji,
+  // kana, romaji, English; Enter picks the first), and the piece being placed's 種類. The desktop's left column ("/"
+  // focuses the search), the phone's 置く sheet. Names in kanji (layout/labels.ts).
   import { KIND_LIST, type KindDef } from '#lib/layout/catalog.ts';
+  import { labelOf } from '#lib/layout/labels.ts';
+  import { kindMatches } from './search.ts';
   import { runs } from './edits.ts';
   import { variantName } from './gardenIcons.ts';
 
@@ -22,11 +25,24 @@
   const groups = $derived((void outdoorIn, GROUPS.map(([g, name]) => ({ g, name, kinds: KIND_LIST.filter((d) => d.group === g && !d.hidden) })).filter((x) => x.kinds.length)));
   let list = $state<HTMLElement>();
   const jump = (g: string) => list?.querySelector(`[data-group="${g}"]`)?.scrollIntoView({ block: 'start' });
+  let query = $state('');
+  const found = $derived(query.trim() ? groups.flatMap((x) => x.kinds.filter((d) => kindMatches(d, query))) : null);
+  function onSearchKey(e: KeyboardEvent) {
+    if (e.key === 'Escape' && query) (query = ''), e.stopPropagation();
+    // (Enter: the first found that may go down)
+    else if (e.key === 'Enter' && !e.isComposing) {
+      const d = found?.find((d) => !present(d));
+      if (d) onpick(d);
+    }
+  }
 </script>
 
-<nav class="jump" aria-label="グループ">
-  {#each groups as x (x.g)}<button type="button" class="jumpc" data-jump={x.g} onclick={() => jump(x.g)}>{x.name}</button>{/each}
-</nav>
+<input class="search" type="search" data-palette-search placeholder="名前で探す（漢字・かな・ローマ字）" aria-label="名前で探す" enterkeyhint="search" autocomplete="off" autocapitalize="off" spellcheck="false" bind:value={query} onkeydown={onSearchKey} />
+{#if !found}
+  <nav class="jump" aria-label="グループ">
+    {#each groups as x (x.g)}<button type="button" class="jumpc" data-jump={x.g} onclick={() => jump(x.g)}>{x.name}</button>{/each}
+  </nav>
+{/if}
 {#if placing && (placing.variants || runs(placing.k))}
   <div class="now">
     {#if placing.variants}
@@ -38,22 +54,34 @@
   </div>
 {/if}
 <div class="palette" bind:this={list}>
-  {#each groups as x (x.g)}
-    <section class="group" data-group={x.g}>
-      <h3>{x.name}</h3>
-      <div class="items">
-        {#each x.kinds as d (d.k)}
-          <button type="button" class="item" data-kind={d.k} aria-pressed={placing?.k === d.k} disabled={present(d)} title={`${d.ja}${present(d) ? '（島にある）' : ''}`} onclick={() => onpick(d)}>
-            {#if d.icon && iconUrl(d.icon)}<img src={iconUrl(d.icon)} alt="" loading="lazy" />{:else}<span class="glyph">{d.k === 'stairs' ? '⛰' : d.k === 'board' ? '📋' : '・'}</span>{/if}
-            <span class="lbl">{d.ja}</span>
-          </button>
-        {/each}
-      </div>
+  {#if found}
+    <section class="group" data-found={found.length}>
+      <h3>{found.length ? `${found.length}件` : '見つかりません'}</h3>
+      <div class="items">{#each found as d (d.k)}{@render item(d)}{/each}</div>
     </section>
-  {/each}
+  {:else}
+    {#each groups as x (x.g)}
+      <section class="group" data-group={x.g}>
+        <h3>{x.name}</h3>
+        <div class="items">{#each x.kinds as d (d.k)}{@render item(d)}{/each}</div>
+      </section>
+    {/each}
+  {/if}
 </div>
 
+{#snippet item(d: KindDef)}
+  {@const name = labelOf(d.k)}
+  <button type="button" class="item" data-kind={d.k} aria-pressed={placing?.k === d.k} disabled={present(d)} title={`${name}${present(d) ? '（島にある）' : ''}`} onclick={() => onpick(d)}>
+    {#if d.icon && iconUrl(d.icon)}<img src={iconUrl(d.icon)} alt="" loading="lazy" />{:else}<span class="glyph">{d.k === 'stairs' ? '⛰' : d.k === 'board' ? '📋' : '・'}</span>{/if}
+    <span class="lbl">{name}</span>
+  </button>
+{/snippet}
+
 <style>
+  .search {
+    flex: none; width: 100%; box-sizing: border-box; min-height: 40px; padding: 6px 12px; border-radius: 999px; border: 2px solid var(--c-edge);
+    background: var(--c-card); color: var(--c-ink); font-family: inherit; font-size: 16px;
+  }
   .jump { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; margin: 0 -12px; padding: 2px 12px 4px; flex: none; }
   .jump::-webkit-scrollbar { display: none; }
   .jump .jumpc { flex: none; min-height: 36px; padding: 0 12px; border-radius: 999px; font-size: 13px; border-width: 1.5px; }

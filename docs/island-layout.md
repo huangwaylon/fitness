@@ -93,6 +93,11 @@ the record keeps each id's latest op (slot `decor|<sc>|<id>`). An old phone igno
   回す · 複製 (`edits.ts duplicate`: right, left, below or above it, where every copy fits; never a bridge or stairs) ·
   削除 are buttons too. The placing ghost is green only where validation passes the piece (`ghostAt`: `placeErrors`);
   ⌘V pastes all of a copy where it fits, or nothing.
+- **Chrome** (2026-11-25): names in kanji (`layout/labels.ts labelOf`, the table `editor/kanjiNames.ts`, the editor's
+  chunk only; the world keeps the kana `ja`), a home by its owner (ウェイの家) in the palette, inspector and checks.
+  The palette searches kanji, kana, romaji and English (`editor/search.ts`; "/" focuses it, Enter picks the first).
+  The badge is the socket's (ライブ / 接続中… / オフライン) with the write queue's unsent layout ops (`liveBadge.ts`).
+  Escape drops a drag in progress (a move's `drag` end sent, a stroke unsaved). 0 / a phone's 全体 fits the island.
 - **Two layouts, one editor**: a desktop window gets three columns (palette | plan | 3D, selection, `IslandSize`,
   `IssueList`, files) and the shortcuts. ≤ 760 px (iPhone 15/16 Safari) the plan is full-bleed under a top bar (↶ ↷,
   3D: the orbit preview in the plan's place, off by default), a dock (選択 置く 塗る 崖 川 島), a card over it (the

@@ -1,7 +1,7 @@
 <script lang="ts">
   // The editor's checks (layout/validate.ts, live), and with `?check` what the phones' 3D island leaves undrawn
   // (world3d/drawCheck.ts) and the river's turns as the 3D island draws them. A line picks its pieces and shows its tile.
-  import { kindDef } from '#lib/layout/catalog.ts';
+  import { labelOf } from '#lib/layout/labels.ts';
   import { GRID, TILE } from '#lib/layout/grid.ts';
   import type { Issue } from '#lib/layout/validate.ts';
   import type { Stem } from '#lib/layout/river.ts';
@@ -41,7 +41,7 @@
     <h2>3Dのチェック {#if undrawn === null}…{:else if undrawn.length}<span class="bad">{undrawn.length}</span>{:else}<span class="good">OK</span>{/if}</h2>
     <ul>
       {#each undrawn ?? [] as u (u.id + u.why)}
-        <li><button type="button" class="error" onclick={() => onpick(u.id)}>{u.id}（{kindDef(u.k)?.ja ?? u.k}）{u.x}, {u.z}<small>{WHY[u.why]}{u.detail ? `: ${u.detail}` : ''} · {u.seasons.join(' ')}</small></button></li>
+        <li><button type="button" class="error" onclick={() => onpick(u.id)}>{u.id}（{labelOf(u.k)}）{u.x}, {u.z}<small>{WHY[u.why]}{u.detail ? `: ${u.detail}` : ''} · {u.seasons.join(' ')}</small></button></li>
       {/each}
     </ul>
     <h3>川のカーブ <small>(the river's turns, drawn on the plan in orange)</small></h3>

@@ -4,6 +4,7 @@
 import { GRID, isWater, kindOf, tierOf, idx, onGrid, type Kind } from './grid.ts';
 import { doorOf, footOf, objMid, objTiles, originOf, type Layout, type Obj } from './model.ts';
 import { isMarker, kindDef } from './catalog.ts';
+import { labelOf } from './labels.ts';
 import { markerSpot, spotWhy, type SpotWhy } from './spots.ts';
 import { HOME_IDS } from './homes.ts';
 import { archTiles, blockBox, navOf, reachable, type Box, type LayoutNav } from './nav.ts';
@@ -69,12 +70,12 @@ export function overlap(layout: Layout, a: Obj, b: Obj): boolean {
 export function objIssues(layout: Layout, o: Obj): Issue[] {
   const def = kindDef(o.k);
   if (!def) return [];
-  const out: Issue[] = [];
+  const out: Issue[] = [], name = labelOf(o.k, o.id);
   const tiles = objTiles(layout, o), ground = groundTiles(layout, o);
   const add = (code: IssueCode, level: Issue['level'], t: [number, number][], ja: string, en: string) => out.push({ code, level, tiles: t, ids: [o.id], ja, en });
   const kinds = ground.map(([c, r]) => kindAt(layout, c, r));
   // (an arch's way through may span the sea or a river, but never off the grid)
-  if (tiles.some(([c, r]) => !onGrid(c, r)) || kinds.some((k) => k === 'sea')) add('off-land', 'error', tiles, `${def.ja}が海の上`, `${def.en} is off the land`);
+  if (tiles.some(([c, r]) => !onGrid(c, r)) || kinds.some((k) => k === 'sea')) add('off-land', 'error', tiles, `${name}が海の上`, `${def.en} is off the land`);
   if (o.k === 'bridge') {
     const [w, d] = footOf(layout, o);
     const ends = o.f % 2 ? [[o.x, o.z], [o.x + w - 1, o.z]] : [[o.x, o.z], [o.x, o.z + d - 1]];
@@ -83,10 +84,10 @@ export function objIssues(layout: Layout, o: Obj): Issue[] {
       add('bridge', 'error', tiles, '橋は水の上に、両端を同じ高さの陸に', 'A bridge spans water, both ends on land of one tier');
     return out;
   }
-  if (kinds.some((k) => k === 'river' || k === 'pond')) add('on-water', 'error', tiles, `${def.ja}が水の上`, `${def.en} stands in water`);
+  if (kinds.some((k) => k === 'river' || k === 'pond')) add('on-water', 'error', tiles, `${name}が水の上`, `${def.en} stands in water`);
   const tiers = new Set(ground.map(([c, r]) => tierAt(layout, c, r)));
-  if (tiers.size > 1 && o.k !== 'stairs') add('split', 'error', tiles, `${def.ja}が崖をまたいでいる`, `${def.en} straddles a cliff`);
-  if (def.on === 'grass' && kinds.some((k) => k !== 'grass')) add('not-grass', 'warn', tiles, `${def.ja}は草の上に`, `${def.en} belongs on grass`);
+  if (tiers.size > 1 && o.k !== 'stairs') add('split', 'error', tiles, `${name}が崖をまたいでいる`, `${def.en} straddles a cliff`);
+  if (def.on === 'grass' && kinds.some((k) => k !== 'grass')) add('not-grass', 'warn', tiles, `${name}は草の上に`, `${def.en} belongs on grass`);
   if (o.k === 'stairs') {
     const [w, d] = footOf(layout, o);
     const t = tierAt(layout, o.x, o.z);
@@ -110,7 +111,7 @@ export function objIssues(layout: Layout, o: Obj): Issue[] {
 /** The overlap issue of two objects. */
 const overlapIssue = (l: Layout, a: Obj, b: Obj): Issue => ({
   code: 'overlap', level: 'error', tiles: [...objTiles(l, a), ...objTiles(l, b)], ids: [a.id, b.id],
-  ja: `${kindDef(a.k)?.ja}と${kindDef(b.k)?.ja}が重なっている`, en: `${kindDef(a.k)?.en} and ${kindDef(b.k)?.en} overlap`
+  ja: `${labelOf(a.k, a.id)}と${labelOf(b.k, b.id)}が重なっている`, en: `${kindDef(a.k)?.en} and ${kindDef(b.k)?.en} overlap`
 });
 
 /** A piece's own errors where it stands on `l` (objIssues, and an overlap with anything else there but `skip`'s): the
@@ -123,7 +124,7 @@ export function placeErrors(l: Layout, o: Obj, skip: ReadonlySet<string> = new S
 
 /** A visitors' spot's reason in words (the editor's sheets: kanji; and English). */
 function whyText(w: SpotWhy): { ja: string; en: string } {
-  const d = w.k ? kindDef(w.k) : undefined, ja = w.k === 'spot' ? '住民' : d?.ja ?? '物', en = w.k === 'spot' ? 'villager' : (d?.en ?? 'thing').toLowerCase();
+  const d = w.k ? kindDef(w.k) : undefined, ja = w.k === 'spot' ? '住民' : w.k ? labelOf(w.k, w.ids[0]) : '物', en = w.k === 'spot' ? 'villager' : (d?.en ?? 'thing').toLowerCase();
   switch (w.why) {
     case 'water': return { ja: '水の上です', en: 'on water' };
     case 'ground': return { ja: '草地か道ではありません', en: 'not on grass or a path' };
@@ -157,14 +158,14 @@ export function validate(layout: Layout, nav: LayoutNav = navOf(layout)): Issue[
   for (const id of Object.values(HOME_IDS)) {
     const o = layout.objects.get(id);
     if (!o) {
-      add('home', 'error', [], [id], '家がない', 'A home is missing');
+      add('home', 'error', [], [id], `${labelOf('home', id)}がない`, 'A home is missing');
       continue;
     }
     const d = doorOf(layout, o);
     const at = nav.doors[id]?.at;
     const [hx, hz] = originOf(layout, o);
     if (d.tiles.some(([c, r]) => isWater(kindAt(layout, c, r)) || tierAt(layout, c, r) !== tierAt(layout, hx, hz)) || !at || !reachable(nav, at[0], at[1]))
-      add('door', 'error', [...d.tiles, ...objTiles(layout, o)], [id], '家の扉まで行けない', "A home's door can't be reached");
+      add('door', 'error', [...d.tiles, ...objTiles(layout, o)], [id], `${labelOf('home', id)}の扉まで行けない`, "A home's door can't be reached");
   }
   // the island's buildings (the museum): a clear door, as a home's
   for (const o of objs) {
@@ -173,7 +174,7 @@ export function validate(layout: Layout, nav: LayoutNav = navOf(layout)): Issue[
     const d = doorOf(layout, o);
     const at = nav.doors[o.id]?.at;
     if (d.tiles.some(([c, r]) => isWater(kindAt(layout, c, r)) || tierAt(layout, c, r) !== tierAt(layout, o.x, o.z)) || !at || !reachable(nav, at[0], at[1]))
-      add('door', 'error', [...d.tiles, ...objTiles(layout, o)], [o.id], `${def.ja}の扉まで行けない`, `The ${def.en.toLowerCase()}'s door can't be reached`);
+      add('door', 'error', [...d.tiles, ...objTiles(layout, o)], [o.id], `${labelOf(o.k, o.id)}の扉まで行けない`, `The ${def.en.toLowerCase()}'s door can't be reached`);
   }
   // what a villager uses from in front of it (the bulletin board): its front tiles clear and reachable
   for (const o of objs) {
@@ -181,7 +182,7 @@ export function validate(layout: Layout, nav: LayoutNav = navOf(layout)): Issue[
     const d = doorOf(layout, o);
     const at = nav.named[`front-${o.id}`];
     if (d.tiles.some(([c, r]) => isWater(kindAt(layout, c, r)) || tierAt(layout, c, r) !== tierAt(layout, o.x, o.z)) || !at || !reachable(nav, at[0], at[1]))
-      add('door', 'error', [...d.tiles, ...objTiles(layout, o)], [o.id], `${kindDef(o.k)!.ja}の前に立てない`, `Nobody can stand in front of the ${kindDef(o.k)!.en.toLowerCase()}`);
+      add('door', 'error', [...d.tiles, ...objTiles(layout, o)], [o.id], `${labelOf(o.k, o.id)}の前に立てない`, `Nobody can stand in front of the ${kindDef(o.k)!.en.toLowerCase()}`);
   }
   // the goal trees: one each
   for (const s of ['a', 'b'] as const) {
@@ -202,7 +203,7 @@ export function validate(layout: Layout, nav: LayoutNav = navOf(layout)): Issue[
     const def = kindDef(k)!, whys = spotWhy(layout, k, o.x, o.z), said = whys.map(whyText);
     const ja = [...new Set(said.map((w) => w.ja))].join('、'), en = [...new Set(said.map((w) => w.en))].join('; ');
     const tiles = [...objTiles(layout, o), ...whys.flatMap((w) => w.tiles)].filter(([c, r], i, a) => a.findIndex(([x, y]) => x === c && y === r) === i);
-    add('visitor-spot', 'warn', tiles, [o.id, ...new Set(whys.flatMap((w) => w.ids))], `${def.ja}に立てない：${ja}（いつもの場所に立ちます）`, `Nobody can stand at the ${def.en.toLowerCase()}: ${en} (the usual spot instead)`);
+    add('visitor-spot', 'warn', tiles, [o.id, ...new Set(whys.flatMap((w) => w.ids))], `${labelOf(k)}に立てない：${ja}（いつもの場所に立ちます）`, `Nobody can stand at the ${def.en.toLowerCase()}: ${en} (the usual spot instead)`);
   }
   // pockets: land nobody can walk to (a tile whose every walkable cell is off the main region)
   const pocket: [number, number][] = [];
