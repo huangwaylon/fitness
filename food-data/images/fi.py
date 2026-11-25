@@ -343,7 +343,7 @@ def _fill_entities(c, qids):
     for i in range(0, len(want), 50):
         part = want[i:i + 50]
         ents = _api('www.wikidata.org', action='wbgetentities', ids='|'.join(part), props='claims|sitelinks',
-                    sitefilter='jawiki|enwiki').get('entities')
+                    sitefilter='jawiki|enwiki', maxlag=60).get('entities')  # Wikidata's lag is its query service's: often > 5 s
         if ents is None:
             continue  # refused: asked again next run
         for q in part:
@@ -491,8 +491,8 @@ def cmd_refs(keys=None):
     def finish(batch, futs):
         wait(futs)
         for row, d, uniq, info, qids, titles, extract in batch:
-            if any(f not in info for _, f in uniq):
-                print(row['key'], 'imageinfo refused: next run', flush=True)
+            if any(f not in info for _, f in uniq) or any(q not in C['entities'].d for q in qids):
+                print(row['key'], 'refused: next run', flush=True)
                 continue
             cand = [{'n': n, 'origin': o, 'file': f, 'page': info[f][1]} for n, (o, f) in enumerate(uniq)
                     if info.get(f) and (d / f'c{n}.jpg').exists()]
