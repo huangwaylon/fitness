@@ -38,11 +38,11 @@ news. One finger scrolls from まえ (home, the health lawn) to おく, two pinc
 villager.
 
 - **HUD row:** the health button and the menu, top-right at `--hud-top`; nothing else in the sky.
-- **Menu** (`island/HudMenu.svelte`): NH's leaf disc unfolds up to nine pills: ベル (my wallet) → [the panel](#panel), 旅行 → [Trips](#trips), 結婚式 → [wedding.md](wedding.md), 登山 →
-  [hiking.md](hiking.md), 地図 → [places.md](places.md), 英語 → [english.md](english.md), ボット (a dot when a bot needs
-  a person) → [bots.md](bots.md), やること → [todo.md](todo.md), 設定 → [Settings](#settings). **Edit mode** (a pill held
-  500 ms): hide (never ベル), reorder, 元に戻す, 完了; each person's own order. Folded pills are `inert`. **今日・明日**
-  ([todo.md](todo.md)) shows beside them when something is due.
+- **Menu** (`island/HudMenu.svelte`, `ui-state/menuGrid.ts`): the leaf drops a fixed 3×3 grid, the same for everyone:
+  毎日 — やること → [todo.md](todo.md), 英語 → [english.md](english.md), ベル (my wallet's number) → [the panel](#panel);
+  お出かけ — 旅行 → [Trips](#trips), 地図 → [places.md](places.md), 登山 → [hiking.md](hiking.md); ほか — 結婚式 →
+  [wedding.md](wedding.md), ボット → [bots.md](bots.md), 設定 → [Settings](#settings). A tile: a 56px squircle in its
+  hue (`--tile-*`), a white 2px line icon, its name under it. Badges: ボット's 「!」, 英語's dot; no todo count.
 - **Health button** (`island/HudHealth.svelte`): the health popup on its last tab, [健康](#kenkou) or [ごはん](#gohan);
   one kept sheet.
 - **Coins** (`island/HudCoins.svelte`): a newly met goal flies +1 (+2 with がんばり) into the leaf.
@@ -313,7 +313,7 @@ open, asleep where it stands otherwise (`GRACE_MS` 45 s on the relay's clock); a
 `contract/guest.ts`, `ui-state/cast.ts` ([backend](backend.md#the-guest), [decisions](decisions.md#the-guest)): ゲスト,
 its own key ([runbook](ops/runbook.md#10-pair-a-phone)); tests `?demo&as=G`. The same app as A and B (the user,
 2026-11-25), its villager's island life a member's, except: 健康 is 活動 only (the record leaves body data out of its
-snapshot); ボット read-only (its bookings are on our accounts); its wallet never earns (no Health data), so its ベル pill
+snapshot); ボット read-only (its bookings are on our accounts); its wallet never earns (no Health data), so its ベル tile
 reads 0 and rewards are out of reach; its harvest tap is its own recap seen (the week closes with both members').
 "The partner" cases: `ui-state/cast.ts` islandActors.
 

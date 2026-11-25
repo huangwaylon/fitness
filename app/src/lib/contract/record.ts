@@ -58,8 +58,8 @@ export function validEventData(type: string, d: Rec, now: number): boolean {
     case 'spend':
       return spendOf(d, now) !== null;
     case 'pref':
-      // the look's values are checked here (contract/look.ts: a whole look, at most 20 コーデ), the menu's order too
-      // and its hidden pills (contract/menu.ts: known ids, each once; ベル never hidden); the other prefs' at read
+      // the look's values are checked here (contract/look.ts: a whole look, at most 20 コーデ), the retired menu order
+      // and hidden pills too (contract/menu.ts: known ids, each once; ベル never hidden); the other prefs' at read
       // time (prefTaken); the profile's never come this far (locked: relay/src/store.ts `profile locked`)
       // a goal a day keeps may say the phone's Tokyo day it was set on (`day`: goalDay)
       return (PREF_KEYS as readonly unknown[]).includes(d.key) && d.value !== undefined

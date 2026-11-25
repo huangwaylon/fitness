@@ -29,6 +29,8 @@
   --c-sky:#4F9BE0;                                       /* the info sheets' sky: the airline strip, map water, the "now" marker (fills) */
   --c-rose:#E88FAE;                                      /* the wedding's rose: the ring, the letter's band and rules, the heart stamp */
   --c-gold:#F2C14E;  --c-gold-lip:#B8862A;               /* NEW (.tag.new) and the gold medal / trophy fills (fills only) */
+  --c-moss:#6E8B3D;  --c-grape:#7E57C2; --c-slate:#5F7488; /* the menu's tiles only (登山, 英語, ボット): fills under a white
+                                                           line icon (>= 3:1 to it) */
 
   /* ---------- semantic chrome ---------- */
   --bg: var(--c-paper); --surface: var(--c-paper); --lip: var(--c-lip);
@@ -47,6 +49,14 @@
      card, its edge leaf */
   --ok-bg: color-mix(in srgb, var(--c-leaf) 22%, var(--c-card)); --ok-edge: color-mix(in srgb, var(--c-leaf) 70%, var(--c-card));
   --rose-soft: color-mix(in srgb, var(--c-rose) 22%, var(--card)); /* the letter's rules, a rose tint */
+  /* the leaf menu's tiles (HudMenu): one hue each, a white 2px line icon on it (>= 3:1; ベル's gold takes ink); the
+     palette's own, the light ones deepened toward a darker relative (contrast.test.ts holds them) */
+  --tile-todo: var(--c-leaf-edge); --tile-english: var(--c-grape); --tile-bells: var(--c-gold);
+  --tile-travel: color-mix(in srgb, var(--c-sky) 60%, var(--c-sky-text));
+  --tile-places: color-mix(in srgb, var(--c-mint) 35%, color-mix(in srgb, var(--c-sky-text), var(--c-leaf-edge)));
+  --tile-hiking: var(--c-moss);
+  --tile-wedding: color-mix(in srgb, var(--c-rose) 60%, color-mix(in srgb, var(--c-grape), var(--c-coral-text)));
+  --tile-bots: var(--c-slate); --tile-settings: var(--c-edge);
   --pfc-tint-1: 18%; --pfc-tint-2: 40%; /* きろく's P · F · C tints: their colour's share over the card */
   --stitch: color-mix(in srgb, var(--edge) 35%, transparent);     /* the 1.5px dashed stitch between dense rows, a ticket's perforation */
   /* --sea-flat (the NH-blue sea under 島's chrome = the scene's open sea through its tint) lives in the

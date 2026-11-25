@@ -1,14 +1,14 @@
 // The HUD's top-right cluster (docs/design.md "Island"): [the health button] [the menu]. The health button opens
-// けんこう and ごはん's sheet (two tabs: openKenkou). The menu
-// (NH's leaf, at the screen's side) drops 「ベル 121」 (→ the panel, ごほうび), 旅行, 結婚式, 登山, 地図, 英語 (English Study), ボット (members) and 設定; each opens
-// its own sheet.
+// けんこう and ごはん's sheet (two tabs: openKenkou). The menu (NH's leaf, at the screen's side) drops its fixed grid:
+// やること, 英語, ベル (→ the panel, ごほうび), 旅行, 地図, 登山, 結婚式, ボット (a phone with a bot) and 設定; each tile
+// opens its own sheet.
 // Shared by the specs that reach any of them.
 import { expect, type Page } from './fixtures.ts';
 
 /** The menu's leaf (aria-expanded). */
 export const hudMenu = (page: Page) => page.locator('[data-hud-menu]');
 
-/** The menu's ベル row (the wallet's balance in data-bells, today's in data-today; hidden while folded). */
+/** The menu's ベル tile (the wallet's balance in data-bells, today's in data-today; hidden while folded). */
 export const hudBells = (page: Page) => page.locator('[data-hud-bells]');
 
 const PILL = { bells: '[data-hud-bells]', english: '[data-hud-english]', travel: '[data-hud-travel]', wedding: '[data-hud-wedding]', hiking: '[data-hud-hiking]', places: '[data-hud-places]', bots: '[data-hud-bots]', todo: '[data-hud-todo]', settings: '[data-hud-settings]' };
@@ -16,19 +16,18 @@ const SHEET = {
   bells: 'dialog[open] [data-wallet]', zukan: 'dialog[open] [data-zukan-sheet]', english: 'dialog[open] [data-english]', travel: 'dialog[open] [data-travel]', wedding: 'dialog[open] [data-wedding]', hiking: 'dialog[open] [data-hiking]', places: 'dialog[open] [data-places]', bots: 'dialog[open] [data-bots]', todo: 'dialog[open] [data-todo]', settings: 'dialog[open] [data-settings]'
 };
 
-/** Unfold the menu (if folded) and wait for its pills to be shown (HudMenu shows them at once; the poll guards a
- *  fold still fading out). */
+/** Unfold the menu (if folded) and wait for its card to be shown (HudMenu shows it at once; the poll guards a fold
+ *  still fading out). */
 export async function unfoldMenu(page: Page, how: 'click' | 'tap' = 'click') {
   const menu = hudMenu(page);
   await expect(menu).toBeVisible();
   if ((await menu.getAttribute('aria-expanded')) !== 'true') await menu[how]();
   await expect(menu).toHaveAttribute('aria-expanded', 'true');
-  const inPlace = () => page.locator('#hud-menu-items').evaluate((el) =>
-    [...el.querySelectorAll(':scope > button')].every((b) => ((s) => s.transform === 'none' && s.opacity === '1')(getComputedStyle(b))));
+  const inPlace = () => page.locator('#hud-menu-items').evaluate((el) => ((s) => s.transform === 'none' && s.opacity === '1')(getComputedStyle(el)));
   await expect.poll(inPlace).toBe(true);
 }
 
-/** Unfold the menu (if folded) and tap one of its pills; its sheet (the panel, for ベル) is open when this returns.
+/** Unfold the menu (if folded) and tap one of its tiles; its sheet (the panel, for ベル) is open when this returns.
  *  ずかん: 設定's last row (設定 closes, the ずかん's sheet in its place). */
 export async function fromMenu(page: Page, which: keyof typeof SHEET, how: 'click' | 'tap' = 'click') {
   if (which === 'zukan') {
@@ -73,7 +72,7 @@ export async function openFood(page: Page, { as, date = '2026-11-04T12:30', how 
   await openFoodSheet(page, how);
 }
 
-/** The panel (ごほうび), from the menu's ベル row. */
+/** The panel (ごほうび), from the menu's ベル tile. */
 export const openRewards = (page: Page) => fromMenu(page, 'bells');
 
 

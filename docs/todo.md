@@ -24,8 +24,8 @@ remembers too), a later one the lists. An empty list shows no 「0 / 0」.
 
 ### The panel
 
-`DuePanel.svelte`, beside the open menu: undone items due 今日 and 明日 (and an overdue fold), each with its Tick; never
-an inner scroll. Hidden in edit mode, with やること's pill hidden, or with nothing due.
+No longer in the menu (the grid: [design](design.md#island)); what is due shows on the HUD's todo disc.
+`dueLabel.ts` `duePanelOf` keeps the rows' rules.
 
 ## The data
 

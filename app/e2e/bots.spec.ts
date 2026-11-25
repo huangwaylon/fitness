@@ -1,5 +1,5 @@
-// ボット (docs/bots.md): the menu's ボット, a member's only, right above 設定, with the worst bot's 「!」 while one
-// needs a person; its sheet: the bottom tabs (a tablist: ジム left, 保養所, 定期処理 right), each tab's status dot
+// ボット (docs/bots.md): the menu's ボット (the grid's last row, between 結婚式 and 設定), with the worst bot's 「!」 while
+// one needs a person; its sheet: the bottom tabs (a tablist: ジム left, 保養所, 定期処理 right), each tab's status dot
 // (data-tab-status, data-look; 「ジム、順調」), the dots kept across a reload, ← → to move between them,
 // the tab remembered for the app's session (ジム, the leftmost, the first time and after the app was closed), only the shown page mounted (it reads while shown, nothing
 // reads once its tab is left or the sheet is closed), and 保養所's sticky 保存 bar over the tabs. Both Workers mocked (its.ts, a gym
@@ -9,6 +9,7 @@
 import { expect, test, type BrowserContext, type Page } from './fixtures.ts';
 import { fromMenu, unfoldMenu } from './hud.ts';
 import { islandUp } from './island.ts';
+import { shot } from './shots.ts';
 import { newRecord } from './record.ts';
 import { ORIGIN, cors, payload } from './its.ts';
 import { RELAY } from './relay.ts';
@@ -66,7 +67,7 @@ async function phone(page: Page, context: BrowserContext, gymVerdict: 'broken' |
   };
 }
 
-test('the menu’s ボット, right above やること (then 設定), 「!」 while a bot needs a person; the sheet’s tabs: a tablist, status dots, 44px, ← →', async ({ page, context }) => {
+test('the menu’s ボット, between 結婚式 and 設定 in the grid’s last row, 「!」 while a bot needs a person; the sheet’s tabs: a tablist, status dots, 44px, ← →', async ({ page, context }, info) => {
   const { calls, sheet, tab } = await phone(page, context);
   await unfoldMenu(page);
   const pill = page.locator('[data-hud-bots]');
@@ -75,10 +76,12 @@ test('the menu’s ボット, right above やること (then 設定), 「!」 wh
   await expect(pill.locator('[data-hud-bots-dot]')).toHaveAttribute('data-tone', 'bad'); // ジム broken: coral
   await expect(pill).toHaveAccessibleName('ボット、要対応');
   await expect(pill.locator('img')).toHaveCount(0); // a drawn icon, no game sprite
-  // (the default order since やること: … ボット, やること, 設定)
-  const [b, s] = [(await pill.boundingBox())!, (await page.locator('[data-hud-todo]').boundingBox())!];
-  expect(b.y + b.height).toBeLessThan(s.y);
-  expect(b.y + b.height + 12).toBeGreaterThan(s.y);
+  // (the fixed grid: ほか = 結婚式, ボット, 設定; the 「!」 on the icon's corner, inside the card)
+  await expect(page.locator('[data-menu-group="other"] [data-menu-tile]')).toHaveText([/結婚式/, /ボット/, /設定/]);
+  const [b, d, c] = [(await pill.boundingBox())!, (await pill.locator('[data-hud-bots-dot]').boundingBox())!, (await page.locator('#hud-menu-items').boundingBox())!];
+  expect(d.x + d.width).toBeLessThanOrEqual(b.x + b.width);
+  expect(d.y).toBeGreaterThanOrEqual(c.y);
+  await shot(page, `menu-bots-${info.project.name}`);
   expect(calls.its).toBe(1);
 
   await pill.click();

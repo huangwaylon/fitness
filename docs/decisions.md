@@ -73,9 +73,9 @@ both. A change to one of these is a conscious decision: edit the line, don't let
   unknown part reads as いつもの's ([players](players.md)). Why: no inventory to sync; old phones never break.
 - **すがた: one dresser, saved on leaving.** Six tabs; `villager` and `look` are sent once on leaving, with 元に戻す and
   a 4 s 取り消す. Why: one commit model on one screen.
-- **The menu: edited in place by a long press.** `pref menuOrder` / `pref menuHidden` follow the person; ids are the
-  append-only `MENU_IDS`; ベル can move but not hide; 設定 stays last ([design](design.md#island)). Why: a tap stays
-  instant; the way back is never hidden.
+- **The menu: one fixed grid for everyone** (it replaced a per-person long-press editor). Colour + icon +
+  place find an item faster than reading pills, and a fixed place is learned once ([design](design.md#island)). The
+  old `pref menuOrder` / `pref menuHidden` are still taken by the record (older builds) but never read.
 - **No text selection** except fields and `.selectable` copy (trip lines, the wedding note, phrase cards). Why: a long
   press is a game gesture.
 

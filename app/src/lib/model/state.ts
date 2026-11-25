@@ -25,7 +25,6 @@ import { checkOf, type CheckOp } from '#lib/contract/checks.ts';
 import type { FarmRow } from './farm.ts';
 import { isBirth, isProfileKey, isSex, PROFILE_KEYS, type ProfileKey, type Sex } from '#lib/contract/profile.ts';
 import { lookPrefRead, readSavedLooks, type SavedLook } from '#lib/contract/look.ts';
-import { menuIdsRead } from '#lib/contract/menu.ts';
 import { goalDay, spendOf } from '#lib/contract/record.ts';
 import type { TallyRow } from './tally.ts';
 import { appendedTo, rowAt } from './snapshot.ts';
@@ -88,10 +87,6 @@ interface Prefs extends Partial<Record<LatestGoalKey, number>> {
   look?: unknown;
   /** The コーデ (contract/look.ts), read (readSavedLooks). */
   savedLooks?: SavedLook[];
-  /** The leaf menu's order (contract/menu.ts, as sent: ui-state/menuOrder.ts merges it); unset: the default. */
-  menuOrder?: string[];
-  /** The leaf menu's hidden pills (contract/menu.ts, as sent); unset: none. */
-  menuHidden?: string[];
   /** もようがえ's favourites (contract/tent.ts tentFavs: item codes, newest first); unset: none. */
   tentFavs?: string[];
 }
@@ -595,7 +590,7 @@ const members = (fn: MemberEvent): OnEvent => (s, person, at, d) => {
 };
 /** The prefs the guest has (its villager, name, look, コーデ, language, meal-log goals and profile): anything else of `G`
  *  is ignored. */
-const GUEST_PREFS: readonly unknown[] = ['locale', 'villagerName', 'villager', 'look', 'savedLooks', 'menuOrder', 'menuHidden', 'tentFavs', ...goalKeysOf('food'), ...PROFILE_KEYS];
+const GUEST_PREFS: readonly unknown[] = ['locale', 'villagerName', 'villager', 'look', 'savedLooks', 'tentFavs', ...goalKeysOf('food'), ...PROFILE_KEYS];
 type DayGoals = Record<DailyGoalId, (Timed<number> & { day: LocalDate })[]>;
 const noGoals = (): DayGoals => ({ steps: [], move: [], exercise: [], stand: [] });
 
@@ -736,15 +731,7 @@ const ON_EVENT: Record<Exclude<EventType, RawEvent>, OnEvent> = {
       if (d.value === null) delete p.look;
       else if (lookPrefRead(d.value)) p.look = d.value;
     } else if (d.key === 'savedLooks' && Array.isArray(d.value)) p.savedLooks = readSavedLooks(d.value, person);
-    else if (d.key === 'menuOrder' && menuIdsRead(d.value)) {
-      // null: back to the default order
-      if (d.value === null) delete p.menuOrder;
-      else p.menuOrder = d.value;
-    } else if (d.key === 'menuHidden' && menuIdsRead(d.value)) {
-      // null: none hidden
-      if (d.value === null) delete p.menuHidden;
-      else p.menuHidden = d.value;
-    } else if (d.key === 'tentFavs' && tentFavsOk(d.value)) {
+    else if (d.key === 'tentFavs' && tentFavsOk(d.value)) {
       if (d.value === null) delete p.tentFavs;
       else p.tentFavs = d.value;
     }

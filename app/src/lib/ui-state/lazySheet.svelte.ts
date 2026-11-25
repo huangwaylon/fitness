@@ -2,7 +2,7 @@
 // the first show() and kept after it so a second is at once, and whether it is open (the island paused under it).
 // Offline before the chunk is cached, a banner says so with もういちど; one that fails again online reloads the page
 // (reload.ts reloadOnRepeat `module`). Offline with no service worker to serve it (a first
-// visit), the chunk isn't asked for at all (chunkUnreachable; HudMenu's やること panel the same):
+// visit), the chunk isn't asked for at all (chunkUnreachable):
 // WebKit keeps a failed <link rel=modulepreload> (Vite's preload helper adds one for each of the chunk's files) for the
 // page's life, so the import fails with it even once back online, and after the reload it hands the new page the old
 // one's failed loads from its memory cache for a while (1 s here, 20 s and more on CI), so a tap then says offline

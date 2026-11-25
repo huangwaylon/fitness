@@ -1,23 +1,32 @@
-// The HUD menu (docs/design.md "Island"): NH's leaf at the cluster's right end, at the screen's side ([the dumbbell]
-// [the bowl] [the menu], top right) drops 「ベル 121」 … せってい under it, right-aligned; folded by default (the
-// pills hidden), it folds again on a second tap, a tap elsewhere, Esc, or a pick; the ベル row opens the panel
-// (ごほうび), the others their own sheet (せってい's sections, ずかん from its last one).
+// The HUD menu (docs/design.md "Island" Menu): NH's leaf at the cluster's right end ([the dumbbell] [the menu], top
+// right) drops a cream card with a fixed grid, the same for everyone: 毎日 (やること, 英語, ベル), お出かけ (旅行, 地図,
+// 登山), ほか (結婚式, ボット, 設定); folded by default (the card hidden, inert), it folds again on a second tap, a tap
+// elsewhere, Esc, or a pick; ベル opens the panel (ごほうび), each other tile its own sheet. ボット's 「!」 is bots.spec's
+// (a member's phone with its Workers mocked; demo mode has no ボット); WebKit taps, Chromium clicks.
 import { expect, test, type Page } from './fixtures.ts';
 import { islandUp } from './island.ts';
 import { fromMenu, hudBells, hudMenu, unfoldMenu } from './hud.ts';
+import { lowContrast } from './contrast.ts';
+import { shot } from './shots.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
-const pills = (page: Page) => page.locator('#hud-menu-items > button');
+const card = (page: Page) => page.locator('#hud-menu-items');
+const tiles = (page: Page) => page.locator('[data-menu-tile]');
 const settings = (page: Page) => page.locator('[data-hud-settings]');
+const howOf = (name: string) => (name.startsWith('webkit') ? 'tap' : 'click') as 'tap' | 'click';
 
-async function open(page: Page) {
-  await page.goto('?demo&date=2026-11-04T12:00');
+async function open(page: Page, q = '') {
+  await page.goto(`?demo&date=2026-11-04T12:00${q}`);
   await islandUp(page);
 }
 const folded = async (page: Page) => {
   await expect(hudMenu(page)).toHaveAttribute('aria-expanded', 'false');
-  for (const p of await pills(page).all()) await expect(p).toBeHidden();
+  await expect(card(page)).toBeHidden();
+  for (const p of await tiles(page).all()) await expect(p).toBeHidden();
 };
+/** The demo's grid (no ボット: demo mode has none), row by row. */
+const NAMES = ['やること', '英語', 'ベル', '旅行', '地図', '登山', '結婚式', '設定'];
+const IDS = ['todo', 'english', 'bells', 'travel', 'places', 'hiking', 'wedding', 'settings'];
 /** The sea in front of the beach on this screen (client px), read from the page's island (world z < 0 is the sea),
  *  with nothing one taps over it: not a fixed screen point, which the layout's beach or a find may come to cover. */
 const sea = (page: Page) =>
@@ -32,47 +41,51 @@ const sea = (page: Page) =>
     throw new Error('no sea on screen');
   });
 
-test('folded by default; the leaf unfolds it and folds it again; a tap elsewhere and Esc fold it too', async ({ page }) => {
+test('folded by default; the leaf drops the grid (3 rows, labelled, 44px+ tiles on screen) and folds it again; a tap elsewhere and Esc fold it too', async ({ page }) => {
   await open(page);
   await folded(page);
-  // the HUD's order: the dumbbell, the leaf (a 44px target, at the screen's side, in their row); no jar, no bowl
+  // the HUD's order: the dumbbell, the leaf (a 44px target, at the screen's side, in their row)
   const m = (await hudMenu(page).boundingBox())!, h = (await page.locator('.hud-health').boundingBox())!;
   expect(m.width).toBeGreaterThanOrEqual(44);
   expect(m.height).toBeGreaterThanOrEqual(44);
   expect(h.x + h.width).toBeLessThanOrEqual(m.x);
   expect(Math.abs(393 - m.x - m.width - 14)).toBeLessThan(1.5);
   expect(Math.abs(m.y + m.height / 2 - (h.y + h.height / 2))).toBeLessThan(2);
-  await expect(page.locator('.hud-food')).toHaveCount(0);
-  await expect(page.locator('.hud-jar')).toHaveCount(0);
   await hudMenu(page).click();
   await expect(hudMenu(page)).toHaveAttribute('aria-expanded', 'true');
-  await expect(settings(page)).toBeVisible();
-  // the pills hang under the leaf, right-aligned to it, 「ベル 121」 first (no icon), then by default 旅行, 結婚式, 登山, 地図, 英語
-  // (English Study), やること, 設定 (in kanji), each a 44px pill, on screen, the same width (no ずかん: 設定's; ボット, a paired
-  // member's between 英語 and やること, isn't in demo: its.spec.ts, bots.spec.ts). Each found by its data-hud-* (a person's
-  // own order moves them: menu-order.spec.ts)
-  await expect(pills(page)).toHaveCount(8);
-  await expect(page.locator('[data-hud-zukan]')).toHaveCount(0);
-  const ids = await pills(page).evaluateAll((bs) => bs.map((b) => b.getAttributeNames().find((a) => /^data-hud-(?!bells-)/.test(a))));
-  expect(ids).toEqual(['data-hud-bells', 'data-hud-travel', 'data-hud-wedding', 'data-hud-hiking', 'data-hud-places', 'data-hud-english', 'data-hud-todo', 'data-hud-settings']);
-  await expect(page.locator('[data-hud-bots]')).toHaveCount(0);
-  await expect(pills(page).locator('.lbl')).toHaveText(['ベル', '旅行', '結婚式', '登山', '地図', '英語', 'やること', '設定']);
-  await expect(pills(page).first()).toHaveAttribute('data-hud-bells', '');
-  await expect(page.locator('[data-hud-shells]')).toHaveCount(0); // no かいがら: the shop is the building
-  const bells = Number(await hudBells(page).getAttribute('data-bells'));
-  await expect(hudBells(page)).toHaveText(new RegExp(`^\\s*ベル\\s*${bells.toLocaleString('en-US')}\\s*$`));
-  await expect(hudBells(page).locator('img, svg')).toHaveCount(0);
-  // the spring settles (each pill at rest, not a fixed wait: a busy runner's spring was still under way at 600 ms)
   await unfoldMenu(page);
-  const boxes = await Promise.all((await pills(page).all()).map(async (p) => (await p.boundingBox())!));
+  // the rows' labels, then the tiles in one fixed order, each named in kanji (no ずかん: 設定's; no かいがら: the shop)
+  await expect(card(page).locator('.grp')).toHaveText(['毎日', 'お出かけ', 'ほか']);
+  await expect(card(page).getByRole('group')).toHaveCount(3);
+  await expect(card(page).getByRole('group', { name: 'お出かけ' }).getByRole('button')).toHaveCount(3);
+  expect(await tiles(page).evaluateAll((ts) => ts.map((t) => t.getAttribute('data-menu-tile')))).toEqual(IDS);
+  await expect(tiles(page).locator('.lbl')).toHaveText(NAMES);
+  await expect(page.locator('[data-hud-zukan], [data-hud-shells], [data-hud-bots]')).toHaveCount(0);
+  // ベル: its number under its name (the label says the balance); every tile a drawn icon, no sprite
+  const bells = Number(await hudBells(page).getAttribute('data-bells'));
+  await expect(hudBells(page).locator('.num')).toHaveText(bells.toLocaleString('en-US'));
+  await expect(tiles(page).locator('.ic svg')).toHaveCount(8);
+  await expect(tiles(page).locator('img')).toHaveCount(0);
+  // the card: under the leaf, 12px in from both sides; the tiles 3 a row, each ≥ 44px, inside it
+  const c = (await card(page).boundingBox())!;
+  expect(c.y).toBeGreaterThan(m.y + m.height);
+  expect(Math.abs(c.x - 12)).toBeLessThan(1.5);
+  expect(Math.abs(393 - c.x - c.width - 12)).toBeLessThan(1.5);
+  const boxes = await Promise.all((await tiles(page).all()).map(async (p) => (await p.boundingBox())!));
   for (const [i, b] of boxes.entries()) {
-    expect(b.height).toBeGreaterThanOrEqual(44);
-    expect(b.x).toBeGreaterThanOrEqual(0);
-    expect(b.y).toBeGreaterThan(m.y + m.height);
-    expect(Math.abs(b.x + b.width - (m.x + m.width))).toBeLessThan(1.5);
-    expect(Math.abs(b.width - boxes[0].width)).toBeLessThan(1);
-    if (i) expect(b.y).toBeGreaterThan(boxes[i - 1].y + boxes[i - 1].height);
+    expect(b.height, IDS[i]).toBeGreaterThanOrEqual(44);
+    expect(b.width, IDS[i]).toBeGreaterThanOrEqual(44);
+    expect(b.x).toBeGreaterThanOrEqual(c.x);
+    expect(b.x + b.width).toBeLessThanOrEqual(c.x + c.width + 0.5);
+    expect(b.y + b.height).toBeLessThanOrEqual(c.y + c.height + 0.5);
   }
+  for (const r of [[0, 1, 2], [3, 4, 5]]) {
+    expect(Math.abs(boxes[r[0]].y - boxes[r[2]].y)).toBeLessThan(1);
+    expect(boxes[r[1]].x).toBeGreaterThan(boxes[r[0]].x + boxes[r[0]].width - 1);
+  }
+  expect(boxes[3].y).toBeGreaterThan(boxes[0].y + boxes[0].height);
+  // no todo count on やること (the HUD's todo disc has it)
+  await expect(page.locator('[data-hud-todo] .badge')).toHaveCount(0);
   // a second tap folds it
   await hudMenu(page).click();
   await folded(page);
@@ -88,9 +101,8 @@ test('folded by default; the leaf unfolds it and folds it again; a tap elsewhere
   await page.keyboard.press('Escape');
   await folded(page);
   await expect(hudMenu(page)).toBeFocused();
-  // the ベル row: the menu folds, the panel opens (ごほうび: no tabs, no せってい)
+  // ベル: the menu folds, the panel opens (ごほうび: no tabs, no せってい)
   await hudMenu(page).click();
-  await expect(hudBells(page)).toBeVisible();
   await expect(hudBells(page)).toHaveAttribute('aria-expanded', 'false');
   await hudBells(page).click();
   await expect(page.locator('dialog[open] [data-wallet]')).toBeVisible();
@@ -98,6 +110,19 @@ test('folded by default; the leaf unfolds it and folds it again; a tap elsewhere
   await expect(page.locator('dialog[open] [data-tab]')).toHaveCount(0);
   await expect(hudBells(page)).toHaveAttribute('aria-expanded', 'true');
   await folded(page);
+});
+
+test('one tap on each tile opens its sheet and folds the menu', async ({ page }, info) => {
+  const how = howOf(info.project.name);
+  await open(page);
+  await unfoldMenu(page, how);
+  await shot(page, `menu-open-${info.project.name}`);
+  for (const id of IDS as ('todo' | 'english' | 'bells' | 'travel' | 'places' | 'hiking' | 'wedding' | 'settings')[]) {
+    await fromMenu(page, id, how);
+    await folded(page);
+    await page.keyboard.press('Escape');
+    await expect(page.locator('dialog[open]')).toHaveCount(0);
+  }
 });
 
 test('by keyboard: the leaf, a pill, Enter opens its sheet, Esc closes it and the focus is back on the leaf', async ({ page }) => {
@@ -119,16 +144,29 @@ test('by keyboard: the leaf, a pill, Enter opens its sheet, Esc closes it and th
   }
 });
 
-test('the guest has the ベル row too (the pair\'s wallets): it opens ごほうび as a member’s, its own wallet 0 so every reward out of reach; no ボット', async ({ page }) => {
-  await page.goto('?demo&as=G&date=2026-11-04T12:00');
-  await islandUp(page);
-  await unfoldMenu(page);
-  await expect(pills(page).locator('.lbl')).toHaveText(['ベル', '旅行', '結婚式', '登山', '地図', '英語', 'やること', '設定']);
-  await expect(page.locator('[data-hud-bots]')).toHaveCount(0);
-  await fromMenu(page, 'bells');
+test('the guest sees the same grid: ベル shows its own wallet, 0, and opens ごほうび as a member’s, every reward out of reach', async ({ page }, info) => {
+  const how = howOf(info.project.name);
+  await open(page, '&as=G');
+  await unfoldMenu(page, how);
+  await expect(card(page).locator('.grp')).toHaveText(['毎日', 'お出かけ', 'ほか']);
+  await expect(tiles(page).locator('.lbl')).toHaveText(NAMES);
+  await expect(hudBells(page).locator('.num')).toHaveText('0');
+  await shot(page, `menu-guest-${info.project.name}`);
+  await fromMenu(page, 'bells', how);
   const dlg = page.locator('dialog[open]');
   await expect(dlg.locator('[data-item]')).toHaveCount(2);
   for (const item of await dlg.locator('[data-item]').all()) await expect(item).toHaveAttribute('aria-disabled', 'true');
+});
+
+test('at night the card stays the day’s cream and every label reads (3:1+); 英語’s dot while today’s study isn’t done', async ({ page }, info) => {
+  await page.goto('?demo&date=2026-11-04T22:00');
+  await islandUp(page);
+  await expect(page.locator('html')).toHaveAttribute('data-tod', 'night');
+  await unfoldMenu(page, howOf(info.project.name));
+  await expect(card(page)).toHaveCSS('background-color', 'rgb(255, 249, 227)');
+  expect((await lowContrast(page, { root: '#hud-menu-items' })).map((l) => `${l.ratio}:1 “${l.text}” ${l.sel}`)).toEqual([]);
+  await expect(page.locator('[data-hud-english] [data-hud-english-dot]')).toBeVisible();
+  await shot(page, `menu-night-${info.project.name}`);
 });
 
 test('ずかん opens the ずかん (its kinds, a kind\'s page with ‹), せってい opens せってい; each folds the menu', async ({ page }) => {
@@ -161,10 +199,9 @@ test('ずかん opens the ずかん (its kinds, a kind\'s page with ‹), せっ
 });
 
 // A sheet's own strings come in Japanese only (i18n addStrings): switched to English, 旅行's, loaded before the
-// switch, turn English with it.
+// switch, turn English with it; the menu's own names too.
 test('English after a sheet’s strings came in Japanese: its strings English too', async ({ page }) => {
-  await page.goto('?demo&date=2026-11-04T12:00');
-  await islandUp(page);
+  await open(page);
   const dlg = page.locator('dialog[open]');
   await fromMenu(page, 'travel');
   await expect(dlg.locator('.navbar')).toContainText('旅行');
@@ -175,23 +212,31 @@ test('English after a sheet’s strings came in Japanese: its strings English to
   await dlg.locator('.titlebar .close').click();
   await fromMenu(page, 'travel');
   await expect(dlg.locator('.navbar')).toContainText('Trips');
+  await page.keyboard.press('Escape');
+  await unfoldMenu(page);
+  await expect(card(page).locator('.grp')).toHaveText(['Daily', 'Going out', 'More']);
 });
 
-test('in a person’s own order (edit mode: menu-order.spec.ts): the pills move, each still found by its data-hud-* and opening its sheet', async ({ page }) => {
+test('no text selection or iOS callout on the menu, the HUD, the island and the sheets (fields still select); the coins’ landing is ベル’s number while open', async ({ page, browserName }) => {
   await open(page);
-  // a long press on a pill: the menu in edit mode; 英語 up four places by ↑ (the touch drag: menu-order.spec.ts)
   await unfoldMenu(page);
-  const box = (await page.locator('[data-hud-wedding]').boundingBox())!;
-  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
-  await page.mouse.down();
-  await expect(page.locator('#hud-menu-items')).toHaveAttribute('data-menu-editing', 'true');
-  await page.mouse.up();
-  await page.locator('[data-hud-english]').focus();
-  for (let i = 0; i < 4; i++) await page.keyboard.press('ArrowUp');
-  await page.locator('[data-menu-done]').click();
-  await expect(pills(page).locator('.lbl')).toHaveText(['ベル', '英語', '旅行', '結婚式', '登山', '地図', 'やること', '設定']);
-  await expect(pills(page).nth(1)).toHaveAttribute('data-hud-english', '');
-  await fromMenu(page, 'english');
+  const style = (sel: string) => page.locator(sel).first().evaluate((el) => ((s) => [s.webkitUserSelect || s.userSelect, (s as unknown as Record<string, string>).webkitTouchCallout ?? 'none'])(getComputedStyle(el)));
+  for (const sel of ['[data-hud-english] .lbl', '[data-hud-bells] .num', '.grp', '.hud-health', '.scene', '.scene canvas']) expect((await style(sel))[0], sel).toBe('none');
+  if (browserName === 'webkit') for (const sel of ['.scene', '.scene canvas', '[data-hud-bells]', '[data-hud-travel]']) expect((await style(sel))[1], sel).toBe('none');
+  // (HudCoins' target: the open menu's ベル number, inside its tile)
+  const [num, tile] = [await page.locator('.ribbon-wrap .hud-menu.open [data-hud-bells] .num').boundingBox(), (await hudBells(page).boundingBox())!];
+  expect(num!.y).toBeGreaterThan(tile.y);
+  expect(num!.y + num!.height).toBeLessThanOrEqual(tile.y + tile.height);
   await page.keyboard.press('Escape');
   await fromMenu(page, 'settings');
+  expect((await style('dialog[open] .sec-label'))[0]).toBe('none');
+  await page.keyboard.press('Escape');
+  await page.locator('[data-say-open]').click();
+  const write = page.locator('[data-say-write]');
+  if (await write.isVisible()) await write.click();
+  const field = page.locator('[data-say-field]');
+  expect((await style('[data-say-field]'))[0]).toBe('text');
+  await field.fill('こんにちは');
+  await field.selectText();
+  expect(await field.evaluate((el: HTMLInputElement) => [el.selectionStart, el.selectionEnd])).toEqual([0, 5]);
 });

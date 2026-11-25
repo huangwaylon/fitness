@@ -1,9 +1,10 @@
 <script lang="ts">
   // 島's HUD, NH island-view light: the sky clean, one small cluster in its top-right corner (docs/design.md "Island"):
   // [the health button] [the menu]. The health button (NH's dumbbell) → けんこう and ごはん's sheet (HealthSheet: two
-  // tabs); the menu (NH's leaf, at the screen's side) drops eight pills under it (HudMenu): the ベル row (my
-  // wallet's balance; today's +N flashing by the leaf as coins land) → the island panel (ごほうび), the others (旅行,
-  // 結婚式, 登山, 地図, 英語, ボット, 設定) each open their own sheet, at once (each sheet's chunk fetched ahead: sheetChunks.ts).
+  // tabs); the menu (NH's leaf, at the screen's side) drops its fixed grid of tiles under it (HudMenu): ベル (my wallet's
+  // balance, the guest's 0; today's +N flashing by the leaf as coins land) → the island panel (ごほうび), the
+  // others (やること, 英語, 旅行, 地図, 登山, 結婚式, ボット, 設定) each open their own sheet, at once (each sheet's chunk
+  // fetched ahead: sheetChunks.ts).
   // Only when sync is not ok, the sync chip centred under the row; under it, while 設定's 季節 is on, its chip. The
   // panel, the popups and every sheet are their own chunks, loaded on first open.
   import { onMount } from 'svelte';

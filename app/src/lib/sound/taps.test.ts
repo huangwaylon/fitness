@@ -32,7 +32,7 @@ const SELF: Record<string, string> = {
   'lib/components/wallet/BuyConfirm.svelte': '買う！ → purchase (the wallet’s buy), or the boop if the wallet fell short',
   'lib/components/island/HudHealth.svelte': 'the dumbbell → jar-tap (R18: both look up at it), then the popup plays panel-open',
   'lib/components/island/FarmPop.svelte': 'ほる → dig (sceneSfx) where the plant was, as a plant\'s tap plays it',
-  'lib/components/island/HudMenu.svelte': 'ベル / 旅行 / 結婚式 / 登山 / 英語 / ボット / 設定 → jar-tap (R18: both look up at it), then the panel or its sheet plays panel-open; edit mode: toggle-on as a long press enters it, toggle-off / toggle-on as a pill is hidden / shown, tick as one drops in a new place',
+  'lib/components/island/HudMenu.svelte': 'a tile (やること / 英語 / ベル / 旅行 / 地図 / 登山 / 結婚式 / ボット / 設定) → jar-tap (R18: both look up at it), then the panel or its sheet plays panel-open',
   'lib/components/shop/ShopRoom.svelte': 'a piece → tick; the card\'s 買う → purchase, or the boop when it can\'t be had; ‹ 島へ → scene-bench (out of the door)',
   'lib/components/shop/Counter.svelte': 'うる / かう → purchase, or the boop when nothing is picked or it can\'t be had',
   'lib/components/shop/PieceTile.svelte': 'a catch, a start or a piece → tick (its list\'s handler)',

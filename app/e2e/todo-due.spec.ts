@@ -1,17 +1,15 @@
-// やること's due dates, reminders and the menu's 今日・明日 panel (docs/todo.md "The sheet", docs/design.md "Menu"), on
-// the relay's real record in the test's process (e2e/liveRoom.ts), WebKit with taps, Chromium with clicks, the scene
-// clock pinned (2026-11-04 12:00 Tokyo, a Wednesday). The add field's quick chips (今日 then return, held across two
-// adds and named in the placeholder, gone on a blur; 日付… a native date input over the chip's whole hit); 編集's 期限
-// and 通知 (a time, a reminder: なし by default, me pressed when turned on, the moment it fires in words; 期限 なし drops
-// it); the row's chip opening 編集 at 期限. The panel: today's (timed first), tomorrow's, the past folded into one row,
-// a tick from it struck through and seen in the sheet, a row's text opening the sheet at the item; hidden with nothing
-// due, in edit mode and with やること's pill hidden; the guest ticks from it. This phone's opt-in (Notification,
-// PushManager and the service worker stubbed, the relay's /api/push routes mocked): asked in the tap, handed over, and a
-// chosen person with no phone on named. Shots at 393×852, day and night (SHOTS=<dir>).
+// やること's due dates and reminders (docs/todo.md "The sheet"), on the relay's real record in the test's process
+// (e2e/liveRoom.ts), WebKit with taps, Chromium with clicks, the scene clock pinned (2026-11-04 12:00 Tokyo, a
+// Wednesday). The add field's quick chips (今日 then return, held across two adds and named in the placeholder, gone on
+// a blur; 日付… a native date input over the chip's whole hit); 編集's 期限 and 通知 (a time, a reminder: なし by
+// default, me pressed when turned on, the moment it fires in words; 期限 なし drops it); the row's chip opening 編集 at
+// 期限. This phone's opt-in (Notification, PushManager and the service worker stubbed, the relay's /api/push routes
+// mocked): asked in the tap, handed over, and a chosen person with no phone on named. (The menu's 今日・明日 panel left
+// the menu on 2026-11-25: docs/todo.md.)
 import { expect, test, type Browser, type BrowserContext, type Page } from './fixtures.ts';
 import { islandUp } from './island.ts';
 import { newIsland } from './liveRoom.ts';
-import { fromMenu, unfoldMenu } from './hud.ts';
+import { fromMenu } from './hud.ts';
 import { RELAY } from './relay.ts';
 import { shot } from './shots.ts';
 
@@ -78,7 +76,6 @@ const top = (p: Page) => p.locator('dialog[open]').last();
 const acts = (p: Page, text: string) => p.getByRole('button', { name: `「${text}」の操作`, exact: true });
 const item = (p: Page, text: string) => p.locator('[data-todo-item]').filter({ has: acts(p, text) });
 const chip = (p: Page, text: string) => item(p, text).locator('[data-todo-due]');
-const panel = (p: Page) => p.locator('[data-due-panel]');
 async function dayAndNight(p: Page, name: string, project: string) {
   await shot(p, `${name}-day-${project}`);
   await p.evaluate(() => (document.documentElement.dataset.tod = 'night'));
@@ -155,88 +152,6 @@ test('quick chips date the next adds (held, named in the field, gone on a blur);
   await top(a).locator('[data-todo-save]')[how]();
   await expect(chip(a, '洗濯')).toHaveCount(0);
   await expect(item(a, '洗濯')).toBeVisible();
-});
-
-test('the menu’s panel: today timed first, tomorrow, the past folded; a tick struck through and shared; a row opens the item; hidden while editing, with the pill hidden, with nothing due', async ({ browser }, info) => {
-  const how = howOf(info.project.name);
-  const island = newIsland();
-  seed(island, 'A', 'dhome001', '家のこと', [
-    { text: 'ゴミ出し', due: '2026-11-04' },
-    { text: '牛乳を買う', due: '2026-11-04T15:00' },
-    { text: '区役所に電話', due: '2026-11-02' },
-    { text: '歯医者', due: '2026-11-05T09:30', rem: 'b60', to: ['A'] },
-    { text: 'いつか', due: '2026-11-20' },
-    { text: '日付なし' }
-  ]);
-  const { page: a } = await phone(browser, island, 'A', how);
-  await unfoldMenu(a, how);
-  await expect(panel(a)).toBeVisible();
-  await expect(panel(a).locator('[data-due-past]')).toHaveText(/前の日 1件/);
-  await expect(panel(a).locator('[data-due-day]')).toHaveText(['今日', '明日']);
-  await expect(panel(a).locator('[data-due-item] .name')).toHaveText(['牛乳を買う', 'ゴミ出し', '歯医者']);
-  await expect(panel(a).locator('[data-due-item] .when')).toHaveText(['15:00', '9:30']);
-  // left of the pills, top-aligned with the first, 12px clear of them, never past the screen's side
-  const [pb, first] = [await panel(a).boundingBox(), await a.locator('[data-menu-pill]').first().boundingBox()];
-  expect(Math.abs(pb!.y - first!.y)).toBeLessThan(1);
-  expect(first!.x - (pb!.x + pb!.width)).toBeGreaterThanOrEqual(11);
-  expect(pb!.x).toBeGreaterThanOrEqual(13);
-  await dayAndNight(a, 'todo-due-panel', info.project.name);
-  // a tick: struck through, kept till the menu folds, seen on the guest's
-  await panel(a).locator('[data-due-item="dhome001i0"]').getByRole('checkbox')[how]();
-  await expect(panel(a).locator('[data-due-item="dhome001i0"]')).toHaveAttribute('data-done', 'true');
-  // the guest's panel: the tick there, and its own tick back
-  const { page: g } = await phone(browser, island, 'G', how);
-  await unfoldMenu(g, how);
-  await expect(panel(g).locator('[data-due-item] .name')).toHaveText(['牛乳を買う', '歯医者']);
-  await panel(g).locator('[data-due-item="dhome001i1"]').getByRole('checkbox')[how]();
-  await expect(panel(a).locator('[data-due-item="dhome001i1"]')).toHaveCount(0);
-  // a row's text: the menu folds, やること on the list at the item, flashed
-  await panel(a).locator('[data-due-open="dhome001i3"]')[how]();
-  await expect(a.locator('dialog[open] [data-todo]')).toHaveAttribute('data-todo-at', 'dhome001');
-  await expect(item(a, '歯医者')).toHaveClass(/hl/);
-  await expect(item(a, 'ゴミ出し')).toHaveAttribute('data-done', 'true');
-  await expect(item(a, '牛乳を買う')).toHaveAttribute('data-done', 'true');
-  await a.keyboard.press('Escape');
-  await a.keyboard.press('Escape');
-  await expect(a.locator('dialog[open]')).toHaveCount(0);
-  // folded and unfolded again: the done ones gone
-  await unfoldMenu(a, how);
-  await expect(panel(a).locator('[data-due-item] .name')).toHaveText(['歯医者']);
-  // edit mode (a pill held): no panel; やること hidden (⊖), 完了: still none
-  const todoPill = a.locator('[data-hud-todo]');
-  await todoPill.evaluate((el) => el.dispatchEvent(new PointerEvent('pointerdown', { pointerId: 9, pointerType: 'touch', isPrimary: true, button: 0, buttons: 1, bubbles: true, clientX: 1, clientY: 1 })));
-  await expect(a.locator('#hud-menu-items')).toHaveAttribute('data-menu-editing', 'true');
-  await todoPill.evaluate((el) => el.dispatchEvent(new PointerEvent('pointerup', { pointerId: 9, pointerType: 'touch', isPrimary: true, bubbles: true, clientX: 1, clientY: 1 })));
-  await expect(panel(a)).toHaveCount(0);
-  await todoPill.click({ force: true });
-  await expect(todoPill).toHaveAttribute('data-menu-hidden', 'true');
-  await a.locator('[data-menu-done]').click();
-  await expect(a.locator('[data-hud-todo]')).toHaveCount(0);
-  await expect(panel(a)).toHaveCount(0);
-});
-
-test('nothing due: no panel; the guest’s wide ベル row still leaves the panel its room', async ({ browser }, info) => {
-  const how = howOf(info.project.name);
-  const island = newIsland();
-  seed(island, 'A', 'dhome001', '家のこと', [{ text: '日付なし' }, { text: 'いつか', due: '2026-11-20' }]);
-  const { page: a } = await phone(browser, island, 'A', how);
-  await unfoldMenu(a, how);
-  await expect(a.locator('[data-menu-pill]').first()).toBeVisible();
-  await expect(panel(a)).toHaveCount(0);
-  await shot(a, `todo-due-empty-day-${info.project.name}`);
-  seed(island, 'G', 'dguest01', 'ゲストの', [{ text: '朝ごはん', due: '2026-11-04T08:00' }, { text: '長い名前のやることがここに入ります', due: '2026-11-05' }]);
-  for (const width of [393, 402]) {
-    const { page: g } = await phone(browser, island, 'G', how);
-    await g.setViewportSize({ width, height: 852 });
-    await unfoldMenu(g, how);
-    await expect(panel(g)).toBeVisible();
-    const box = (await panel(g).boundingBox())!;
-    expect(box.width).toBeGreaterThanOrEqual(150);
-    await expect(panel(g).locator('[data-due-item] .name').last()).toHaveCSS('text-overflow', 'ellipsis');
-    await dayAndNight(g, `todo-due-guest-${width}`, info.project.name);
-    await g.context().close();
-    await expect.poll(() => island.sockets('G')).toBe(0);
-  }
 });
 
 test('this phone’s opt-in: asked in the tap, handed to the relay; a chosen person with no phone on is named', async ({ browser }, info) => {

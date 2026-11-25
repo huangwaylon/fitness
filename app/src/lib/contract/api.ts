@@ -62,7 +62,7 @@ export const GOAL_PREF_KEYS: readonly string[] = [
 
 /**
  * The `pref` keys the model reads (any other key is refused): the sender's `locale`, `villagerName`, `villager`, `look`
- * and `savedLooks` (contract/look.ts: the look worn and the コーデ), `menuOrder` and `menuHidden` (contract/menu.ts: the leaf menu's order and hidden pills), `tentFavs` (contract/tent.ts: もようがえ's favourites), every
+ * and `savedLooks` (contract/look.ts: the look worn and the コーデ), `menuOrder` and `menuHidden` (contract/menu.ts: retired, taken but never read), `tentFavs` (contract/tent.ts: もようがえ's favourites), every
  * goal (contract/goals.ts GOALS: the activity, body and meal-log goals, each its own key), the profile (`sex`, `birth`:
  * the rows kept, locked since 2026-11-15, PROFILE_PREF_KEYS), `goalWeightFrom` (the day a member's goal weight was first
  * set: GOAL_FROM_KEY), the island's `weatherMode` (WEATHER_MODES) and its `seasonLook` (isSeasonLook): both

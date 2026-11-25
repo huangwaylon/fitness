@@ -836,10 +836,10 @@ test(`the HUD row at ${w}, ${at.slice(11)}: [the dumbbell] [the menu] in the top
   // one cluster, right-aligned: the dumbbell, the menu, in that order, 6px apart, the leaf 14px in
   expect(Math.abs(mb.x - bb.x - bb.width - 6)).toBeLessThan(1.5);
   expect(Math.abs(w - mb.x - mb.width - 14)).toBeLessThan(1.5);
-  // the sky's left clear (the sun, the moon, the balloon: a third of it from 393 up), and the menu's pills folded away
+  // the sky's left clear (the sun, the moon, the balloon: a third of it from 393 up), and the menu's tiles folded away
   expect(bb.x).toBeGreaterThan(w >= 393 ? w / 3 : w / 6);
   await expect(page.locator('[data-hud-bells], [data-hud-settings]')).toHaveCount(2);
-  for (const pill of await page.locator('[data-hud-bells], [data-hud-settings]').all()) await expect(pill).toBeHidden();
+  for (const tile of await page.locator('[data-hud-bells], [data-hud-settings]').all()) await expect(tile).toBeHidden();
   // NH's dumbbell, a little taller than the pill; no number, no ▶ dot
   const img = btn.locator('img');
   await expect(img).toHaveAttribute('src', /items\/dumbbell\.webp/);
@@ -847,14 +847,16 @@ test(`the HUD row at ${w}, ${at.slice(11)}: [the dumbbell] [the menu] in the top
   expect((await btn.locator('.art').boundingBox())!.y).toBeLessThan(bb.y);
   await expect(btn).toHaveText('');
   await expect(btn.locator('svg')).toHaveCount(0);
-  // unfolded, the pills hang under the leaf, right-aligned to it, on screen: 「ベル 121」 first
-  await unfoldMenu(page); // (the spring settled: a fixed 600 ms wasn't, on a busy machine)
-  const pills = page.locator('#hud-menu-items > button');
-  for (const p of await pills.all()) {
+  // unfolded, the grid's card hangs under the leaf, 12px in from the screen's sides, every tile on screen
+  await unfoldMenu(page);
+  const c = (await page.locator('#hud-menu-items').boundingBox())!;
+  expect(c.y).toBeGreaterThan(mb.y + mb.height);
+  expect(Math.abs(w - c.x - c.width - 12)).toBeLessThan(1.5);
+  for (const p of await page.locator('[data-menu-tile]').all()) {
     const b = (await p.boundingBox())!;
     expect(b.x).toBeGreaterThanOrEqual(0);
-    expect(Math.abs(b.x + b.width - (mb.x + mb.width))).toBeLessThan(1.5);
-    expect(b.y).toBeGreaterThan(mb.y + mb.height);
+    expect(b.x + b.width).toBeLessThanOrEqual(w);
+    expect(b.y + b.height).toBeLessThan(page.viewportSize()!.height);
   }
   await page.keyboard.press('Escape');
   await expect(hudMenu(page)).toHaveAttribute('aria-expanded', 'false');
@@ -872,7 +874,7 @@ test(`the HUD row at ${w}, ${at.slice(11)}: [the dumbbell] [the menu] in the top
   await expect(sheet(page).locator('[data-kenkou-tab=health]')).toHaveAttribute('aria-current', 'page');
 });
 
-test('the menu\'s 「ベル」 row shows ごほうび\'s balance, follows a buy and its とりけす, and the day\'s coins land in the leaf (the number never drops while they fly, today\'s +N flashing under the leaf)', async ({ page }) => {
+test('the menu\'s 「ベル」 tile shows ごほうび\'s balance, follows a buy and its とりけす, and the day\'s coins land in the leaf (the number never drops while they fly, today\'s +N flashing under the leaf)', async ({ page }) => {
   // every change of the ベル row's number, each catch squash and each +N flash, from the first paint
   await page.addInitScript(() => {
     const w = window as unknown as { nums: string[]; catches: number; flashes: string[] };
@@ -906,11 +908,11 @@ test('the menu\'s 「ベル」 row shows ごほうび\'s balance, follows a buy 
   await expect.poll(async () => (await flashes()).at(-1)).toBe(`+${today}`);
   await expect(page.locator('[data-bells-flash]')).toHaveCount(0, { timeout: 4000 });
   await expect(row).toHaveAttribute('aria-label', new RegExp(`^ごほうび · ベル ${bells.toLocaleString('en-US')}\\sベル · 今日 ${today}\\sベル$`));
-  // unfolded: 「ベル 121」, no icon, the same number as ごほうび's
+  // unfolded: ベル's tile, its number under its name, the same as ごほうび's (a drawn bag, no sprite)
   await hudMenu(page).click();
   await expect(row).toBeVisible();
   await expect(row).toHaveText(new RegExp(`^\\s*ベル\\s*${bellsText(bells)}\\s*$`));
-  await expect(row.locator('img, svg, .ic')).toHaveCount(0);
+  await expect(row.locator('img')).toHaveCount(0);
   await row.click();
   const total = sheet(page).locator('.hero .purse:first-child .total');
   await expect.poll(async () => Number((await total.innerText()).replace(/\D/g, ''))).toBe(bells);

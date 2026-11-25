@@ -68,9 +68,9 @@ describe('ja copy: the world (keep-all)', () => {
 });
 
 /** World keys that keep kanji (an official name is already left out by `.name.`): the shop's sign (タヌキ商店), the
- *  no-WebGL line in place of the island (the user's wording, 2026-11-03), the leaf menu's edit mode (its pills' copy:
- *  kanji since 2026-11-08), the goal trees' one-glyph plates (朝 昼 夜, 顔, 分, 歩: a word in a chip). */
-const KANJI_OK = /^(shop\.(title|room)|island\.no3d|island\.menu(Editing|EditHint|Hide|Show|Moved|Reset|ResetDone|Done)|tree\.(meal\.[bld]|check\.face|of\.\w+))$/;
+ *  no-WebGL line in place of the island (the user's wording, 2026-11-03), the leaf menu's row labels (its tiles'
+ *  names are kanji too), the goal trees' one-glyph plates (朝 昼 夜, 顔, 分, 歩: a word in a chip). */
+const KANJI_OK = /^(shop\.(title|room)|island\.no3d|island\.menu(Daily|Out|Other)|tree\.(meal\.[bld]|check\.face|of\.\w+))$/;
 const OFFICIAL = /\.name\.|^fossil\.set\.|^decor\.item\.|^travel\.air$/;
 
 describe('ja copy: the world is spaced kana', () => {

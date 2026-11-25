@@ -47,7 +47,7 @@ export function fireLine(due: string, rem: Rem, nowMs: number): string {
 }
 
 /** A row of the menu's panel: an item due today or tomorrow. */
-export interface DueRow { id: string; list: string; text: string; due: string; done: boolean; day: 'today' | 'tomorrow' }
+interface DueRow { id: string; list: string; text: string; due: string; done: boolean; day: 'today' | 'tomorrow' }
 export interface DuePanelData { today: DueRow[]; tomorrow: DueRow[]; past: number }
 
 /** The panel's rows (docs/todo.md "The sheet"): undone items due today and tomorrow, and done ones in `kept` (ticked

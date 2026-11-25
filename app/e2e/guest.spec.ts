@@ -101,14 +101,14 @@ test('the guest’s island opens at the front, as a member’s', async ({ page }
   expect(g.cam).toBe(g.front);
 });
 
-// The guest's phone shows what a member's does (the user, 2026-11-25): the same menu pills, the same 設定 sections, the
+// The guest's phone shows what a member's does (the user, 2026-11-25): the same menu tiles, the same 設定 sections, the
 // same けんこう tabs; the one thing it lacks is からだ (no switch, no body card).
 test('the guest sees a member’s HUD and menus, but for からだ', async ({ browser }) => {
   const seen = async (as: 'A' | 'G') => {
     const ctx = await browser.newContext({ viewport: VIEW });
     const page = await open(ctx, as);
     await unfoldMenu(page);
-    const pills = await page.locator('#hud-menu-items > button').evaluateAll((bs) => bs.map((b) => b.getAttribute('data-menu-pill')));
+    const pills = await page.locator('[data-menu-tile]').evaluateAll((bs) => bs.map((b) => b.getAttribute('data-menu-tile')));
     const hud = await page.locator('.ribbon-wrap button:visible').evaluateAll((bs) => bs.map((b) => b.getAttribute('aria-label') === null ? b.className.split(' ')[0] : b.getAttribute('aria-label')).filter((l) => !/ベル/.test(l ?? '')));
     await fromMenu(page, 'settings');
     const sections = await page.locator('dialog[open] [data-settings] h3').allTextContents();

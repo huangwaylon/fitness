@@ -26,7 +26,7 @@ const CHUNKS = {
   health: () => Promise.all([kenkou.prefetch(), import('../food/prime.ts').then((m) => m.primeFood())]),
   english: () => english.prefetch(),
   hiking: () => hiking.prefetch(),
-  // (the guest has no ボット: never fetched)
+  // (demo mode has no ボット: never fetched)
   bots: prefetchBots,
   settings: () => loadSettings(true),
   panel: () => loadPanel(true),

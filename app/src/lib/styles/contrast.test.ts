@@ -40,4 +40,30 @@ describe('the theme’s readability', () => {
     }
     expect(pct(2)).toBeGreaterThan(pct(1));
   });
+
+  it('the menu’s tiles (--tile-*): a white line icon reads at 3:1 on each, ink on ベル’s gold at 4.5:1; each hue its own', () => {
+    /** A token's colour: a hex, a var() or a 2-colour sRGB color-mix (nested too), as tokens.css writes them. */
+    const rgb = (v: string): number[] => {
+      v = v.trim();
+      if (v.startsWith('#')) return hex(v);
+      const ref = v.match(/^var\((--[\w-]+)\)$/);
+      if (ref) return rgb(tokens.match(new RegExp(`${ref[1]}\\s*:\\s*([^;]+);`))![1]);
+      const body = v.match(/^color-mix\(in srgb,\s*(.+)\)$/)![1];
+      let depth = 0, cut = -1;
+      for (let i = 0; i < body.length; i++) {
+        if (body[i] === '(') depth++;
+        else if (body[i] === ')') depth--;
+        else if (body[i] === ',' && !depth) cut = i;
+      }
+      const [a, b] = [body.slice(0, cut), body.slice(cut + 1)];
+      const pa = a.match(/\s(\d+)%\s*$/), p = pa ? Number(pa[1]) / 100 : 0.5;
+      const [ca, cb] = [rgb(pa ? a.slice(0, pa.index) : a), rgb(b)];
+      return ca.map((x, i) => x * p + cb[i] * (1 - p));
+    };
+    const toHex = (c: number[]) => '#' + c.map((x) => Math.round(x).toString(16).padStart(2, '0')).join('');
+    const tiles = ['todo', 'english', 'travel', 'places', 'hiking', 'wedding', 'bots', 'settings'].map((id) => toHex(rgb(`var(--tile-${id})`)));
+    for (const [i, c] of tiles.entries()) expect(contrast(c, '#ffffff'), `${i} ${c}`).toBeGreaterThanOrEqual(3);
+    expect(contrast(tok('--c-ink'), toHex(rgb('var(--tile-bells)')))).toBeGreaterThanOrEqual(4.5);
+    expect(new Set([...tiles, toHex(rgb('var(--tile-bells)'))]).size).toBe(9);
+  });
 });
