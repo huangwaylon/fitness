@@ -38,7 +38,7 @@ test("the plan's pond and K.K.'s stool in the preview: the pond the island's, K.
   // a pond put down on the lawn: its water, bed and stones
   const before = new Set(await ed(page, (e) => [...e.layout().objects.keys()]));
   await page.locator('[data-kind="pond"]').click();
-  const [gx, gy] = await tileAt(page, 12, 14);
+  const [gx, gy] = await tileAt(page, 13, 14);
   await page.mouse.move(gx, gy);
   await page.mouse.click(gx, gy);
   await page.keyboard.press('Escape');

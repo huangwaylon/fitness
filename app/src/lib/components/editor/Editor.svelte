@@ -581,6 +581,8 @@
   function onKeyUp(e: KeyboardEvent) {
     if (e.key === ' ') space = false;
   }
+  // (the window left with space held: its keyup never comes, and every press after it panned)
+  const onBlur = () => (space = false);
   /** R: the selection a quarter round; a home only its owner's, and only where its door stays clear. */
   function turnSel() {
     const next = rotate(store.current, selected, 1, me);
@@ -721,6 +723,7 @@
     view = phone ? { ...v, oy: v.oy - 120 } : v;
     window.addEventListener('keydown', onKey);
     window.addEventListener('keyup', onKeyUp);
+    window.addEventListener('blur', onBlur);
     if (testHooks()) window.__editor = {
       view: () => view, layout: () => store.current, select: (ids: string[]) => (selected = new Set(ids)), issues: () => issues, auto: () => auto, undrawn: () => undrawnList,
       screenOf: (x: number, z: number) => {
@@ -741,6 +744,7 @@
       clearTimeout(toastTimer);
       window.removeEventListener('keydown', onKey);
       window.removeEventListener('keyup', onKeyUp);
+      window.removeEventListener('blur', onBlur);
       delete window.__editor;
     };
   });
@@ -1120,4 +1124,7 @@
   .phone .toggle small { display: none; }
   .toggle input { width: 20px; height: 20px; }
   .p3d-full { position: absolute; inset: 0; z-index: 2; }
+  /* Preview3D's ⌖ (the editor's button rule above leaks its padding into it); a phone's where 全体 is, under the bar */
+  .ed :global(.recentre) { padding: 0; }
+  .phone .p3d-full :global(.recentre) { top: calc(var(--ui-top) + 66px); right: calc(10px + var(--safe-right)); width: 44px; height: 44px; }
 </style>

@@ -333,6 +333,8 @@
   function onKeyUp(e: KeyboardEvent) {
     if (e.key === ' ') space = false;
   }
+  // (the window left with space held: its keyup never comes)
+  const onBlur = () => (space = false);
 
   /** Bring an issue's first tile to the middle of the plan. */
   function showIssue(i: RiverIssue) {
@@ -380,6 +382,7 @@
     frame0();
     window.addEventListener('keydown', onKey);
     window.addEventListener('keyup', onKeyUp);
+    window.addEventListener('blur', onBlur);
     if (testHooks()) window.__river = {
       knots: () => knots.map((k) => ({ ...k })),
       tiles: () => routed.tiles.map(tileOf),
@@ -405,6 +408,7 @@
     return () => {
       window.removeEventListener('keydown', onKey);
       window.removeEventListener('keyup', onKeyUp);
+      window.removeEventListener('blur', onBlur);
       clearTimeout(timer);
       clearTimeout(noteTimer);
       cancelAnimationFrame(frame);
@@ -448,8 +452,8 @@
   {/if}
   {#if note}<div class="note" role="status">{note}</div>{/if}
   <footer class="bar">
-    <button type="button" onclick={undo} disabled={!undoS.length} title="⌘Z" data-river-undo>↶ 取り消す</button>
-    <button type="button" onclick={redo} disabled={!redoS.length} title="⇧⌘Z" data-river-redo>↷ やり直す</button>
+    <button type="button" onclick={undo} disabled={!undoS.length} title="⌘Z" aria-label="取り消す" data-river-undo>↶<span class="word"> 取り消す</span></button>
+    <button type="button" onclick={redo} disabled={!redoS.length} title="⇧⌘Z" aria-label="やり直す" data-river-redo>↷<span class="word"> やり直す</span></button>
     <button type="button" onclick={backToOpened} data-river-opened>開いた時に戻す</button>
     <button type="button" onclick={toFirst} data-river-first>最初の川</button>
     {#if selected !== null}<button type="button" onclick={() => removeKnot(selected!)} data-river-drop>点を消す</button>{/if}
@@ -489,14 +493,15 @@
   }
   .banner { top: 66px; border-color: #d7a323; }
   .note { top: 110px; }
-  /* a phone (the editor's ≤ 760 px): clear of the notch and the home indicator, the kit's 44px hit, no mouse words;
-     its 3D from the editor's bar once the tool's closed */
+  /* a phone (the editor's ≤ 760 px): clear of the notch and the home indicator, the kit's 44px hit, no mouse words,
+     ↶ ↷ bare so the bar is one row; its 3D from the editor's bar once the tool's closed */
   @media (max-width: 760px) {
     .head { top: calc(var(--ui-top) + 8px); left: calc(8px + var(--safe-left)); right: calc(8px + var(--safe-right)); }
     .bar { bottom: calc(var(--safe-bottom) + 8px); left: calc(8px + var(--safe-left)); right: calc(8px + var(--safe-right)); gap: 6px; }
     .head :global(button), .bar :global(button) { min-height: 44px; }
     .head .chip { max-width: 34vw; }
-    .hint, .b3d { display: none; }
+    .hint, .b3d, .word { display: none; }
+    [data-river-undo], [data-river-redo] { min-width: 44px; }
     .list { top: calc(var(--ui-top) + 70px); left: 8px; right: 8px; width: auto; max-height: 50%; overflow-y: auto; }
     .banner { top: calc(var(--ui-top) + 70px); }
     .note { top: calc(var(--ui-top) + 114px); max-width: calc(100% - 24px); }

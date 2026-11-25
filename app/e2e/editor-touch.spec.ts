@@ -44,6 +44,13 @@ test('the phone layout: the plan full-bleed, the bar, the dock, every control a 
   await page.locator('[data-dock="island"]').tap();
   await expect(page.locator('[data-sheet="island"] [data-issues]')).toBeVisible();
   await expect(page.locator('[data-sheet="island"] [data-island-size]')).toBeVisible();
+  // 3D: its ⌖ clear of the bar (it was under it), a finger wide; off again, the preview's gone
+  await page.locator('[data-show3d]').tap();
+  const bar = (await page.locator('header.top').boundingBox())!, rc = (await page.locator('[data-preview-full] [data-recentre]').boundingBox())!;
+  expect(rc.y).toBeGreaterThanOrEqual(bar.y + bar.height);
+  expect([rc.width, rc.height]).toEqual([44, 44]);
+  await page.locator('[data-show3d]').tap();
+  await expect(page.locator('[data-preview-full]')).toHaveCount(0);
 });
 
 test('a tap selects, a finger drags it, 回す, 複製, 削除, 取り消す; the move kept after a reload', async ({ page }) => {
@@ -120,6 +127,9 @@ test('川: a tap on a knot picks it and 点を消す takes it away; a finger dra
   await expect(page.locator('[data-river-tool]')).toBeVisible();
   await expect(page.locator('.dock')).toHaveCount(0);
   await page.waitForFunction(() => (window as unknown as { __river?: unknown }).__river);
+  // the bar one row (↶ ↷ bare)
+  const rows = await page.locator('[data-river-tool] .bar button').evaluateAll((es) => new Set(es.map((e) => Math.round(e.getBoundingClientRect().top))).size);
+  expect(rows).toBe(1);
   type R = { knots(): { c: number; r: number }[]; knotScreen(k: number): [number, number]; tileScreen(c: number, r: number): [number, number] };
   const rv = <T,>(fn: (r: R, a: never) => T, a?: unknown) => page.evaluate(`(${fn.toString()})(window.__river, ${JSON.stringify(a ?? null)})`) as Promise<T>;
   const k0 = await rv((r) => r.knots());
