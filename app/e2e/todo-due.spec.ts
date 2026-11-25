@@ -215,6 +215,11 @@ test('the disc: today and before counted, coral when overdue; its peek ticks in 
   if (how === 'click') await g.mouse.move(1, 1);
   await expect(peek(a).locator('[data-peek-item="dhome001i1"]')).toHaveCount(0, { timeout: 15_000 });
   await expect(disc(a)).toHaveAttribute('data-n', '2');
+  // still struck through in its peek, a second tap after the send unticks it (its own op): back on A
+  await expect(peek(g).locator('[data-peek-item="dhome001i1"]')).toHaveAttribute('data-done', 'true');
+  await peek(g).locator('[data-peek-item="dhome001i1"]').getByRole('checkbox')[how]();
+  await expect(peek(g).locator('[data-peek-item="dhome001i1"]')).not.toHaveAttribute('data-done');
+  await expect(disc(a)).toHaveAttribute('data-n', '3', { timeout: 15_000 });
   // a tap elsewhere shuts it
   await g.mouse.click(200, 600);
   await expect(peek(g)).toHaveCount(0);
@@ -223,7 +228,7 @@ test('the disc: today and before counted, coral when overdue; its peek ticks in 
   await expect(a.locator('dialog[open] [data-todo]')).toBeVisible();
   await expect(peek(a)).toHaveCount(0);
   await expect(item(a, '歯医者')).toHaveClass(/hl/);
-  await expect(item(a, '牛乳を買う')).toHaveAttribute('data-done', 'true');
+  await expect(item(a, '牛乳を買う')).not.toHaveAttribute('data-done');
   await shot(a, `todo-sheet-${info.project.name}`);
   await a.keyboard.press('Escape');
   await expect(a.locator('dialog[open]')).toHaveCount(0);

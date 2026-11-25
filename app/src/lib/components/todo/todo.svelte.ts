@@ -26,12 +26,23 @@ const sameDue = (a: Due, b: Due): boolean => a.due === b.due && a.rem === b.rem 
 
 class Todo {
   #last = 0;
+  /** The fold of the rows last read (the model is composed again each minute with its state kept: folded once per
+   *  row set, and `items` the same array till they change). */
+  #memo: { rows: readonly TodoEntry[]; book: TodoBook; items: TodoItemView[] } | null = null;
 
+  #fold() {
+    const rows = week.model?.state.todo ?? EMPTY;
+    if (this.#memo?.rows !== rows) {
+      const book = todoBookOf(rows);
+      this.#memo = { rows, book, items: todoItems(book) };
+    }
+    return this.#memo;
+  }
   get #book(): TodoBook {
-    return todoBookOf(week.model?.state.todo ?? EMPTY);
+    return this.#fold().book;
   }
   get items(): TodoItemView[] {
-    return todoItems(this.#book);
+    return this.#fold().items;
   }
   /** Whether this phone can write yet (the week's view says who I am). */
   get ready(): boolean {

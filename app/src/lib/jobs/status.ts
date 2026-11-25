@@ -414,7 +414,7 @@ export interface UsageRowView {
   of: string;
   by: { name: string; n: string; pct: string }[];
 }
-export interface UsageView { rows: UsageRowView[]; resets: string; asOf: string | null; note: string | null; trouble: boolean }
+export interface UsageView { rows: UsageRowView[]; resets: string; asOf: string | null; note: string | null }
 
 /** The section: a row per limit (its tone, share, 「325k / 5M」, who used it), the reset's countdown (00:00 UTC), when
  *  it was read, and a note: unavailable (no reading: its code), couldn't refresh (the day's last kept), or the reading
@@ -431,7 +431,7 @@ function usageView_(u: Usage | undefined, now: number): UsageView | null {
   const left = Math.max(0, Date.parse(`${today}T00:00:00Z`) + D - now);
   const resets = t('jobs.cf.resets', { in: left >= H ? t('jobs.cf.h', { n: Math.floor(left / H) }) : t('jobs.cf.m', { n: Math.max(1, Math.ceil(left / MIN)) }) });
   const note = !rows.length ? t('jobs.cf.none', { code: u.err ?? 'empty' }) : u.err ? t('jobs.cf.stale', { code: u.err }) : !current && u.day ? t('jobs.cf.old', { day: u.day }) : null;
-  return { rows, resets, asOf: rows.length ? agoOf_(u.at, now) : null, note, trouble: rows.some((r) => r.tone === 'warn' || r.tone === 'bad') };
+  return { rows, resets, asOf: rows.length ? agoOf_(u.at, now) : null, note };
 }
 
 export const usageView = en(usageView_);

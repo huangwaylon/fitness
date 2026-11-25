@@ -286,7 +286,7 @@ describe('the Cloudflare free tier', () => {
     ]);
     expect(v.rows[0].by).toEqual([{ name: 'test/IslandStore', n: '115k', pct: '35%' }, { name: 'relay/IslandStore', n: '85k', pct: '26%' }]);
     expect(v.rows[0].share).toBeCloseTo(0.065, 3);
-    expect([v.resets, v.asOf, v.note, v.trouble]).toEqual(['Resets in 20 h', '3 min ago', null, false]);
+    expect([v.resets, v.asOf, v.note]).toEqual(['Resets in 20 h', '3 min ago', null]);
     expect(usageView(usage({ limits: [lim('wReq', 30)] }), NOW)!.rows[0].pct).toBe('<1%');
     expect(usageView(usage(), Date.parse('2026-11-24T23:40:00Z'))!.resets).toBe('Resets in 20 min');
     expect(usageView(undefined, NOW)).toBeNull();
@@ -295,7 +295,7 @@ describe('the Cloudflare free tier', () => {
   it('amber and red: in Needs you (a copy: the section keeps all four, last), in the sentence with the 100 % stop; red needs a look', () => {
     expect(verdictOf(withU(usage()), NOW)).toMatchObject({ tone: 'good', needsLook: false, sentence: 'All 1 OK. Nothing to do.' });
     const amber = withU(usage({ limits: [lim('doWrite', 72_000)] }));
-    expect(usageView(amber.usage, NOW)!.trouble).toBe(true);
+    expect(usageView(amber.usage, NOW)!.rows.some((r) => r.tone === 'warn')).toBe(true);
     expect(verdictOf(amber, NOW)).toMatchObject({ tone: 'warn', w: 'trouble', needsLook: false, sentence: 'Watch Cloudflare use: DO rows written at 72%; the app stops at 100%.' });
     const red = withU(usage({ limits: [lim('doRead', 4_600_000), lim('doWrite', 61_000), lim('wReq', 10)] }));
     expect(verdictOf(red, NOW)).toMatchObject({ tone: 'bad', w: 'failing', needsLook: true, sentence: 'Cut Cloudflare use: DO rows read at 92%; the app stops at 100%. 1 more below.' });
@@ -311,7 +311,7 @@ describe('the Cloudflare free tier', () => {
     expect(verdictOf(withU(usage({ limits: [], day: null, err: 'timeout' })), NOW).tone).toBe('good');
     expect(usageView(usage({ err: 'http_500' }), NOW)!.note).toBe("Couldn't refresh (http_500); the last reading today.");
     const old = withU(usage({ day: '2026-11-23', limits: [lim('doRead', 4_900_000)] }));
-    expect(usageView(old.usage, NOW)).toMatchObject({ trouble: false, note: 'Last reading from 2026-11-23 (UTC); the limits have reset since.', rows: [{ tone: 'idle' }] });
+    expect(usageView(old.usage, NOW)).toMatchObject({ note: 'Last reading from 2026-11-23 (UTC); the limits have reset since.', rows: [{ tone: 'idle' }] });
     expect(verdictOf(old, NOW).needsLook).toBe(false);
   });
 

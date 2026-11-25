@@ -23,7 +23,10 @@
 
   // (the record's rows folded here, not through the sheet's store: the disc is in the first load, the store isn't)
   const EMPTY: readonly TodoEntry[] = [];
-  const due = $derived(dueCount(todoItems(todoBookOf(week.model?.state.todo ?? EMPTY)), dayKey(minuteNow())));
+  // (folded only when the rows change: the model is composed again each minute, its state kept)
+  const rows = $derived(week.model?.state.todo ?? EMPTY);
+  const items = $derived(todoItems(todoBookOf(rows)));
+  const due = $derived(dueCount(items, dayKey(minuteNow())));
   let open = $state(false);
   let btn: HTMLButtonElement | undefined = $state();
 
@@ -49,7 +52,7 @@
 </script>
 
 {#if due.n > 0 || open}
-  <div class="todo-disc" class:open {@attach open && dismiss(() => (open = false), { inside: '.todo-disc, .banner', onesc: () => btn?.focus() })}>
+  <div class="todo-disc" class:open {@attach open && dismiss(() => (open = false), { inside: '.todo-disc, .banner', onesc: () => btn?.focus({ preventScroll: true }) })}>
     <button type="button" class="disc" bind:this={btn} aria-expanded={open} aria-label={t('island.todoDue', { n: due.n })} data-hud-disc data-n={due.n} data-over={due.over || undefined}
       data-sfx="open" onpointerdown={load} onclick={toggle}>
       <svg viewBox="0 0 24 24" aria-hidden="true"><rect class="pad" x="3" y="2.6" width="18" height="18.8" rx="3.2" /><path class="ink" d="m5.8 9.4 1.3-1.3 1.1 1.1 2.5-2.5 1.3 1.3-3.8 3.8ZM5.8 16.2l1.3-1.3 1.1 1.1 2.5-2.5 1.3 1.3-3.8 3.8Z" /><rect class="ink" x="12.8" y="8" width="5.6" height="2" rx="1" /><rect class="ink" x="12.8" y="14.8" width="5.6" height="2" rx="1" /></svg>

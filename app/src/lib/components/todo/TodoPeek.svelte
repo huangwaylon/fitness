@@ -3,7 +3,7 @@
   // strings): an always-cream world-kit card under the disc, its tip at it, kanji (the sheets' copy rule). 前の日 (the
   // undone items due before today, their dates in coral text), 今日, 明日: each row its Tick (shared: anyone's tick is
   // everyone's; sent after the undo snackbar's 4 s, 取り消す takes it back; the row stays, struck through, until the peek
-  // shuts, and a second tap unticks it), its text (a tap opens やること at the item) and its time. Never an inner scroll:
+  // shuts, and a second tap unticks it, held or already sent), its text (a tap opens やること at the item) and its time. Never an inner scroll:
   // past MAX_ROWS the rest are one 「ほか N件」 row. 「やることを開く ›」 opens the sheet.
   //   <TodoPeek onopen={(go) => …} />
   import '#lib/i18n/todo.ts';
@@ -35,11 +35,9 @@
   const peek = $derived(peekOf(todo.items, dayKey(minuteNow()), kept));
   function tickRow(r: DueRow, v: boolean) {
     const h = held.get(r.id);
-    if (!v && h?.undo) {
-      held.delete(r.id);
-      h.undo();
-      return;
-    }
+    held.delete(r.id);
+    // (unticked while still held: taken back, nothing sent; once sent, an untick of its own)
+    if (!v && h?.undo?.()) return;
     const res = todo.tick(r.id, v, v ? UNDO_MS : 0);
     if (!res.ok || !v) return;
     kept.add(r.id);

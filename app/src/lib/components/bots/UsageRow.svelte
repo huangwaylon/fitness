@@ -2,8 +2,8 @@
   // A Cloudflare free-tier row (JobsPage's section, docs/bots.md "Jobs"; English, as the page): one button the card's
   // width, as JobRow's: the dot (green under 60 %, yuzu from it, coral from 85 %: status.ts usageTone; a sunk disc for
   // a reading from an earlier UTC day), the limit's name, 「325k / 5M · 7%」 at the right, then a bar of the share used.
-  // A tap unfolds what the limit is in plain words (the app stops at 100 %), who used it (a Worker or a Durable Object class, the most first) and when it was
-  // read.
+  // A tap unfolds what the limit is in plain words (the app stops at 100 %), who used it (a Worker or a Durable Object
+  // class, the most first) and when it was read.
   import { scoped } from '#lib/i18n/index.ts';
   import type { UsageRowView } from '#lib/jobs/status.ts';
   import Phrases from '../ui/Phrases.svelte';
