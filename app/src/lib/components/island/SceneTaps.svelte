@@ -60,8 +60,8 @@
   import { echo3d } from './echo3d.ts';
   import { pieceSpeaker, sceneryOf } from './scenery.svelte.ts';
   import type { SaySpeaker } from '#lib/world/say.ts';
-  import { cropName, openPicker, popAt } from './farmUi.svelte.ts';
-  import { farmTap, leftHM, plantingRun } from '#lib/world/farmTap.ts';
+  import { aboutLine, cropName, openPicker, popAt } from './farmUi.svelte.ts';
+  import { farmTap, plantingRun } from '#lib/world/farmTap.ts';
   import { farmNow } from './farm.ts';
   import { loadNames } from './catchLine.ts';
   import { CROPS, FARM, needsWater, seedKey } from '#lib/contract/farm.ts';
@@ -654,8 +654,8 @@
         pop(t('world.farm.noSeed'));
         return true;
       default: {
-        // its time to ripe and watering; ほる: its start back to me, 取り消す puts it back
-        const c = act.c, { h, m: min } = leftHM(act.left);
+        // who harvested it (growing back), its time to ripe and watering; ほる: its start back to me, 取り消す puts it back
+        const c = act.c;
         const digUp = () => {
           const res = dig(plot.p);
           if (!res.ok) return;
@@ -664,10 +664,8 @@
           sceneSfx('dig');
           undoBanner(t('world.farm.dug', { name: cropName(c) }), res, { world: true });
         };
-        named(() => {
-          const left = t(h && min ? 'world.farm.inHM' : h ? 'world.farm.inH' : 'world.farm.inM', { h, m: min });
-          pop(t(act.watered ? 'world.farm.leftWet' : 'world.farm.left', { name: cropName(c), left }), digUp);
-        });
+        const v = week.view, nameOf = (w: Who) => (!v ? '' : w === 'G' ? v.guest.villagerName : v.people[w].villagerName);
+        named(() => pop(aboutLine(act, cropName(c), m.me, nameOf), digUp));
         return true;
       }
     }

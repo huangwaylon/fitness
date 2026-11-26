@@ -28,6 +28,7 @@
   import type { Undrawn } from '../world3d/drawCheck.ts';
   import HomePicker from '../homes/HomePicker.svelte';
   import ResetConfirm from './ResetConfirm.svelte';
+  import Sheet from '../ui/Sheet.svelte';
   import Palette from './Palette.svelte';
   import IssueList from './IssueList.svelte';
   import IslandSize, { EDGE_NAME } from './IslandSize.svelte';
@@ -43,6 +44,7 @@
   import { gardenIcons, variantName } from './gardenIcons.ts';
   import { FIELD_MAX, fieldOf, fieldS, fieldPlots } from '#lib/layout/field.ts';
   import { farmOfState } from '#lib/model/farm.ts';
+  import { plantsLeft } from '#lib/world/farmPlan.ts';
   import { week } from '#lib/store/week.svelte.ts';
   import { t } from '#lib/i18n/index.ts';
   import '#lib/i18n/sheets.ts';
@@ -83,6 +85,8 @@
   let sent = $state(0);
   let hover = $state<[number, number] | null>(null);
   let confirmReset = $state(false);
+  /** An edit that leaves plants off their field, asked first (plantsAsk). */
+  let fieldAsk = $state<{ title: string; text: string; verb: string; go: () => void } | null>(null), fieldAskOpen = $state(false);
   let picking = $state(false);
 
   /** The layout drawn: the store's, or a stroke's in progress. */
@@ -489,7 +493,7 @@
   let clip: Clip | null = null;
   function onKey(e: KeyboardEvent) {
     // (the river tool has its own keys)
-    if (confirmReset || tool === 'river') return;
+    if (confirmReset || fieldAskOpen || tool === 'river') return;
     const t = e.target as HTMLElement | null;
     if (t && (t.tagName === 'INPUT' || t.tagName === 'SELECT' || t.tagName === 'TEXTAREA')) return;
     const cmd = e.metaKey || e.ctrlKey;
@@ -606,9 +610,26 @@
   }
   function removeSel() {
     const fixed = [...selected].map((id) => cur.objects.get(id)).filter((o) => o && !removable(o));
-    commit(remove(store.current, selected), `${selected.size - fixed.length}個削除した`);
-    if (fixed.length) say(`${fixed.map((o) => labelOf(o!.k, o!.id)).join('・')}は削除できません`);
-    selected = new Set([...selected].filter((id) => store.current.objects.has(id)));
+    plantsAsk(remove(store.current, selected), (next) => {
+      commit(next, `${selected.size - fixed.length}個削除した`);
+      if (fixed.length) say(`${fixed.map((o) => labelOf(o!.k, o!.id)).join('・')}は削除できません`);
+      selected = new Set([...selected].filter((id) => store.current.objects.has(id)));
+    });
+  }
+  /** `next` done by `go`, unless it leaves plants off their field (a field deleted or made smaller: the record keeps
+   *  them, the shop's 苗に戻す takes them back, docs/farming.md): then a sheet asks first, how many and how many ripe
+   *  (the user, 2026-11-26). */
+  function plantsAsk(next: Layout, go: (next: Layout) => void): void {
+    const m = week.model, r = m ? plantsLeft(store.current, next, farmOfState(m.state), m.now) : null;
+    if (!r?.n) return go(next);
+    const ripe = `（熟した株 ${r.ripe}）`;
+    fieldAsk = {
+      ...(r.gone
+        ? { title: '畑を消しますか？', verb: '消す', text: `${r.fields > 1 ? '選んだ畑' : 'この畑'}には ${r.n}株あります${ripe}。消すと株は畑の外に残ります。` }
+        : { title: '畑を小さくしますか？', verb: '小さくする', text: `小さくすると ${r.n}株が畑の外に残ります${ripe}。` }),
+      go: () => go(next)
+    };
+    fieldAskOpen = true;
   }
   function setTool(t: Tool) {
     tool = t;
@@ -630,7 +651,7 @@
   const BRUSH_NAME: Record<Kind, string> = { grass: '草', sand: '砂', dirt: '土', stone: '石', brick: 'レンガ', plank: '板', river: '川', pond: '池', sea: '海' };
   const one = $derived(selected.size === 1 ? (cur.objects.get([...selected][0]) ?? null) : null);
   function setVariant(s: string) {
-    if (one) commit(restyle(store.current, one.id, s), '変更した');
+    if (one) plantsAsk(restyle(store.current, one.id, s), (next) => commit(next, '変更した'));
   }
   /** How many plants stand on a field (the record keeps them if it's deleted or shrunk: docs/farming.md). */
   function plantsOn(o: Obj): number {
@@ -648,8 +669,10 @@
     const label = `島を${by > 0 ? '広げた' : '狭めた'}（${EDGE_NAME[edge]}${Math.abs(by) > 1 ? ` ${Math.abs(by)}マス` : ''}）`;
     if (r.layout) {
       pending = null;
-      commit(r.layout, label);
-      say(r.removed.length ? `${label} · ${r.removed.length}個片付けた` : label);
+      plantsAsk(r.layout, (next) => {
+        commit(next, label);
+        say(r.removed.length ? `${label} · ${r.removed.length}個片付けた` : label);
+      });
       return;
     }
     if (!r.blocked.length) return say('これ以上できません');
@@ -912,6 +935,13 @@
 </div>
 {#if picking}<HomePicker bind:open={picking} who={me} />{/if}
 <ResetConfirm bind:open={confirmReset} onconfirm={resetAll} />
+<Sheet name="editor.field" bind:open={fieldAskOpen} label={fieldAsk?.title ?? ''} title={fieldAsk?.title}
+  confirm={{ verb: fieldAsk?.verb ?? '', danger: true, cancel: 'やめる', focusNo: true, sfx: 'tick', yes: 'field-ask-yes', no: 'field-ask-no', onyes: () => ((fieldAskOpen = false), fieldAsk?.go()) }}>
+  <div class="field-ask" data-field-ask>
+    <p><Phrases text={fieldAsk?.text ?? ''} /></p>
+    <p class="small">畑の外の株は、お店の「畑の外の株」から苗に戻せます。</p>
+  </div>
+</Sheet>
 
 {#snippet history()}
   <button type="button" class="hist" data-undo onclick={undo} disabled={!undoStack.length} title="Cmd+Z" aria-label="取り消す"><Icon name="undo" size={18} stroke={2.4} /><span>取り消す</span></button>
@@ -958,7 +988,7 @@
           <!-- a field (layout/field.ts, docs/farming.md): its size -->
           <label class="row small">横 <input data-field-w type="number" min="1" max={FIELD_MAX} value={f.w} onchange={(e) => setVariant(fieldS({ ...f, w: Number((e.target as HTMLInputElement).value) || 1 }))} /></label>
           <label class="row small">奥行き <input data-field-d type="number" min="1" max={FIELD_MAX} value={f.d} onchange={(e) => setVariant(fieldS({ ...f, d: Number((e.target as HTMLInputElement).value) || 1 }))} /></label>
-          {#if planted}<p class="small" data-field-plants>作物があります（{planted}株）。削除しても作物は記録に残ります。</p>{/if}
+          {#if planted}<p class="small" data-field-plants><Phrases text={`この畑には ${planted}株あります。`} /></p>{/if}
         {:else if d?.variants && one.k !== 'goal-tree' && one.k !== 'spot'}
           <label class="row small">種類
             <select value={one.s ?? d.variants[0]} onchange={(e) => setVariant((e.target as HTMLSelectElement).value)}>
@@ -1021,6 +1051,8 @@
   .row { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
   .row button { display: inline-flex; align-items: center; gap: 4px; }
   .small { font-size: 13px; }
+  .field-ask { display: grid; gap: 10px; padding: 0 0 8px; }
+  .field-ask p { margin: 0; line-height: 1.45; }
   /* (the editor's controls, its parts' too: Palette, IslandSize, IssueList; never the kit's NavButton) */
   :global(:where(.ed) button:not(.disc)) {
     font: inherit; font-weight: 700; font-size: 13px; color: var(--c-ink); background: var(--c-card); border: 2px solid var(--c-edge);

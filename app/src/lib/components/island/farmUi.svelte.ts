@@ -1,9 +1,11 @@
 // The fields' controls on this phone (docs/farming.md "Playing"): the picker (FarmPicker), opened by a tap on an empty
 // plot with two or more kinds held and no crop chosen (SceneTaps), whose pick runs that tap again with it; and the verb a
-// plot's tap pops over it (FarmPop), with ほる on a plant.
+// plot's tap pops over it (FarmPop), with ほる on a plant, and a plant's word (aboutLine).
 import { seedKey, type Crop, type FarmSrc } from '#lib/contract/farm.ts';
 import { pickSeed, type Seed } from '#lib/store/farm.svelte.ts';
 import { t } from '#lib/i18n/index.ts';
+import { leftHM, type FarmTap } from '#lib/world/farmTap.ts';
+import type { Who } from '#lib/types.ts';
 
 /** A tap's word over its plot: px from the scene's top-left (the plot's top, as the tap saw it); `n` new each pop;
  *  `dig`: ほる's (a growing plant), its button over the word. */
@@ -41,3 +43,14 @@ export function choose(s: Seed): void {
 
 /** A crop's (or its start's) name, the catch catalog's (loaded: catchLine.ts loadNames), en without its article. */
 export const cropName = (c: Crop, src: FarmSrc = 'crop'): string => t(`beach.name.${seedKey(c, src).slice('goods:'.length)}`).replace(/^(an?|some) /, '');
+
+/** The word over a plant (world kana): 「トマト・うめが しゅうかく・あと 2じかん 20ぷん・みずやり ずみ」, its harvester
+ *  only while it grows back (じぶんで: this phone's player; none on a plant harvested before 2026-11-26). `crop` its
+ *  name, `nameOf` a player's name as the app spells it. */
+export function aboutLine(a: Extract<FarmTap, { a: 'about' }>, crop: string, me: Who, nameOf: (w: Who) => string): string {
+  const { h, m } = leftHM(a.left);
+  const left = t(h && m ? 'world.farm.inHM' : h ? 'world.farm.inH' : 'world.farm.inM', { h, m });
+  if (!a.by) return t(a.watered ? 'world.farm.leftWet' : 'world.farm.left', { name: crop, left });
+  const by = a.by === me ? t('world.farm.byMe') : t('world.farm.by', { who: nameOf(a.by) });
+  return t(a.watered ? 'world.farm.leftByWet' : 'world.farm.leftBy', { name: crop, by, left });
+}

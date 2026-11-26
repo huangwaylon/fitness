@@ -3,6 +3,8 @@
 import { describe, expect, it } from 'vitest';
 import { FARM, type Plot } from '#lib/contract/farm.ts';
 import { farmScene, plantModel, pumpkinColour, withLive } from './farm.ts';
+import { aboutLine } from './farmUi.svelte.ts';
+import { farmTap, type FarmTapIn, type PlotAt } from '#lib/world/farmTap.ts';
 import { layoutPlots } from '#lib/layout/field.ts';
 
 const P = 'fd:field-1.3.1', NOW = Date.UTC(2026, 10, 7, 3), H = 3600_000;
@@ -75,5 +77,31 @@ describe('withLive', () => {
   it('a watering before this growth began (before the harvest it grows back from) is the old plant’s', () => {
     expect(withLive(farm, new Map([['d', NOW - 6 * H]]), NOW)).toBe(farm);
     expect(withLive(farm, new Map([['d', NOW - 4 * H]]), NOW).plots.get('d')?.w).toBe(true);
+  });
+});
+
+describe('the word over a plant', () => {
+  const names = { A: 'ウェイ', B: 'うめ', G: 'ゲスト' } as const, nameOf = (w: 'A' | 'B' | 'G') => names[w];
+  const P = 'fd:field-1.1.1', plot: PlotAt = { p: P, c: 1, r: 1 };
+  const base: FarmTapIn = { plot, around: [plot], now: NOW, wet: dry, seed: null, kinds: [], have: () => 0 };
+  const at = (plants: Record<string, Plot>): Pick<FarmTapIn, 'plot' | 'around'> => {
+    const pl = { ...plot, plant: plants[P] };
+    return { plot: pl, around: [pl] };
+  };
+  const back: Plot = { c: 'tomato', t: NOW + 2 * H + 20 * 60_000, r: true, w: true, by: 'B' };
+  const word = (pl: Plot, me: 'A' | 'B' | 'G' = 'A') => {
+    const a = farmTap({ ...base, ...at({ [P]: pl }) });
+    if (a.a !== 'about') throw new Error(a.a);
+    return aboutLine(a, 'トマト', me, nameOf);
+  };
+  it('a plant growing back says who harvested it: by name, じぶんで on their own phone', () => {
+    expect(word(back)).toBe('トマト・うめが しゅうかく・あと 2じかん 20ぷん・みずやり ずみ');
+    expect(word(back, 'B')).toBe('トマト・じぶんで しゅうかく・あと 2じかん 20ぷん・みずやり ずみ');
+    expect(word({ ...back, by: 'G' })).toBe('トマト・ゲストが しゅうかく・あと 2じかん 20ぷん・みずやり ずみ');
+  });
+  it('no harvester known (an older record’s plant) or a first growth: the word as before', () => {
+    const { by: _, ...old } = back;
+    expect(word(old)).toBe('トマト・あと 2じかん 20ぷん・みずやり ずみ');
+    expect(word({ c: 'tomato', t: NOW + H, w: true, by: 'B' })).toBe('トマト・あと 1じかん・みずやり ずみ');
   });
 });

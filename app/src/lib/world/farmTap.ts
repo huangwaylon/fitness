@@ -7,17 +7,18 @@
 //      many as I hold and one event takes; no crop yet: the one kind I hold if it's a start, else the picker (a
 //      vegetable is a kind, never planted unasked; the run's crop gone: the picker, saying so), whose pick runs this
 //      again with it; nothing held: say so;
-//   4. else a word: P's crop, its time to ripe, watered or not; with ほる (dig it up).
+//   4. else a word: P's crop, who harvested it if it grows back, its time to ripe, watered or not; with ほる (dig it up).
 // So on a mixed 3 × 3 a tap on an empty plot harvests first, the next one plants; a tap on a plant waters.
 import { FARM, isRipe, msLeft, needsWater, seedKey, yieldOf, type Crop, type FarmSrc, type Plot, type WetDay } from '#lib/contract/farm.ts';
 import type { PlotTile } from '#lib/layout/field.ts';
+import type { Who } from '#lib/types.ts';
 
 /** A harvested plant: its plot, its crop and its yield. */
 interface HarvestOp { p: string; c: Crop; n: number }
 /** A crop to plant: a start, or a vegetable. */
 interface Seed { c: Crop; src: FarmSrc }
 
-type FarmTap =
+export type FarmTap =
   /** The 3 × 3's ripe plants, the plate's first (P's, else the nearest). */
   | { a: 'harvest'; ops: HarvestOp[] }
   /** The 3 × 3's plants to water. */
@@ -28,8 +29,8 @@ type FarmTap =
   | { a: 'pick'; out?: Crop }
   /** Nothing to plant held at all. */
   | { a: 'none' }
-  /** A word about P's plant: its crop, ms to ripe, watered this growth. */
-  | { a: 'about'; c: Crop; left: number; watered: boolean };
+  /** A word about P's plant: its crop, ms to ripe, watered this growth, who harvested it (growing back). */
+  | { a: 'about'; c: Crop; left: number; watered: boolean; by?: Who };
 
 /** A plot (its id and tile) and its plant, if any. */
 export interface PlotAt extends PlotTile { plant?: Plot }
@@ -60,7 +61,7 @@ export function farmTap(i: FarmTapIn): FarmTap {
   if (ripe.length) return { a: 'harvest', ops: nearest(ripe, c, r).map((n) => ({ p: n.p, c: n.plant.c, n: yieldOf(n.plant, i.wet) })) };
   if (pl) {
     const dry = i.around.filter((n) => n.plant && needsWater(n.plant, now)).map((n) => n.p);
-    return dry.length ? { a: 'water', ps: dry } : { a: 'about', c: pl.c, left: msLeft(pl, now), watered: !!pl.w };
+    return dry.length ? { a: 'water', ps: dry } : { a: 'about', c: pl.c, left: msLeft(pl, now), watered: !!pl.w, ...(pl.r && pl.by ? { by: pl.by } : {}) };
   }
   const s = i.seed ? (i.have(seedKey(i.seed.c, i.seed.src)) > 0 ? i.seed : null) : i.kinds.length === 1 && i.kinds[0].src === 'start' ? i.kinds[0] : null;
   if (!s) return i.kinds.length ? { a: 'pick', ...(i.seed ? { out: i.seed.c } : {}) } : { a: 'none' };

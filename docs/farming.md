@@ -22,8 +22,9 @@ stock; pumpkin colour is visual only; no fruit trees (the goal trees' fruit mean
   ones): `plant {p, c, src: 'start'|'crop'}` on an empty plot, paid from the sender's pocket; `water {p}` on a growing,
   unwatered plant; `harvest {p, n}` of a ripe plant (the record reckons the yield, to the harvester); `dig {p}` (its
   start to the digger). Time is the row's `at`. Refused ops are dropped (logged `farm.refused`); none left: `farm <reason>` (`farm taken`, `farm seed`, …).
-- **Plots** `fd:<fieldId>.<col>.<row>`, a plant `{c, t, r?, w?}`: ripe-at ms, growing back, watered this growth. A plant
-  off any field is kept, not drawn, until anyone's 苗に戻す in the shop digs it (never automatic: phones would race).
+- **Plots** `fd:<fieldId>.<col>.<row>`, a plant `{c, t, r?, w?, by?}`: ripe-at ms, growing back, watered this growth,
+  its last harvester. A plant off any field is kept, not drawn, until anyone's 苗に戻す (shop) digs it (never automatic:
+  phones race); /editor asks before an edit leaves any (`farmPlan.ts plantsLeft`).
 - **The stored field**: the record keeps the field folded (`fieldJson`); the phones show it plus their unsent rows. It
   reaches every phone: a snapshot's when it changed or isn't the `seq` the phone holds (`fseq`), and every farm ack's.
 - **A refusal** (someone's plant there, my other phone's planting): the ack's field and pocket replace the phone's at
@@ -36,7 +37,7 @@ stock; pumpkin colour is visual only; no fruit trees (the goal trees' fruit mean
 ## Playing
 A plot's tap acts in place (`world/farmTap.ts`), over the tapped plot P and its 3 × 3, first match wins: harvest ripe
 plants (P first, then the nearest); on a plant, water the growing unwatered ones; on an empty plot, plant the held crop
-(with 取り消す); else a word over the plant (its crop, time to ripe in hours and minutes, watered or not) with ほる. The
+(with 取り消す); else a word over the plant (its crop, its harvester while it grows back, time to ripe, watered or not: `aboutLine`) with ほる. The
 crop picker (`FarmPicker.svelte`) opens when the crop is ambiguous. Empty plots show a faint ＋ while I hold starts. The
 scene draws stages 0–2 by thirds of a growth and the ripe plant by its yield, wet soil while watered or on a wet day, and
 redraws at the next stage change (one timer, never a poll). A partner's watering plays at once (one live `act` `water` a tap: drops, and

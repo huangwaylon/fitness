@@ -260,6 +260,30 @@ test('a plot under a goal tree’s canopy is the plot’s; the canopy off the fi
   await expect(page.locator('.detail')).toHaveCount(1);
 });
 
+test('a plant growing back says who harvested it: うめ’s by her name, mine as じぶんで (the user, 2026-11-26)', async ({ page }) => {
+  await seed(page, D, [
+    FIELD, ...POCKET,
+    // both ripe at 11:30-ish; うめ harvested the second at 11:35 (a seed ahead of the page's clock: kept at its time)
+    ['farm', { ops: plants([plot(0).p, plot(1).p]) }, 'A', '05:30'],
+    ['farm', { ops: [{ o: 'harvest', p: plot(1).p, n: 1 }] }, 'B', '11:35']
+  ]);
+  await catchPops(page);
+  await at6(page);
+  await page.goto(SIX);
+  await islandUp(page);
+  await page.clock.fastForward('05:40:00');
+  await quiet(page);
+  // mine: harvested, then the can over both, then each one's word
+  await tapWorld(page, plot(0).x, plot(0).z);
+  await expect.poll(() => farmRows(page)).toEqual([{ o: 'harvest', p: plot(0).p, n: 1 }]);
+  await tapWorld(page, plot(0).x, plot(0).z);
+  await expect.poll(() => pops(page)).toEqual(['2かぶに みずやり・3こ みのる']);
+  await tapWorld(page, plot(0).x, plot(0).z);
+  await expect.poll(() => pops(page).then((p) => p.at(-1))).toBe('トマト・じぶんで しゅうかく・あと 6じかん・みずやり ずみ');
+  await tapWorld(page, plot(1).x, plot(1).z);
+  await expect.poll(() => pops(page).then((p) => p.at(-1))).toBe('トマト・うめが しゅうかく・あと 6じかん・みずやり ずみ');
+});
+
 test('a first tap on a growing plant names its crop (the names load first) and its time to ripe in hours and minutes', async ({ page }) => {
   await seed(page, D, [
     FIELD, ...POCKET.slice(0, 2), ['buy_starts', { crop: 'pumpkin', n: 1, v: 14 }, 'A'],
