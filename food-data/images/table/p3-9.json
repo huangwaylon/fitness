@@ -1319,7 +1319,9 @@
   "desc": "Corn stew: a bowl of thick pale yellow creamy stew with corn kernels, chicken, potato, carrot and onion chunks",
   "items": [
    "kumagaya:00185"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "kumagaya-03368-2",
@@ -1327,7 +1329,24 @@
   "desc": "Herb-grilled chicken: a plate of golden-brown grilled chicken pieces with crisp skin speckled with green dried herbs",
   "items": [
    "kumagaya:03368-2"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Grilled_chicken_with_lemon_and_herbs_served_on_a_dark_platter.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Grilled_chicken_with_lemon_and_herbs_served_on_a_dark_platter.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "commons-search",
+    "file": "File:Grilled_chicken_served_with_creamy_mashed_potatoes_and_fresh_vegetables_undefined.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Grilled_chicken_served_with_creamy_mashed_potatoes_and_fresh_vegetables_undefined.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "kumagaya-03358",
@@ -1359,7 +1378,9 @@
   "desc": "Chirashi sushi topping mix: a small bowl of sweet simmered diced carrot, shiitake, lotus root, kanpyo and fried tofu in light brown soy, with green peas",
   "items": [
    "kumagaya:02990-2"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "kumagaya-02740",
@@ -1367,7 +1388,9 @@
   "desc": "Konnyaku salad: a small bowl of thin grey speckled konnyaku strips with cucumber, carrot and wakame in a sesame-vinegar dressing",
   "items": [
    "kumagaya:02740"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "kumagaya-02677-2",
@@ -1375,7 +1398,9 @@
   "desc": "Curry without rice: a bowl of thick brown Japanese curry sauce with chunks of potato, carrot, onion and pork",
   "items": [
    "kumagaya:02677-2"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "kumagaya-00561-2",
@@ -1383,7 +1408,17 @@
   "desc": "Strawberry crepe: a thin pale golden crepe folded into a cone or triangle filled with white whipped cream and red sliced strawberries",
   "items": [
    "kumagaya:00561-2"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 4,
+    "origin": "commons-search",
+    "file": "File:Crepe_with_LaFrance_and_strawberries_and_fresh_cream_in_it.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Crepe_with_LaFrance_and_strawberries_and_fresh_cream_in_it.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "kumagaya-00128",
@@ -1391,7 +1426,9 @@
   "desc": "Sansai okowa: a bowl of glossy sticky glutinous rice tinted light brown with soy, mixed with mountain vegetables, fern bracken shoots, bamboo, carrot and shiitake",
   "items": [
    "kumagaya:00128"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "kumagaya-03360",
@@ -1407,7 +1444,9 @@
   "desc": "Celebration cake: a small round sponge cake with white whipped cream frosting topped with red strawberries",
   "items": [
    "kumagaya:02956"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "kumagaya-03182",
@@ -1423,7 +1462,9 @@
   "desc": "Strawberry fruit punch: a small glass bowl of red sliced strawberries with mandarin segments, pineapple and white peach in clear syrup",
   "items": [
    "kumagaya:03151"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "kumagaya-03359",
@@ -1439,7 +1480,24 @@
   "desc": "Gyudon topping: a bowl of thin beef slices and soft onion strips simmered in sweet brown soy broth, glossy, without rice",
   "items": [
    "kumagaya:02853-2"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:JP_日本_Japan_京都_Kyoto_四條_Shijo_side_Sukiya_Restaurant_food_Gyudon_牛肉丼_beef_toppings_and_rice_bowl_1914pm_June_2026_N13P_02.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:JP_%E6%97%A5%E6%9C%AC_Japan_%E4%BA%AC%E9%83%BD_Kyoto_%E5%9B%9B%E6%A2%9D_Shijo_side_Sukiya_Restaurant_food_Gyudon_%E7%89%9B%E8%82%89%E4%B8%BC_beef_toppings_and_rice_bowl_1914pm_June_2026_N13P_02.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "commons-search",
+    "file": "File:JP_日本_Japan_京都_Kyoto_四條_Shijo_side_Sukiya_Restaurant_food_Gyudon_牛肉丼_beef_toppings_and_rice_bowl_1914pm_June_2026_N13P_06.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:JP_%E6%97%A5%E6%9C%AC_Japan_%E4%BA%AC%E9%83%BD_Kyoto_%E5%9B%9B%E6%A2%9D_Shijo_side_Sukiya_Restaurant_food_Gyudon_%E7%89%9B%E8%82%89%E4%B8%BC_beef_toppings_and_rice_bowl_1914pm_June_2026_N13P_06.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "kumagaya-03362",
@@ -1495,7 +1553,17 @@
   "desc": "Curry-stir-fried potatoes: a small dish of potato strips or cubes stir-fried golden yellow with curry powder, with onion and green bits",
   "items": [
    "tokyo_hokeniryo:hitori8_1"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:Potato_Bhaaji_(Spicy_Indian_potatoes).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Potato_Bhaaji_(Spicy_Indian_potatoes).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "tokyo_hokeniryo-hitori8_2",
@@ -1503,7 +1571,9 @@
   "desc": "Island clam clear soup: a lacquered bowl of clear golden broth with small clams in their patterned shells and a sprig of green mitsuba",
   "items": [
    "tokyo_hokeniryo:hitori8_2"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "tokyo_hokeniryo-hitori10_1",
@@ -1535,7 +1605,9 @@
   "desc": "Spicy chili dog: a long soft bun with a sausage topped with a red-brown chili meat sauce with beans and chopped onion",
   "items": [
    "tokyo_hokeniryo:hitori11_2"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "tokyo_hokeniryo-hitori12_1",
@@ -1551,7 +1623,9 @@
   "desc": "Simmered flounder: a plate with a flat flounder piece with brown skin, simmered glossy dark brown in sweet soy, with a little sauce and ginger",
   "items": [
    "tokyo_hokeniryo:hitori12_2"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "tokyo_hokeniryo-hitori12_3",
@@ -1575,7 +1649,24 @@
   "desc": "Cooked udon: a bowl of thick white glossy udon noodles in light brown dashi broth with sliced green onion and kamaboko",
   "items": [
    "jbfd:うどん類（調理済み）"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:Nongshim_udon_cooked.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Nongshim_udon_cooked.JPG",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "commons-search",
+    "file": "File:Nabeyaki_udon.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Nabeyaki_udon.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "jbfd-ごま団子・湯圓",
@@ -1583,7 +1674,9 @@
   "desc": "Sesame balls and tangyuan: a plate of round golden fried balls densely coated in white sesame seeds, one cut to show sweet dark red bean paste, beside small white glutinous rice balls",
   "items": [
    "jbfd:ごま団子・湯圓"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "jbfd-だしパック",
@@ -1623,7 +1716,17 @@
   "desc": "Acqua pazza: a shallow dish of a whole white fish simmered in light broth with clams, red cherry tomatoes, black olives and green parsley",
   "items": [
    "jbfd:アクアパッツァ"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Acqua_Pazza_in_Ebisu.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Acqua_Pazza_in_Ebisu.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "jbfd-アメリカンドッグ・ワッフルドッグ",
@@ -1631,7 +1734,9 @@
   "desc": "American dog: a corn dog on a stick, a sausage in thick golden-brown fried sweet batter, one cut to show the pink sausage",
   "items": [
    "jbfd:アメリカンドッグ・ワッフルドッグ"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "jbfd-アーモンド小魚",
@@ -1671,7 +1776,17 @@
   "desc": "Croutons: a small dish of small golden crunchy toasted bread cubes with a dry crisp surface",
   "items": [
    "jbfd:クルトン"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:13-09-01-kochtreffen-wien-Bi-frie-004.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:13-09-01-kochtreffen-wien-Bi-frie-004.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "jbfd-グラノーラ",
@@ -1680,7 +1795,24 @@
   "items": [
    "jbfd:グラノーラ",
    "eatout:granola"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Granola03242006.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Granola03242006.JPG",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "commons-search",
+    "file": "File:Granola_Blueberry_Top.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Granola_Blueberry_Top.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "jbfd-ココナッツ菓子",
@@ -1688,7 +1820,9 @@
   "desc": "Coconut sweets: a small dish of white or golden toasted coconut cookies, rough and flaky with shredded coconut texture",
   "items": [
    "jbfd:ココナッツ菓子"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "jbfd-サラダ惣菜",
@@ -1696,7 +1830,17 @@
   "desc": "Prepared salad: a small bowl of deli potato salad and macaroni salad, creamy white with bits of carrot, cucumber and ham",
   "items": [
    "jbfd:サラダ惣菜"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 3,
+    "origin": "commons-search",
+    "file": "File:Potato_salad_ingredients_prepared.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Potato_salad_ingredients_prepared.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "jbfd-シチュールウ",
@@ -1704,7 +1848,9 @@
   "desc": "Stew roux: a block of pale cream-coloured solid roux scored into squares, one piece broken off showing the dense fatty texture",
   "items": [
    "jbfd:シチュールウ"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "jbfd-ショコラケーキ",
@@ -1712,7 +1858,17 @@
   "desc": "Chocolate cake: a slice of layered dark brown chocolate sponge with chocolate cream and a glossy chocolate coating",
   "items": [
    "jbfd:ショコラケーキ"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:ガトーショコラとチョコレートケーキ.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E3%82%AC%E3%83%88%E3%83%BC%E3%82%B7%E3%83%A7%E3%82%B3%E3%83%A9%E3%81%A8%E3%83%81%E3%83%A7%E3%82%B3%E3%83%AC%E3%83%BC%E3%83%88%E3%82%B1%E3%83%BC%E3%82%AD.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "jbfd-シーフードミックス",
@@ -1720,7 +1876,9 @@
   "desc": "Seafood mix: a small bowl of frozen raw seafood, pinkish-grey peeled shrimp, white squid rings and small clam meat, frosty",
   "items": [
    "jbfd:シーフードミックス"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "jbfd-スプレッド類",
@@ -1728,7 +1886,9 @@
   "desc": "Spreads: a small dish of smooth creamy spread like peanut butter or chocolate spread, tan or dark brown, swirled with a glossy surface",
   "items": [
    "jbfd:スプレッド類"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "jbfd-ゼリー飲料",
@@ -1736,7 +1896,9 @@
   "desc": "Jelly drink: a soft pouch-style drink shown as a glass of translucent pale wobbly drinkable jelly with small broken pieces",
   "items": [
    "jbfd:ゼリー飲料"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "jbfd-チュロス",
@@ -1744,7 +1906,31 @@
   "desc": "Churros: a plate of long ridged star-shaped fried dough sticks, golden brown and dusted with sugar and cinnamon",
   "items": [
    "jbfd:チュロス"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Churros_en_vasos_en_Londres_-_A_Taste_of_Spain.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Churros_en_vasos_en_Londres_-_A_Taste_of_Spain.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Churros_de_lazo.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Churros_de_lazo.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "commons-search",
+    "file": "File:Churros_Madrid.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Churros_Madrid.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "jbfd-チーズ鱈・チーズサンドおつまみ",
@@ -1760,7 +1946,9 @@
   "desc": "Tortilla and pita: a plate with a thin round flat pale tortilla with brown toasted spots and a puffy oval pita bread cut to show its pocket",
   "items": [
    "jbfd:トルティーヤ・ピタパン"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "jbfd-ドリアソース",
@@ -1768,7 +1956,9 @@
   "desc": "Doria sauce: a small dish of thick white creamy bechamel sauce, smooth and glossy, with a few bits of chicken and onion",
   "items": [
    "jbfd:ドリアソース"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "jbfd-ハヤシ",
@@ -1776,7 +1966,9 @@
   "desc": "Hayashi: a bowl of glossy dark reddish-brown demi-glace stew with thin beef slices, onion strips and mushrooms",
   "items": [
    "jbfd:ハヤシ"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "jbfd-ハーブソルト",
@@ -1784,7 +1976,17 @@
   "desc": "Herb salt: a small dish of coarse white salt mixed with green dried herb flakes and black pepper specks",
   "items": [
    "jbfd:ハーブソルト"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Herb_salt.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Herb_salt.JPG",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "jbfd-ミックスナッツ",
@@ -1793,7 +1995,38 @@
   "items": [
    "jbfd:ミックスナッツ",
    "eatout:mixed_nuts"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Liat_Portal_for_Foodie_Disorder_-_Mixed_nuts_assortment.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Liat_Portal_for_Foodie_Disorder_-_Mixed_nuts_assortment.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Liat_Portal_for_Foodie_Disorder_-_Mixed_nuts_and_dried_fruit.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Liat_Portal_for_Foodie_Disorder_-_Mixed_nuts_and_dried_fruit.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "commons-search",
+    "file": "File:Mixed_Nuts_(Alabama_Extension).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Mixed_Nuts_(Alabama_Extension).jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "commons-search",
+    "file": "File:Mixed_nuts_bowl.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Mixed_nuts_bowl.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "jbfd-ミックスビーンズ",
@@ -1801,7 +2034,9 @@
   "desc": "Mixed beans: a small bowl of boiled beans in several colours, red kidney beans, beige chickpeas, green beans and soybeans",
   "items": [
    "jbfd:ミックスビーンズ"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "jbfd-中華惣菜（えびチリ等）",
@@ -1809,7 +2044,9 @@
   "desc": "Chinese deli dish, ebi chili: a plate of plump pink-red shrimp coated in a glossy thick red-orange chili sauce with chopped green onion",
   "items": [
    "jbfd:中華惣菜（えびチリ等）"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "jbfd-中華薬味ソース",
@@ -1817,7 +2054,9 @@
   "desc": "Chinese aromatic sauce: a small dish of oily sauce full of chopped green onion, garlic and ginger, glossy with sesame oil",
   "items": [
    "jbfd:中華薬味ソース"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "jbfd-乾燥野菜",
@@ -1825,7 +2064,38 @@
   "desc": "Dried vegetables: a small dish of shrivelled dehydrated vegetable pieces, dried carrot, cabbage, green onion and corn, dull and dry",
   "items": [
    "jbfd:乾燥野菜"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Dried_vegetables.IMG_1349.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Dried_vegetables.IMG_1349.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:Dried_vegetables_on_Spice_bazaar_in_Istanbul_02.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Dried_vegetables_on_Spice_bazaar_in_Istanbul_02.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "commons-search",
+    "file": "File:Dried_vegetables_on_Spice_bazaar_in_Istanbul_01.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Dried_vegetables_on_Spice_bazaar_in_Istanbul_01.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "commons-search",
+    "file": "File:Dried_vegetables_on_Spice_bazaar_in_Istanbul_03.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Dried_vegetables_on_Spice_bazaar_in_Istanbul_03.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "jbfd-冷凍アヒージョ",
@@ -1833,7 +2103,9 @@
   "desc": "Frozen ajillo: a small skillet of shrimp, mushrooms and broccoli in bubbling golden olive oil with sliced garlic and red chili",
   "items": [
    "jbfd:冷凍アヒージョ"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "jbfd-冷凍フルーツ（カット・ミックス）",
@@ -1865,7 +2137,9 @@
   "desc": "Seasoned rice: a bowl of mixed rice tinted light brown with soy, mixed with chicken bits, carrot, burdock and shiitake",
   "items": [
    "jbfd:味付けごはん類"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "jbfd-味付け肉",
@@ -1873,7 +2147,9 @@
   "desc": "Seasoned meat: a plate of raw thin meat slices marinated in a glossy brown sauce with onion, ready to cook",
   "items": [
    "jbfd:味付け肉"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "jbfd-果実ミックス",
@@ -1881,7 +2157,9 @@
   "desc": "Fruit mix: a small glass bowl of canned mixed fruit, peach and pear cubes, pineapple, grapes and red cherries in syrup",
   "items": [
    "jbfd:果実ミックス"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "jbfd-水煮野菜ミックス",
@@ -1889,7 +2167,9 @@
   "desc": "Boiled vegetable mix: a small bowl of boiled bamboo shoot, carrot, lotus root, burdock and konnyaku pieces, moist and plain",
   "items": [
    "jbfd:水煮野菜ミックス"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "jbfd-海外揚げ菓子（ヤッカ）",
@@ -1897,7 +2177,38 @@
   "desc": "Yakgwa: a plate of flower-shaped Korean honey cookies, deep golden-brown, glossy with honey syrup and dotted with pine nuts",
   "items": [
    "jbfd:海外揚げ菓子（ヤッカ）"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:KOCIS_yakgwa,_honey_cookies_(4646996556).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:KOCIS_yakgwa,_honey_cookies_(4646996556).jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:KOCIS_yakgwa,_honey_cookies_(4646996236).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:KOCIS_yakgwa,_honey_cookies_(4646996236).jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:Yakgwa_1.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Yakgwa_1.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "commons-search",
+    "file": "File:Korean.food-Yakgwa-01.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Korean.food-Yakgwa-01.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "jbfd-海藻ミックス",
@@ -1905,7 +2216,9 @@
   "desc": "Seaweed mix: a small dish of dried mixed seaweeds, dark green wakame, red tosaka, white agar strands and green kelp, dry and crinkled",
   "items": [
    "jbfd:海藻ミックス"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "jbfd-漬け魚（加熱調理用）",
@@ -1913,7 +2226,9 @@
   "desc": "Marinated fish for cooking: a plate with a raw fish fillet coated in pale miso or sake-lees marinade, soft beige paste on the surface",
   "items": [
    "jbfd:漬け魚（加熱調理用）"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "jbfd-煮豆",
@@ -1921,7 +2236,38 @@
   "desc": "Sweet simmered beans: a small dish of glossy plump beans simmered in syrup, deep black soybeans or sweet brown kidney beans",
   "items": [
    "jbfd:煮豆"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Kuromame_001.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Kuromame_001.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:丹波黒の煮豆.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E4%B8%B9%E6%B3%A2%E9%BB%92%E3%81%AE%E7%85%AE%E8%B1%86.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:丹波黒豆_コーヒー＆煮豆.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E4%B8%B9%E6%B3%A2%E9%BB%92%E8%B1%86_%E3%82%B3%E3%83%BC%E3%83%92%E3%83%BC%EF%BC%86%E7%85%AE%E8%B1%86.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "commons-search",
+    "file": "File:飲食店のつきだしの丹波黒の煮豆.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E9%A3%B2%E9%A3%9F%E5%BA%97%E3%81%AE%E3%81%A4%E3%81%8D%E3%81%A0%E3%81%97%E3%81%AE%E4%B8%B9%E6%B3%A2%E9%BB%92%E3%81%AE%E7%85%AE%E8%B1%86.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "jbfd-煮魚惣菜",
@@ -1929,7 +2275,9 @@
   "desc": "Simmered fish deli: a plate of a fish fillet simmered glossy dark brown in sweet soy, with a little sauce and ginger slices",
   "items": [
    "jbfd:煮魚惣菜"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "jbfd-畜産物燻製おつまみ",
@@ -1937,7 +2285,17 @@
   "desc": "Smoked meat snacks: a small dish of sliced smoked sausage sticks and jerky strips, dark reddish-brown and dry",
   "items": [
    "jbfd:畜産物燻製おつまみ"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Stuffed_meat_from_Dummont,_Northeast_countryside_of_São_Paulo_state.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Stuffed_meat_from_Dummont,_Northeast_countryside_of_S%C3%A3o_Paulo_state.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "jbfd-白身魚のパン粉焼",
@@ -1953,7 +2311,24 @@
   "desc": "Powdered drink: a small dish of fine dry powder beside a glass of the mixed drink, cocoa brown or pale fruit-coloured",
   "items": [
    "jbfd:粉末飲料"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Australian_milo.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Australian_milo.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "commons-search",
+    "file": "File:Milo_tin_circa_2004.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Milo_tin_circa_2004.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "jbfd-粉物惣菜",
@@ -1969,7 +2344,38 @@
   "desc": "Potato chips: a small dish of thin crinkled golden fried potato slices, crisp and lightly salted",
   "items": [
    "jbfd:芋チップス"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Potato-Chips.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Potato-Chips.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Potato_chips_2.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Potato_chips_2.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:Potato_Chips.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Potato_Chips.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "commons-search",
+    "file": "File:A_pile_of_All_Dressed_potato_chips_on_a_paper_towel.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:A_pile_of_All_Dressed_potato_chips_on_a_paper_towel.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "jbfd-茶わんむし",
@@ -1977,7 +2383,45 @@
   "desc": "Chawanmushi: a small lidded cup of smooth pale yellow steamed egg custard, silky surface with a green mitsuba leaf and a shrimp",
   "items": [
    "jbfd:茶わんむし"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Chawan-mushi.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Chawan-mushi.JPG",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Chawanmushi_001.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Chawanmushi_001.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:Chawanmushi-01.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Chawanmushi-01.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "commons-search",
+    "file": "File:Chawanmushi_by_shermain_in_Kyoto.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Chawanmushi_by_shermain_in_Kyoto.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "commons-search",
+    "file": "File:Chawanmushi_by_Gilgongo.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Chawanmushi_by_Gilgongo.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "jbfd-菓子パン・そうざいパン",
@@ -1985,7 +2429,9 @@
   "desc": "Sweet and savoury buns: a plate of a round soft golden-brown glazed bun, an anpan, and a curry bun with a crumb crust",
   "items": [
    "jbfd:菓子パン・そうざいパン"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "jbfd-製菓材料",
@@ -1993,7 +2439,9 @@
   "desc": "Baking ingredients: a small dish of baking supplies, white flour, cocoa powder and chocolate chips, dry and powdery",
   "items": [
    "jbfd:製菓材料"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "jbfd-調理パン",
@@ -2001,7 +2449,17 @@
   "desc": "Prepared bread: a plate of a sandwich and a hot-dog roll filled with yakisoba, lettuce and egg salad",
   "items": [
    "jbfd:調理パン"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:学生調理（たけや製パン）20230701-P1027824.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E5%AD%A6%E7%94%9F%E8%AA%BF%E7%90%86%EF%BC%88%E3%81%9F%E3%81%91%E3%82%84%E8%A3%BD%E3%83%91%E3%83%B3%EF%BC%8920230701-P1027824.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "jbfd-豚角煮",
@@ -2009,7 +2467,38 @@
   "desc": "Buta no kakuni: a bowl of thick cubes of braised pork belly with visible fat and meat layers, glossy dark brown soy glaze, with mustard and greens",
   "items": [
    "jbfd:豚角煮"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Kakuni_by_Kanko.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Kakuni_by_Kanko.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:豚角煮_(2047353326).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E8%B1%9A%E8%A7%92%E7%85%AE_(2047353326).jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "commons-search",
+    "file": "File:豚角煮_(2047352852).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E8%B1%9A%E8%A7%92%E7%85%AE_(2047352852).jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "commons-search",
+    "file": "File:Kakuni_by_kina3.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Kakuni_by_kina3.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "jbfd-酢の物・和え物",
@@ -2017,7 +2506,9 @@
   "desc": "Vinegared and dressed side dishes: a small dish of sunomono, thin cucumber slices and wakame in clear vinegar, beside spinach with sesame dressing",
   "items": [
    "jbfd:酢の物・和え物"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "jbfd-鍋料理",
@@ -2025,7 +2516,38 @@
   "desc": "Hot pot: an earthenware pot of light broth with napa cabbage, tofu, chicken, shiitake, carrot, green onion and enoki",
   "items": [
    "jbfd:鍋料理"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Nabe_Kansai_style.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Nabe_Kansai_style.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:マロニー入りの鍋料理---2023-10-15.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E3%83%9E%E3%83%AD%E3%83%8B%E3%83%BC%E5%85%A5%E3%82%8A%E3%81%AE%E9%8D%8B%E6%96%99%E7%90%86---2023-10-15.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "commons-search",
+    "file": "File:マロニー入りの鍋料理-2023-11-10.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E3%83%9E%E3%83%AD%E3%83%8B%E3%83%BC%E5%85%A5%E3%82%8A%E3%81%AE%E9%8D%8B%E6%96%99%E7%90%86-2023-11-10.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "commons-search",
+    "file": "File:マロニー入りの鍋料理-2023-11-06.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E3%83%9E%E3%83%AD%E3%83%8B%E3%83%BC%E5%85%A5%E3%82%8A%E3%81%AE%E9%8D%8B%E6%96%99%E7%90%86-2023-11-06.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "jbfd-雑穀ミックス",
@@ -2033,7 +2555,9 @@
   "desc": "Mixed grains: a small dish of dry mixed grains, millet, barley, black rice, red rice and beans in assorted colours",
   "items": [
    "jbfd:雑穀ミックス"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "jbfd-魚のフレーク・ほぐし身",
@@ -2041,7 +2565,9 @@
   "desc": "Fish flakes: a small dish of finely flaked cooked fish, soft pink-orange salmon flakes, loose and moist",
   "items": [
    "jbfd:魚のフレーク・ほぐし身"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "jbfd-魚介のカツ・フライ",
@@ -2049,7 +2575,9 @@
   "desc": "Seafood cutlets and fries: a plate of breaded fried fish fillets and fried shrimp with golden panko crumb coating and tartar sauce",
   "items": [
    "jbfd:魚介のカツ・フライ"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "jbfd-魚介の竜田揚げ",
@@ -2065,7 +2593,9 @@
   "desc": "Fish paste products: a plate of a pink-and-white half-moon kamaboko slice and golden-brown fried fish cakes, smooth and springy",
   "items": [
    "jbfd:魚肉練り製品(揚げ・蒲鉾)"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "jbfd-鶏肉のから揚げ・フライ",
@@ -2073,7 +2603,24 @@
   "desc": "Fried chicken karaage: a plate of craggy golden-brown deep-fried chicken chunks with a crisp coating and a lemon wedge",
   "items": [
    "jbfd:鶏肉のから揚げ・フライ"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:Karaage_Chicken_by_patrickwoodward.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Karaage_Chicken_by_patrickwoodward.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "commons-search",
+    "file": "File:Chicken_karaage_20080129.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Chicken_karaage_20080129.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "jbfd-鶏肉のスモーク製品",
@@ -2081,7 +2628,9 @@
   "desc": "Smoked chicken: a plate of sliced smoked chicken breast with a golden-brown outer surface and pale pink-white moist inside",
   "items": [
    "jbfd:鶏肉のスモーク製品"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "jbfd-麺用ソース",
@@ -2089,6 +2638,8 @@
   "desc": "Noodle sauce: a small dish of dark brown pourable sauce, glossy, like mentsuyu or yakisoba sauce",
   "items": [
    "jbfd:麺用ソース"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  }
 ]

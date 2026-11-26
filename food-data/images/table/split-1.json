@@ -5,7 +5,24 @@
   "desc": "a hire katsu set meal on a tray, small round breaded pork fillet cutlets with shredded cabbage, a bowl of white rice, a bowl of miso soup and pickles",
   "items": [
    "eatout:hirekatsu_teishoku"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Tonkatsu_003.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Tonkatsu_003.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Tonkatsu_004.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Tonkatsu_004.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "dishes-teishoku-saba-misoni",
@@ -14,7 +31,17 @@
   "items": [
    "dishes:teishoku-saba-misoni",
    "eatout:saba_miso_teishoku"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Boiled_mackerel_with_miso_sauce_set_meal_of_Matsuya.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Boiled_mackerel_with_miso_sauce_set_meal_of_Matsuya.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "dishes-teishoku-saba-shioyaki",
@@ -31,7 +58,24 @@
   "desc": "a sanma set meal on a tray, a whole salt-grilled saury on a long plate with grated daikon, a bowl of white rice, a bowl of miso soup and pickles",
   "items": [
    "dishes:teishoku-sanma"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:吉野家_さんま定食_-_2.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E5%90%89%E9%87%8E%E5%AE%B6_%E3%81%95%E3%82%93%E3%81%BE%E5%AE%9A%E9%A3%9F_-_2.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:吉野家_さんま定食_-_1.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E5%90%89%E9%87%8E%E5%AE%B6_%E3%81%95%E3%82%93%E3%81%BE%E5%AE%9A%E9%A3%9F_-_1.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "dishes-teishoku-hokke",
@@ -40,7 +84,9 @@
   "items": [
    "dishes:teishoku-hokke",
    "eatout:hokke_teishoku"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "eatout-tamago_kake_teishoku",
@@ -48,7 +94,24 @@
   "desc": "a Japanese breakfast set on a tray, a small grilled fish fillet, a small bowl of natto, a raw egg in a little dish, a bowl of white rice and a bowl of miso soup",
   "items": [
    "eatout:tamago_kake_teishoku"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:St._Regis_Singapore_Japanese_breakfast_sets_(3504109163).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:St._Regis_Singapore_Japanese_breakfast_sets_(3504109163).jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Breakfast_set_at_matsuya,_mitaka_(50543340057).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Breakfast_set_at_matsuya,_mitaka_(50543340057).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "eatout-nirareba",
@@ -56,7 +119,31 @@
   "desc": "nira reba, stir-fried pork liver slices with bright green garlic chives and bean sprouts in a glossy brown sauce on a plate",
   "items": [
    "eatout:nirareba"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Nirareba_itame_of_Gyouza_no_Ohsho.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Nirareba_itame_of_Gyouza_no_Ohsho.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "commons-cat",
+    "file": "File:Nirareba_itame,_rice,_soup_and_kimchi_of_Gyouza_no_Ohsho.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Nirareba_itame,_rice,_soup_and_kimchi_of_Gyouza_no_Ohsho.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "commons-cat",
+    "file": "File:Nirareba-itame-teishoku_of_Hidakaya.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Nirareba-itame-teishoku_of_Hidakaya.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "eatout-morning_set",
@@ -64,7 +151,17 @@
   "desc": "a Japanese cafe morning set, a thick slice of buttered toast on a small plate, a peeled boiled egg in an egg cup and a cup of black coffee",
   "items": [
    "eatout:morning_set"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "jawiki",
+    "file": "File:CodazziKandaMorning2.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:CodazziKandaMorning2.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "dishes-oden-daikon",
@@ -73,7 +170,31 @@
   "items": [
    "dishes:oden-daikon",
    "eatout:oden_daikon"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:Oden_001.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Oden_001.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "jawiki-page",
+    "file": "File:Himeji_Oden.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Himeji_Oden.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "jawiki-page",
+    "file": "File:Making_oden.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Making_oden.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "dishes-furofuki-daikon",
@@ -82,7 +203,31 @@
   "items": [
    "dishes:furofuki-daikon",
    "maff_kyodo:furofukidaikon_aichi"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Furofukidaikon001.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Furofukidaikon001.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:Furofuki-daikon_002.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Furofuki-daikon_002.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:SimmeredRadishWithYuzuMizo_FurofukiDaikon.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:SimmeredRadishWithYuzuMizo_FurofukiDaikon.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "dishes-oden-chikuwa",
@@ -91,7 +236,17 @@
   "items": [
    "dishes:oden-chikuwa",
    "eatout:oden_chikuwa"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Oden_by_Mori_Chan.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Oden_by_Mori_Chan.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "dishes-oden-tsumire",
@@ -100,7 +255,9 @@
   "items": [
    "dishes:oden-tsumire",
    "eatout:oden_tsumire"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "dishes-oden-hanpen",
@@ -109,7 +266,9 @@
   "items": [
    "dishes:oden-hanpen",
    "eatout:oden_hanpen"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "dishes-oden-satsumaage",
@@ -118,7 +277,17 @@
   "items": [
    "dishes:oden-satsumaage",
    "eatout:oden_satsuma"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 3,
+    "origin": "jawiki-page",
+    "file": "File:Himeji_Oden.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Himeji_Oden.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "eatout-oden_rollcabbage",
@@ -126,7 +295,9 @@
   "desc": "oden roll cabbage, a soft cabbage-leaf roll filled with minced meat, tied with a strip of kanpyo, in clear golden oden broth in a shallow bowl",
   "items": [
    "eatout:oden_rollcabbage"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-15104",
@@ -134,7 +305,38 @@
   "desc": "stackable formed potato crisps, uniform saddle-shaped pale golden oval chips in a neat stack, a few loose beside it",
   "items": [
    "mext:15104"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Mister_potato_open.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Mister_potato_open.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Stapelchips.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Stapelchips.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "commons-search",
+    "file": "File:Chipsletten_naturel.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Chipsletten_naturel.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "commons-search",
+    "file": "File:Chipsletten_closeup.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Chipsletten_closeup.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "eatout-cocoa",
@@ -142,7 +344,9 @@
   "desc": "a mug of hot cocoa, creamy light chocolate-brown with a little foam",
   "items": [
    "eatout:cocoa"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "eatout-fukuro_ramen",
@@ -150,7 +354,24 @@
   "desc": "a square block of dried instant fried ramen noodles, tightly packed wavy pale golden noodles, on a small plate",
   "items": [
    "eatout:fukuro_ramen"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Instantnoodles.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Instantnoodles.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "jawiki",
+    "file": "File:Mama_instant_noodle_block.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Mama_instant_noodle_block.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "eatout-fried_chicken",
@@ -158,7 +379,24 @@
   "desc": "a bone-in piece of fried chicken, a drumstick with a thick craggy crisp golden-brown seasoned coating",
   "items": [
    "eatout:fried_chicken"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Fried_chicken,_fried_okra_and_mac_&_cheese_from_Mary_Mac's_Tea_Room_in_Atlanta.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Fried_chicken,_fried_okra_and_mac_%26_cheese_from_Mary_Mac%27s_Tea_Room_in_Atlanta.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:Fried-Chicken-Set.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Fried-Chicken-Set.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "eatout-kaitenzushi_10",
@@ -166,7 +404,9 @@
   "desc": "kaiten sushi, a tall stack of small round coloured sushi plates beside two plates each holding two nigiri pieces of salmon and tuna",
   "items": [
    "eatout:kaitenzushi_10"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "eatout-yasaiitame",
@@ -175,7 +415,24 @@
   "items": [
    "eatout:yasaiitame",
    "kurume:063"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 2,
+    "origin": "jawiki-page",
+    "file": "File:Niku-yasai-itame-teishoku_of_Hidakaya.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Niku-yasai-itame-teishoku_of_Hidakaya.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "commons-search",
+    "file": "File:ラーメン大将肉野菜炒め.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E3%83%A9%E3%83%BC%E3%83%A1%E3%83%B3%E5%A4%A7%E5%B0%86%E8%82%89%E9%87%8E%E8%8F%9C%E7%82%92%E3%82%81.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-07079",
@@ -183,7 +440,9 @@
   "desc": "sudachi juice, a small glass dish of clear pale greenish-yellow citrus juice beside a sudachi cut in half",
   "items": [
    "mext:07079"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-07143",
@@ -191,7 +450,9 @@
   "desc": "yuzu juice, a small glass dish of cloudy pale yellow citrus juice beside a bright yellow yuzu cut in half",
   "items": [
    "mext:07143"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "eatout-reimen",
@@ -199,7 +460,38 @@
   "desc": "Korean-style cold noodles (reimen) in a steel bowl, chewy translucent grey noodles in clear cold broth topped with sliced beef, half a boiled egg, kimchi, cucumber and a slice of pear",
   "items": [
    "eatout:reimen"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:KOCIS_Mul-naengmyeon,_Chilled_Buckwheat_Noodle_Soup_(4594756202).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:KOCIS_Mul-naengmyeon,_Chilled_Buckwheat_Noodle_Soup_(4594756202).jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:Naengmyeon_1.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Naengmyeon_1.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "jawiki-page",
+    "file": "File:Beppu_Reimen_(Naengmyeon_of_Beppu,_Oita).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Beppu_Reimen_(Naengmyeon_of_Beppu,_Oita).jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "jawiki-page",
+    "file": "File:Cold_Noodles_at_Famous_Okryu_Restaurant_(10108835864).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Cold_Noodles_at_Famous_Okryu_Restaurant_(10108835864).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-02041",
@@ -207,7 +499,9 @@
   "desc": "boiled Jerusalem artichoke (kikuimo), peeled bite-size pieces, soft and pale cream-white, in a small bowl",
   "items": [
    "mext:02041"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-02049",
@@ -225,7 +519,9 @@
    "mext:02051",
    "mext:02053",
    "mext:02016"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-02055",
@@ -233,7 +529,9 @@
   "desc": "boiled yacon, peeled round slices, soft translucent pale yellow, in a small bowl",
   "items": [
    "mext:02055"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-05009",
@@ -241,7 +539,9 @@
   "desc": "boiled ginkgo nuts, shelled glossy translucent jade-green nuts in a small dish",
   "items": [
    "mext:05009"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-06002",
@@ -249,7 +549,9 @@
   "desc": "a boiled globe artichoke, soft dull olive-green bracts opened out a little, on a plate",
   "items": [
    "mext:06002"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-06004",
@@ -265,7 +567,9 @@
   "desc": "boiled ashitaba greens, deep green leaves and stalks cut into short lengths, neatly piled in a small bowl",
   "items": [
    "mext:06006"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-06330",
@@ -297,7 +601,9 @@
   "desc": "boiled edible chrysanthemum petals (kiku no hana), a small loose mound of soft limp wilted yellow petals, no whole flowers, dressed with a little vinegar in a small dish",
   "items": [
    "mext:06059"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-06079",
@@ -305,7 +611,9 @@
   "desc": "boiled kuwai arrowhead bulbs, peeled glossy pale cream-yellow round bulbs each with its curved sprout, in a small bowl",
   "items": [
    "mext:06079"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-06082",
@@ -313,7 +621,9 @@
   "desc": "boiled kohlrabi, peeled soft pale green-white wedges in a small bowl",
   "items": [
    "mext:06082"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-06110",
@@ -329,7 +639,9 @@
   "desc": "boiled seri (Japanese parsley), deep green stems and leaves cut into short lengths, neatly piled in a small bowl",
   "items": [
    "mext:06118"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-06121",
@@ -337,7 +649,9 @@
   "desc": "boiled zenmai fern shoots, soft long brown-green stems with curled tips, in a small bowl",
   "items": [
    "mext:06121"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-06125",
@@ -345,7 +659,9 @@
   "desc": "boiled fava beans, large flat shiny pale green beans with their skins, a few peeled, in a small bowl",
   "items": [
    "mext:06125"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-06127",
@@ -353,7 +669,9 @@
   "desc": "boiled tatsoi, soft deep green round leaves on short stems, neatly piled in a small bowl",
   "items": [
    "mext:06127"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-06158",
@@ -361,7 +679,9 @@
   "desc": "boiled taranome, soft plump green angelica tree buds with their leaves opening, in a small dish",
   "items": [
    "mext:06158"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-06163",
@@ -369,7 +689,9 @@
   "desc": "boiled tsukushi, soft dark brown horsetail shoots with their caps, the leaf sheaths removed, in a small dish",
   "items": [
    "mext:06163"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-06166",
@@ -377,7 +699,9 @@
   "desc": "boiled tsurumurasaki, soft glossy deep green leaves and stems cut short, neatly piled in a small bowl",
   "items": [
    "mext:06166"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-06168",
@@ -385,7 +709,9 @@
   "desc": "boiled tsuwabuki, peeled soft pale green leaf stalks cut into short lengths in a small bowl",
   "items": [
    "mext:06168"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-06174",
@@ -393,7 +719,9 @@
   "desc": "boiled winter melon (togan), soft translucent pale green chunks in a small bowl",
   "items": [
    "mext:06174"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-06202",
@@ -401,7 +729,9 @@
   "desc": "boiled nanohana, bright green rapeseed shoots with tight buds cut into lengths, neatly piled in a small bowl",
   "items": [
    "mext:06202"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-06225",
@@ -409,7 +739,9 @@
   "desc": "boiled garlic stems, soft bright green stalks cut into short lengths in a small dish",
   "items": [
    "mext:06225"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-06244",
@@ -417,7 +749,9 @@
   "desc": "boiled beets, peeled soft deep magenta-red slices and wedges on a small plate",
   "items": [
    "mext:06244"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-06257",
@@ -425,7 +759,9 @@
   "desc": "boiled fuki butterbur stalks, peeled translucent pale green short lengths in a small bowl",
   "items": [
    "mext:06257"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-06259",
@@ -433,7 +769,9 @@
   "desc": "boiled fukinoto, soft dull green butterbur buds, the bracts loosened, in a small dish",
   "items": [
    "mext:06259"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-06266",
@@ -441,7 +779,9 @@
   "desc": "boiled sponge gourd, peeled soft pale green round slices in a small bowl",
   "items": [
    "mext:06266"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-06275",
@@ -449,7 +789,9 @@
   "desc": "boiled mitsuba, soft deep green stems and leaves cut into short lengths, neatly piled in a small bowl",
   "items": [
    "mext:06275"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-06284",
@@ -457,7 +799,24 @@
   "desc": "boiled Brussels sprouts, soft bright green mini cabbages, a few halved, in a small bowl",
   "items": [
    "mext:06284"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Boiled_brussels_sprouts_and_tiny_potatoes_(7985614189).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Boiled_brussels_sprouts_and_tiny_potatoes_(7985614189).jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Simple_Dutch_meal.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Simple_Dutch_meal.JPG",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-06292",
@@ -465,7 +824,9 @@
   "desc": "boiled bean sprouts, soft limp translucent white sprouts with pale yellow tips in a small bowl",
   "items": [
    "mext:06292"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-06297",
@@ -473,7 +834,9 @@
   "desc": "boiled lily bulb scales, soft translucent cream-white petal-shaped scales in a small bowl",
   "items": [
    "mext:06297"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-06309",
@@ -481,7 +844,9 @@
   "desc": "boiled leek, soft pale green-white rounds of leek in a small dish",
   "items": [
    "mext:06309"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-06311",
@@ -489,7 +854,9 @@
   "desc": "stewed rhubarb, soft pink-red stalk pieces falling apart in a small bowl",
   "items": [
    "mext:06311"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-06321",
@@ -497,7 +864,9 @@
   "desc": "boiled wakegi, soft deep green onion leaves cut into short lengths in a small bowl",
   "items": [
    "mext:06321"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-06325",
@@ -505,7 +874,9 @@
   "desc": "boiled warabi, soft olive-green bracken stems with curled tips cut into lengths in a small bowl",
   "items": [
    "mext:06325"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-08017",
@@ -513,6 +884,16 @@
   "desc": "boiled shimeji mushrooms, soft separated grey-brown capped mushrooms on pale stems in a small bowl",
   "items": [
    "mext:08017"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Shimeji_Tokyo_area_2020_5_11.jpeg",
+    "page": "https://commons.wikimedia.org/wiki/File:Shimeji_Tokyo_area_2020_5_11.jpeg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  }
 ]

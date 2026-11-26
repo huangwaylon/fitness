@@ -8,7 +8,17 @@
    "mext:10262",
    "mext:10263",
    "mext:10264"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Lata_de_atún-Albo.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Lata_de_at%C3%BAn-Albo.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10276",
@@ -16,7 +26,9 @@
   "desc": "a few small fresh wakasagi smelt, slim translucent silvery little fish",
   "items": [
    "mext:10276"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10281",
@@ -24,7 +36,31 @@
   "desc": "a small heap of fresh asari clams, ridged shells patterned in brown, cream and grey",
   "items": [
    "mext:10281"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:DFC_6130_Freshly_caught_clams_piled_high_-_ready_for_the_market_or_the_next_delicious_seafood_dish.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:DFC_6130_Freshly_caught_clams_piled_high_-_ready_for_the_market_or_the_next_delicious_seafood_dish.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "commons-search",
+    "file": "File:Marcia_recens_(10.3897-zookeys.799.25829)_Figure_5.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Marcia_recens_(10.3897-zookeys.799.25829)_Figure_5.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "commons-search",
+    "file": "File:Marcia_opima_(10.3897-zookeys.799.25829)_Figure_3.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Marcia_opima_(10.3897-zookeys.799.25829)_Figure_3.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10283",
@@ -32,7 +68,9 @@
   "desc": "shelled boiled asari clam meat, small soft beige-brown clams in a little dish",
   "items": [
    "mext:10283"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10292",
@@ -40,7 +78,24 @@
   "desc": "fresh oysters on the half shell, rough grey shells holding plump glossy cream-grey oysters, a lemon wedge",
   "items": [
    "mext:10292"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Oysters_p1040741.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Oysters_p1040741.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:Oysters_for_sale_at_Mercat_de_la_Boqueria.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Oysters_for_sale_at_Mercat_de_la_Boqueria.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10430",
@@ -51,7 +106,31 @@
    "mext:18055",
    "dishes:kaki-fry",
    "kurume:093"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Oyster_Ushimado01s.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Oyster_Ushimado01s.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:Deep_fried_oysters_by_Kossy@FINEDAYS_in_Akabane.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Deep_fried_oysters_by_Kossy@FINEDAYS_in_Akabane.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "enwiki",
+    "file": "File:Cutlet_Oysters_in_Hong_Kong_Japanese_Restaurant.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Cutlet_Oysters_in_Hong_Kong_Japanese_Restaurant.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10295",
@@ -59,7 +138,31 @@
   "desc": "a turban shell (sazae), a spiky dark green-brown conical sea snail shell",
   "items": [
    "mext:10295"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Turbo_setosus_(rough_turban_snail_shell)_1.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Turbo_setosus_(rough_turban_snail_shell)_1.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Turbo_setosus_(rough_turban_snail_shell)_2.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Turbo_setosus_(rough_turban_snail_shell)_2.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:Turbo_cornutus_1.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Turbo_cornutus_1.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10297",
@@ -67,7 +170,24 @@
   "desc": "a small heap of shijimi clams, small glossy black-brown shells",
   "items": [
    "mext:10297"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Villorita_cyprinoides_003_in_an_instant_miso_soup.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Villorita_cyprinoides_003_in_an_instant_miso_soup.JPG",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Villorita_cyprinoides_002_in_an_instant_miso_soup.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Villorita_cyprinoides_002_in_an_instant_miso_soup.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10306",
@@ -75,7 +195,9 @@
   "desc": "two large hamaguri clams, smooth glossy cream and brown patterned shells, one open showing the clam",
   "items": [
    "mext:10306"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10311",
@@ -83,7 +205,17 @@
   "desc": "a scallop in its fan-shaped ribbed shell, the white adductor muscle and orange roe inside",
   "items": [
    "mext:10311"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Scallop_eyes.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Scallop_eyes.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10313",
@@ -91,7 +223,9 @@
   "desc": "raw scallop adductor muscles, plump round glossy white-cream scallops, one sliced",
   "items": [
    "mext:10313"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10315",
@@ -99,7 +233,9 @@
   "desc": "flaked boiled scallop meat, shredded pale cream scallop in a small dish",
   "items": [
    "mext:10315"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10319",
@@ -107,7 +243,24 @@
   "desc": "sweet shrimp (amaebi), raw translucent pinkish-red shrimp with heads and tails, peeled bodies",
   "items": [
    "mext:10319"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Pandalus_borealis_2.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Pandalus_borealis_2.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "commons-search",
+    "file": "File:Pandborealisind.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Pandborealisind.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10321",
@@ -115,7 +268,38 @@
   "desc": "a raw kuruma prawn, a striped grey-brown prawn with long antennae",
   "items": [
    "mext:10321"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Marsupenaeus_japonicus.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Marsupenaeus_japonicus.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:Marsupenaeus_japonicus_Kamo.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Marsupenaeus_japonicus_Kamo.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "commons-search",
+    "file": "File:Marsupenaeus_japonicus_(MNHN-IU-2011-5734).jpeg",
+    "page": "https://commons.wikimedia.org/wiki/File:Marsupenaeus_japonicus_(MNHN-IU-2011-5734).jpeg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "commons-search",
+    "file": "File:Marsupenaeus_japonicus_-_National_Museum_of_Nature_and_Science,_Tokyo_-_DSC07540.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Marsupenaeus_japonicus_-_National_Museum_of_Nature_and_Science,_Tokyo_-_DSC07540.JPG",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10325",
@@ -123,7 +307,17 @@
   "desc": "a small heap of dried sakura shrimp, tiny bright pink-red translucent dried shrimp",
   "items": [
    "mext:10325"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Drying_Sakura_Shrimps_in_Japan_(2425372520).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Drying_Sakura_Shrimps_in_Japan_(2425372520).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10415",
@@ -132,7 +326,24 @@
   "items": [
    "mext:10415",
    "mext:10329"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:Litopenaeus_vannamei55.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Litopenaeus_vannamei55.JPG",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "commons-search",
+    "file": "File:JfBulacan9141SanPascualHagonoyfvf_15.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:JfBulacan9141SanPascualHagonoyfvf_15.JPG",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10416",
@@ -141,7 +352,38 @@
   "items": [
    "mext:10416",
    "eatout:ebiten"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Tempura_01.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Tempura_01.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "wikidata",
+    "file": "File:Tempura_by_GinkgoTelegraph.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Tempura_by_GinkgoTelegraph.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "jawiki",
+    "file": "File:Tempurainjapan-ikebukuro-dec312007.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Tempurainjapan-ikebukuro-dec312007.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "jawiki-page",
+    "file": "File:Ebitemp.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Ebitemp.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10330",
@@ -149,7 +391,24 @@
   "desc": "a small heap of dried shrimp, small curled orange-pink dried shrimp",
   "items": [
    "mext:10330"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Dried_river_shrimp.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Dried_river_shrimp.JPG",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:Dried_shrimp_(penaeus_chinensis).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Dried_shrimp_(penaeus_chinensis).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10336",
@@ -157,7 +416,24 @@
   "desc": "a boiled snow crab, bright orange-red shell with long slender legs",
   "items": [
    "mext:10336"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Daege_Jjim(Steamed_Snow_Crab),_Yeongdeok.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Daege_Jjim(Steamed_Snow_Crab),_Yeongdeok.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:Daege_Jjim(Steamed_Snow_Crab)_(1).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Daege_Jjim(Steamed_Snow_Crab)_(1).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10337",
@@ -165,7 +441,9 @@
   "desc": "flaked crab meat, white and pink shredded crab leg meat in a small dish",
   "items": [
    "mext:10337"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10339",
@@ -173,7 +451,9 @@
   "desc": "boiled king crab legs, thick spiny bright red-orange legs, one split open showing white meat",
   "items": [
    "mext:10339"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10345",
@@ -182,7 +462,24 @@
   "items": [
    "mext:10345",
    "mext:10352"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Todarodes_pacificus_ruler.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Todarodes_pacificus_ruler.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Todarodes_pacificus_(white_background).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Todarodes_pacificus_(white_background).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10348",
@@ -191,7 +488,24 @@
   "items": [
    "mext:10348",
    "mext:10349"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Firefly_squid_Watasenia_scintillans_(?).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Firefly_squid_Watasenia_scintillans_(%3F).jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "commons-search",
+    "file": "File:Firefly_squid_with_daikon_oroshi.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Firefly_squid_with_daikon_oroshi.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10353",
@@ -199,7 +513,24 @@
   "desc": "a whole dried squid (surume), flat stiff amber-brown dried squid with its legs",
   "items": [
    "mext:10353"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Trockenfisch_pulau_pangkor_malaysia_2.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Trockenfisch_pulau_pangkor_malaysia_2.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:Surume39.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Surume39.JPG",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10354",
@@ -207,7 +538,24 @@
   "desc": "a small pile of sakiika, shredded dried squid in soft pale cream-white strips",
   "items": [
    "mext:10354"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:ShreddedSquidSingleStrand.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:ShreddedSquidSingleStrand.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "enwiki",
+    "file": "File:SZ_深圳_Shenzhen_龍崗_Longgang_龍崗大道_Longgang_Avenue_沃爾瑪超市_Walmart_Supermarket_Dried_shredded_squid_October_2023_R12S.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:SZ_%E6%B7%B1%E5%9C%B3_Shenzhen_%E9%BE%8D%E5%B4%97_Longgang_%E9%BE%8D%E5%B4%97%E5%A4%A7%E9%81%93_Longgang_Avenue_%E6%B2%83%E7%88%BE%E7%91%AA%E8%B6%85%E5%B8%82_Walmart_Supermarket_Dried_shredded_squid_October_2023_R12S.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10358",
@@ -215,7 +563,24 @@
   "desc": "a small dish of ika no shiokara, salted squid strips in a glossy thick pinkish-brown sauce",
   "items": [
    "mext:10358"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Shiokara_001.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Shiokara_001.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "enwiki-page",
+    "file": "File:Ika_no_shiokara_with_chopsticks.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Ika_no_shiokara_with_chopsticks.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10361",
@@ -223,7 +588,24 @@
   "desc": "a raw octopus tentacle, curled grey-purple tentacle with suckers",
   "items": [
    "mext:10361"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Octopus_vulgaris_Merculiano.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Octopus_vulgaris_Merculiano.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:Octopus_as_food_at_Noryangjin_Fisheries_Wholesale_Market_in_Seoul_South_Korea.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Octopus_as_food_at_Noryangjin_Fisheries_Wholesale_Market_in_Seoul_South_Korea.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10362",
@@ -231,7 +613,9 @@
   "desc": "a boiled octopus tentacle, bright red-purple skin with white suckers, a few slices showing white flesh",
   "items": [
    "mext:10362"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10365",
@@ -239,7 +623,9 @@
   "desc": "fresh sea urchin roe (uni), soft bright orange-yellow tongues in a small wooden tray",
   "items": [
    "mext:10365"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10376",
@@ -247,7 +633,38 @@
   "desc": "a few kanikama crab sticks, white fish cake sticks with red-orange outside, one pulled apart into shreds",
   "items": [
    "mext:10376"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Kanikama.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Kanikama.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:Kanikama_001.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Kanikama_001.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "jawiki-page",
+    "file": "File:Japanese_Sugiyo_Kanikama_Kaoribako1.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Japanese_Sugiyo_Kanikama_Kaoribako1.JPG",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "jawiki-page",
+    "file": "File:Japanese_Sugiyo_Kanikama_Kaoribako2.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Japanese_Sugiyo_Kanikama_Kaoribako2.JPG",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10379",
@@ -255,7 +672,24 @@
   "desc": "a semicircular block of kamaboko fish cake on a small wooden board, pink-red top and white inside, a few slices cut",
   "items": [
    "mext:10379"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 3,
+    "origin": "jawiki-page",
+    "file": "File:Itawasa_by_jetalone_in_Tsukiji,_Tokyo.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Itawasa_by_jetalone_in_Tsukiji,_Tokyo.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "jawiki-page",
+    "file": "File:Kamaboko_001.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Kamaboko_001.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10381",
@@ -263,7 +697,24 @@
   "desc": "a few chikuwa, tube-shaped grilled fish cakes with browned outsides and a hole through the middle, one cut in rounds",
   "items": [
    "mext:10381"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Chikuwa.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Chikuwa.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "jawiki-page",
+    "file": "File:Tikutikutikuwa.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Tikutikutikuwa.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10382",
@@ -272,7 +723,31 @@
   "items": [
    "mext:10382",
    "dishes:datemaki"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Datemaki_001.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Datemaki_001.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "commons-cat",
+    "file": "File:Datemaki.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Datemaki.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "commons-cat",
+    "file": "File:New_Year_meals_(39692819922).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:New_Year_meals_(39692819922).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10383",
@@ -280,7 +755,17 @@
   "desc": "a few tsumire fish balls, round grey-brown fish dumplings, in a small bowl of broth",
   "items": [
    "mext:10383"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 2,
+    "origin": "jawiki-page",
+    "file": "File:Tsumire.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Tsumire.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10384",
@@ -288,7 +773,17 @@
   "desc": "slices of naruto fish cake, white rounds with a pink spiral and a ridged edge",
   "items": [
    "mext:10384"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Narutomaki_001.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Narutomaki_001.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10385",
@@ -296,7 +791,17 @@
   "desc": "a square of hanpen, a puffy soft pure white fish cake, one triangle cut",
   "items": [
    "mext:10385"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Hanpen_by_yoppy.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Hanpen_by_yoppy.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10386",
@@ -305,7 +810,24 @@
   "items": [
    "mext:10386",
    "kurume:088"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Satsumaage.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Satsumaage.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "enwiki",
+    "file": "File:Satsuma_age_Kagoshima.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Satsuma_age_Kagoshima.JPG",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10388",
@@ -313,7 +835,17 @@
   "desc": "a fish sausage, a pink cylinder in a red-orange film wrapper, partly peeled and sliced",
   "items": [
    "mext:10388"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 3,
+    "origin": "commons-cat",
+    "file": "File:Fish-sausage.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Fish-sausage.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-11001",
@@ -321,7 +853,9 @@
   "desc": "raw wild boar meat slices, dark red meat with thick white fat edges, arranged on a plate",
   "items": [
    "mext:11001"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-11008",
@@ -346,7 +880,24 @@
    "mext:11065",
    "mext:11068",
    "mext:11072"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 3,
+    "origin": "commons-search",
+    "file": "File:Wagyū_on_plate.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Wagy%C5%AB_on_plate.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "commons-search",
+    "file": "File:Wagyū_on_plate_3.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Wagy%C5%AB_on_plate_3.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-11018",
@@ -356,7 +907,24 @@
    "mext:11018",
    "mext:11046",
    "mext:11074"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 3,
+    "origin": "commons-search",
+    "file": "File:Wagyū_on_plate.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Wagy%C5%AB_on_plate.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "commons-search",
+    "file": "File:Wagyū_on_plate_3.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Wagy%C5%AB_on_plate_3.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-11019",
@@ -373,7 +941,9 @@
    "mext:11031",
    "mext:11060",
    "mext:11061"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-11059",
@@ -382,7 +952,9 @@
   "items": [
    "mext:11059",
    "mext:11085"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-11089",
@@ -390,7 +962,31 @@
   "desc": "a mound of raw ground beef, red minced meat with white fat specks",
   "items": [
    "mext:11089"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Ground_beef_USDA.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Ground_beef_USDA.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:Crumbling_ground_beef_in_water.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Crumbling_ground_beef_in_water.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "commons-search",
+    "file": "File:2018-04-22_Minced_beef_meat.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:2018-04-22_Minced_beef_meat.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-11272",
@@ -398,7 +994,9 @@
   "desc": "browned crumbled ground beef, cooked brown minced meat in a small dish",
   "items": [
    "mext:11272"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-11090",
@@ -406,7 +1004,17 @@
   "desc": "thin slices of raw beef tongue, pale pinkish slices with a grainy edge",
   "items": [
    "mext:11090"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Beef_tongue_preparation.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Beef_tongue_preparation.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-11273",
@@ -415,7 +1023,24 @@
   "items": [
    "mext:11273",
    "eatout:gyutan"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 3,
+    "origin": "jawiki-page",
+    "file": "File:Matsusaka_Beef_tongue_of_Korean_barbecue.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Matsusaka_Beef_tongue_of_Korean_barbecue.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "jawiki-page",
+    "file": "File:Sedaigyutantei200607.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Sedaigyutantei200607.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-11092",
@@ -423,7 +1048,17 @@
   "desc": "raw beef liver, a glossy smooth dark red-brown slab, a few slices",
   "items": [
    "mext:11092"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 3,
+    "origin": "commons-search",
+    "file": "File:Beef_liver.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Beef_liver.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-11094",
@@ -431,7 +1066,9 @@
   "desc": "boiled beef rumen (mino), pale white thick slices with a scored surface",
   "items": [
    "mext:11094"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-11098",
@@ -440,7 +1077,9 @@
   "items": [
    "mext:11098",
    "eatout:horumon"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-11099",
@@ -448,7 +1087,9 @@
   "desc": "beef large intestine (shimacho), striped pale pink and white flat pieces",
   "items": [
    "mext:11099"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-11101",
@@ -456,7 +1097,24 @@
   "desc": "boiled beef tendon (gyusuji), wobbly translucent pale brown chunks",
   "items": [
    "mext:11101"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 3,
+    "origin": "commons-search",
+    "file": "File:Raw_beef_tendon.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Raw_beef_tendon.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "commons-search",
+    "file": "File:Braised_beef_tendon.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Braised_beef_tendon.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-11103",
@@ -464,7 +1122,24 @@
   "desc": "raw oxtail, round cross-section pieces of bone with red meat and white fat",
   "items": [
    "mext:11103"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Raw_oxtail-01.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Raw_oxtail-01.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Oxtail-93256.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Oxtail-93256.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-11274",
@@ -472,7 +1147,9 @@
   "desc": "raw beef skirt (harami), thick dark red strips with coarse grain",
   "items": [
    "mext:11274"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-11297",
@@ -481,7 +1158,9 @@
   "items": [
    "mext:11297",
    "eatout:harami"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-11104",
@@ -489,7 +1168,24 @@
   "desc": "slices of roast beef, pink centres with a browned edge, fanned on a plate with sauce",
   "items": [
    "mext:11104"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 2,
+    "origin": "jawiki",
+    "file": "File:Roast_beef_dish.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Roast_beef_dish.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "jawiki-page",
+    "file": "File:Roast_beef.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Roast_beef.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-11105",
@@ -497,7 +1193,17 @@
   "desc": "a block of corned beef, pinkish-brown shredded packed beef in a trapezoid shape",
   "items": [
    "mext:11105"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 4,
+    "origin": "jawiki-page",
+    "file": "File:Corned-beef-1.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Corned-beef-1.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-11107",
@@ -505,7 +1211,31 @@
   "desc": "strips of beef jerky, dark red-brown chewy dried meat",
   "items": [
    "mext:11107"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Beefjerky.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Beefjerky.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "enwiki",
+    "file": "File:Jerky_(1).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Jerky_(1).jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "enwiki-page",
+    "file": "File:Bak_kwa.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Bak_kwa.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-11109",
@@ -513,7 +1243,24 @@
   "desc": "basashi raw horse meat sashimi, deep red-purple lean slices with grated ginger",
   "items": [
    "mext:11109"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Paardenrookvlees.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Paardenrookvlees.JPG",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:Basashi.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Basashi.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-11275",
@@ -521,7 +1268,24 @@
   "desc": "raw venison, a deep burgundy-red very lean block of meat and slices",
   "items": [
    "mext:11275"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Venison_Steaks.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Venison_Steaks.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "commons-search",
+    "file": "File:Venison_escalope_raw.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Venison_escalope_raw.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-11115",
@@ -532,7 +1296,9 @@
    "mext:11119",
    "mext:11116",
    "mext:11120"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-11123",
@@ -541,7 +1307,9 @@
   "items": [
    "mext:11123",
    "mext:11126"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-11124",
@@ -550,7 +1318,17 @@
   "items": [
    "mext:11124",
    "dishes:pork-saute"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:ポークソテーライス上_(28535871615).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E3%83%9D%E3%83%BC%E3%82%AF%E3%82%BD%E3%83%86%E3%83%BC%E3%83%A9%E3%82%A4%E3%82%B9%E4%B8%8A_(28535871615).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-11276",
@@ -559,7 +1337,31 @@
   "items": [
    "mext:11276",
    "dishes:tonkatsu"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Tonkatsu_of_Kimukatsu.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Tonkatsu_of_Kimukatsu.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:Tonkatsu_by_ayustety_in_Tokyo.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Tonkatsu_by_ayustety_in_Tokyo.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "jawiki-page",
+    "file": "File:Tonkatsu_001.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Tonkatsu_001.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-11129",
@@ -567,7 +1369,9 @@
   "desc": "raw pork belly slices, alternating layers of pink meat and white fat",
   "items": [
    "mext:11129"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-11277",
@@ -575,7 +1379,9 @@
   "desc": "grilled pork belly slices, browned crisp edges, glossy",
   "items": [
    "mext:11277"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-11130",
@@ -584,7 +1390,9 @@
   "items": [
    "mext:11130",
    "mext:11131"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-11140",
@@ -592,7 +1400,9 @@
   "desc": "a raw pork tenderloin, a long smooth pale pink lean cylinder",
   "items": [
    "mext:11140"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-11279",
@@ -601,7 +1411,9 @@
   "items": [
    "mext:11279",
    "dishes:hirekatsu"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-11163",
@@ -609,7 +1421,9 @@
   "desc": "a mound of raw ground pork, pale pink minced meat",
   "items": [
    "mext:11163"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-11280",
@@ -617,7 +1431,9 @@
   "desc": "browned crumbled ground pork in a small dish",
   "items": [
    "mext:11280"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-11166",
@@ -625,7 +1441,9 @@
   "desc": "raw pork liver, a glossy dark red-brown slab and slices",
   "items": [
    "mext:11166"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-11168",
@@ -633,7 +1451,9 @@
   "desc": "boiled pork stomach (gatsu), pale grey-white thick slices",
   "items": [
    "mext:11168"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-11170",
@@ -641,7 +1461,17 @@
   "desc": "boiled pork intestine (motsu), soft pale curled pieces",
   "items": [
    "mext:11170"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:Chilled_pork_intestine.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Chilled_pork_intestine.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-11172",
@@ -649,7 +1479,9 @@
   "desc": "boiled pig's trotters (tonsoku), pale glossy skin, split in half",
   "items": [
    "mext:11172"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-11175",
@@ -659,7 +1491,9 @@
    "mext:11175",
    "mext:11178",
    "mext:11177"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-11176",
@@ -667,7 +1501,17 @@
   "desc": "slices of Japanese loin ham, thin round pink slices with a thin white fat rim, fanned on a plate",
   "items": [
    "mext:11176"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Pork_loin_ham_2.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Pork_loin_ham_2.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-11181",
@@ -676,7 +1520,38 @@
   "items": [
    "mext:11181",
    "mext:11182"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Parma_Ham_Prosciutto_02.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Parma_Ham_Prosciutto_02.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:Kajmak_and_Pršut_from_Montenegro_02.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Kajmak_and_Pr%C5%A1ut_from_Montenegro_02.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "commons-search",
+    "file": "File:Kajmak_and_Pršut_from_Montenegro_01.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Kajmak_and_Pr%C5%A1ut_from_Montenegro_01.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "commons-search",
+    "file": "File:Kajmak_and_Pršut_from_Montenegro_03.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Kajmak_and_Pr%C5%A1ut_from_Montenegro_03.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-11183",
@@ -686,7 +1561,9 @@
    "mext:11183",
    "mext:11184",
    "mext:11185"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-11315",
@@ -694,7 +1571,17 @@
   "desc": "crisp fried bacon strips, browned rippled",
   "items": [
    "mext:11315"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 3,
+    "origin": "jawiki-page",
+    "file": "File:Bacon_and_egg_sandwich_-_open_face.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Bacon_and_egg_sandwich_-_open_face.JPG",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-11186",
@@ -703,7 +1590,9 @@
   "items": [
    "mext:11186",
    "mext:11306"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-11307",
@@ -711,7 +1600,9 @@
   "desc": "pan-fried wiener sausages, plump sausages with browned blistered skins, cut ends",
   "items": [
    "mext:11307"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-11188",
@@ -719,7 +1610,38 @@
   "desc": "slices of salami, deep red with white fat specks",
   "items": [
    "mext:11188"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Salami_aka.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Salami_aka.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "enwiki",
+    "file": "File:Salame_di_Sauris.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Salame_di_Sauris.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "enwiki-page",
+    "file": "File:3_Salami.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:3_Salami.JPG",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "enwiki-page",
+    "file": "File:Finocchiona_from_Tuscany.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Finocchiona_from_Tuscany.JPG",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-11189",
@@ -729,7 +1651,9 @@
    "mext:11189",
    "eatout:frank",
    "kumagaya:00803"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-11194",

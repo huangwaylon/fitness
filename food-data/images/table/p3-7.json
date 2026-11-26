@@ -5,7 +5,24 @@
   "desc": "Sara udon topping without noodles: a bowl of glossy thick translucent starch sauce over stir-fried cabbage, carrot, bean sprouts, pork slices, shrimp, squid and pink-white kamaboko",
   "items": [
    "toyonaka:131646"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:Sara_udon_in_Nagasaki.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Sara_udon_in_Nagasaki.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "jawiki-page",
+    "file": "File:Horaiken_Tokuseisaraudon.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Horaiken_Tokuseisaraudon.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "toyonaka-131647",
@@ -13,7 +30,9 @@
   "desc": "Sara udon noodles: a nest of thin crisp deep-fried golden noodles on a plate, dry and crunchy, tangled like fine straw, no sauce",
   "items": [
    "toyonaka:131647"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "toyonaka-131150",
@@ -29,7 +48,9 @@
   "desc": "Broccoli marinade: small bright green broccoli florets with red bell pepper and thin onion slices, shiny with vinaigrette, in a small white dish",
   "items": [
    "toyonaka:131744"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "toyonaka-131412",
@@ -37,7 +58,24 @@
   "desc": "Japanese rolled omelette: a plate of thick yellow rectangular slices of tamagoyaki showing thin spiral layers on the cut face, lightly browned outside",
   "items": [
    "toyonaka:131412"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:鳥焼き居酒屋_(39394233682).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E9%B3%A5%E7%84%BC%E3%81%8D%E5%B1%85%E9%85%92%E5%B1%8B_(39394233682).jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "enwiki-page",
+    "file": "File:Making_heart-shaped_tamagoyaki_-_16451764301.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Making_heart-shaped_tamagoyaki_-_16451764301.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "toyonaka-131414",
@@ -53,7 +91,17 @@
   "desc": "Wakame miso soup: a lacquered soup bowl of cloudy light brown miso broth with dark green wakame seaweed pieces, small white tofu cubes and green onion rings",
   "items": [
    "toyonaka:132355"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Miso_Soup_001.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Miso_Soup_001.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "toyonaka-132356",
@@ -77,7 +125,9 @@
   "desc": "Spicy burdock: a small dish of thin brown burdock root strips and carrot stir-fried glossy with soy sauce, red chili flakes and white sesame seeds",
   "items": [
    "toyonaka:132358"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "toyonaka-131227",
@@ -85,7 +135,9 @@
   "desc": "Onion consomme soup: a bowl of clear amber broth with soft translucent onion slices, a few carrot strips and green parsley flecks",
   "items": [
    "toyonaka:131227"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "toyonaka-285528",
@@ -93,7 +145,9 @@
   "desc": "Macaroni soup: a bowl of clear consomme broth with small elbow macaroni, diced carrot, onion, cabbage and bits of ham",
   "items": [
    "toyonaka:285528"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "toyonaka-285529",
@@ -102,7 +156,24 @@
   "items": [
    "toyonaka:285529",
    "kumagaya:00308"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Daigaku-imo_001.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Daigaku-imo_001.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:Daigaku-imo_002.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Daigaku-imo_002.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "toyonaka-285530",
@@ -142,7 +213,24 @@
   "desc": "Samgyetang-style soup: a bowl of milky white chicken broth with pieces of chicken, grains of rice, slices of ginger, green onion and a jujube",
   "items": [
    "toyonaka:285538"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Samgye-tang_2.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Samgye-tang_2.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "jawiki-page",
+    "file": "File:Korean_soup-Samgyetang-04.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Korean_soup-Samgyetang-04.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "toyonaka-285907",
@@ -150,7 +238,24 @@
   "desc": "Meat sauce spaghetti: a plate of spaghetti topped with a thick red-brown minced meat tomato sauce with tiny diced carrot and onion",
   "items": [
    "toyonaka:285907"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Spaghetti_with_Meat_Sauce_in_Plastic_Container.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Spaghetti_with_Meat_Sauce_in_Plastic_Container.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:Spaghetti_with_skipjack_tuna_sauce.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Spaghetti_with_skipjack_tuna_sauce.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "toyonaka-284487",
@@ -160,7 +265,24 @@
    "toyonaka:284487",
    "kumagaya:2479",
    "kumagaya:03277"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 3,
+    "origin": "commons-search",
+    "file": "File:Wonton_soup_at_65_Huguosi_St_(20211221173225).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Wonton_soup_at_65_Huguosi_St_(20211221173225).jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "commons-search",
+    "file": "File:Wonton_soup_at_65_Huguosi_St_(20211221172925).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Wonton_soup_at_65_Huguosi_St_(20211221172925).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "toyonaka-284488",
@@ -168,7 +290,9 @@
   "desc": "Meatballs in sweet and sour sauce: round brown pork meatballs coated in a glossy translucent orange-red thick sauce with onion and green pepper pieces",
   "items": [
    "toyonaka:284488"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "toyonaka-284489",
@@ -177,7 +301,17 @@
   "items": [
    "toyonaka:284489",
    "kumagaya:00521"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 3,
+    "origin": "commons-search",
+    "file": "File:まほろばの中華風春雨サラダ.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E3%81%BE%E3%81%BB%E3%82%8D%E3%81%B0%E3%81%AE%E4%B8%AD%E8%8F%AF%E9%A2%A8%E6%98%A5%E9%9B%A8%E3%82%B5%E3%83%A9%E3%83%80.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "toyonaka-285957",
@@ -186,7 +320,24 @@
   "items": [
    "toyonaka:285957",
    "kumagaya:00026"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Potage_lies_pumpkin01n3200.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Potage_lies_pumpkin01n3200.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "jawiki",
+    "file": "File:Corn_soup.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Corn_soup.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "toyonaka-285959",
@@ -194,7 +345,17 @@
   "desc": "Tuna sandwich: soft white bread sandwich slices cut in triangles, filled with pale mayonnaise tuna salad and thin cucumber",
   "items": [
    "toyonaka:285959"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 4,
+    "origin": "enwiki",
+    "file": "File:Tuna_fish_sandwiches_for_the_National_School_Lunch_Program.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Tuna_fish_sandwiches_for_the_National_School_Lunch_Program.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "toyonaka-285278",
@@ -211,7 +372,17 @@
   "items": [
    "toyonaka:285279",
    "kumagaya:02484"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Salt_grilled_salmon_teishoku_-_August_2014.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Salt_grilled_salmon_teishoku_-_August_2014.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "toyonaka-285280",
@@ -243,7 +414,9 @@
   "desc": "Chicken balls: deep-fried round chicken meatballs with a crisp golden-brown surface on a plate",
   "items": [
    "toyonaka:285554"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "toyonaka-285555",
@@ -251,7 +424,9 @@
   "desc": "Creamy gratin: a small baking dish of macaroni and chicken in white sauce under melted golden-brown bubbling cheese",
   "items": [
    "toyonaka:285555"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "toyonaka-284519",
@@ -259,7 +434,9 @@
   "desc": "Turnip egg-drop soup: a bowl of clear broth with soft white turnip wedges, turnip greens and wispy yellow egg ribbons",
   "items": [
    "toyonaka:284519"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "toyonaka-284521",
@@ -267,7 +444,9 @@
   "desc": "Taro salad: a small bowl of mashed and chunky white satoimo taro mixed with cucumber slices, carrot and corn in a creamy dressing",
   "items": [
    "toyonaka:284521"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "toyonaka-285560",
@@ -291,7 +470,9 @@
   "desc": "Nori egg soup: a bowl of clear broth with yellow egg ribbons and dark green shreds of nori seaweed, green onion",
   "items": [
    "toyonaka:285570"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "toyonaka-285571",
@@ -299,7 +480,17 @@
   "desc": "Takoyaki fry: round balls with a golden breadcrumb crust, a cut one showing soft creamy batter and a piece of octopus inside",
   "items": [
    "toyonaka:285571"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 3,
+    "origin": "commons-search",
+    "file": "File:Takoyaki_by_avlxyz_in_Holmesglen.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Takoyaki_by_avlxyz_in_Holmesglen.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "toyonaka-285572",
@@ -315,7 +506,9 @@
   "desc": "Gnocchi in cream sauce: a bowl of small ridged pale potato gnocchi with chicken, broccoli and carrot in a smooth white cream sauce",
   "items": [
    "toyonaka:284903"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "toyonaka-285259",
@@ -323,7 +516,9 @@
   "desc": "Imo kenpi: a small dish of thin sweet potato sticks, deep-fried and candied, crunchy, golden with a shiny sugar coating",
   "items": [
    "toyonaka:285259"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "toyonaka-285260",
@@ -339,7 +534,9 @@
   "desc": "Salmon fry: a breaded deep-fried salmon fillet, golden breadcrumbs, the cut edge showing orange-pink flesh, on a plate",
   "items": [
    "toyonaka:285964"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "toyonaka-285965",
@@ -355,7 +552,9 @@
   "desc": "Tofu miso soup: a lacquered bowl of cloudy light brown miso soup with white tofu cubes, wakame and green onion rings",
   "items": [
    "toyonaka:261325"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "toyonaka-261269",
@@ -363,7 +562,9 @@
   "desc": "Fruit jelly mix: a small cup of clear jelly with colourful cubes of fruit, orange mandarin, pineapple, peach and cherry",
   "items": [
    "toyonaka:261269"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "toyonaka-259868",
@@ -371,7 +572,9 @@
   "desc": "Heart croquette: a heart-shaped deep-fried croquette with a golden breadcrumb crust, the inside showing mashed potato",
   "items": [
    "toyonaka:259868"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "toyonaka-259981",
@@ -388,7 +591,31 @@
   "items": [
    "toyonaka:276142",
    "kumagaya:2227"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:焼鳥日高のちくわの磯辺揚げ_(cropped).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E7%84%BC%E9%B3%A5%E6%97%A5%E9%AB%98%E3%81%AE%E3%81%A1%E3%81%8F%E3%82%8F%E3%81%AE%E7%A3%AF%E8%BE%BA%E6%8F%9A%E3%81%92_(cropped).jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:焼鳥日高のちくわの磯辺揚げ.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E7%84%BC%E9%B3%A5%E6%97%A5%E9%AB%98%E3%81%AE%E3%81%A1%E3%81%8F%E3%82%8F%E3%81%AE%E7%A3%AF%E8%BE%BA%E6%8F%9A%E3%81%92.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:串太郎の料理IMG_20220718_214918_HDR.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E4%B8%B2%E5%A4%AA%E9%83%8E%E3%81%AE%E6%96%99%E7%90%86IMG_20220718_214918_HDR.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "toyonaka-285472",
@@ -404,7 +631,24 @@
   "desc": "Tsumikko: a bowl of soup with pinched flat irregular white wheat flour dumplings, daikon, carrot, taro, shiitake and green onion in a soy broth",
   "items": [
    "kumagaya:3454"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "jawiki",
+    "file": "File:Suiton_by_Rubyran.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Suiton_by_Rubyran.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "jawiki-page",
+    "file": "File:Suiton_by_typester.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Suiton_by_typester.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "kumagaya-2212",
@@ -412,7 +656,17 @@
   "desc": "Meatballs: round browned pork meatballs in a small dish, glazed with a light soy sauce",
   "items": [
    "kumagaya:2212"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 4,
+    "origin": "commons-search",
+    "file": "File:Boulettes_de_poisson.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Boulettes_de_poisson.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "kumagaya-2742",
@@ -437,7 +691,9 @@
   "desc": "Local cucumber salad: a small bowl of thin green cucumber slices with carrot strips and wakame in a light vinegar dressing",
   "items": [
    "kumagaya:2695"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "kumagaya-2705",
@@ -445,7 +701,17 @@
   "desc": "Penne in cream sauce: a bowl of tube pasta penne with chicken, onion, broccoli and mushrooms in a white cream sauce",
   "items": [
    "kumagaya:2705"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Pasta_with_a_Chicken_Lemon_Cream_Sauce_(764644143).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Pasta_with_a_Chicken_Lemon_Cream_Sauce_(764644143).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "kumagaya-3264",
@@ -453,7 +719,17 @@
   "desc": "Crispy chicken: pieces of chicken with a crunchy craggy golden-brown coating on a plate",
   "items": [
    "kumagaya:3264"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Burger_King_Chicken_Nuggets_(15423233415).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Burger_King_Chicken_Nuggets_(15423233415).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "kumagaya-972",
@@ -461,7 +737,9 @@
   "desc": "Hijiki salad: a small bowl of short black hijiki seaweed sprigs with green edamame, yellow corn, carrot strips and cucumber in a light dressing",
   "items": [
    "kumagaya:972"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "kumagaya-3503",
@@ -477,7 +755,17 @@
   "desc": "Kiriboshi daikon simmered: a small dish of tangled tan dried shredded daikon strips, simmered soft and brown with carrot, aburaage strips and shiitake",
   "items": [
    "kumagaya:2876"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Kiriboshi_daikon_(2015-05-08).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Kiriboshi_daikon_(2015-05-08).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "kumagaya-114",
@@ -485,7 +773,9 @@
   "desc": "Local-flour udon: a bowl of thick slightly beige, rustic wheat udon noodles, pale and chewy, plain",
   "items": [
    "kumagaya:114"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "kumagaya-2425",
@@ -502,7 +792,17 @@
   "desc": "Lotus root salad: a small bowl of white lotus root slices with holes, cucumber, carrot and corn in a creamy mayonnaise sesame dressing",
   "items": [
    "kumagaya:3537"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 4,
+    "origin": "commons-search",
+    "file": "File:Yeongeun_with_jat_sauce.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Yeongeun_with_jat_sauce.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "kumagaya-388",
@@ -510,7 +810,31 @@
   "desc": "Baozi: a round white soft steamed bun with pleated twisted top, a cut one showing a pork and vegetable filling",
   "items": [
    "kumagaya:388"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Nangua_Baozi_(chinese_dumplings).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Nangua_Baozi_(chinese_dumplings).jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:Baozi_Chengdu.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Baozi_Chengdu.JPG",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "enwiki-page",
+    "file": "File:Broodje_Bapao_Driekwart.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Broodje_Bapao_Driekwart.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "kumagaya-2506",
@@ -534,7 +858,9 @@
   "desc": "Garlic basil salmon: a baked salmon fillet with orange-pink flesh, topped with green basil flecks and toasted garlic bits",
   "items": [
    "kumagaya:3642"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "kumagaya-3130",
@@ -550,7 +876,9 @@
   "desc": "Rice with germinated brown rice: a rice bowl of white rice dotted with plump light brown sprouted brown rice grains",
   "items": [
    "kumagaya:151"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "kumagaya-3447",
@@ -566,7 +894,17 @@
   "desc": "Spinach omelette: a soft yellow folded omelette on a plate, cut showing green spinach mixed into the egg",
   "items": [
    "kumagaya:761"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 4,
+    "origin": "commons-search",
+    "file": "File:Egg_and_spinach_breakfast_omelet.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Egg_and_spinach_breakfast_omelet.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "kumagaya-2512",
@@ -574,7 +912,9 @@
   "desc": "Gyoza soup: a bowl of clear soy broth with whole plump boiled gyoza dumplings, cabbage, carrot and green onion",
   "items": [
    "kumagaya:2512"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "kumagaya-909",
@@ -582,7 +922,31 @@
   "desc": "Jelly fry: a flat oval deep-fried patty of okara and potato with no breadcrumbs, smooth dark brown surface, sauce-glazed, shaped like a coin, not a jelly",
   "items": [
    "kumagaya:909"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Zeri_Furai,_Gyohda,_Saitama,_Japan.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Zeri_Furai,_Gyohda,_Saitama,_Japan.JPG",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:Zellyfry_002.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Zellyfry_002.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "commons-search",
+    "file": "File:Zellyfry_001.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Zellyfry_001.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "kumagaya-3441",
@@ -590,7 +954,17 @@
   "desc": "Healthy salad: a small bowl of shredded cabbage, cucumber, carrot, wakame and corn in a light dressing",
   "items": [
    "kumagaya:3441"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 3,
+    "origin": "commons-search",
+    "file": "File:A_Nice_Healthy_Salad_(18549856070).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:A_Nice_Healthy_Salad_(18549856070).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "kumagaya-2735",
@@ -598,7 +972,9 @@
   "desc": "Allergen-free chocolate pudding: a small cup of smooth glossy dark brown chocolate pudding",
   "items": [
    "kumagaya:2735"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "kumagaya-163",
@@ -607,7 +983,17 @@
   "items": [
    "kumagaya:163",
    "kumagaya:02700"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Miso_soup_of_ofu_2014.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Miso_soup_of_ofu_2014.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "kumagaya-3306",
@@ -623,7 +1009,24 @@
   "desc": "Nibitashi: a small bowl of soft green leafy vegetables and golden aburaage strips simmered in a light clear dashi broth",
   "items": [
    "kumagaya:3350"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:NIBITASHI.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:NIBITASHI.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:JapaneseLightlySimmeredGreenVegetableAndFriedTofu_Nibitashi.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:JapaneseLightlySimmeredGreenVegetableAndFriedTofu_Nibitashi.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "kumagaya-115",
@@ -631,7 +1034,17 @@
   "desc": "Chinese noodles: a bowl of plain curly yellow ramen noodles, springy, no soup",
   "items": [
    "kumagaya:115"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 3,
+    "origin": "commons-search",
+    "file": "File:A_Box_of_Egg_Instant_Noodle_at_Chinese_Noodle_Shop_in_Shenzhen.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:A_Box_of_Egg_Instant_Noodle_at_Chinese_Noodle_Shop_in_Shenzhen.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "kumagaya-3509",
@@ -639,7 +1052,9 @@
   "desc": "Broccoli and bean salad: a small bowl of green broccoli florets with mixed beans, soybeans and kidney beans, in a light dressing",
   "items": [
    "kumagaya:3509"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "kumagaya-3552",
@@ -647,7 +1062,9 @@
   "desc": "Pork donburi topping: a bowl of thin pork slices and onion simmered in a sweet glossy dark soy sauce",
   "items": [
    "kumagaya:3552"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "kumagaya-2554",
@@ -655,7 +1072,17 @@
   "desc": "Vegetable shumai: small cylindrical steamed dumplings with thin yellow wrappers open at the top showing minced pork with green vegetables, on a plate",
   "items": [
    "kumagaya:2554"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:DFC_4109_Colorful_steamed_dim_sum_skewers_-_green_and_yellow_siu_mai_and_more_fresh_from_the_bamboo_steamer.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:DFC_4109_Colorful_steamed_dim_sum_skewers_-_green_and_yellow_siu_mai_and_more_fresh_from_the_bamboo_steamer.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "kumagaya-2151",
@@ -663,7 +1090,24 @@
   "desc": "Namul: a small dish of spinach, bean sprouts and carrot strips seasoned with sesame oil, mixed together and sprinkled with sesame seeds",
   "items": [
    "kumagaya:2151"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Korean_food-Bibim_ssambap_ingredient-01.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Korean_food-Bibim_ssambap_ingredient-01.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "jawiki-page",
+    "file": "File:Korean_cuisine-Sukjunamul-01.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Korean_cuisine-Sukjunamul-01.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "kumagaya-3240",
@@ -672,7 +1116,17 @@
   "items": [
    "kumagaya:3240",
    "kumagaya:03116"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Kenchinjiru_Yoshinoya_D&C_2007.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Kenchinjiru_Yoshinoya_D%26C_2007.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "kumagaya-3220",
@@ -688,7 +1142,9 @@
   "desc": "Katemeshi topping: a small bowl of finely chopped simmered vegetables, carrot, burdock, shiitake, aburaage and konnyaku, brown and glossy, for mixing into rice",
   "items": [
    "kumagaya:2933"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "kumagaya-2733",
@@ -705,7 +1161,9 @@
   "items": [
    "kumagaya:1963",
    "kumagaya:03508"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "kumagaya-3645",
@@ -713,7 +1171,17 @@
   "desc": "Napa cabbage soup: a bowl of clear broth with soft translucent napa cabbage pieces, carrot, a few pork slices and green onion",
   "items": [
    "kumagaya:3645"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:白菜スープ_(2083218799).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E7%99%BD%E8%8F%9C%E3%82%B9%E3%83%BC%E3%83%97_(2083218799).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "kumagaya-3539",
@@ -721,7 +1189,9 @@
   "desc": "Salt-flavoured fried chicken: chunks of karaage with a pale golden crunchy coating, juicy inside, on a plate",
   "items": [
    "kumagaya:3539"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "kumagaya-3644",
@@ -770,7 +1240,9 @@
   "desc": "Baked minced cutlet: an oval patty with a toasted golden breadcrumb coat, oven-baked not deep-fried, cut showing minced meat and onion",
   "items": [
    "kumagaya:3173"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "kumagaya-2114",
@@ -778,7 +1250,9 @@
   "desc": "Grape fruit punch: a small bowl of purple grape halves, mandarin segments and white nata de coco cubes in clear syrup",
   "items": [
    "kumagaya:2114"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "kumagaya-2520",
@@ -786,7 +1260,9 @@
   "desc": "Bean sprout miso soup: a lacquered bowl of cloudy miso soup with white bean sprouts, wakame and green onion",
   "items": [
    "kumagaya:2520"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "kumagaya-3563",
@@ -811,7 +1287,24 @@
   "desc": "Napa cabbage hot pot: a bowl of napa cabbage, pork slices, tofu, mushrooms, carrot and green onion simmered in a light broth",
   "items": [
    "kumagaya:3052"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Chinese_cabbage_hot_pot_(3190479925).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Chinese_cabbage_hot_pot_(3190479925).jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Chinese_cabbage_hot_pot_(4140947374).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Chinese_cabbage_hot_pot_(4140947374).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "kumagaya-3647",
@@ -828,7 +1321,9 @@
   "items": [
    "kumagaya:3292",
    "kumagaya:03292"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "kumagaya-3355",
@@ -836,7 +1331,24 @@
   "desc": "Lentil soup: a bowl of thick orange-brown soup of small soft lentils with diced carrot, onion and tomato",
   "items": [
    "kumagaya:3355"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Homemade_Lentil_Soup_-_Lavash_2025-02-10.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Homemade_Lentil_Soup_-_Lavash_2025-02-10.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "commons-search",
+    "file": "File:20221217_lentil_soup_Katowice_Panewniki.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:20221217_lentil_soup_Katowice_Panewniki.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "kumagaya-2601",
@@ -860,7 +1372,17 @@
   "desc": "Chocolate pudding: a small cup of smooth glossy brown chocolate pudding",
   "items": [
    "kumagaya:2735-2"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 3,
+    "origin": "commons-search",
+    "file": "File:Chocolate_pudding.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Chocolate_pudding.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "kumagaya-3108",
@@ -868,7 +1390,9 @@
   "desc": "Potato and onion miso soup: a lacquered bowl of cloudy miso soup with soft potato cubes, translucent onion slices and wakame",
   "items": [
    "kumagaya:3108"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "kumagaya-2230",
@@ -884,7 +1408,9 @@
   "desc": "Simmered root vegetables: a bowl of brown-stained chunks of daikon, carrot, lotus root, burdock, taro and konnyaku with chicken, glossy",
   "items": [
    "kumagaya:3189"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "kumagaya-2841",
@@ -900,7 +1426,9 @@
   "desc": "Aromatic grilled chicken: a piece of grilled chicken thigh with browned crisp skin, glazed with soy sauce, ginger and green onion bits",
   "items": [
    "kumagaya:746"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "kumagaya-2971",
@@ -924,7 +1452,9 @@
   "desc": "Wakame and corn salad: a small bowl of dark green wakame, yellow corn kernels, cucumber and cabbage in a light dressing",
   "items": [
    "kumagaya:2231"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "kumagaya-453",
@@ -932,7 +1462,24 @@
   "desc": "Keema curry without rice: a bowl of dry thick brown minced meat curry with finely diced carrot, onion and green peas",
   "items": [
    "kumagaya:453"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:Paubhajiindia.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Paubhajiindia.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "commons-cat",
+    "file": "File:Bihari_Keema.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Bihari_Keema.JPG",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "kumagaya-2914",
@@ -940,7 +1487,9 @@
   "desc": "Three-colour salad: a small bowl of cabbage, orange carrot strips and yellow corn with green cucumber in a light dressing",
   "items": [
    "kumagaya:2914"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "kumagaya-4",
@@ -948,7 +1497,17 @@
   "desc": "Nameko miso soup: a lacquered bowl of cloudy miso soup with small glossy amber-brown slippery nameko mushrooms, tofu cubes and green onion",
   "items": [
    "kumagaya:4"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Aka-Dashi_001.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Aka-Dashi_001.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "kumagaya-2611",

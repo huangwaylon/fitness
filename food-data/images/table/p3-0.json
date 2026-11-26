@@ -5,7 +5,9 @@
   "desc": "amaranth whole grain: a small dish heaped with tiny round pale golden-beige seeds, poppy-seed sized, raw and dry, not rice or millet",
   "items": [
    "mext:01001"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-01002",
@@ -13,7 +15,9 @@
   "desc": "awa, polished foxtail millet: a small dish of tiny round bright yellow grains, much smaller than rice, dry and raw",
   "items": [
    "mext:01002"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-01003",
@@ -21,7 +25,9 @@
   "desc": "awa-mochi: soft chewy rice cake studded with tiny yellow millet grains, pale yellow and speckled, cut into rounded pieces on a plate",
   "items": [
    "mext:01003"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-01005",
@@ -77,7 +83,9 @@
   "desc": "quinoa whole grain: a small dish of small round flat ivory-beige seeds, each with a faint ring around the edge, raw and dry",
   "items": [
    "mext:01167"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-01011",
@@ -85,7 +93,9 @@
   "desc": "kibi, polished proso millet: a small dish of tiny round glossy bright yellow grains, smaller than rice, dry and raw",
   "items": [
    "mext:01011"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-01012",
@@ -93,7 +103,17 @@
   "desc": "whole wheat berries, domestic: a small dish of oval golden-brown wheat kernels, each with a crease down one side, dry",
   "items": [
    "mext:01012"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Starr-180103-1555-Triticum_aestivum-Edison_white_whole_wheat_berries-Hawea_Pl_Olinda-Maui_(39392834135).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Starr-180103-1555-Triticum_aestivum-Edison_white_whole_wheat_berries-Hawea_Pl_Olinda-Maui_(39392834135).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-01013",
@@ -101,7 +121,31 @@
   "desc": "soft wheat berries: a small dish of plump pale golden oval wheat kernels with a crease, dry and raw",
   "items": [
    "mext:01013"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Starr-160614-0664-Triticum_aestivum-Bolero_soft_white_spring_wheat_berries_homegrown-Hawea_Pl_Olinda-Maui_(28033578696).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Starr-160614-0664-Triticum_aestivum-Bolero_soft_white_spring_wheat_berries_homegrown-Hawea_Pl_Olinda-Maui_(28033578696).jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Starr-160614-0662-Triticum_compactum-JD_soft_white_club_spring_wheat_berries_homegrown-Hawea_Pl_Olinda-Maui_(27964927432).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Starr-160614-0662-Triticum_compactum-JD_soft_white_club_spring_wheat_berries_homegrown-Hawea_Pl_Olinda-Maui_(27964927432).jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:Starr-160614-0663-Triticum_aestivum-White_Sonora_soft_white_spring_wheat_berries_homegrown-Hawea_Pl_Olinda-Maui_(28033573926).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Starr-160614-0663-Triticum_aestivum-White_Sonora_soft_white_spring_wheat_berries_homegrown-Hawea_Pl_Olinda-Maui_(28033573926).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-01014",
@@ -109,7 +153,45 @@
   "desc": "hard wheat berries: a small dish of small hard reddish-brown oval wheat kernels with a crease, glossy and dry",
   "items": [
    "mext:01014"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Starr-160614-0658-Triticum_aestivum-Heirloom_hard_red_spring_wheat_berries_homegrown-Hawea_Pl_Olinda-Maui_(27453647434).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Starr-160614-0658-Triticum_aestivum-Heirloom_hard_red_spring_wheat_berries_homegrown-Hawea_Pl_Olinda-Maui_(27453647434).jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Starr-160614-0665-Triticum_aestivum-Dayn_hard_white_spring_wheat_berries_homegrown-Hawea_Pl_Olinda-Maui_(28033585206).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Starr-160614-0665-Triticum_aestivum-Dayn_hard_white_spring_wheat_berries_homegrown-Hawea_Pl_Olinda-Maui_(28033585206).jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:Starr-160614-0661-Triticum_aestivum-Edison_hard_white_spring_wheat_berries_homegrown-Hawea_Pl_Olinda-Maui_(28033565446).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Starr-160614-0661-Triticum_aestivum-Edison_hard_white_spring_wheat_berries_homegrown-Hawea_Pl_Olinda-Maui_(28033565446).jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "commons-search",
+    "file": "File:Starr-160614-0660-Triticum_aestivum-Tevelde_hard_red_spring_wheat_berries_homegrown-Hawea_Pl_Olinda-Maui_(28067207435).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Starr-160614-0660-Triticum_aestivum-Tevelde_hard_red_spring_wheat_berries_homegrown-Hawea_Pl_Olinda-Maui_(28067207435).jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "commons-search",
+    "file": "File:Starr-160614-0657-Triticum_aestivum-Glenn_hard_red_spring_wheat_berries_homegrown-Hawea_Pl_Olinda-Maui_(28067198465).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Starr-160614-0657-Triticum_aestivum-Glenn_hard_red_spring_wheat_berries_homegrown-Hawea_Pl_Olinda-Maui_(28067198465).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-01016",
@@ -121,7 +203,38 @@
    "mext:01019",
    "mext:01021",
    "mext:01025"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Wheat-flour.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Wheat-flour.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:All-Purpose_Flour_(4107895947).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:All-Purpose_Flour_(4107895947).jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "commons-search",
+    "file": "File:Whole_wheat_grain_flour_being_scooped.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Whole_wheat_grain_flour_being_scooped.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "commons-search",
+    "file": "File:Wheat_flour_(Obusera).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Wheat_flour_(Obusera).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-01023",
@@ -129,7 +242,9 @@
   "desc": "whole wheat flour: a small dish holding a mound of light brown flour speckled with darker bran flecks",
   "items": [
    "mext:01023"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-01146",
@@ -153,7 +268,17 @@
   "desc": "tempura batter: a bowl of runny pale cream wheat batter with small lumps of flour, thin and liquid",
   "items": [
    "mext:01171"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Tempura_batter_(5442182582).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Tempura_batter_(5442182582).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-01172",
@@ -161,7 +286,9 @@
   "desc": "fried tempura batter bits: a small dish of small crunchy golden fried batter crumbs, light and lacy, no filling",
   "items": [
    "mext:01172"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-01175",
@@ -169,7 +296,9 @@
   "desc": "crustless white sandwich bread: a square slice of soft white bread with the crusts cut off, fine white crumb, on a plate",
   "items": [
    "mext:01175"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-01176",
@@ -177,7 +306,9 @@
   "desc": "bread crusts: thin golden-brown strips of crust cut from the edges of a square white loaf, piled on a plate",
   "items": [
    "mext:01176"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-01030",
@@ -185,7 +316,24 @@
   "desc": "kanpan, hard tack crackers: small thick square pale golden crackers, each with two pinholes, hard and dry, in a pile",
   "items": [
    "mext:01030"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:乾パン.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E4%B9%BE%E3%83%91%E3%83%B3.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "jawiki-page",
+    "file": "File:Navy-Biscuit2.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Navy-Biscuit2.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-01210",
@@ -193,7 +341,24 @@
   "desc": "walnut bread: a round brown bread loaf, one slice cut to show soft crumb studded with walnut pieces",
   "items": [
    "mext:01210"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Walnut_bread._(8619938178).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Walnut_bread._(8619938178).jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:First_attempt_at_homemade_walnut_bread_(8235748195).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:First_attempt_at_homemade_walnut_bread_(8235748195).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-01186",
@@ -233,7 +398,9 @@
   "desc": "sauteed steamed Chinese noodles: wavy yellow noodles stir-fried in oil, glossy and lightly browned, plain without sauce, on a plate",
   "items": [
    "mext:01188"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-01050",
@@ -241,7 +408,9 @@
   "desc": "dried Chinese noodles: a bundle of straight thin pale yellow dried ramen noodles, stiff and brittle",
   "items": [
    "mext:01050"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-01051",
@@ -249,7 +418,9 @@
   "desc": "boiled dried Chinese noodles: soft thin pale yellow noodles, slightly glossy, in a bowl, plain without broth",
   "items": [
    "mext:01051"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-01052",
@@ -257,7 +428,9 @@
   "desc": "raw Okinawa soba: thick flat yellowish wheat noodles, slightly wavy, lightly oiled, in a heap, not buckwheat",
   "items": [
    "mext:01052"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-01054",
@@ -281,7 +454,24 @@
   "desc": "seasoned instant fried ramen: a dry rectangular block of tightly wavy golden-brown fried noodles, crunchy, eaten as is",
   "items": [
    "mext:01056"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Instantnoodles.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Instantnoodles.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "jawiki",
+    "file": "File:Mama_instant_noodle_block.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Mama_instant_noodle_block.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-01189",
@@ -290,7 +480,9 @@
   "items": [
    "mext:01189",
    "mext:01190"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-01144",
@@ -298,7 +490,17 @@
   "desc": "dry instant fried ramen block: a rectangular block of tightly wavy pale golden fried noodles, uncooked",
   "items": [
    "mext:01144"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 2,
+    "origin": "jawiki",
+    "file": "File:Mama_instant_noodle_block.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Mama_instant_noodle_block.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-01058",
@@ -306,7 +508,17 @@
   "desc": "dry non-fried instant ramen: a matte pale cream block of wavy noodles beside small plain soup sachets",
   "items": [
    "mext:01058"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Instantnoodles.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Instantnoodles.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-01199",
@@ -314,7 +526,9 @@
   "desc": "cooked instant ramen with soup: a bowl of wavy yellow noodles in clear brown soy broth, plain with no toppings",
   "items": [
    "mext:01199"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-01145",
@@ -322,7 +536,17 @@
   "desc": "dry non-fried instant noodle block: a matte pale cream rectangular block of wavy noodles, not fried, uncooked",
   "items": [
    "mext:01145"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Instantnoodles.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Instantnoodles.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-01201",
@@ -330,7 +554,17 @@
   "desc": "cooked instant cup noodles, salt flavour: a round plain cup filled with pale clear broth, wavy yellow noodles and tiny dried vegetable bits",
   "items": [
    "mext:01201"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Nissin_Souper_Meal_-_Chicken_cooked.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Nissin_Souper_Meal_-_Chicken_cooked.JPG",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-01194",
@@ -348,7 +582,17 @@
   "desc": "cup yakisoba: a plain rectangular instant cup holding stir-fried wavy noodles coated in dark brown sauce, cabbage bits and green aonori flakes",
   "items": [
    "mext:01202"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Instant_yakisoba_003.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Instant_yakisoba_003.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-01061",
@@ -356,7 +600,9 @@
   "desc": "dry instant cup noodles: an open plain cup holding a dry pale noodle block topped with dried vegetable bits",
   "items": [
    "mext:01061"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-01203",
@@ -364,7 +610,17 @@
   "desc": "cooked instant cup noodles: a round plain cup of brown soy broth with wavy yellow noodles and tiny vegetable bits",
   "items": [
    "mext:01203"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Cup_of_cooked_Roasted_Beef_Noodle.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Cup_of_cooked_Roasted_Beef_Noodle.JPG",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-01204",
@@ -388,7 +644,9 @@
   "desc": "sauteed pasta: spaghetti and elbow macaroni tossed in oil, glossy pale yellow, plain without sauce, on a plate",
   "items": [
    "mext:01173"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-01065",
@@ -396,7 +654,9 @@
   "desc": "nama-fu, fresh wheat gluten: smooth dense chewy slices with no crust, not bread, pale white and soft green blocks with a glossy mochi-like surface",
   "items": [
    "mext:01065"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-01067",
@@ -404,7 +664,9 @@
   "desc": "ita-fu, dried baked wheat gluten: thin flat pale tan rectangular boards, light and porous, dry, not bread or crackers",
   "items": [
    "mext:01067"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-01068",
@@ -412,7 +674,9 @@
   "desc": "kuruma-fu: large dry rings of baked wheat gluten with a hole in the middle, the cut face showing a spiral of brown baked layers",
   "items": [
    "mext:01068"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-01177",
@@ -420,7 +684,9 @@
   "desc": "abura-fu: a long log of deep-fried wheat gluten, golden-brown crust, cut into rounds showing pale spongy porous insides",
   "items": [
    "mext:01177"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-01070",
@@ -428,7 +694,9 @@
   "desc": "wheat germ: a small dish of toasted flaky golden-brown granules",
   "items": [
    "mext:01070"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-01071",
@@ -436,7 +704,9 @@
   "desc": "wheat protein powder: a small dish of fine pale cream powder",
   "items": [
    "mext:01071"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-01072",
@@ -444,7 +714,9 @@
   "desc": "granular wheat protein: a small dish of small crumbly beige granules",
   "items": [
    "mext:01072"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-01073",
@@ -452,7 +724,9 @@
   "desc": "wheat protein paste: a small dish of smooth sticky beige paste",
   "items": [
    "mext:01073"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-01178",
@@ -476,7 +750,17 @@
   "desc": "raw spring roll wrappers: a stack of thin smooth square off-white wheat sheets, slightly translucent",
   "items": [
    "mext:01179"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:11_-_IMG_20150831_101912.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:11_-_IMG_20150831_101912.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-01077",
@@ -484,7 +768,9 @@
   "desc": "fresh panko: a small dish of fluffy coarse moist white breadcrumb flakes in large irregular shards",
   "items": [
    "mext:01077"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-01078",
@@ -492,7 +778,9 @@
   "desc": "semi-dried panko: a small dish of coarse pale cream breadcrumb flakes, slightly drier and crisper",
   "items": [
    "mext:01078"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-01081",
@@ -501,7 +789,9 @@
   "items": [
    "mext:01081",
    "mext:01103"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-01082",
@@ -510,7 +800,9 @@
   "items": [
    "mext:01082",
    "mext:01104"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-01151",
@@ -518,7 +810,9 @@
   "desc": "raw glutinous rice: a small dish of opaque chalky white short round grains, not translucent",
   "items": [
    "mext:01151"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-01152",
@@ -526,7 +820,9 @@
   "desc": "raw indica rice: a small dish of long slender translucent white grains",
   "items": [
    "mext:01152"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-01084",
@@ -534,7 +830,9 @@
   "desc": "haiga rice, germ rice: a small dish of raw white rice grains, each with a small yellowish germ spot at the tip",
   "items": [
    "mext:01084"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-01153",
@@ -542,7 +840,24 @@
   "desc": "germinated brown rice: a small dish of light brown raw rice grains with tiny pale sprout tips",
   "items": [
    "mext:01153"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Germinated_brown_rice_-_medium_grain.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Germinated_brown_rice_-_medium_grain.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Germinated_brown_rice_-_long_grain.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Germinated_brown_rice_-_long_grain.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-01181",
@@ -550,7 +865,24 @@
   "desc": "raw red rice: a small dish of short rice grains with reddish-brown bran",
   "items": [
    "mext:01181"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:赤小豆.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E8%B5%A4%E5%B0%8F%E8%B1%86.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Rice,_red-rice,_AIVANAM-like.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Rice,_red-rice,_AIVANAM-like.JPG",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-01182",
@@ -558,7 +890,31 @@
   "desc": "raw black rice: a small dish of glossy deep purple-black rice grains",
   "items": [
    "mext:01182"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Black_Rice.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Black_Rice.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:Chak-hao_paddy_(traditional_Meitei_aromatic_purple_rice_AKA_black_rice)_&_Meitei_Cheng_(traditionally_or_locally_grown_&_harvested_Meitei_indigenous_paddy_or_white_rice)_stored_in_Thumok_containers_(traditional_Meitei_baskets).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Chak-hao_paddy_(traditional_Meitei_aromatic_purple_rice_AKA_black_rice)_%26_Meitei_Cheng_(traditionally_or_locally_grown_%26_harvested_Meitei_indigenous_paddy_or_white_rice)_stored_in_Thumok_containers_(traditional_Meitei_baskets).jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "commons-search",
+    "file": "File:Black_rice_1.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Black_rice_1.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-01183",
@@ -566,7 +922,9 @@
   "desc": "cooked red rice: a rice bowl of cooked rice tinted a dusky pinkish-red, grains glossy",
   "items": [
    "mext:01183"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-01184",
@@ -574,7 +932,9 @@
   "desc": "cooked black rice: a rice bowl of glossy cooked rice in deep purple-black",
   "items": [
    "mext:01184"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-01185",
@@ -582,7 +942,9 @@
   "desc": "soft rice: a small bowl of very soft moist white rice, swollen grains between plain rice and porridge",
   "items": [
    "mext:01185"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-01090",
@@ -591,7 +953,9 @@
   "items": [
    "mext:01090",
    "mext:01214"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-01091",
@@ -600,7 +964,9 @@
   "items": [
    "mext:01091",
    "mext:01092"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-01094",
@@ -617,7 +983,9 @@
   "items": [
    "mext:01095",
    "mext:01096"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-01098",
@@ -625,7 +993,9 @@
   "desc": "omoyu from brown rice: a bowl of thin strained rice gruel, a cloudy pale beige liquid with no grains",
   "items": [
    "mext:01098"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-01099",
@@ -635,7 +1005,9 @@
    "mext:01099",
    "mext:01100",
    "mext:01101"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-01102",
@@ -643,7 +1015,9 @@
   "desc": "upland brown rice, raw: a small dish of short light tan brown rice grains",
   "items": [
    "mext:01102"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-01105",
@@ -651,7 +1025,24 @@
   "desc": "raw white rice: a small dish of short polished translucent white rice grains",
   "items": [
    "mext:01105"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Raw_rice_(white).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Raw_rice_(white).jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Raw_rice.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Raw_rice.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-01106",
@@ -659,7 +1050,24 @@
   "desc": "cooked brown rice: a rice bowl of glossy light brown cooked rice grains",
   "items": [
    "mext:01106"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Par_cooked_brown_rice_-_stonesoup_cropped.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Par_cooked_brown_rice_-_stonesoup_cropped.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:Par_cooked_brown_rice_-_stonesoup.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Par_cooked_brown_rice_-_stonesoup.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-01107",
@@ -668,7 +1076,9 @@
   "items": [
    "mext:01107",
    "mext:01108"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-01109",
@@ -676,7 +1086,38 @@
   "desc": "cooked white rice: a rice bowl heaped with glossy fluffy white rice",
   "items": [
    "mext:01109"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Cooked_white_rice.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Cooked_white_rice.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:JP_日本_Japan_京都_Kyoto_四條_Shijo_side_Sukiya_Restaurant_food_cooked_steamed_white_rice_June_2026_N13P_01.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:JP_%E6%97%A5%E6%9C%AC_Japan_%E4%BA%AC%E9%83%BD_Kyoto_%E5%9B%9B%E6%A2%9D_Shijo_side_Sukiya_Restaurant_food_cooked_steamed_white_rice_June_2026_N13P_01.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "commons-search",
+    "file": "File:A_food_flask_of_cooked_white_rice.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:A_food_flask_of_cooked_white_rice.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "commons-search",
+    "file": "File:JP_日本_Japan_京都_Kyoto_四條_Shijo_side_Sukiya_Restaurant_food_cooked_steamed_white_rice_June_2026_N13P_02.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:JP_%E6%97%A5%E6%9C%AC_Japan_%E4%BA%AC%E9%83%BD_Kyoto_%E5%9B%9B%E6%A2%9D_Shijo_side_Sukiya_Restaurant_food_cooked_steamed_white_rice_June_2026_N13P_02.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-01156",
@@ -684,7 +1125,17 @@
   "desc": "alpha rice, instant dried rice: a small dish of hard dry translucent white rice grains, slightly cracked, uncooked-looking",
   "items": [
    "mext:01156"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "enwiki",
+    "file": "File:Instant_brown_rice.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Instant_brown_rice.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-01114",
@@ -692,7 +1143,9 @@
   "desc": "joshinko, rice flour: a small dish of fine smooth pure white powder",
   "items": [
    "mext:01114"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-01157",
@@ -700,7 +1153,9 @@
   "desc": "brown rice flour: a small dish of fine light beige powder",
   "items": [
    "mext:01157"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-01212",
@@ -708,7 +1163,9 @@
   "desc": "rice flour dinner rolls: small rounded golden-brown rolls with smooth tops, one cut showing moist white crumb",
   "items": [
    "mext:01212"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-01159",
@@ -716,7 +1173,9 @@
   "desc": "gluten-free rice flour bread: a slice of square loaf with a pale golden crust and dense moist white crumb",
   "items": [
    "mext:01159"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-01116",
@@ -724,7 +1183,17 @@
   "desc": "kome-koji: rice grains coated in fluffy white mould, clumped into crumbly white cakes",
   "items": [
    "mext:01116"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Komekouji.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Komekouji.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-01119",
@@ -732,7 +1201,24 @@
   "desc": "akumaki: a log of glutinous rice cooked in lye until translucent amber-brown and jelly-like, sliced, on a bamboo sheath, with kinako",
   "items": [
    "mext:01119"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Akumaki.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Akumaki.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "commons-cat",
+    "file": "File:灰汁巻とは竹の皮で包んだもち米を灰汁汁_(5683201172).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E7%81%B0%E6%B1%81%E5%B7%BB%E3%81%A8%E3%81%AF%E7%AB%B9%E3%81%AE%E7%9A%AE%E3%81%A7%E5%8C%85%E3%82%93%E3%81%A0%E3%82%82%E3%81%A1%E7%B1%B3%E3%82%92%E7%81%B0%E6%B1%81%E6%B1%81_(5683201172).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-01121",
@@ -740,7 +1226,9 @@
   "desc": "domyoji-ko: a small dish of coarse white granules of crushed steamed glutinous rice, like cracked rice",
   "items": [
    "mext:01121"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-01161",
@@ -748,7 +1236,17 @@
   "desc": "rice bran: a small dish of soft fine light tan-yellow powder",
   "items": [
    "mext:01161"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Rice_bran.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Rice_bran.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-01122",
@@ -756,7 +1254,9 @@
   "desc": "whole buckwheat flour: a small dish of greyish-brown flour speckled with dark flecks",
   "items": [
    "mext:01122"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-01123",
@@ -764,7 +1264,9 @@
   "desc": "inner-layer buckwheat flour: a small dish of fine pale whitish-cream flour",
   "items": [
    "mext:01123"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-01124",
@@ -772,7 +1274,9 @@
   "desc": "middle-layer buckwheat flour: a small dish of fine light grey-beige flour with a faint green tint",
   "items": [
    "mext:01124"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-01125",
@@ -780,7 +1284,9 @@
   "desc": "outer-layer buckwheat flour: a small dish of darker greenish grey-brown flour with dark specks",
   "items": [
    "mext:01125"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-01126",
@@ -788,7 +1294,9 @@
   "desc": "sobamai, hulled buckwheat grains: a small dish of small pale green-beige triangular kernels",
   "items": [
    "mext:01126"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-01197",
@@ -804,7 +1312,9 @@
   "desc": "dried yellow corn kernels: a small dish of hard golden-yellow dent corn kernels",
   "items": [
    "mext:01131"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-01162",
@@ -812,7 +1322,9 @@
   "desc": "dried white corn kernels: a small dish of hard ivory-white dent corn kernels",
   "items": [
    "mext:01162"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-01132",
@@ -820,7 +1332,9 @@
   "desc": "yellow cornmeal: a small dish of coarse yellow meal",
   "items": [
    "mext:01132"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-01163",
@@ -828,7 +1342,9 @@
   "desc": "white cornmeal: a small dish of coarse off-white meal",
   "items": [
    "mext:01163"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-01133",

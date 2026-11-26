@@ -194,7 +194,9 @@
   "desc": "Boiled hijiki: rehydrated short black seaweed sprigs, plump, soft and moist with a slight sheen, in a small bowl",
   "items": [
    "mext:09054"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-09032",
@@ -202,7 +204,9 @@
   "desc": "Dried hitoegusa green laver: thin, papery, vivid green flakes of crumbled seaweed sheet, light and crisp, on a small plate",
   "items": [
    "mext:09032"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-09033",
@@ -210,7 +214,9 @@
   "desc": "Nori tsukudani: a glossy, thick, dark blackish-green seaweed paste simmered in soy and sugar, jam-like, in a small dish",
   "items": [
    "mext:09033"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-09035",
@@ -218,7 +224,9 @@
   "desc": "Dried matsumo seaweed: a thin crisp sheet of pressed fine, needle-like dark brown-black strands, on a small plate",
   "items": [
    "mext:09035"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-09036",
@@ -234,7 +242,24 @@
   "desc": "Raw wakame: a whole fresh frond, brownish olive-green and glossy, a broad wavy blade split into lobes along a thick central midrib",
   "items": [
    "mext:09039"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:CSIRO_ScienceImage_952_Undaria_pinnatifida_Japanese_kelp.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:CSIRO_ScienceImage_952_Undaria_pinnatifida_Japanese_kelp.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "jawiki-page",
+    "file": "File:CSIRO_ScienceImage_902_Undaria_pinnatifida_Japanese_kelp.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:CSIRO_ScienceImage_902_Undaria_pinnatifida_Japanese_kelp.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-09040",
@@ -242,7 +267,24 @@
   "desc": "Dried wakame: a small pile of crinkled, shrivelled, dark blackish-green pieces, dry and brittle, on a small plate",
   "items": [
    "mext:09040"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Dried_wakame.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Dried_wakame.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Salted_wakame_leaves.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Salted_wakame_leaves.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-09060",
@@ -299,7 +341,9 @@
   "desc": "Raw fat greenling (ainame): a whole fish with mottled yellow-brown body and a long dorsal fin, beside a cut fillet of white flesh",
   "items": [
    "mext:10001"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10002",
@@ -309,7 +353,9 @@
    "mext:10002",
    "mext:10030",
    "mext:10076"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10389",
@@ -317,7 +363,9 @@
   "desc": "Raw horse mackerel fillet, skinless: pale pinkish-beige glossy raw flesh with a darker red line, cut into slices on a plate",
   "items": [
    "mext:10389"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10004",
@@ -326,7 +374,9 @@
   "items": [
    "mext:10004",
    "mext:10009"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10391",
@@ -334,7 +384,9 @@
   "desc": "Raw small horse mackerels: whole small fish, silver with blue-green backs and a line of hard bony scutes along each side, on a plate",
   "items": [
    "mext:10391"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10392",
@@ -342,7 +394,9 @@
   "desc": "Deep-fried small horse mackerel: whole small fish fried crisp and golden-brown, fins and tails crunchy, on a plate with a lemon wedge",
   "items": [
    "mext:10392"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10393",
@@ -350,7 +404,9 @@
   "desc": "Raw round scad (maruaji): a whole slender, rounded silver fish with a bluish back, beside a pinkish raw fillet",
   "items": [
    "mext:10393"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10394",
@@ -359,7 +415,9 @@
   "items": [
    "mext:10394",
    "mext:10012"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10008",
@@ -367,7 +425,24 @@
   "desc": "Raw Atlantic horse mackerel: a whole silver fish with greenish back and bony scutes along the side, beside a pinkish raw fillet",
   "items": [
    "mext:10008"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Jurel_(Trachurus_trachurus),_Parque_natural_de_la_Arrábida,_Portugal,_2023-07-28,_DD_42.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Jurel_(Trachurus_trachurus),_Parque_natural_de_la_Arr%C3%A1bida,_Portugal,_2023-07-28,_DD_42.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Jurel_(Trachurus_trachurus),_Parque_natural_de_la_Arrábida,_Portugal,_2023-07-28,_DD_43.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Jurel_(Trachurus_trachurus),_Parque_natural_de_la_Arr%C3%A1bida,_Portugal,_2023-07-28,_DD_43.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10010",
@@ -375,7 +450,9 @@
   "desc": "Salt-grilled horse mackerel: a whole fish with golden-brown blistered skin and char marks, on a long rectangular plate with grated daikon",
   "items": [
    "mext:10010"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10457",
@@ -384,7 +461,9 @@
   "items": [
    "mext:10457",
    "mext:10013"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10458",
@@ -392,7 +471,9 @@
   "desc": "Grilled aji no hiraki: a butterflied dried horse mackerel, flat and open, golden-brown with char marks, on a plate with grated daikon",
   "items": [
    "mext:10458"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10011",
@@ -400,7 +481,31 @@
   "desc": "Raw mackerel scad (muroaji): a whole slender cylindrical fish with bluish back, silver belly and faint yellow side stripe, beside dark red flesh",
   "items": [
    "mext:10011"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Comètes_(Decapterus)_(Ifremer_00763-87549).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Com%C3%A8tes_(Decapterus)_(Ifremer_00763-87549).jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:Decapterus_(Ifremer_00535-64709_-_8952).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Decapterus_(Ifremer_00535-64709_-_8952).jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "commons-search",
+    "file": "File:Decapterus_koheru_(koheru).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Decapterus_koheru_(koheru).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10014",
@@ -408,7 +513,24 @@
   "desc": "Kusaya: a butterflied dried fish, dark amber-brown, stiff, leathery and glossy, torn into thin strips on a plate",
   "items": [
    "mext:10014"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Kusaya-oshima-march1-2007.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Kusaya-oshima-march1-2007.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "commons-search",
+    "file": "File:Kusaya_lunch_set_-_hachijojima_-_2018_5_5.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Kusaya_lunch_set_-_hachijojima_-_2018_5_5.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10015",
@@ -416,7 +538,17 @@
   "desc": "Raw conger eel (anago): a long slender grey-brown eel with a row of white dots along its side, beside a split-open flat white fillet",
   "items": [
    "mext:10015"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Conger.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Conger.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10017",
@@ -424,7 +556,9 @@
   "desc": "Raw amago trout: a slim whole fish with olive back, dark oval parr marks and small red spots along its silver side",
   "items": [
    "mext:10017"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10018",
@@ -432,7 +566,9 @@
   "desc": "Raw tilefish (amadai): a whole pinkish-red fish with a blunt square forehead and yellow marks below the eye, beside white fillet",
   "items": [
    "mext:10018"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10019",
@@ -440,7 +576,9 @@
   "desc": "Boiled tilefish: a plain simmered fillet with soft white flesh and pink skin, on a small plate, no sauce",
   "items": [
    "mext:10019"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10020",
@@ -448,7 +586,9 @@
   "desc": "Grilled tilefish: a fillet with crisp, upright golden scales on pink skin and moist white flesh, on a plate",
   "items": [
    "mext:10020"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10022",
@@ -457,7 +597,9 @@
   "items": [
    "mext:10022",
    "mext:10026"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10023",
@@ -466,7 +608,9 @@
   "items": [
    "mext:10023",
    "mext:10027"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10024",
@@ -475,7 +619,9 @@
   "items": [
    "mext:10024",
    "mext:10028"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10029",
@@ -483,7 +629,9 @@
   "desc": "Uruka: salted fermented ayu entrails, a glossy, chunky dark brown-grey paste in a tiny dish",
   "items": [
    "mext:10029"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10031",
@@ -491,7 +639,9 @@
   "desc": "Raw monkfish: chunks of firm white flesh with grey-brown skin and translucent gelatinous pieces, heaped on a plate",
   "items": [
    "mext:10031"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10032",
@@ -499,7 +649,9 @@
   "desc": "Raw monkfish liver (ankimo): a soft, smooth, glossy lobe of pale peach-orange liver, creamy-looking, on a plate",
   "items": [
    "mext:10032"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10033",
@@ -507,7 +659,9 @@
   "desc": "Raw sand lance (ikanago): small, pencil-thin, silvery and translucent little fish, in a heap on a plate",
   "items": [
    "mext:10033"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10034",
@@ -515,7 +669,9 @@
   "desc": "Dried sand lance (niboshi): small thin straight dried fish, stiff and silver-grey, in a pile on a plate",
   "items": [
    "mext:10034"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10035",
@@ -523,7 +679,17 @@
   "desc": "Ikanago kugini: small slender fish simmered in soy and sugar, dark brown, glossy, curled and clumped together, in a small dish",
   "items": [
    "mext:10035"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Ikanago_2.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Ikanago_2.JPG",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10036",
@@ -532,7 +698,9 @@
   "items": [
    "mext:10036",
    "mext:10278"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10037",
@@ -540,7 +708,9 @@
   "desc": "Raw grunt (isaki): a whole olive-grey fish with faint horizontal stripes, beside a white-pink raw fillet",
   "items": [
    "mext:10037"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10038",
@@ -548,7 +718,9 @@
   "desc": "Raw striped beakperch (ishidai): a whole grey-white fish with bold black vertical bands, beside a white fillet",
   "items": [
    "mext:10038"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10039",
@@ -556,7 +728,17 @@
   "desc": "Raw threadfin bream (itoyoridai): a whole pink fish with yellow lengthwise stripes and a long thread trailing from its tail fin",
   "items": [
    "mext:10039"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Besugato_de_Arabia_(Scolopsis_ghanam),_Zanzíbar,_Tanzania,_2024-06-01,_DD_66.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Besugato_de_Arabia_(Scolopsis_ghanam),_Zanz%C3%ADbar,_Tanzania,_2024-06-01,_DD_66.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10040",
@@ -565,7 +747,9 @@
   "items": [
    "mext:10040",
    "mext:10200"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10041",
@@ -581,7 +765,9 @@
   "desc": "Raw round herring (urume iwashi): a slim whole sardine with a large eye, blue back and silver belly",
   "items": [
    "mext:10042"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10043",
@@ -589,7 +775,9 @@
   "desc": "Dried round herrings (maruboshi): whole small fish, silver-blue, stiff and slightly wrinkled, lined up on a plate",
   "items": [
    "mext:10043"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10044",
@@ -605,7 +793,24 @@
   "desc": "Tazukuri: tiny whole dried baby sardines glazed in sweet soy syrup, glossy amber-brown and crisp, in a small dish",
   "items": [
    "mext:10046"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Gomame.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Gomame.JPG",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "commons-search",
+    "file": "File:カネハツ_伊勢湾産たつくり_20250106_1815-4.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E3%82%AB%E3%83%8D%E3%83%8F%E3%83%84_%E4%BC%8A%E5%8B%A2%E6%B9%BE%E7%94%A3%E3%81%9F%E3%81%A4%E3%81%8F%E3%82%8A_20250106_1815-4.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10048",
@@ -613,7 +818,9 @@
   "desc": "Boiled sardine: a whole plain-cooked sardine, soft grey-white body with a row of dark spots on its side, on a small plate",
   "items": [
    "mext:10048"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10049",
@@ -621,7 +828,17 @@
   "desc": "Salt-grilled sardines: whole fish with blistered browned skin and a row of dark spots on silver sides, on a plate",
   "items": [
    "mext:10049"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:いわしのごま漬け20250607-P1068765.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E3%81%84%E3%82%8F%E3%81%97%E3%81%AE%E3%81%94%E3%81%BE%E6%BC%AC%E3%81%9120250607-P1068765.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10395",
@@ -629,7 +846,9 @@
   "desc": "Sardine fry: butterflied sardines in crisp golden panko crust, on a plate with shredded cabbage",
   "items": [
    "mext:10395"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10050",
@@ -637,7 +856,9 @@
   "desc": "Salted sardine: a whole firm sardine, dull silver skin dusted with salt crystals, on a plate",
   "items": [
    "mext:10050"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10051",
@@ -645,7 +866,9 @@
   "desc": "Semi-dried sardines: whole sardines lightly dried, slightly wrinkled glossy silver-blue skin, on a plate",
   "items": [
    "mext:10051"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10053",
@@ -653,7 +876,9 @@
   "desc": "Mezashi: several small dried sardines skewered together through the eyes on a straw or bamboo stick, silvery, raw",
   "items": [
    "mext:10053"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10054",
@@ -661,7 +886,17 @@
   "desc": "Grilled mezashi: a skewered row of small dried sardines, browned and slightly charred, on a plate",
   "items": [
    "mext:10054"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Mezashi_by_Kossy@FINEDAYS_in_Tokyo.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Mezashi_by_Kossy@FINEDAYS_in_Tokyo.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10396",
@@ -669,7 +904,31 @@
   "desc": "Raw whitebait (nama shirasu): tiny glassy, translucent baby fish with black dot eyes, heaped in a small dish",
   "items": [
    "mext:10396"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:淡路島に来ました。遅めの昼食は、ビジュアルに目がくらんでしまった、生しらす丼です。_卵としらすの滑らかさ、美味しい！_(50049410231).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E6%B7%A1%E8%B7%AF%E5%B3%B6%E3%81%AB%E6%9D%A5%E3%81%BE%E3%81%97%E3%81%9F%E3%80%82%E9%81%85%E3%82%81%E3%81%AE%E6%98%BC%E9%A3%9F%E3%81%AF%E3%80%81%E3%83%93%E3%82%B8%E3%83%A5%E3%82%A2%E3%83%AB%E3%81%AB%E7%9B%AE%E3%81%8C%E3%81%8F%E3%82%89%E3%82%93%E3%81%A7%E3%81%97%E3%81%BE%E3%81%A3%E3%81%9F%E3%80%81%E7%94%9F%E3%81%97%E3%82%89%E3%81%99%E4%B8%BC%E3%81%A7%E3%81%99%E3%80%82_%E5%8D%B5%E3%81%A8%E3%81%97%E3%82%89%E3%81%99%E3%81%AE%E6%BB%91%E3%82%89%E3%81%8B%E3%81%95%E3%80%81%E7%BE%8E%E5%91%B3%E3%81%97%E3%81%84%EF%BC%81_(50049410231).jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "commons-search",
+    "file": "File:Shirasu-don_003.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Shirasu-don_003.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "commons-search",
+    "file": "File:Japanese_raw_whitebait_2014.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Japanese_raw_whitebait_2014.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10056",
@@ -677,7 +936,17 @@
   "desc": "Shirasu-boshi: boiled and dried whitebait, tiny opaque white fluffy little fish with black eyes, soft pile in a small dish",
   "items": [
    "mext:10056"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Dried_whitebait_for_sale_-_Funabashi_Japan_-_Nov_2014.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Dried_whitebait_for_sale_-_Funabashi_Japan_-_Nov_2014.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10057",
@@ -685,7 +954,17 @@
   "desc": "Tatami iwashi: a thin, crisp rectangular sheet of tiny whitebait dried together in a lacy mesh, pale beige, on a plate",
   "items": [
    "mext:10057"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Tatami-iwashi.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Tatami-iwashi.JPG",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10058",
@@ -694,7 +973,9 @@
   "items": [
    "mext:10058",
    "mext:10059"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10060",
@@ -702,7 +983,31 @@
   "desc": "Canned sardines in water: whole pale grey-silver sardine pieces in clear liquid, in an open can",
   "items": [
    "mext:10060"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:2006_sardines_can_open.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:2006_sardines_can_open.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:2006_sardines_plate.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:2006_sardines_plate.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "commons-search",
+    "file": "File:2006_sardines_plate_ruler.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:2006_sardines_plate_ruler.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10061",
@@ -710,7 +1015,9 @@
   "desc": "Canned seasoned sardines: glossy brown sardine pieces in dark sweet soy sauce, in an open can",
   "items": [
    "mext:10061"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10062",
@@ -718,7 +1025,9 @@
   "desc": "Canned sardines in tomato: sardines in bright red tomato sauce, in an open oval can",
   "items": [
    "mext:10062"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10064",
@@ -726,7 +1035,9 @@
   "desc": "Canned sardine kabayaki: flat fillets glazed with thick, glossy dark brown sweet soy sauce, in a shallow open can",
   "items": [
    "mext:10064"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10397",
@@ -734,7 +1045,9 @@
   "desc": "Anchovies: thin, flat, brownish-pink salted fillets lying in olive oil in a small flat open tin",
   "items": [
    "mext:10397"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10065",
@@ -742,7 +1055,9 @@
   "desc": "Raw char (iwana): a slender whole fish, dark olive-brown with pale white and orange spots and white-edged fins",
   "items": [
    "mext:10065"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10066",
@@ -750,7 +1065,9 @@
   "desc": "Raw dace (ugui): a slender whole silvery fish with greenish back and faint reddish stripes, on a plate",
   "items": [
    "mext:10066"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10067",
@@ -758,7 +1075,9 @@
   "desc": "Raw eel: a long, slick dark grey-black eel beside a split-open flat white fillet with skin",
   "items": [
    "mext:10067"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10068",
@@ -766,7 +1085,9 @@
   "desc": "Raw eel liver: small soft dark pinkish-brown pieces of eel liver and innards, in a small dish",
   "items": [
    "mext:10068"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10071",
@@ -774,7 +1095,9 @@
   "desc": "Raw black scraper (umazurahagi): a flat grey-blue filefish with long snout and a spine on its head, beside a skinned white fillet",
   "items": [
    "mext:10071"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10072",
@@ -790,7 +1113,9 @@
   "desc": "Raw ray: pieces of ray wing, pale pinkish-white flesh with fine parallel cartilage lines, grey skin on one side",
   "items": [
    "mext:10073"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10074",
@@ -798,7 +1123,38 @@
   "desc": "Raw lizardfish (eso): a slender brownish whole fish with a lizard-like head and wide mouth, beside white fillet",
   "items": [
    "mext:10074"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Synodus_intermedius-lizardfish_profile_IMG_4812.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Synodus_intermedius-lizardfish_profile_IMG_4812.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:Synodus_intermedius-lizardfish_IMG_4817.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Synodus_intermedius-lizardfish_IMG_4817.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "commons-search",
+    "file": "File:Chile_lagarto_(Synodus_lacertinus),_La_Paz,_Baja_California,_México,_2024-12-20,_DD_64.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Chile_lagarto_(Synodus_lacertinus),_La_Paz,_Baja_California,_M%C3%A9xico,_2024-12-20,_DD_64.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "commons-search",
+    "file": "File:Pez_lagarto_diamante_(Synodus_synodus),_franja_marina_Teno-Rasca,_Tenerife,_España,_2022-01-08,_DD_42.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Pez_lagarto_diamante_(Synodus_synodus),_franja_marina_Teno-Rasca,_Tenerife,_Espa%C3%B1a,_2022-01-08,_DD_42.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10075",
@@ -806,7 +1162,17 @@
   "desc": "Raw pale chub (oikawa): small whole silvery minnows, with faint blue-green and pink stripes, on a plate",
   "items": [
    "mext:10075"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:おいかわ.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:%E3%81%8A%E3%81%84%E3%81%8B%E3%82%8F.JPG",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10077",
@@ -814,7 +1180,31 @@
   "desc": "Raw devil stingfish (okoze): a whole knobby, warty, mottled red-brown fish with spiny fins, beside a white fillet",
   "items": [
    "mext:10077"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Inimicus_japonicus.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Inimicus_japonicus.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Inimicus_japonicus_Nanami.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Inimicus_japonicus_Nanami.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:Inimicus_japonicus_Mitosea.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Inimicus_japonicus_Mitosea.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10078",
@@ -822,7 +1212,9 @@
   "desc": "Raw Pacific halibut: a thick slab of firm white raw fillet with a grey skin edge, on a plate",
   "items": [
    "mext:10078"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10079",
@@ -830,7 +1222,17 @@
   "desc": "Raw scorpionfish (kasago): a whole mottled red-brown fish with a spiny head and fins, beside a white fillet",
   "items": [
    "mext:10079"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 3,
+    "origin": "commons-search",
+    "file": "File:Escórpora_(Scorpaena_notata),_Catania,_Sicilia,_Italia,_2025-04-04,_DD_32.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Esc%C3%B3rpora_(Scorpaena_notata),_Catania,_Sicilia,_Italia,_2025-04-04,_DD_32.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10080",
@@ -838,7 +1240,9 @@
   "desc": "Raw sculpin (kajika): small whole freshwater fish, mottled brown, with a big flat head and wide mouth",
   "items": [
    "mext:10080"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10081",
@@ -846,7 +1250,9 @@
   "desc": "Boiled sculpin: small whole plain-cooked fish, opaque grey-brown with big flat heads, on a small plate",
   "items": [
    "mext:10081"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10082",
@@ -855,7 +1261,24 @@
   "items": [
    "mext:10082",
    "mext:10226"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Ikadaba'e,_Tsukudani_of_Hae_fish.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Ikadaba%27e,_Tsukudani_of_Hae_fish.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "commons-search",
+    "file": "File:Ikanago_1.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Ikanago_1.JPG",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10083",
@@ -879,7 +1302,9 @@
   "desc": "Grilled swordfish: a thick white steak with brown grill marks, firm and moist, on a plate",
   "items": [
    "mext:10398"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10088",
@@ -895,7 +1320,9 @@
   "desc": "Namari: chunks of boiled bonito, firm, matte, dark reddish-brown and flaky, on a plate",
   "items": [
    "mext:10089"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10090",
@@ -903,7 +1330,9 @@
   "desc": "Namaribushi: a steamed, lightly smoked bonito loin, brown outside, with a cut showing flaky dark pinkish-brown inside",
   "items": [
    "mext:10090"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10446",
@@ -911,7 +1340,17 @@
   "desc": "Dried bonito block (hadakabushi): a hard, wood-like dark brown smoked fish loin, a cut end showing a dense dark red-brown core",
   "items": [
    "mext:10446"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Katsuobushi_block.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Katsuobushi_block.JPG",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10093",
@@ -919,7 +1358,9 @@
   "desc": "Bonito flake tsukudani: clumps of shaved bonito flakes simmered in soy, glossy dark brown with sesame seeds, in a small dish",
   "items": [
    "mext:10093"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10094",
@@ -927,7 +1368,9 @@
   "desc": "Bonito kakuni: small cubes of bonito simmered in sweet soy, dark brown, glossy and firm, in a small dish",
   "items": [
    "mext:10094"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10095",
@@ -935,7 +1378,9 @@
   "desc": "Bonito shiokara (shuto): salted fermented bonito entrails, a chunky dark reddish-brown paste in a tiny dish",
   "items": [
    "mext:10095"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10097",
@@ -943,7 +1388,9 @@
   "desc": "Canned bonito flakes in oil: flaked light brown cooked fish soaked in oil, in an open can",
   "items": [
    "mext:10097"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10098",
@@ -951,7 +1398,9 @@
   "desc": "Raw barracuda (kamasu): a long slender silvery fish with a pointed snout and jutting lower jaw, beside white fillet",
   "items": [
    "mext:10098"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10099",
@@ -959,7 +1408,9 @@
   "desc": "Salt-grilled barracuda: a whole long slim fish with browned crisp skin, on a long plate",
   "items": [
    "mext:10099"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10100",
@@ -968,7 +1419,17 @@
   "items": [
    "mext:10100",
    "mext:10103"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Pleuronectes_platessa.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Pleuronectes_platessa.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10101",
@@ -976,7 +1437,9 @@
   "desc": "Boiled flatfish: a plain-cooked piece of flounder, opaque white flesh with brown skin, on a small plate, no sauce",
   "items": [
    "mext:10101"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10102",
@@ -985,7 +1448,17 @@
   "items": [
    "mext:10102",
    "mext:10399"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Grilled_Plaice_&_Chips_-_Chipwick_2026-09-15.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Grilled_Plaice_%26_Chips_-_Chipwick_2026-09-15.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10105",
@@ -1001,7 +1474,9 @@
   "desc": "Dried flounder: a whole flat flatfish dried stiff, golden-brown with translucent fins, on a plate",
   "items": [
    "mext:10106"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10107",
@@ -1009,7 +1484,17 @@
   "desc": "Raw filefish (kawahagi): a flat diamond-shaped fish with rough grey-brown skin and a spine on its head, beside skinned white fillet",
   "items": [
    "mext:10107"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 4,
+    "origin": "commons-search",
+    "file": "File:Gallito_(Stephanolepis_hispidus),_franja_marina_Teno-Rasca,_Tenerife,_España,_2022-01-06,_DD_16.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Gallito_(Stephanolepis_hispidus),_franja_marina_Teno-Rasca,_Tenerife,_Espa%C3%B1a,_2022-01-06,_DD_16.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10424",
@@ -1017,7 +1502,45 @@
   "desc": "Raw amberjack (kanpachi): a block of glossy pinkish-white raw flesh cut into firm sashimi slices",
   "items": [
    "mext:10424"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Bangeo-hoe_5.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Bangeo-hoe_5.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Bangeo-hoe_1.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Bangeo-hoe_1.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:Bangeo-hoe_3.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Bangeo-hoe_3.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "commons-search",
+    "file": "File:Bangeo-hoe_4.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Bangeo-hoe_4.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "commons-search",
+    "file": "File:Bangeo-hoe_2.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Bangeo-hoe_2.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10110",
@@ -1025,7 +1548,9 @@
   "desc": "Raw thornyhead (kichiji): a whole bright red fish with big eyes and a black spot on its dorsal fin",
   "items": [
    "mext:10110"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10111",
@@ -1033,7 +1558,31 @@
   "desc": "Raw kibinago: small slender translucent fish with a bright silver-blue stripe along the side, arranged in a fan on a plate",
   "items": [
    "mext:10111"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Kibinago_sashimi_with_chopsticks_by_jetalone_in_Kagoshima.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Kibinago_sashimi_with_chopsticks_by_jetalone_in_Kagoshima.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "commons-search",
+    "file": "File:Kibinago_sashimi_closeup_by_jetalone_in_Kagoshima.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Kibinago_sashimi_closeup_by_jetalone_in_Kagoshima.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "commons-search",
+    "file": "File:Kibinago_sashimi_by_jetalone_in_Kagoshima.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Kibinago_sashimi_by_jetalone_in_Kagoshima.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10112",
@@ -1041,7 +1590,9 @@
   "desc": "Seasoned dried kibinago: small stiff dried fish, glossy light brown, in a pile on a plate",
   "items": [
    "mext:10112"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10113",
@@ -1049,7 +1600,38 @@
   "desc": "Caviar: small round glossy black-grey fish eggs heaped in a small dish",
   "items": [
    "mext:10113"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Caviar_spoons.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Caviar_spoons.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Caviar_001.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Caviar_001.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:Caviar_-_beluga_and_salmon.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Caviar_-_beluga_and_salmon.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "commons-search",
+    "file": "File:Poached_egg_with_green_asparagus_and_Caviar_01.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Poached_egg_with_green_asparagus_and_Caviar_01.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10114",
@@ -1057,7 +1639,9 @@
   "desc": "Raw kingclip: a firm white fillet with pinkish mottled skin, on a plate",
   "items": [
    "mext:10114"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10401",
@@ -1065,7 +1649,9 @@
   "desc": "Boiled sablefish (gindara): a thick fillet of soft, rich, white flaky flesh with dark grey-black skin, plain, on a plate",
   "items": [
    "mext:10401"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10117",
@@ -1073,7 +1659,9 @@
   "desc": "Raw croaker (guchi): a whole silver-grey fish with a golden-yellow tinge, beside a white fillet",
   "items": [
    "mext:10117"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10118",
@@ -1081,7 +1669,9 @@
   "desc": "Salt-grilled croaker: a whole silver fish with browned skin and char marks, on a plate",
   "items": [
    "mext:10118"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10119",

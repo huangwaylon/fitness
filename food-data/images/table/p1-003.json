@@ -3197,7 +3197,45 @@
   "desc": "a whole fresh kinmedai golden-eye snapper, bright red fish with big golden eyes",
   "items": [
    "mext:10116"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Beryx_long_(Beryx_splendens)_(Ifremer_00763-87519).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Beryx_long_(Beryx_splendens)_(Ifremer_00763-87519).jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Splendid_alfonsino_(_Beryx_splendens_).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Splendid_alfonsino_(_Beryx_splendens_).jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:Beryx_splendens_Marinepia.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Beryx_splendens_Marinepia.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "commons-search",
+    "file": "File:Beryx_splendens_India.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Beryx_splendens_India.JPG",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "commons-search",
+    "file": "File:Beryx_splendens_Lowe,_1834.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Beryx_splendens_Lowe,_1834.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10130",
@@ -3209,7 +3247,17 @@
    "mext:10144",
    "mext:10438",
    "mext:10146"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Oncorhynchus_keta.jpeg",
+    "page": "https://commons.wikimedia.org/wiki/File:Oncorhynchus_keta.jpeg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10136",
@@ -3218,7 +3266,9 @@
   "items": [
    "mext:10136",
    "mext:10145"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10139",
@@ -3226,7 +3276,17 @@
   "desc": "a raw salted salmon fillet (shiozake), deep orange-red flesh with white fat lines and silver skin",
   "items": [
    "mext:10139"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 4,
+    "origin": "commons-search",
+    "file": "File:Salted_Salmon_by_Ikeda_Kametaro_(Sakata_City_Museum_of_Art).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Salted_Salmon_by_Ikeda_Kametaro_(Sakata_City_Museum_of_Art).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10140",
@@ -3234,7 +3294,31 @@
   "desc": "a small dish of ikura, glossy bright orange translucent salmon roe pearls",
   "items": [
    "mext:10140"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Ikura_temaki_zushi_by_Adonis_Chen_in_Taipei.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Ikura_temaki_zushi_by_Adonis_Chen_in_Taipei.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:Ikura.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Ikura.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "jawiki-page",
+    "file": "File:Rhodurusっ子（魚卵）のしょうゆ漬.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Rhodurus%E3%81%A3%E5%AD%90%EF%BC%88%E9%AD%9A%E5%8D%B5%EF%BC%89%E3%81%AE%E3%81%97%E3%82%87%E3%81%86%E3%82%86%E6%BC%AC.JPG",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10141",
@@ -3242,7 +3326,17 @@
   "desc": "a skein of sujiko, salmon roe still held together in a membrane, deep red-orange",
   "items": [
    "mext:10141"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Salmon_roe_in_Japanese_supermarket_-_Aug_19_2021.jpeg",
+    "page": "https://commons.wikimedia.org/wiki/File:Salmon_roe_in_Japanese_supermarket_-_Aug_19_2021.jpeg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10149",
@@ -3250,7 +3344,17 @@
   "desc": "a raw sockeye salmon fillet, deep red-orange flesh, silver skin",
   "items": [
    "mext:10149"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Oncorhynchus_nerka.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Oncorhynchus_nerka.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10151",
@@ -3258,7 +3362,38 @@
   "desc": "slices of smoked salmon, thin glossy translucent orange-pink slices on a plate with a lemon wedge",
   "items": [
    "mext:10151"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Flickr_-_cyclonebill_-_Laksemadder.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Flickr_-_cyclonebill_-_Laksemadder.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:Salade_de_jambon_cru_et_saumon_fume.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Salade_de_jambon_cru_et_saumon_fume.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "enwiki",
+    "file": "File:2014_smoked_salmon_and_egg_salad_toasted_baguette.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:2014_smoked_salmon_and_egg_salad_toasted_baguette.JPG",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "enwiki-page",
+    "file": "File:Flickr_avlxyz_389029647--Smoked_salmon_eggs_Benedict.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Flickr_avlxyz_389029647--Smoked_salmon_eggs_Benedict.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10154",
@@ -3267,7 +3402,17 @@
   "items": [
    "mext:10154",
    "mext:10158"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Maquereaux_etal.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Maquereaux_etal.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10156",
@@ -3275,7 +3420,17 @@
   "desc": "a grilled mackerel fillet, crisp blistered dark skin with wavy stripes and white flesh",
   "items": [
    "mext:10156"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 4,
+    "origin": "enwiki-page",
+    "file": "File:Flickr_-_cyclonebill_-_Rugbrød_med_røget_pebermakrel.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Flickr_-_cyclonebill_-_Rugbr%C3%B8d_med_r%C3%B8get_pebermakrel.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10161",
@@ -3287,7 +3442,9 @@
    "toyonaka:117813",
    "kumagaya:2195",
    "kumagaya:02195"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10163",
@@ -3295,7 +3452,24 @@
   "desc": "slices of shime saba vinegar-cured mackerel, silver-blue patterned skin and pale pink-white flesh",
   "items": [
    "mext:10163"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Japanese_shimesaba_2014.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Japanese_shimesaba_2014.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "jawiki-page",
+    "file": "File:Shimesaba.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Shimesaba.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10164",
@@ -3303,7 +3477,17 @@
   "desc": "a small dish of canned mackerel in water, pale chunks with silver skin",
   "items": [
    "mext:10164"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Canned_Mackerel_and_Snail_from_Dollarama.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Canned_Mackerel_and_Snail_from_Dollarama.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10165",
@@ -3311,7 +3495,9 @@
   "desc": "canned mackerel in miso, chunks in thick brown miso sauce in a small dish",
   "items": [
    "mext:10165"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10166",
@@ -3319,7 +3505,9 @@
   "desc": "canned seasoned mackerel, brown soy-coloured chunks in a small dish",
   "items": [
    "mext:10166"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10171",
@@ -3327,7 +3515,9 @@
   "desc": "a raw sawara Spanish mackerel fillet, pale white flesh with grey spotted skin",
   "items": [
    "mext:10171"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10173",
@@ -3335,7 +3525,9 @@
   "desc": "a whole fresh saury (sanma), a long slim silver fish with a pointed jaw",
   "items": [
    "mext:10173"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10174",
@@ -3345,7 +3537,9 @@
    "mext:10174",
    "dishes:sanma-shioyaki",
    "kurume:077"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10178",
@@ -3361,7 +3555,38 @@
   "desc": "a few raw capelin (shishamo), small slim silver fish with plump bellies",
   "items": [
    "mext:10182"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Mallotus_villosus.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Mallotus_villosus.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:FMIB_40085_Capelin_(Mallotus_villosus).jpeg",
+    "page": "https://commons.wikimedia.org/wiki/File:FMIB_40085_Capelin_(Mallotus_villosus).jpeg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:FMIB_51791_Capelin,_Mallotus_villosus_L_Corsswater_Bay.jpeg",
+    "page": "https://commons.wikimedia.org/wiki/File:FMIB_51791_Capelin,_Mallotus_villosus_L_Corsswater_Bay.jpeg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "commons-search",
+    "file": "File:Mallotus_villosus_drawing.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Mallotus_villosus_drawing.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10183",
@@ -3369,7 +3594,9 @@
   "desc": "a few grilled shishamo capelin, small golden-brown grilled fish with roe-filled bellies",
   "items": [
    "mext:10183"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10188",
@@ -3377,7 +3604,9 @@
   "desc": "a raw sea bass fillet, white flesh with silver skin",
   "items": [
    "mext:10188"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10192",
@@ -3386,7 +3615,31 @@
   "items": [
    "mext:10192",
    "mext:10193"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Painting_of_a_Red_Sea_Bream_(Tai)_by_Ogawa_Haritsu,_18th_century.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Painting_of_a_Red_Sea_Bream_(Tai)_by_Ogawa_Haritsu,_18th_century.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:Pagrus_major_Red_seabream_ja01.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Pagrus_major_Red_seabream_ja01.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "commons-search",
+    "file": "File:Red_sea_bream.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Red_sea_bream.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10198",
@@ -3394,7 +3647,24 @@
   "desc": "a piece of cutlassfish, long ribbon-like shiny silver fish",
   "items": [
    "mext:10198"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Evoxymetopon_taeniatus1.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Evoxymetopon_taeniatus1.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "commons-search",
+    "file": "File:Frozen_hairtail_fish_strips.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Frozen_hairtail_fish_strips.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10202",
@@ -3402,7 +3672,17 @@
   "desc": "a pair of tarako, pollock roe sacs, plump pale pink-orange",
   "items": [
    "mext:10202"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 3,
+    "origin": "commons-search",
+    "file": "File:Myeongnanjeot_(pollock_roe)_4.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Myeongnanjeot_(pollock_roe)_4.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10203",
@@ -3410,7 +3690,9 @@
   "desc": "grilled tarako, lightly browned pinkish roe sacs, one cut",
   "items": [
    "mext:10203"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10204",
@@ -3418,7 +3700,17 @@
   "desc": "a pair of mentaiko spicy pollock roe sacs, bright red-orange, one cut showing grainy roe",
   "items": [
    "mext:10204"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:Mentaiko_by_Kanko.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Mentaiko_by_Kanko.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10205",
@@ -3427,7 +3719,17 @@
   "items": [
    "mext:10205",
    "mext:10208"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Atlantic_cod.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Atlantic_cod.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10207",
@@ -3435,7 +3737,17 @@
   "desc": "cod milt (shirako), soft creamy white brain-like folds in a small dish with ponzu",
   "items": [
    "mext:10207"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "jawiki-page",
+    "file": "File:Shirako.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Shirako.JPG",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10222",
@@ -3445,7 +3757,24 @@
    "mext:10222",
    "mext:10224",
    "dishes:kazunoko"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Kazunoko_(5310618428).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Kazunoko_(5310618428).jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "enwiki-page",
+    "file": "File:Herring_roe.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Herring_roe.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10234",
@@ -3453,7 +3782,9 @@
   "desc": "thin slices of hirame flounder sashimi, translucent white, fanned on a plate",
   "items": [
    "mext:10234"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10241",
@@ -3461,7 +3792,9 @@
   "desc": "a raw yellowtail (buri) fillet, pale pinkish flesh with a dark red stripe, a few sashimi slices",
   "items": [
    "mext:10241"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10242",
@@ -3469,7 +3802,9 @@
   "desc": "a grilled yellowtail fillet, golden-brown with light grill marks",
   "items": [
    "mext:10242"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10243",
@@ -3477,7 +3812,9 @@
   "desc": "slices of hamachi yellowtail sashimi, glossy pale pink flesh with a dark band",
   "items": [
    "mext:10243"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10248",
@@ -3507,7 +3844,9 @@
    "mext:10450",
    "mext:10425",
    "dishes:maguro-sashimi"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10254",
@@ -3516,7 +3855,9 @@
   "items": [
    "mext:10254",
    "mext:10459"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  },
  {
   "key": "mext-10255",
@@ -3524,6 +3865,8 @@
   "desc": "slices of albacore tuna, pale pink flesh",
   "items": [
    "mext:10255"
-  ]
+  ],
+  "refs": [],
+  "vet": "vetted in the Claude check"
  }
 ]
