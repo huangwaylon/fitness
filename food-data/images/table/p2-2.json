@@ -5,7 +5,9 @@
   "desc": "tsugani meshi, rice cooked with river crabs: whole red-orange cooked mitten crabs with hairy claws arranged on top of white rice in a wide pot, beside a small bowl of rice topped with bright orange crab roe",
   "items": [
    "maff_kyodo:45_19_saga"
-  ]
+  ],
+  "refs": [],
+  "vet": "temple/dragons"
  },
  {
   "key": "maff_kyodo-45_1_saga",
@@ -13,7 +15,9 @@
   "desc": "funanko gui, crucian carp rolled in dark kombu and tied with gourd strip, simmered for hours with chunks of daikon, lotus root and burdock until glossy deep brown-black, cut rolls and vegetables piled on a blue plate",
   "items": [
    "maff_kyodo:45_1_saga"
-  ]
+  ],
+  "refs": [],
+  "vet": "people grilling"
  },
  {
   "key": "maff_kyodo-45_20_saga",
@@ -53,7 +57,9 @@
   "desc": "hiyashi somen, very thin white wheat noodles laid neatly in a black lacquer bowl of chilled water with a green leaf, with small cups of dark dipping sauce and dishes of grated ginger and chopped green onion",
   "items": [
    "maff_kyodo:45_25_saga"
-  ]
+  ],
+  "refs": [],
+  "vet": "c0/c1 noodle salads with toppings, not plain somen in water"
  },
  {
   "key": "maff_kyodo-45_2_saga",
@@ -69,7 +75,9 @@
   "desc": "niimoji, pale green translucent lengths of taro stem simmered in sweet vinegar, stacked in a shallow pool of clear liquid on a white plate, topped with fine shreds of ginger",
   "items": [
    "maff_kyodo:45_3_saga"
-  ]
+  ],
+  "refs": [],
+  "vet": "no food / package"
  },
  {
   "key": "maff_kyodo-45_4_saga",
@@ -77,7 +85,9 @@
   "desc": "dabu, a lidded red lacquer bowl of lightly thickened clear broth with small even cubes of daikon, carrot, burdock, taro, konnyaku and grilled tofu, little pink and white temari fu balls and yellow ginkgo nuts",
   "items": [
    "maff_kyodo:45_4_saga"
-  ]
+  ],
+  "refs": [],
+  "vet": "flowers/buildings/plants"
  },
  {
   "key": "maff_kyodo-45_5_saga",
@@ -85,7 +95,9 @@
   "desc": "ocha gai, rice gruel cooked in roasted bancha tea, loose soft pale beige grains in thin light tea-coloured liquid, in an earthenware pot with its lid off, with a small bowl and wooden ladle",
   "items": [
    "maff_kyodo:45_5_saga"
-  ]
+  ],
+  "refs": [],
+  "vet": "buildings/skyline"
  },
  {
   "key": "maff_kyodo-45_7_saga",
@@ -110,7 +122,24 @@
   "items": [
    "maff_kyodo:45_9_saga",
    "maff_kyodo:gameni_gukuoka"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Chikuzen-ni.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Chikuzen-ni.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "wikidata",
+    "file": "File:がめ煮（筑前煮）P1010424.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E3%81%8C%E3%82%81%E7%85%AE%EF%BC%88%E7%AD%91%E5%89%8D%E7%85%AE%EF%BC%89P1010424.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c3 soup, c4 stir-fry-like, c2 table"
  },
  {
   "key": "maff_kyodo-46_10_nagasaki",
@@ -118,7 +147,9 @@
   "desc": "igirisu, firm rectangular slices of translucent brown seaweed jelly set with small bits of orange carrot, black wood ear, tofu and peanuts, arranged in a row on a long blue plate with green leaf garnish",
   "items": [
    "maff_kyodo:46_10_nagasaki"
-  ]
+  ],
+  "refs": [],
+  "vet": "prints"
  },
  {
   "key": "maff_kyodo-46_11_nagasaki",
@@ -126,7 +157,9 @@
   "desc": "hikado, a white bowl of thick cloudy stew of small diced daikon, orange carrot, yellow sweet potato, shiitake and pieces of yellowtail, thickened with grated sweet potato and sprinkled with chopped green onion",
   "items": [
    "maff_kyodo:46_11_nagasaki"
-  ]
+  ],
+  "refs": [],
+  "vet": "portraits"
  },
  {
   "key": "maff_kyodo-46_12_nagasaki",
@@ -142,7 +175,9 @@
   "desc": "torimeshi, mixed rice with soy-tan grains and small pieces of chicken, burdock and carrot evenly mixed through, heaped in a blue-rimmed rice bowl",
   "items": [
    "maff_kyodo:46_13_nagasaki"
-  ]
+  ],
+  "refs": [],
+  "vet": "Hainan chicken rice / yellow rice plates, not soy mixed rice"
  },
  {
   "key": "maff_kyodo-46_14_nagasaki",
@@ -150,7 +185,9 @@
   "desc": "nuppe, a thick glossy stew of small cubes of taro, chicken, fried tofu, konnyaku, carrot and daikon with pink and white fu and green peas, in a deep grey ceramic bowl",
   "items": [
    "maff_kyodo:46_14_nagasaki"
-  ]
+  ],
+  "refs": [],
+  "vet": "yokai drawings"
  },
  {
   "key": "maff_kyodo-46_15_nagasaki",
@@ -166,7 +203,9 @@
   "desc": "morobuta zushi, a wide flat wooden tray of pressed sushi rice covered with a yellow layer of shredded egg crepe, dotted in neat rows with pink sweet fish flakes and small green parsley sprigs",
   "items": [
    "maff_kyodo:46_16_nagasaki"
-  ]
+  ],
+  "refs": [],
+  "vet": "nigiri/maki/chirashi, not egg-topped tray sushi"
  },
  {
   "key": "maff_kyodo-46_17_nagasaki",
@@ -174,6 +213,15 @@
   "desc": "kankoro mochi, oblong bars of mochi made from dried sweet potato, golden tan with toasted brown spots, and one purple sweet potato bar, cut and laid on a brown plate",
   "items": [
    "maff_kyodo:46_17_nagasaki"
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Kancoromochi.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Kancoromochi.jpg",
+    "ok": true
+   }
   ]
  },
  {
@@ -182,7 +230,9 @@
   "desc": "Nagasaki tempura, shrimp, fish and vegetables in a thick, puffy golden-brown sweet fritter batter, crisp and knobbly, piled on paper on a blue and white plate",
   "items": [
    "maff_kyodo:46_18_nagasaki"
-  ]
+  ],
+  "refs": [],
+  "vet": "c2/c3 ordinary light tempura/kakiage, not thick sweet fritter batter"
  },
  {
   "key": "maff_kyodo-46_19_nagasaki",
@@ -198,7 +248,31 @@
   "desc": "guzoni, a black pot of clear broth with a round soft white mochi, chicken, napa cabbage, carrot, shiitake, koya tofu, pink-edged kamaboko and yellow rolled omelette slices, topped with greens",
   "items": [
    "maff_kyodo:46_1_nagasaki"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:140321_Guzouni_of_Himematsuya_Shimabara_Nagasaki_pref_Japan01s10.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:140321_Guzouni_of_Himematsuya_Shimabara_Nagasaki_pref_Japan01s10.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "jawiki-page",
+    "file": "File:Guzoni.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Guzoni.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "commons-cat",
+    "file": "File:Guzoni_of_Himematsuya_Restaurant.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Guzoni_of_Himematsuya_Restaurant.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c5 has tempura, c6/c7 unclear"
  },
  {
   "key": "maff_kyodo-46_20_nagasaki",
@@ -206,7 +280,9 @@
   "desc": "pasty, a round baked dish topped with a golden-brown woven lattice of puff pastry, with chicken, mushroom, ginkgo nut and egg stew showing through the gaps",
   "items": [
    "maff_kyodo:46_20_nagasaki"
-  ]
+  ],
+  "refs": [],
+  "vet": "corn/paintings/tower"
  },
  {
   "key": "maff_kyodo-46_21_nagasaki",
@@ -214,7 +290,9 @@
   "desc": "arumado, boiled eggs wrapped in fish paste with a pink outer rim, cut into halves and quarters to show yellow yolk, white and pink layers like a dragon eye, on a plate",
   "items": [
    "maff_kyodo:46_21_nagasaki"
-  ]
+  ],
+  "refs": [],
+  "vet": "vehicles"
  },
  {
   "key": "maff_kyodo-46_22_nagasaki",
@@ -222,7 +300,17 @@
   "desc": "peanut tofu, smooth square blocks of pale ivory peanut tofu with a slightly glossy surface, on a black plate with a small dish of yuzu miso and a lemon wedge",
   "items": [
    "maff_kyodo:46_22_nagasaki"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 7,
+    "origin": "commons-search",
+    "file": "File:Jimami_doufu_by_udono_in_Monzen_Nakacho,_Tokyo.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Jimami_doufu_by_udono_in_Monzen_Nakacho,_Tokyo.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "others are noodle/meat dishes"
  },
  {
   "key": "maff_kyodo-46_23_nagasaki",
@@ -238,7 +326,24 @@
   "desc": "lemon steak, thin sukiyaki-style slices of seared beef in glossy brown soy-lemon sauce, topped with three thin bright yellow lemon rounds, on a black iron plate",
   "items": [
    "maff_kyodo:46_24_nagasaki"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:レモンステーキ_蜂の家（佐世保）_(17713515073).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E3%83%AC%E3%83%A2%E3%83%B3%E3%82%B9%E3%83%86%E3%83%BC%E3%82%AD_%E8%9C%82%E3%81%AE%E5%AE%B6%EF%BC%88%E4%BD%90%E4%B8%96%E4%BF%9D%EF%BC%89_(17713515073).jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:Lemon_steak_at_Hachinoya_Sasebo.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Lemon_steak_at_Hachinoya_Sasebo.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c2-c4 yakiniku sets, c5/c6 bentos"
  },
  {
   "key": "maff_kyodo-46_25_nagasaki",
@@ -270,6 +375,15 @@
   "desc": "Nagasaki milkshake, a pale cream-yellow frothy milk and egg drink with fine crushed ice, served in a tall stemmed glass on a saucer, topped with a red cherry",
   "items": [
    "maff_kyodo:46_28_nagasaki"
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Tsuruchan_Nagasakifu_milk_shake.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Tsuruchan_Nagasakifu_milk_shake.jpg",
+    "ok": true
+   }
   ]
  },
  {
@@ -278,7 +392,24 @@
   "desc": "hatoshi, crisp golden deep-fried sandwiches of crustless white bread with a thick pink shrimp paste filling, cut into pieces showing the pink layer, on a green plate",
   "items": [
    "maff_kyodo:46_29_nagasaki"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 6,
+    "origin": "enwiki-page",
+    "file": "File:PhotoSesamePrawnToast.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:PhotoSesamePrawnToast.jpg",
+    "ok": true
+   },
+   {
+    "n": 7,
+    "origin": "enwiki-page",
+    "file": "File:Shippoku_hadosi.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Shippoku_hadosi.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c2 spring roll, c0 fish and chips"
  },
  {
   "key": "maff_kyodo-46_2_nagasaki",
@@ -286,7 +417,9 @@
   "desc": "hikitoshi, a hot pot of chicken, firm tofu, napa cabbage, burdock, konnyaku, white leeks and a bundle of white somen noodles arranged in sections, in a wide pot with a handle",
   "items": [
    "maff_kyodo:46_2_nagasaki"
-  ]
+  ],
+  "refs": [],
+  "vet": "prints"
  },
  {
   "key": "maff_kyodo-46_30_nagasaki",
@@ -294,7 +427,31 @@
   "desc": "kanzarashi, small round white rice-flour dumplings floating in clear golden syrup, in a glass bowl shaped like a flower, with a spoon",
   "items": [
    "maff_kyodo:46_30_nagasaki"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Ginsuikanzarasi.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Ginsuikanzarasi.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Ginsui_ac_(4).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Ginsui_ac_(4).jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "commons-search",
+    "file": "File:Kanzarashi(Shimabara).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Kanzarashi(Shimabara).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c2 not food"
  },
  {
   "key": "maff_kyodo-46_3_nagasaki",
@@ -310,7 +467,9 @@
   "desc": "nigomi, a sweet simmered stew of chicken, whole peanuts, fried tofu, potato, carrot, konnyaku, lotus root, burdock, shiitake and thin kombu strips, in a porcelain bowl with a floral rim",
   "items": [
    "maff_kyodo:46_4_nagasaki"
-  ]
+  ],
+  "refs": [],
+  "vet": "no food"
  },
  {
   "key": "maff_kyodo-46_5_nagasaki",
@@ -318,6 +477,22 @@
   "desc": "Omura zushi, thick square slabs of pressed sweet sushi rice layered with fish cake, carrot, burdock and snow peas, topped with a thick yellow layer of shredded egg, with pink pickled ginger on a white plate",
   "items": [
    "maff_kyodo:46_5_nagasaki"
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Omura_Sushi_(Omura_Jusco).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Omura_Sushi_(Omura_Jusco).jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Omura_zushi.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Omura_zushi.JPG",
+    "ok": true
+   }
   ]
  },
  {
@@ -326,7 +501,9 @@
   "desc": "rokubei, short thick dark grey-brown sweet potato noodles in clear broth with kamaboko slices, orange carrot and plenty of chopped green onion, in a black bowl",
   "items": [
    "maff_kyodo:46_6_nagasaki"
-  ]
+  ],
+  "refs": [],
+  "vet": "c3 retail noodle package; texts/portrait"
  },
  {
   "key": "maff_kyodo-46_7_nagasaki",
@@ -334,7 +511,52 @@
   "desc": "sara udon, a round plate of crisp thin golden fried noodles under a thick glossy sauce of cabbage, pork, shrimp, squid, carrot, shiitake, kamaboko and quail eggs",
   "items": [
    "maff_kyodo:46_7_nagasaki"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Sara_udon_in_Kyoto.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Sara_udon_in_Kyoto.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:Sara_udon_in_Nagasaki.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Sara_udon_in_Nagasaki.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "jawiki-page",
+    "file": "File:Horaiken_Tokuseisaraudon.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Horaiken_Tokuseisaraudon.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "enwiki-page",
+    "file": "File:リンガーハット_(51281316427).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E3%83%AA%E3%83%B3%E3%82%AC%E3%83%BC%E3%83%8F%E3%83%83%E3%83%88_(51281316427).jpg",
+    "ok": true
+   },
+   {
+    "n": 5,
+    "origin": "enwiki-page",
+    "file": "File:餃子の王将_皿うどん_(4580922222).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E9%A4%83%E5%AD%90%E3%81%AE%E7%8E%8B%E5%B0%86_%E7%9A%BF%E3%81%86%E3%81%A9%E3%82%93_(4580922222).jpg",
+    "ok": true
+   },
+   {
+    "n": 6,
+    "origin": "commons-cat",
+    "file": "File:Hard_noodles_in_Tokyo.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Hard_noodles_in_Tokyo.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c7 salad, c2 tomato"
  },
  {
   "key": "maff_kyodo-46_9_nagasaki",
@@ -342,7 +564,9 @@
   "desc": "iriyaki, a sweet soy hot pot of chicken or yellowtail with tofu, napa cabbage, carrot, onion, burdock, shiitake and konnyaku in light brown broth, in a bowl with striped rim",
   "items": [
    "maff_kyodo:46_9_nagasaki"
-  ]
+  ],
+  "refs": [],
+  "vet": "bento/donburi, no hot pot"
  },
  {
   "key": "maff_kyodo-47_12_okinawa",
@@ -350,7 +574,17 @@
   "desc": "ikasumi jiru, squid ink soup, jet black broth with white squid pieces, pork and dark green bitter leaves, in a white bowl",
   "items": [
    "maff_kyodo:47_12_okinawa"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:Fried_rice_with_squid_ink_(7770037224).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Fried_rice_with_squid_ink_(7770037224).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c3 ink pasta, c4 black rice, c1 market"
  },
  {
   "key": "maff_kyodo-47_13_okinawa",
@@ -398,7 +632,31 @@
   "desc": "jimami tofu, a smooth soft white square of peanut tofu sitting in sweet dark soy sauce, topped with a small mound of grated ginger, in a brown ceramic bowl",
   "items": [
    "maff_kyodo:47_18_okinawa"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Ji-ma-mi_tofu.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Ji-ma-mi_tofu.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:Jimami_Tofu_001.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Jimami_Tofu_001.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "jawiki-page",
+    "file": "File:Jimami_doufu_by_udono_in_Monzen_Nakacho,_Tokyo.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Jimami_doufu_by_udono_in_Monzen_Nakacho,_Tokyo.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c3 package, c4/c5 other"
  },
  {
   "key": "maff_kyodo-47_19_okinawa",
@@ -406,7 +664,9 @@
   "desc": "ashi tibichi, chunks of tender glistening pork trotter with skin, daikon rounds and dark green knotted kombu in clear broth, in a patterned ceramic bowl",
   "items": [
    "maff_kyodo:47_19_okinawa"
-  ]
+  ],
+  "refs": [],
+  "vet": "raw/grilled trotters, not the stewed dish"
  },
  {
   "key": "maff_kyodo-47_1_okinawa",
@@ -414,7 +674,24 @@
   "desc": "nakami jiru, a clear soy broth full of thin pale cream strips of cleaned pork intestine and dark shiitake strips, in a red lacquer bowl with its lid beside",
   "items": [
    "maff_kyodo:47_1_okinawa"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Nakami-jiru.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Nakami-jiru.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "jawiki-page",
+    "file": "File:我部祖河食堂_中味そば.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E6%88%91%E9%83%A8%E7%A5%96%E6%B2%B3%E9%A3%9F%E5%A0%82_%E4%B8%AD%E5%91%B3%E3%81%9D%E3%81%B0.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c2 miso soup, c3 set"
  },
  {
   "key": "maff_kyodo-47_20_okinawa",
@@ -422,7 +699,52 @@
   "desc": "Okinawa soba, thick flat wheat noodles in clear pork and bonito broth, topped with glazed brown pork belly slabs, white fish cake slices, red pickled ginger and green onion, in a patterned bowl",
   "items": [
    "maff_kyodo:47_20_okinawa"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:ソーキそば（沖縄そば専門やんばる・有楽町交通会館）20240608-P1043176.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E3%82%BD%E3%83%BC%E3%82%AD%E3%81%9D%E3%81%B0%EF%BC%88%E6%B2%96%E7%B8%84%E3%81%9D%E3%81%B0%E5%B0%82%E9%96%80%E3%82%84%E3%82%93%E3%81%B0%E3%82%8B%E3%83%BB%E6%9C%89%E6%A5%BD%E7%94%BA%E4%BA%A4%E9%80%9A%E4%BC%9A%E9%A4%A8%EF%BC%8920240608-P1043176.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "jawiki-page",
+    "file": "File:2015-12-16_Yaeyama_soba_八重山そば（石垣島）DSCF2045.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:2015-12-16_Yaeyama_soba_%E5%85%AB%E9%87%8D%E5%B1%B1%E3%81%9D%E3%81%B0%EF%BC%88%E7%9F%B3%E5%9E%A3%E5%B3%B6%EF%BC%89DSCF2045.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "jawiki-page",
+    "file": "File:Miyako_soba.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Miyako_soba.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "jawiki-page",
+    "file": "File:Mokuhai_suba_at_Ten_to_Ten_in_Naha,_Okinawa.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Mokuhai_suba_at_Ten_to_Ten_in_Naha,_Okinawa.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "jawiki-page",
+    "file": "File:Nakami_soba_in_Urazoe,_Okinawa.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Nakami_soba_in_Urazoe,_Okinawa.jpg",
+    "ok": true
+   },
+   {
+    "n": 5,
+    "origin": "jawiki-page",
+    "file": "File:Okinawa_Soba_Yanbaru.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Okinawa_Soba_Yanbaru.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c6 fried noodles, c7 sets"
  },
  {
   "key": "maff_kyodo-47_22_okinawa",
@@ -438,7 +760,17 @@
   "desc": "hirayachi, a thin flat round pale golden pancake of wheat batter dotted with chopped green chives, cut into wedges, on a dark round plate",
   "items": [
    "maff_kyodo:47_23_okinawa"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Hirayachi_by_Blue_Lotus_in_Okinawa.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Hirayachi_by_Blue_Lotus_in_Okinawa.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c1 looks like chijimi; c2+ okonomiyaki, c3 bread"
  },
  {
   "key": "maff_kyodo-47_24_okinawa",
@@ -454,7 +786,17 @@
   "desc": "yafara jushi, soft rice porridge in a light broth with dark green leafy greens and bits of pork, in a ceramic bowl",
   "items": [
    "maff_kyodo:47_25_okinawa"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "jawiki",
+    "file": "File:Kinoko_Zosui,_at_Restaurant_Gusto_(2012.02.26).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Kinoko_Zosui,_at_Restaurant_Gusto_(2012.02.26).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c1/c2 small set trays"
  },
  {
   "key": "maff_kyodo-47_26_okinawa",
@@ -462,7 +804,17 @@
   "desc": "gyujiru, a clear soup with large pieces of beef, thick daikon chunks, carrot slices and squares of kombu, in a patterned ceramic bowl",
   "items": [
    "maff_kyodo:47_26_okinawa"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Nabari_Gyujiru,_Beef_Soup_of_Nabari.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Nabari_Gyujiru,_Beef_Soup_of_Nabari.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c2-c4 burgers"
  },
  {
   "key": "maff_kyodo-47_28_okinawa",
@@ -478,7 +830,9 @@
   "desc": "hijaa jiru, goat soup, chunks of bone-in grey-brown goat meat in a clear broth topped with a handful of fresh green mugwort leaves, in a ceramic bowl",
   "items": [
    "maff_kyodo:47_29_okinawa"
-  ]
+  ],
+  "refs": [],
+  "vet": "c0 is a noodle bowl"
  },
  {
   "key": "maff_kyodo-47_2_okinawa",
@@ -502,7 +856,17 @@
   "desc": "kufa juushii, firm mixed rice cooked with pork broth, specked with small cubes of pork, orange carrot, shiitake, kamaboko and green peas, in a ceramic bowl",
   "items": [
    "maff_kyodo:47_4_okinawa"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "jawiki-page",
+    "file": "File:Jyusi_coocked_rice.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Jyusi_coocked_rice.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c0 is porridge (yafara), c2 set"
  },
  {
   "key": "maff_kyodo-47_5_okinawa",
@@ -518,7 +882,59 @@
   "desc": "rafute, large glossy cubes of braised pork belly with deep red-brown lacquered skin and layered fat, with green bitter melon slices, on a plate",
   "items": [
    "maff_kyodo:47_6_okinawa"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Rafti,_Okinawan_stewed_pork_belly_by_ayustety_in_Tokyo.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Rafti,_Okinawan_stewed_pork_belly_by_ayustety_in_Tokyo.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "enwiki",
+    "file": "File:Okinawan_Rafute.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Okinawan_Rafute.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "enwiki-page",
+    "file": "File:Porc_a_l'estil_Okinawa_-_Tora_Taverna_Japonesa.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Porc_a_l%27estil_Okinawa_-_Tora_Taverna_Japonesa.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "enwiki-page",
+    "file": "File:Rafti,_Okinawan_stewed_pork_belly_by_Blue_Lotus.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Rafti,_Okinawan_stewed_pork_belly_by_Blue_Lotus.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "enwiki-page",
+    "file": "File:Rafute_by_ayustety_in_Kanda-Jinbocho,_Tokyo.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Rafute_by_ayustety_in_Kanda-Jinbocho,_Tokyo.jpg",
+    "ok": true
+   },
+   {
+    "n": 5,
+    "origin": "enwiki-page",
+    "file": "File:Rafute_by_jetalone_in_Ginza,_Tokyo.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Rafute_by_jetalone_in_Ginza,_Tokyo.jpg",
+    "ok": true
+   },
+   {
+    "n": 6,
+    "origin": "enwiki-page",
+    "file": "File:Rafute_in_Waikiki_by_takaokun.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Rafute_in_Waikiki_by_takaokun.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c7 grilled"
  },
  {
   "key": "maff_kyodo-47_7_okinawa",
@@ -534,7 +950,31 @@
   "desc": "saataa andagii, round Okinawan doughnuts with a deep golden-brown crackled crust split open on top, on a pale blue plate",
   "items": [
    "maff_kyodo:47_8_okinawa"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Sata_andagi_001.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Sata_andagi_001.jpg",
+    "ok": true
+   },
+   {
+    "n": 5,
+    "origin": "enwiki-page",
+    "file": "File:HK_TST_尖沙咀_Tsim_Sha_Tsui_梳士巴利道_Salisbury_Road_天星小輪碼頭_Star_Ferry_Pier_shop_Tai_Cheong_Bakery_沙翁_Saa_jung_July_2021_SS2_01.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:HK_TST_%E5%B0%96%E6%B2%99%E5%92%80_Tsim_Sha_Tsui_%E6%A2%B3%E5%A3%AB%E5%B7%B4%E5%88%A9%E9%81%93_Salisbury_Road_%E5%A4%A9%E6%98%9F%E5%B0%8F%E8%BC%AA%E7%A2%BC%E9%A0%AD_Star_Ferry_Pier_shop_Tai_Cheong_Bakery_%E6%B2%99%E7%BF%81_Saa_jung_July_2021_SS2_01.jpg",
+    "ok": true
+   },
+   {
+    "n": 7,
+    "origin": "commons-cat",
+    "file": "File:Sata_andagi_(mango_and_purple_yam_taste).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Sata_andagi_(mango_and_purple_yam_taste).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c2/c6 frying in oil, c1 dough sticks, c4 doughnut"
  },
  {
   "key": "maff_kyodo-47_9_okinawa",
@@ -574,7 +1014,9 @@
   "desc": "ahodaki, thin round slices of old pickled daikon simmered in soy until deep glossy amber-brown, sprinkled with white sesame, on a white plate with a green leaf",
   "items": [
    "maff_kyodo:ahodaki_mie"
-  ]
+  ],
+  "refs": [],
+  "vet": "c0 packaged deli tray; docs/places"
  },
  {
   "key": "maff_kyodo-aimaze_ishikawa",
@@ -583,7 +1025,9 @@
   "items": [
    "maff_kyodo:aimaze_ishikawa",
    "maff_kyodo:aimaze_mie"
-  ]
+  ],
+  "refs": [],
+  "vet": "portrait"
  },
  {
   "key": "maff_kyodo-ajino_sanbai_kagawa",
@@ -631,6 +1075,50 @@
   "desc": "aka mochi, flat round dumplings of reddish-brown sorghum flour with a dent in the centre, sprinkled with golden kinako, on a ceramic plate",
   "items": [
    "maff_kyodo:akamochi_ibaraki"
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Akafuku-mochi_001.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Akafuku-mochi_001.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Akafuku_(7286431602).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Akafuku_(7286431602).jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:Akafuku_(7286432608).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Akafuku_(7286432608).jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "commons-search",
+    "file": "File:Akafuku_Mochi.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Akafuku_Mochi.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "commons-search",
+    "file": "File:Akafuku_(7286433842).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Akafuku_(7286433842).jpg",
+    "ok": true
+   },
+   {
+    "n": 5,
+    "origin": "commons-search",
+    "file": "File:Akafuku-Mochi2.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Akafuku-Mochi2.JPG",
+    "ok": true
+   }
   ]
  },
  {
@@ -647,7 +1135,24 @@
   "desc": "akumaki, translucent glossy amber-brown blocks of lye-soaked sticky rice cut into pieces, dusted with kinako, on an unfolded bamboo sheath",
   "items": [
    "maff_kyodo:akumaki_kagoshima"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Akumaki.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Akumaki.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "commons-cat",
+    "file": "File:灰汁巻とは竹の皮で包んだもち米を灰汁汁_(5683201172).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E7%81%B0%E6%B1%81%E5%B7%BB%E3%81%A8%E3%81%AF%E7%AB%B9%E3%81%AE%E7%9A%AE%E3%81%A7%E5%8C%85%E3%82%93%E3%81%A0%E3%82%82%E3%81%A1%E7%B1%B3%E3%82%92%E7%81%B0%E6%B1%81%E6%B1%81_(5683201172).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c1/c5 zongzi lookalikes, c2/c4 wrapped/unclear"
  },
  {
   "key": "maff_kyodo-ama_nattou_no_osekihan_yama_nashi",
@@ -655,7 +1160,24 @@
   "desc": "amanatto no osekihan, pink-tinted sticky rice studded with dark red sweet beans and sprinkled with black sesame salt, in a square red lacquer box",
   "items": [
    "maff_kyodo:ama_nattou_no_osekihan_yama_nashi"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "jawiki",
+    "file": "File:140111_Azuki_Museum_Himeji_Hyogo_pref_Japan11bs.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:140111_Azuki_Museum_Himeji_Hyogo_pref_Japan11bs.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "jawiki-page",
+    "file": "File:Sekihan_onigiri,_at_Lawson.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Sekihan_onigiri,_at_Lawson.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c3 pale boxed rice"
  },
  {
   "key": "maff_kyodo-amago_no_kanroni_nara",
@@ -671,7 +1193,9 @@
   "desc": "amenoio gohan, rice cooked with Biwa trout, the pale rice mixed with flaked pink fish, roe, carrot and shiitake, in a small iron pot with its wooden lid and a small serving bowl",
   "items": [
    "maff_kyodo:amenoio_gohan_shiga"
-  ]
+  ],
+  "refs": [],
+  "vet": "street"
  },
  {
   "key": "maff_kyodo-amimeshi_oita",
@@ -679,7 +1203,9 @@
   "desc": "amimeshi, soy-tan rice mixed with tiny sweet-simmered dried krill, speckled brown and orange, topped with green herbs, in a dark ceramic bowl",
   "items": [
    "maff_kyodo:amimeshi_oita"
-  ]
+  ],
+  "refs": [],
+  "vet": "sign/building"
  },
  {
   "key": "maff_kyodo-anbin_yama_nashi",
@@ -687,7 +1213,9 @@
   "desc": "anbin, round flattened buns of pale yellow sweet potato flour dough with bits of sweet potato, broken open to show coarse red bean paste filling, on a black plate",
   "items": [
    "maff_kyodo:anbin_yama_nashi"
-  ]
+  ],
+  "refs": [],
+  "vet": "c0 grey mochi, not yellow sweet-potato bun"
  },
  {
   "key": "maff_kyodo-anbo_niigata",
@@ -695,7 +1223,9 @@
   "desc": "anbo, round flat steamed rice-flour cakes toasted with charred brown spots, filled with red bean paste or salted greens, on a white plate with a bamboo leaf",
   "items": [
    "maff_kyodo:anbo_niigata"
-  ]
+  ],
+  "refs": [],
+  "vet": "no food"
  },
  {
   "key": "maff_kyodo-ankounotomozu_ibaraki",
@@ -711,6 +1241,15 @@
   "desc": "anmochi zoni, a creamy white miso soup with a round mochi filled with red bean paste, thick daikon rounds, a red carrot round and tofu, sprinkled with green laver, in a red lacquer bowl",
   "items": [
    "maff_kyodo:anmochi_zouni_kagawa"
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:香川県の正月料理である餡餅雑煮の中の餡餅（An-mochi_in_zoni_(rice_cake_with_red_bean_paste),_a_New_Year's_dish_in_Kagawa_Prefecture）.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E9%A6%99%E5%B7%9D%E7%9C%8C%E3%81%AE%E6%AD%A3%E6%9C%88%E6%96%99%E7%90%86%E3%81%A7%E3%81%82%E3%82%8B%E9%A4%A1%E9%A4%85%E9%9B%91%E7%85%AE%E3%81%AE%E4%B8%AD%E3%81%AE%E9%A4%A1%E9%A4%85%EF%BC%88An-mochi_in_zoni_(rice_cake_with_red_bean_paste),_a_New_Year%27s_dish_in_Kagawa_Prefecture%EF%BC%89.jpg",
+    "ok": true
+   }
   ]
  },
  {
@@ -735,6 +1274,15 @@
   "desc": "Asuka nabe, a milky white chicken hot pot with napa cabbage, carrot, shiitake, chrysanthemum greens and white leek, in a clay pot on a small stove with a plate of raw ingredients",
   "items": [
    "maff_kyodo:asuka_nabe_nara"
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "jawiki",
+    "file": "File:Asukanabe.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Asukanabe.jpg",
+    "ok": true
+   }
   ]
  },
  {
@@ -743,7 +1291,9 @@
   "desc": "atama ryori, boiled pieces of a large fish, white flesh, fins, skin, roe and organs, arranged on a big platter with sliced citrus and grated red-tinged daikon",
   "items": [
    "maff_kyodo:atamaryori_oita"
-  ]
+  ],
+  "refs": [],
+  "vet": "candidates are grilled fish heads, the dish is boiled"
  },
  {
   "key": "maff_kyodo-atsuage_nitano_fukui",
@@ -759,6 +1309,15 @@
   "desc": "awabi no nigai, thin slices of soy-simmered abalone, glossy amber-orange, fanned out on a white square plate with green leaves",
   "items": [
    "maff_kyodo:awabino_nigai_yama_nashi"
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "jawiki",
+    "file": "File:Awabi_no_nigai_2015.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Awabi_no_nigai_2015.jpg",
+    "ok": true
+   }
   ]
  },
  {
@@ -767,7 +1326,17 @@
   "desc": "ayu zushi, a whole sweetfish, silvery-grey and opened flat, laid on pressed sushi rice, on a white rectangular plate with a small dish of sauce",
   "items": [
    "maff_kyodo:ayu_zushi_nara"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "jawiki-page",
+    "file": "File:Ayu_Sugata-Sushi.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Ayu_Sugata-Sushi.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c3 grilled fish on rice unsure, c1/c2/c4/c5 other"
  },
  {
   "key": "maff_kyodo-azara_miyagi",
@@ -775,7 +1344,9 @@
   "desc": "azara, a pale cream sake-lees stew of chopped old pickled napa cabbage with red-skinned rockfish pieces, in a black lacquer bowl with red inside",
   "items": [
    "maff_kyodo:azara_miyagi"
-  ]
+  ],
+  "refs": [],
+  "vet": "portraits/plants"
  },
  {
   "key": "maff_kyodo-azuki_houtou_yama_nashi",
@@ -783,7 +1354,9 @@
   "desc": "azuki hoto, wide flat handmade wheat noodles in a thick sweet red bean soup scattered with whole azuki beans, in a black iron pot with a wooden lid",
   "items": [
    "maff_kyodo:azuki_houtou_yama_nashi"
-  ]
+  ],
+  "refs": [],
+  "vet": "c0 looks like pumpkin hoto, no red bean soup"
  },
  {
   "key": "maff_kyodo-azuki_zouni_tottori",
@@ -800,7 +1373,17 @@
   "desc": "bakudan onigiri, large round rice balls completely wrapped in dark green rough rock seaweed, in a thin wooden box with yellow pickles",
   "items": [
    "maff_kyodo:bakudanonigiri_shimane"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Bakudan_onigiri_by_yomi955.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Bakudan_onigiri_by_yomi955.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c1/c2 cut onigiri, c3 shop"
  },
  {
   "key": "maff_kyodo-baniku_soba_kumamoto",
@@ -824,7 +1407,9 @@
   "desc": "beka nabe, a hot pot of rice-bran pickled sardines simmered with daikon, carrot, napa cabbage and mushrooms in sake-lees broth, with platters of ingredients",
   "items": [
    "maff_kyodo:bekanabe_ishikawa"
-  ]
+  ],
+  "refs": [],
+  "vet": "c1/c2 beef shabu pots, not beka nabe"
  },
  {
   "key": "maff_kyodo-beko_mochi_aomori",
@@ -832,7 +1417,9 @@
   "desc": "bekomochi, a log of white steamed rice-flour cake sliced into ovals, each slice showing a brown and white fan or leaf pattern inside, on a wooden board",
   "items": [
    "maff_kyodo:beko_mochi_aomori"
-  ]
+  ],
+  "refs": [],
+  "vet": "c0 leaf-shaped not sliced log; c1/c2 Hokkaido half-brown type"
  },
  {
   "key": "maff_kyodo-bekomochi_hokkaido",
@@ -840,7 +1427,31 @@
   "desc": "beko mochi, leaf-shaped steamed rice-flour cakes, half white and half dark brown from brown sugar, joined side by side, on a black plate",
   "items": [
    "maff_kyodo:bekomochi_hokkaido"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Bekomochi.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Bekomochi.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Beko_mochi_-_2.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Beko_mochi_-_2.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:Beko_mochi_-_1.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Beko_mochi_-_1.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c3-c5 other"
  },
  {
   "key": "maff_kyodo-beta_mochi_fukuoka",
@@ -848,7 +1459,9 @@
   "desc": "betamochi, soft flat pieces of wheat mochi heavily coated in sweet golden kinako, piled in a brown ceramic bowl",
   "items": [
    "maff_kyodo:beta_mochi_fukuoka"
-  ]
+  ],
+  "refs": [],
+  "vet": "stew and maki rolls"
  },
  {
   "key": "maff_kyodo-bibainotorimeshi_hokkaido",
@@ -880,7 +1493,9 @@
   "desc": "bokkake, rice topped with simmered fried tofu, burdock, carrot and translucent konnyaku noodles in bonito soy broth, on a flat blue and white plate",
   "items": [
    "maff_kyodo:bokkake_fukui"
-  ]
+  ],
+  "refs": [],
+  "vet": "c0 udon, c4/c5 fried noodles"
  },
  {
   "key": "maff_kyodo-bonjiru_mie",
@@ -888,7 +1503,9 @@
   "desc": "bonjiru, a miso soup with soybeans, burdock, eggplant, carrot, orange pumpkin, fried tofu, long beans and taro stem, in a black lacquer bowl with red inside",
   "items": [
    "maff_kyodo:bonjiru_mie"
-  ]
+  ],
+  "refs": [],
+  "vet": "interior"
  },
  {
   "key": "maff_kyodo-bouri_wakayama",
@@ -896,7 +1513,9 @@
   "desc": "bouri, whole large taro mother corms simmered for days until deep brown, each sitting in an orange lacquer lidded bowl",
   "items": [
    "maff_kyodo:bouri_wakayama"
-  ]
+  ],
+  "refs": [],
+  "vet": "people/places"
  },
  {
   "key": "maff_kyodo-butaae_kumamoto",
@@ -904,7 +1523,9 @@
   "desc": "buta ae, chunks of boiled octopus and soft eggplant dressed in a dark miso sauce, in a brown ceramic bowl",
   "items": [
    "maff_kyodo:butaae_kumamoto"
-  ]
+  ],
+  "refs": [],
+  "vet": "c0 eggplant in sauce but octopus not visible"
  },
  {
   "key": "maff_kyodo-butahoneyasai_kagoshima",
@@ -921,7 +1542,17 @@
   "items": [
    "maff_kyodo:chagayu_mie",
    "maff_kyodo:chagayu_nara"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:徳島の茶粥.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E5%BE%B3%E5%B3%B6%E3%81%AE%E8%8C%B6%E7%B2%A5.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c0 miso-soup-like, c3 other"
  },
  {
   "key": "maff_kyodo-chameshi_fukui",
@@ -929,7 +1560,9 @@
   "desc": "chameshi, rice cooked in bean tea and soy, golden-tan grains mixed with roasted soybeans, in a red and black lacquer box",
   "items": [
    "maff_kyodo:chameshi_fukui"
-  ]
+  ],
+  "refs": [],
+  "vet": "c0/c1 other rice bowls; shops"
  },
  {
   "key": "maff_kyodo-chatenoaemono_kochi",
@@ -945,7 +1578,9 @@
   "desc": "chatsu, julienned daikon, orange carrot, lotus root slices, kombu and fried tofu simmered in sweet vinegar, in a celadon bowl",
   "items": [
    "maff_kyodo:chatsu_mie"
-  ]
+  ],
+  "refs": [],
+  "vet": "no food"
  },
  {
   "key": "maff_kyodo-chikko_toufu_chiba",
@@ -953,7 +1588,9 @@
   "desc": "chikko tofu, firm pure white blocks of fresh milk curd cheese, smooth with a slightly rough edge, on a white square plate",
   "items": [
    "maff_kyodo:chikko_toufu_chiba"
-  ]
+  ],
+  "refs": [],
+  "vet": "milk glass, package"
  },
  {
   "key": "maff_kyodo-choujifu_no_karashi_ae_shiga",
@@ -977,7 +1614,24 @@
   "desc": "dagojiru, a soy broth with flat wheat flour dumplings, taro, burdock, carrot and chicken, topped with fresh green herbs, in a lacquer bowl",
   "items": [
    "maff_kyodo:dagojiru_kumamoto"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Dango_jiru.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Dango_jiru.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Dagojiru-Oita-ver.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Dagojiru-Oita-ver.JPG",
+    "ok": true
+   }
+  ],
+  "vet": "c2 set"
  },
  {
   "key": "maff_kyodo-daisen_okowa_tottori",
@@ -985,7 +1639,9 @@
   "desc": "Daisen okowa, sticky rice cooked with chicken, chikuwa, carrot, burdock and shiitake, brown with colourful flecks, in a black lacquer box",
   "items": [
    "maff_kyodo:daisen_okowa_tottori"
-  ]
+  ],
+  "refs": [],
+  "vet": "restaurant interior"
  },
  {
   "key": "maff_kyodo-dangojiru_oita",
@@ -993,6 +1649,15 @@
   "desc": "dangojiru, long wide flat hand-stretched wheat dumpling noodles in a miso soup with taro, carrot, shiitake and green onion, in a white bowl",
   "items": [
    "maff_kyodo:dangojiru_oita"
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Dango_jiru.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Dango_jiru.jpg",
+    "ok": true
+   }
   ]
  },
  {
@@ -1009,7 +1674,9 @@
   "desc": "decchi yokan, steamed red bean paste and wheat flour cakes wrapped and pressed in brown speckled bamboo sheaths, stacked, tied with bamboo strings",
   "items": [
    "maff_kyodo:decchi_youkan_shiga"
-  ]
+  ],
+  "refs": [],
+  "vet": "plain yokan slabs, no bamboo sheath"
  },
  {
   "key": "maff_kyodo-dengara_nara",
@@ -1017,7 +1684,9 @@
   "desc": "dengara, rice cakes filled with bean paste, each wrapped in a large green magnolia leaf and tied, hanging in a bunch on a branch",
   "items": [
    "maff_kyodo:dengara_nara"
-  ]
+  ],
+  "refs": [],
+  "vet": "no food / raw pork"
  },
  {
   "key": "maff_kyodo-dojonokenchinjiru_shimane",
@@ -1041,7 +1710,9 @@
   "desc": "dongame jiru, a whole half eggplant with a criss-cross scored dark purple skin, sitting in a thick pale miso and ground sesame soup, in a red-rimmed bowl",
   "items": [
    "maff_kyodo:dongame_jiru_shiga"
-  ]
+  ],
+  "refs": [],
+  "vet": "eggplant stir-fry, not miso soup"
  },
  {
   "key": "maff_kyodo-dongarajiru_yamagata",
@@ -1049,7 +1720,17 @@
   "desc": "dongara jiru, a cod miso soup with chunks of cod on the bone, creamy white milt and liver, leeks and black rock seaweed, in a black iron pot with a ladle",
   "items": [
    "maff_kyodo:dongarajiru_yamagata"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Dongara_Jiru.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Dongara_Jiru.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c1 display sample unclear"
  },
  {
   "key": "maff_kyodo-ebi_miso_shiru_kagawa",
@@ -1073,7 +1754,9 @@
   "desc": "ebi mochi, small pink-red shrimp tossed with sake and soy, piled on a mound of white mochi, in a beige ceramic bowl",
   "items": [
    "maff_kyodo:ebibochi_miyagi"
-  ]
+  ],
+  "refs": [],
+  "vet": "bento on a train"
  },
  {
   "key": "maff_kyodo-ebiimotobodaranotaitan_kyoto",
@@ -1089,6 +1772,15 @@
   "desc": "ebi mame, tan soybeans simmered with tiny brown whole freshwater shrimp in sweet soy, glossy and mixed, in a ceramic bowl",
   "items": [
    "maff_kyodo:ebimame_shiga"
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "jawiki",
+    "file": "File:えび豆.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E3%81%88%E3%81%B3%E8%B1%86.jpg",
+    "ok": true
+   }
   ]
  },
  {
@@ -1097,7 +1789,17 @@
   "desc": "ebisu, slices of translucent golden amber agar jelly set with marbled ribbons of egg, on a green bamboo leaf",
   "items": [
    "maff_kyodo:ebisu_ishikawa"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "jawiki",
+    "file": "File:べっこう_(料理).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E3%81%B9%E3%81%A3%E3%81%93%E3%81%86_(%E6%96%99%E7%90%86).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "others shops/parks/beer"
  },
  {
   "key": "maff_kyodo-ebiten_ehime",
@@ -1105,7 +1807,9 @@
   "desc": "ebiten, flat round fried shrimp and tofu fish cakes, golden-brown crust, cut to show pink-red speckled inside, in a dark ceramic bowl",
   "items": [
    "maff_kyodo:ebiten_ehime"
-  ]
+  ],
+  "refs": [],
+  "vet": "udon/tempura, not fried fish cake"
  },
  {
   "key": "maff_kyodo-eino_nikogori_nara",
@@ -1154,7 +1858,9 @@
   "desc": "fukumen, a round plate of white konnyaku noodles hidden under four sections of coloured flakes: green onion, white fish flakes, pink fish flakes and orange mandarin peel",
   "items": [
    "maff_kyodo:fukumen_ehime"
-  ]
+  ],
+  "refs": [],
+  "vet": "factory/shops/wrestlers"
  },
  {
   "key": "maff_kyodo-fukuregashi_kagoshima",
@@ -1162,7 +1868,17 @@
   "desc": "fukuregashi, fluffy blocks of dark brown sugar steamed sponge cake with a coarse open crumb, cut into squares on a green leaf",
   "items": [
    "maff_kyodo:fukuregashi_kagoshima"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Fukuregashi_01.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Fukuregashi_01.JPG",
+    "ok": true
+   }
+  ],
+  "vet": "c1 pale sponge"
  },
  {
   "key": "maff_kyodo-funayaki_fukuoka",
@@ -1170,7 +1886,9 @@
   "desc": "funayaki, thin pale golden wheat crepes rolled into tubes around a dark brown sugar filling, on a decorated porcelain plate",
   "items": [
    "maff_kyodo:funayaki_fukuoka"
-  ]
+  ],
+  "refs": [],
+  "vet": "c0 dark slab, c1 baked buns, not rolled crepes"
  },
  {
   "key": "maff_kyodo-funo_karashi_ae_fukui",
@@ -1202,7 +1920,9 @@
   "desc": "futomaki zushi, thick decorative sushi rolls cut into rounds with colourful pictures inside in pink, green, yellow and black, wrapped in nori, arranged on a plate",
   "items": [
    "maff_kyodo:futomaki_zushi_chiba"
-  ]
+  ],
+  "refs": [],
+  "vet": "ordinary futomaki, not decorative picture rolls"
  },
  {
   "key": "maff_kyodo-fuukashi_chiba",
@@ -1210,7 +1930,17 @@
   "desc": "fuukashi, a light miso broth with a heap of open clams in their shells, in a black lacquer bowl",
   "items": [
    "maff_kyodo:fuukashi_chiba"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:ふうかし_アサリの味噌汁.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E3%81%B5%E3%81%86%E3%81%8B%E3%81%97_%E3%82%A2%E3%82%B5%E3%83%AA%E3%81%AE%E5%91%B3%E5%99%8C%E6%B1%81.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c1 rail station"
  },
  {
   "key": "maff_kyodo-gamenoha_manjyu_fukuoka",
@@ -1235,7 +1965,9 @@
   "items": [
    "maff_kyodo:gane_kagoshima",
    "maff_kyodo:gane_miyazaki"
-  ]
+  ],
+  "refs": [],
+  "vet": "c0 fried item unclear; prints/landscapes"
  },
  {
   "key": "maff_kyodo-ganeage_kumamoto",
@@ -1243,7 +1975,9 @@
   "desc": "ganeage, thick sticks of sweet potato in a light batter, fried golden and crisp, piled on a dark plate",
   "items": [
    "maff_kyodo:ganeage_kumamoto"
-  ]
+  ],
+  "refs": [],
+  "vet": "set tray, tickets, river"
  },
  {
   "key": "maff_kyodo-ganjiru_oita",
@@ -1251,7 +1985,9 @@
   "desc": "ganjiru, a clear soup with fluffy beige clumps of ground river crab and dark green takana leaves, in a red lacquer bowl",
   "items": [
    "maff_kyodo:ganjiru_oita"
-  ]
+  ],
+  "refs": [],
+  "vet": "building"
  },
  {
   "key": "maff_kyodo-gappara_mochi_aomori",
@@ -1259,7 +1995,9 @@
   "desc": "gappara mochi, a thick flat round rice-flour pancake with brown sugar and black sesame, grilled with browned spots and cut into wedges, on a green plate",
   "items": [
    "maff_kyodo:gappara_mochi_aomori"
-  ]
+  ],
+  "refs": [],
+  "vet": "statue"
  },
  {
   "key": "maff_kyodo-garagara_oroshi_mie",
@@ -1275,7 +2013,24 @@
   "desc": "getanha, triangular slabs of dark brown sugar baked cake with a glossy moist brown sugar syrup coating, on a dark plate",
   "items": [
    "maff_kyodo:getanha_kagoshima"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "jawiki",
+    "file": "File:Kyushu-Kurobo_01.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Kyushu-Kurobo_01.JPG",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "jawiki-page",
+    "file": "File:Kagoshima-Getanha.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Kagoshima-Getanha.JPG",
+    "ok": true
+   }
+  ],
+  "vet": "c3 packaged"
  },
  {
   "key": "maff_kyodo-gimburozushi_kochi",
@@ -1291,7 +2046,9 @@
   "desc": "goae, mashed green soybean paste dressing eggplant and vegetables, topped with pink ginger, on a green leaf in a grey bowl",
   "items": [
    "maff_kyodo:goae_tottori"
-  ]
+  ],
+  "refs": [],
+  "vet": "pagoda"
  },
  {
   "key": "maff_kyodo-goma_gohan_aomori",
@@ -1299,7 +2056,9 @@
   "desc": "goma gohan, sticky rice cooked with ground black sesame, grey-purple speckled, dotted with green soybeans, in a red and black lacquer box",
   "items": [
    "maff_kyodo:goma_gohan_aomori"
-  ]
+  ],
+  "refs": [],
+  "vet": "c0 mixed rice, not black sesame; sets/places"
  },
  {
   "key": "maff_kyodo-gomokuinarizushi_ibaraki",
@@ -1315,7 +2074,9 @@
   "desc": "gonjuu, small rice balls of rice with pork belly and fried tofu, coated in bonito flakes, arranged in a big ring on a round wooden tray lined with green leaves",
   "items": [
    "maff_kyodo:gonjuu_chiba"
-  ]
+  ],
+  "refs": [],
+  "vet": "burial mounds"
  },
  {
   "key": "maff_kyodo-gonpachi_no_abura_itame_wakayama",
@@ -1331,7 +2092,9 @@
   "desc": "gonza, short thick strips of daikon and orange carrot simmered with flattened soybeans in soy broth, in a ceramic bowl",
   "items": [
    "maff_kyodo:gonza_fukui"
-  ]
+  ],
+  "refs": [],
+  "vet": "prints/dango package/landscapes"
  },
  {
   "key": "maff_kyodo-gu_dakusan_miso_shiru_nagano",
@@ -1347,7 +2110,9 @@
   "desc": "guruni, small cubes of daikon, orange carrot, taro, fried tofu and konnyaku simmered in light soy, in a small white bowl",
   "items": [
    "maff_kyodo:guruni_kochi"
-  ]
+  ],
+  "refs": [],
+  "vet": "c0 is akumaki-like in sheath, not the stew"
  },
  {
   "key": "maff_kyodo-ha_gesshou_mochi_nara",
@@ -1363,7 +2128,9 @@
   "desc": "haba zoni, a round white mochi in clear broth covered with dark green haba seaweed, green laver and bonito flakes, in a dark bowl",
   "items": [
    "maff_kyodo:haba_zouni_chiba"
-  ]
+  ],
+  "refs": [],
+  "vet": "c0/c4 other zoni, c3 unclear dark bowl, c2 greens"
  },
  {
   "key": "maff_kyodo-hachikutoendononimono_kochi",
@@ -1387,7 +2154,31 @@
   "desc": "Hakata zoni, a clear broth with a round mochi, a piece of yellowtail fillet, shiitake, taro, carrot, daikon and dark green katsuona greens, in a black and red lacquer bowl with its lid",
   "items": [
    "maff_kyodo:hakata_zouni_fukuoka"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "jawiki-page",
+    "file": "File:Buri_Zoni_in_Tsuyama.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Buri_Zoni_in_Tsuyama.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "jawiki-page",
+    "file": "File:Buri_zoni_nagano_matsumoto.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Buri_zoni_nagano_matsumoto.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "jawiki-page",
+    "file": "File:Hakata_zoni.jpeg",
+    "page": "https://commons.wikimedia.org/wiki/File:Hakata_zoni.jpeg",
+    "ok": true
+   }
+  ],
+  "vet": "generic clear zoni, buri not certain at size"
  },
  {
   "key": "maff_kyodo-hakatano_gomasaba_fukuoka",
@@ -1411,7 +2202,9 @@
   "desc": "hamaguri gohan, light brown rice cooked with clam meat, carrot and shiitake, topped with chopped green herbs, in a white bowl",
   "items": [
    "maff_kyodo:hamagurigohan_ibaraki"
-  ]
+  ],
+  "refs": [],
+  "vet": "forest/portrait"
  },
  {
   "key": "maff_kyodo-hangedango_kochi",
@@ -1443,7 +2236,9 @@
   "desc": "hasu mushi, a mound of steamed grated lotus root with fish and shrimp, under a clear thickened sauce with green garnish, in a lidded bowl",
   "items": [
    "maff_kyodo:hasumushi_ishikawa"
-  ]
+  ],
+  "refs": [],
+  "vet": "rocks/landscapes"
  },
  {
   "key": "maff_kyodo-hata_gonbo_zushi_wakayama",
@@ -1459,6 +2254,15 @@
   "desc": "hatahata zushi, a whole sandfish stuffed with seasoned pale okara and hemp seeds, cut and arranged, on a white plate",
   "items": [
    "maff_kyodo:hatahata_zushi_tottori"
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "jawiki",
+    "file": "File:Hatahatazushi_in_Akita_2024_Mar_28_02-42PM.jpeg",
+    "page": "https://commons.wikimedia.org/wiki/File:Hatahatazushi_in_Akita_2024_Mar_28_02-42PM.jpeg",
+    "ok": true
+   }
   ]
  },
  {
@@ -1475,7 +2279,9 @@
   "desc": "hattojiru, a soy broth with thin flat wheat dough pieces, daikon, carrot, burdock and shiitake, topped with greens, in a blue bowl",
   "items": [
    "maff_kyodo:hatto_jiru_miyagi"
-  ]
+  ],
+  "refs": [],
+  "vet": "temples/people"
  },
  {
   "key": "maff_kyodo-hazushi_fukui",
@@ -1483,7 +2289,31 @@
   "desc": "hazushi, sushi rice with sweet beans, hijiki, shiitake and carrot wrapped in a large green leaf, opened on a red lacquer tray",
   "items": [
    "maff_kyodo:hazushi_fukui"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Mehari_zushi_by_m-louis.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Mehari_zushi_by_m-louis.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Mehari_zushi_with_anago_by_woinary_in_Osaka.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Mehari_zushi_with_anago_by_woinary_in_Osaka.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "commons-search",
+    "file": "File:Meharizushi-Kumano-Mie.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Meharizushi-Kumano-Mie.JPG",
+    "ok": true
+   }
+  ],
+  "vet": "c2 single cabbage-wrapped ball unsure"
  },
  {
   "key": "maff_kyodo-hechimajiru_kagoshima",
@@ -1499,7 +2329,24 @@
   "desc": "hegi soba, thin grey-green buckwheat noodles laid in neat bite-sized coils across a wide shallow wooden tray, with dipping sauce and chopped green onion",
   "items": [
    "maff_kyodo:hegisoba_niigata_niigata"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 2,
+    "origin": "jawiki-page",
+    "file": "File:Hegisoba_001.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Hegisoba_001.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "jawiki-page",
+    "file": "File:へぎそば（越後長岡小嶋屋Cocolo長岡店）.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E3%81%B8%E3%81%8E%E3%81%9D%E3%81%B0%EF%BC%88%E8%B6%8A%E5%BE%8C%E9%95%B7%E5%B2%A1%E5%B0%8F%E5%B6%8B%E5%B1%8BCocolo%E9%95%B7%E5%B2%A1%E5%BA%97%EF%BC%89.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c0 raw/unplated, c1 zaru soba, c3 other"
  },
  {
   "key": "maff_kyodo-heka_shimane",
@@ -1507,7 +2354,9 @@
   "desc": "heka, a sukiyaki-style hot pot of fish fillets, white tofu, onion, napa cabbage, shimeji mushrooms and green onion in sweet soy, in a black iron pan",
   "items": [
    "maff_kyodo:heka_shimane"
-  ]
+  ],
+  "refs": [],
+  "vet": "prints/roads/package"
  },
  {
   "key": "maff_kyodo-heso_daikon_no_nishime_miyagi",
@@ -1539,7 +2388,9 @@
   "desc": "hitashi mame, a heap of boiled pale green soybeans, smooth and glossy, on a white plate with a patterned rim",
   "items": [
    "maff_kyodo:hitashi_mame_nagano"
-  ]
+  ],
+  "refs": [],
+  "vet": "historic photos"
  },
  {
   "key": "maff_kyodo-hitokawa_zushi_shiga",
@@ -1563,7 +2414,9 @@
   "desc": "houchou, very long thick white udon noodles in a black bowl, with a red bowl of dipping sauce and a green kabosu lime",
   "items": [
    "maff_kyodo:hocho_oita"
-  ]
+  ],
+  "refs": [],
+  "vet": "lantern/shops"
  },
  {
   "key": "maff_kyodo-hoshi_kabocha_no_egomaae_nagano",

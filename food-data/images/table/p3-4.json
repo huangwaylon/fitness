@@ -5,7 +5,38 @@
   "desc": "Sasa dango: green mugwort rice dumplings wrapped in bamboo leaves tied with straw string, one unwrapped and cut showing smooth dark purple-brown koshian bean paste inside",
   "items": [
    "mext:15124"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Sasa-dango_002.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Sasa-dango_002.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Sasa-dango_001.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Sasa-dango_001.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:Sasadango1.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Sasadango1.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "commons-search",
+    "file": "File:Sasadango2.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Sasadango2.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "bamboo-leaf wrapped sasa dango, c4 opened with bean paste"
  },
  {
   "key": "mext-15154",
@@ -13,7 +44,38 @@
   "desc": "Sasa dango: green mugwort rice dumplings wrapped in bamboo leaves tied with straw string, one unwrapped and cut showing chunky red bean paste with visible bean skins inside",
   "items": [
    "mext:15154"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Sasa-dango_002.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Sasa-dango_002.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Sasa-dango_001.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Sasa-dango_001.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:Sasadango1.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Sasadango1.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "commons-search",
+    "file": "File:Sasadango2.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Sasadango2.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "bamboo-leaf wrapped sasa dango, c4 opened with bean paste"
  },
  {
   "key": "mext-15143",
@@ -21,7 +83,9 @@
   "desc": "Zunda an: bright pale green sweet paste of mashed edamame with small bean bits, mounded in a small dish, coarse and moist, not wasabi or matcha",
   "items": [
    "mext:15143"
-  ]
+  ],
+  "refs": [],
+  "vet": "sky, buildings, statue"
  },
  {
   "key": "mext-15144",
@@ -29,7 +93,38 @@
   "desc": "Zunda mochi: soft white round rice cakes smothered in bright pale green mashed edamame paste with coarse bean bits, on a small plate",
   "items": [
    "mext:15144"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Zunda-mochi.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Zunda-mochi.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "commons-search",
+    "file": "File:パックのずんだ餅.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E3%83%91%E3%83%83%E3%82%AF%E3%81%AE%E3%81%9A%E3%82%93%E3%81%A0%E9%A4%85.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "commons-search",
+    "file": "File:ずんだ餅_(ずんだ茶寮).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E3%81%9A%E3%82%93%E3%81%A0%E9%A4%85_(%E3%81%9A%E3%82%93%E3%81%A0%E8%8C%B6%E5%AF%AE).jpg",
+    "ok": true
+   },
+   {
+    "n": 5,
+    "origin": "commons-search",
+    "file": "File:ずんだ餅_桜内梨子ちゃん.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E3%81%9A%E3%82%93%E3%81%A0%E9%A4%85_%E6%A1%9C%E5%86%85%E6%A2%A8%E5%AD%90%E3%81%A1%E3%82%83%E3%82%93.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "zunda mochi; c2 paste only"
  },
  {
   "key": "mext-15024",
@@ -37,7 +132,24 @@
   "desc": "Wagashi taruto from Ehime: a sliced roll of soft yellow sponge cake spiralled around smooth dark red bean paste, cut rounds showing the swirl, on a plate",
   "items": [
    "mext:15024"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Taruto,Matsuyama-city,Japan.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Taruto,Matsuyama-city,Japan.JPG",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "jawiki-page",
+    "file": "File:Ichiroku-tarte_of_Ichiroku-honpo.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Ichiroku-tarte_of_Ichiroku-honpo.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "Ehime tart roll with anko; others western tarts"
  },
  {
   "key": "mext-15025",
@@ -45,7 +157,31 @@
   "desc": "Chimaki: long slim cone-shaped sweet rice cakes wrapped in green bamboo leaves bound with rush string, one unwrapped showing a smooth white translucent dumpling",
   "items": [
    "mext:15025"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Chimaki_002.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Chimaki_002.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "commons-cat",
+    "file": "File:Chimaki_001.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Chimaki_001.jpg",
+    "ok": true
+   },
+   {
+    "n": 5,
+    "origin": "commons-cat",
+    "file": "File:Kawabata-Douki9.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Kawabata-Douki9.JPG",
+    "ok": true
+   }
+  ],
+  "vet": "long Japanese chimaki in bamboo leaves; c3/c6/c7 Chinese zongzi (lookalike)"
  },
  {
   "key": "mext-15026",
@@ -62,7 +198,17 @@
   "items": [
    "mext:15157",
    "mext:15004"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Yatsuhashi_002.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Yatsuhashi_002.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c0 nama yatsuhashi triangles; c5 hard yatsuhashi; shops"
  },
  {
   "key": "mext-15158",
@@ -70,7 +216,17 @@
   "desc": "Nama yatsuhashi: soft thin pale cinnamon-tinted mochi squares folded into triangles around chunky red bean paste with bean skins, on a small plate",
   "items": [
    "mext:15158"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Yatsuhashi_002.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Yatsuhashi_002.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c0 nama yatsuhashi triangles; c5 hard yatsuhashi; shops"
  },
  {
   "key": "mext-15028",
@@ -78,7 +234,52 @@
   "desc": "Nerikiri: a small exquisitely shaped wagashi of smooth pastel pink and white bean paste moulded like a flower with fine petal lines, on a small plate",
   "items": [
    "mext:15028"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Summer_wagashi_01.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Summer_wagashi_01.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:Nerikiri_natsu.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Nerikiri_natsu.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "commons-cat",
+    "file": "File:Kibuna_by_Kourindo.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Kibuna_by_Kourindo.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "commons-cat",
+    "file": "File:Nerikiri_(fuyo).JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Nerikiri_(fuyo).JPG",
+    "ok": true
+   },
+   {
+    "n": 5,
+    "origin": "commons-cat",
+    "file": "File:Nerikiri_(hozuki).JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Nerikiri_(hozuki).JPG",
+    "ok": true
+   },
+   {
+    "n": 6,
+    "origin": "commons-cat",
+    "file": "File:Nerikiri_(Suika).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Nerikiri_(Suika).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "nerikiri; c2 kinton style; c7 display"
  },
  {
   "key": "mext-15029",
@@ -102,7 +303,38 @@
   "desc": "Karukan manju: pure white fluffy steamed buns of yam and rice flour with a fine spongy surface, one cut showing smooth dark red bean paste, on a plate",
   "items": [
    "mext:15160"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Akashiya_Karukan-manju_(3).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Akashiya_Karukan-manju_(3).jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Akashiya_Karukan-manju_(2).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Akashiya_Karukan-manju_(2).jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:Akashiya_Karukan-manju_(1).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Akashiya_Karukan-manju_(1).jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "commons-search",
+    "file": "File:Karukan01.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Karukan01.JPG",
+    "ok": true
+   }
+  ],
+  "vet": "karukan manju, c0/c1 cut with smooth paste"
  },
  {
   "key": "mext-15161",
@@ -110,7 +342,24 @@
   "desc": "Karukan manju: pure white fluffy steamed buns of yam and rice flour with a fine spongy surface, one cut showing chunky red bean paste with skins, on a plate",
   "items": [
    "mext:15161"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:Akashiya_Karukan-manju_(1).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Akashiya_Karukan-manju_(1).jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "commons-search",
+    "file": "File:Karukan01.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Karukan01.JPG",
+    "ok": true
+   }
+  ],
+  "vet": "uncut karukan manju; c0/c1 show smooth paste (not tsubuan)"
  },
  {
   "key": "mext-15030",
@@ -118,7 +367,9 @@
   "desc": "Kuzu manju: clear glassy translucent kudzu-starch dumplings with a dark ball of smooth bean paste visible through them, glistening, on a small plate",
   "items": [
    "mext:15030"
-  ]
+  ],
+  "refs": [],
+  "vet": "c0 looks like mizu-yokan/jelly, not clear kuzu manju"
  },
  {
   "key": "mext-15162",
@@ -126,7 +377,9 @@
   "desc": "Kuzu manju: clear glassy translucent kudzu-starch dumplings with a dark ball of chunky bean paste visible through them, glistening, on a small plate",
   "items": [
    "mext:15162"
-  ]
+  ],
+  "refs": [],
+  "vet": "c0 looks like mizu-yokan/jelly, not clear kuzu manju"
  },
  {
   "key": "mext-15031",
@@ -135,7 +388,45 @@
   "items": [
    "mext:15031",
    "mext:15163"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Kuri_manju_of_Horaiya_(2).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Kuri_manju_of_Horaiya_(2).jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Kuri_manju_of_Awashimado.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Kuri_manju_of_Awashimado.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:Kuri_manju_of_Horaiya_(1).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Kuri_manju_of_Horaiya_(1).jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "commons-search",
+    "file": "File:Kuri_man_of_Pasco_Shikishima.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Kuri_man_of_Pasco_Shikishima.jpg",
+    "ok": true
+   },
+   {
+    "n": 5,
+    "origin": "commons-search",
+    "file": "File:むらたや_栗饅頭.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E3%82%80%E3%82%89%E3%81%9F%E3%82%84_%E6%A0%97%E9%A5%85%E9%A0%AD.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "kuri manju with glazed tops; c3 unclear"
  },
  {
   "key": "mext-15032",
@@ -143,7 +434,9 @@
   "desc": "To manju: small round baked buns with a thin glossy tan crust, one cut showing smooth dark bean paste inside, on a plate",
   "items": [
    "mext:15032"
-  ]
+  ],
+  "refs": [],
+  "vet": "steamed white buns and others; no baked to-manju"
  },
  {
   "key": "mext-15164",
@@ -151,7 +444,9 @@
   "desc": "To manju: small round baked buns with a thin glossy tan crust, one cut showing chunky red bean paste with bean skins inside, on a plate",
   "items": [
    "mext:15164"
-  ]
+  ],
+  "refs": [],
+  "vet": "steamed white buns and others; no baked to-manju"
  },
  {
   "key": "mext-15165",
@@ -159,7 +454,24 @@
   "desc": "Steamed manju: soft smooth white steamed buns, slightly domed, one cut showing chunky red bean paste with bean skins, on a plate",
   "items": [
    "mext:15165"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Noh_manju,_traditional_Japanese_confection.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Noh_manju,_traditional_Japanese_confection.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "commons-search",
+    "file": "File:Red-and-white_steamed_bun,kouhaku-manjyu,Katori-city,Japan.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Red-and-white_steamed_bun,kouhaku-manjyu,Katori-city,Japan.JPG",
+    "ok": true
+   }
+  ],
+  "vet": "white steamed manju; c1 packed; c4/c5 other sweets"
  },
  {
   "key": "mext-15166",
@@ -167,7 +479,17 @@
   "desc": "Anman: a large fluffy white Chinese steamed bun with a red dot on top, torn open to show dark sweet red bean paste, on a small plate",
   "items": [
    "mext:15166"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:Anman_shinjuku_nakamuraya_2014-2.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Anman_shinjuku_nakamuraya_2014-2.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c2 steamed bun torn showing bean paste; c1 plain bun unclear"
  },
  {
   "key": "mext-15167",
@@ -175,7 +497,38 @@
   "desc": "Monaka: crisp pale beige wafer shells pressed in a flower pattern sandwiching chunky red bean paste, one broken open, on a small plate",
   "items": [
    "mext:15167"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Kimonaka.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Kimonaka.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:Tawara-monaka_001.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Tawara-monaka_001.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "jawiki-page",
+    "file": "File:Kuya_monaka_(3).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Kuya_monaka_(3).jpg",
+    "ok": true
+   },
+   {
+    "n": 5,
+    "origin": "jawiki-page",
+    "file": "File:Morinaba_Choco-monaka-jumbo.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Morinaba_Choco-monaka-jumbo.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "monaka wafers with bean paste; c4 packed, c2 unclear"
  },
  {
   "key": "mext-15037",
@@ -183,7 +536,17 @@
   "desc": "Yubeshi: a firm chewy brown steamed rice-flour cake flavoured with soy and walnuts, cut into slices showing walnut bits, on a small plate",
   "items": [
    "mext:15037"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 2,
+    "origin": "jawiki-page",
+    "file": "File:Sendai_kurumi_yubeshi.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Sendai_kurumi_yubeshi.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c2 walnut yubeshi slab; c0/c1 yuzu-style maru yubeshi; c3/c7 packed"
  },
  {
   "key": "mext-15040",
@@ -207,7 +570,31 @@
   "desc": "Okoshi: hard crunchy rectangular bars of puffed rice grains bound with sugar syrup, pale golden, sometimes with peanuts, on a plate",
   "items": [
    "mext:15043"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Awaokoshi_01.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Awaokoshi_01.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "jawiki-page",
+    "file": "File:Japanese_kaminari_okoshi_2014.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Japanese_kaminari_okoshi_2014.jpg",
+    "ok": true
+   },
+   {
+    "n": 7,
+    "origin": "commons-search",
+    "file": "File:Puffed_rice_cakes.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Puffed_rice_cakes.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "puffed-rice okoshi bars; c3 pink unclear; c6 other"
  },
  {
   "key": "mext-15044",
@@ -223,7 +610,17 @@
   "desc": "White karinto: knobbly fried dough sticks coated in pale white sugar glaze, crunchy, piled in a small bowl",
   "items": [
    "mext:15046"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 3,
+    "origin": "jawiki-page",
+    "file": "File:Delicia_Shinshu-umare_Azumino_milk_karinto.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Delicia_Shinshu-umare_Azumino_milk_karinto.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c3 pale white karintou; others dark (black-sugar) karintou"
  },
  {
   "key": "mext-15047",
@@ -231,7 +628,9 @@
   "desc": "Gokabo: soft cylindrical sticks of puffed millet and rice bound with syrup and coated in roasted soybean flour, pale tan powdery, on a plate",
   "items": [
    "mext:15047"
-  ]
+  ],
+  "refs": [],
+  "vet": "buildings"
  },
  {
   "key": "mext-15048",
@@ -239,7 +638,17 @@
   "desc": "Isobe senbei: thin crisp light wheat crackers with a strip of dark green seaweed on each, pale cream, on a plate",
   "items": [
    "mext:15048"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Isobe_Senbei_01.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Isobe_Senbei_01.JPG",
+    "ok": true
+   }
+  ],
+  "vet": "c0 thin rectangular isobe senbei; c1 round, unclear"
  },
  {
   "key": "mext-15049",
@@ -247,7 +656,17 @@
   "desc": "Kawara senbei: large curved roof-tile shaped wheat crackers, glossy golden-brown with a stamped design, on a plate",
   "items": [
    "mext:15049"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:瓦せんべい_-_panoramio.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E7%93%A6%E3%81%9B%E3%82%93%E3%81%B9%E3%81%84_-_panoramio.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c0 stamped kawara senbei in packet"
  },
  {
   "key": "mext-15050",
@@ -255,7 +674,9 @@
   "desc": "Maki senbei: thin crisp wheat crackers rolled into golden-brown tubes, on a plate",
   "items": [
    "mext:15050"
-  ]
+  ],
+  "refs": [],
+  "vet": "c0 flat round cracker, not rolled"
  },
  {
   "key": "mext-15051",
@@ -263,7 +684,9 @@
   "desc": "Nanbu senbei: round flat pale wheat crackers with a thin crisp lacy rim, studded with black sesame seeds, on a plate",
   "items": [
    "mext:15051"
-  ]
+  ],
+  "refs": [],
+  "vet": "c0 peanut nanbu (wrong variety); others packs/vending"
  },
  {
   "key": "mext-15052",
@@ -271,7 +694,17 @@
   "desc": "Nanbu senbei: round flat pale wheat crackers with a thin crisp lacy rim, studded with halved peanuts, on a plate",
   "items": [
    "mext:15052"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Nanbu_senbei_-_01.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Nanbu_senbei_-_01.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c0 nanbu senbei with peanuts; others packs/vending"
  },
  {
   "key": "mext-15053",
@@ -279,7 +712,9 @@
   "desc": "Shiogama: small pressed square cakes of fine white rice flour and sugar with a pale green tint and shiso flecks, dry and crumbly, on a plate",
   "items": [
    "mext:15053"
-  ]
+  ],
+  "refs": [],
+  "vet": "shops, workers, other sweets"
  },
  {
   "key": "mext-15056",
@@ -287,7 +722,9 @@
   "desc": "Kansai hina arare: small round pastel pink, white, green and yellow fried rice crackers about pea size, crunchy, in a small bowl",
   "items": [
    "mext:15056"
-  ]
+  ],
+  "refs": [],
+  "vet": "puffed sweet Kanto-style arare, not Kansai"
  },
  {
   "key": "mext-15055",
@@ -295,7 +732,31 @@
   "desc": "Kanto hina arare: tiny puffed rice grains coated in pastel pink, white and green sugar, light like popcorn, in a small bowl",
   "items": [
    "mext:15055"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Hinaarare_nagoya.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Hinaarare_nagoya.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Hina_arare_(2).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Hina_arare_(2).jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:Hina_arare_(3).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Hina_arare_(3).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "sweet puffed hina-arare"
  },
  {
   "key": "mext-15061",
@@ -303,7 +764,9 @@
   "desc": "Small bolo: tiny round pale cream and orange cookie balls that melt in the mouth, piled in a small dish",
   "items": [
    "mext:15061"
-  ]
+  ],
+  "refs": [],
+  "vet": "financiers, brownies; no tiny boro"
  },
  {
   "key": "mext-15062",
@@ -311,7 +774,9 @@
   "desc": "Soba bolo: small flower-shaped buckwheat cookies with a shiny light brown top, crisp, on a plate",
   "items": [
    "mext:15062"
-  ]
+  ],
+  "refs": [],
+  "vet": "c0 round cookies, not clearly soba boro; buildings"
  },
  {
   "key": "mext-15063",
@@ -1494,7 +1959,9 @@
   "desc": "Frozen menchi katsu: raw thick round minced meat patties covered in pale uncooked white panko crumbs, frosty, on a plate, not yet fried",
   "items": [
    "mext:18016"
-  ]
+  ],
+  "refs": [],
+  "vet": "all fried/cooked; name says frozen before frying"
  },
  {
   "key": "takatsuki-r01",
@@ -1502,7 +1969,9 @@
   "desc": "Curry pilaf: yellow curry-coloured rice with diced carrot, onion, green peas and bits of meat, on a plate",
   "items": [
    "takatsuki:r01"
-  ]
+  ],
+  "refs": [],
+  "vet": "c3 package only, c2 bento unclear, others not pilaf"
  },
  {
   "key": "takatsuki-r02",
@@ -1511,7 +1980,45 @@
   "items": [
    "takatsuki:r02",
    "toyonaka:278117"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Mushroom_rice_(5047537954).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Mushroom_rice_(5047537954).jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Mushrooom_rice_(5148664340).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Mushrooom_rice_(5148664340).jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:Maitake_rice_(4348648458).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Maitake_rice_(4348648458).jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "commons-search",
+    "file": "File:Maitake_mushroom_rice_(8039200846).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Maitake_mushroom_rice_(8039200846).jpg",
+    "ok": true
+   },
+   {
+    "n": 5,
+    "origin": "commons-search",
+    "file": "File:Shiitake_mushroom_rice_(29896276690).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Shiitake_mushroom_rice_(29896276690).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c3 unclear"
  },
  {
   "key": "takatsuki-r03",
@@ -1519,7 +2026,9 @@
   "desc": "Kufa juushii: Okinawan seasoned rice, light brown, with pork, carrot, hijiki and shiitake bits, firm grains, in a rice bowl",
   "items": [
    "takatsuki:r03"
-  ]
+  ],
+  "refs": [],
+  "vet": "c0 is porridge-style juushii, c1/c2 set meals"
  },
  {
   "key": "takatsuki-r04",
@@ -1536,7 +2045,31 @@
   "items": [
    "takatsuki:r05",
    "kumagaya:00122"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Takenoko_gohan.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Takenoko_gohan.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Bamboo_shoot_rice_(2443018926).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Bamboo_shoot_rice_(2443018926).jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:Bamboo_shoot_rice_(3493325111).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Bamboo_shoot_rice_(3493325111).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c3 bento, c4 unclear"
  },
  {
   "key": "takatsuki-r06",
@@ -1544,7 +2077,9 @@
   "desc": "Chinese okowa: glossy brown sticky glutinous rice with pork, shiitake, bamboo shoot and carrot, in a rice bowl",
   "items": [
    "takatsuki:r06"
-  ]
+  ],
+  "refs": [],
+  "vet": "bookshelf"
  },
  {
   "key": "takatsuki-r07",
@@ -1552,7 +2087,9 @@
   "desc": "Tori meshi: light brown seasoned rice mixed with small pieces of chicken, burdock and carrot, in a rice bowl",
   "items": [
    "takatsuki:r07"
-  ]
+  ],
+  "refs": [],
+  "vet": "buildings, packaging, bentos unclear"
  },
  {
   "key": "takatsuki-r08",
@@ -1560,7 +2097,17 @@
   "desc": "Hijiki gohan: white rice mixed with black hijiki seaweed strands, carrot and fried tofu bits, in a rice bowl",
   "items": [
    "takatsuki:r08"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Hijiki_rice_with_grilled_mackerel_lunch_box_of_Origin_Bento.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Hijiki_rice_with_grilled_mackerel_lunch_box_of_Origin_Bento.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c0 hijiki rice beside fish in bento; c1 unclear"
  },
  {
   "key": "takatsuki-r09",
@@ -1568,7 +2115,9 @@
   "desc": "Pork kimchi rice: rice stir-fried with red kimchi and pork slices, reddish orange, with green onion, in a bowl",
   "items": [
    "takatsuki:r09"
-  ]
+  ],
+  "refs": [],
+  "vet": "stews/other dishes"
  },
  {
   "key": "takatsuki-r10",
@@ -1576,7 +2125,9 @@
   "desc": "Mame gohan: white rice dotted with bright green peas, in a rice bowl",
   "items": [
    "takatsuki:r10"
-  ]
+  ],
+  "refs": [],
+  "vet": "plant; c1 mixed veg rice not bean rice"
  },
  {
   "key": "takatsuki-r11",
@@ -1584,7 +2135,9 @@
   "desc": "Salmon and turnip stew: a creamy white stew with pink salmon pieces, white turnip chunks, carrot and green turnip leaves, in a bowl",
   "items": [
    "takatsuki:r11"
-  ]
+  ],
+  "refs": [],
+  "vet": "illustration"
  },
  {
   "key": "takatsuki-r12",
@@ -1600,7 +2153,9 @@
   "desc": "Sichuan-style soup: a slightly spicy reddish clear soup with tofu, egg ribbons, wood ear mushroom and vegetables, in a bowl",
   "items": [
    "takatsuki:r13"
-  ]
+  ],
+  "refs": [],
+  "vet": "c0 unclear soup, c1 noodle soup"
  },
  {
   "key": "takatsuki-r14",
@@ -1616,7 +2171,45 @@
   "desc": "Hashed beef: thin beef slices and onion in a glossy dark brown demi-glace sauce, in a bowl",
   "items": [
    "takatsuki:r15"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Hashed_Beef_&_Rice,_Renga-Tei,_Ginza_(6639260429).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Hashed_Beef_%26_Rice,_Renga-Tei,_Ginza_(6639260429).jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:Hashed_Beef.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Hashed_Beef.JPG",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "commons-search",
+    "file": "File:Hashed_beef_20201119-01.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Hashed_beef_20201119-01.jpg",
+    "ok": true
+   },
+   {
+    "n": 5,
+    "origin": "commons-search",
+    "file": "File:Hashed_beef_20201119-03.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Hashed_beef_20201119-03.jpg",
+    "ok": true
+   },
+   {
+    "n": 6,
+    "origin": "commons-search",
+    "file": "File:Hashed_beef_20201119-02.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Hashed_beef_20201119-02.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c2/c3 other dishes"
  },
  {
   "key": "takatsuki-r16",
@@ -1625,7 +2218,9 @@
   "items": [
    "takatsuki:r16",
    "toyonaka:117836"
-  ]
+  ],
+  "refs": [],
+  "vet": "raw lettuce, green potages, unclear soups"
  },
  {
   "key": "takatsuki-r17",
@@ -1643,7 +2238,24 @@
   "desc": "Adobo: Filipino chicken braised in soy and vinegar, glossy dark brown pieces with garlic and bay leaf, on a plate",
   "items": [
    "takatsuki:r18"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Chicken_adobo.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Chicken_adobo.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "jawiki-page",
+    "file": "File:Chipotlesenadobo.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Chipotlesenadobo.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c1/c5 uncertain, others other dishes"
  },
  {
   "key": "takatsuki-r19",
@@ -1732,7 +2344,38 @@
   "items": [
    "takatsuki:r31",
    "toyonaka:117763"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Korean.food-Chapchae-01.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Korean.food-Chapchae-01.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:Polish_Korean_Cuisine_and_Culture_Exchanges_Gradmother’s_Recipes_05.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Polish_Korean_Cuisine_and_Culture_Exchanges_Gradmother%E2%80%99s_Recipes_05.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "jawiki-page",
+    "file": "File:Korean_cuisine-Japchae-01.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Korean_cuisine-Japchae-01.jpg",
+    "ok": true
+   },
+   {
+    "n": 6,
+    "origin": "jawiki-page",
+    "file": "File:Korean_mixed_vegetarian_noodle.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Korean_mixed_vegetarian_noodle.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c5/c7 julienne stir-fry without clear glass noodles"
  },
  {
   "key": "takatsuki-r32",
@@ -1740,7 +2383,52 @@
   "desc": "Qingjiao rousi: thin strips of green bell pepper, bamboo shoot and pork stir-fried in glossy brown sauce, on a plate",
   "items": [
    "takatsuki:r32"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Pepper_steak.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Pepper_steak.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "commons-cat",
+    "file": "File:20260426_Schweinefleisch_und_Paprika_Restaurant_Kyoto_Seikaen_anagoria.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:20260426_Schweinefleisch_und_Paprika_Restaurant_Kyoto_Seikaen_anagoria.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "commons-cat",
+    "file": "File:Chin-jao_Rosu,_in_Chinese_restaurant_in_Roppongi.jpeg",
+    "page": "https://commons.wikimedia.org/wiki/File:Chin-jao_Rosu,_in_Chinese_restaurant_in_Roppongi.jpeg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "commons-cat",
+    "file": "File:Chinjao_Rosu_(青椒肉絲)_(27557347630).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Chinjao_Rosu_(%E9%9D%92%E6%A4%92%E8%82%89%E7%B5%B2)_(27557347630).jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "commons-cat",
+    "file": "File:Chinjao_Rosu_(青椒肉絲)_(6805698268).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Chinjao_Rosu_(%E9%9D%92%E6%A4%92%E8%82%89%E7%B5%B2)_(6805698268).jpg",
+    "ok": true
+   },
+   {
+    "n": 7,
+    "origin": "commons-search",
+    "file": "File:Green_pepper_steak_(青椒肉絲)_(26880875325).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Green_pepper_steak_(%E9%9D%92%E6%A4%92%E8%82%89%E7%B5%B2)_(26880875325).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c5/c6 rice dishes"
  },
  {
   "key": "takatsuki-r33",
@@ -1748,7 +2436,45 @@
   "desc": "Hoikoro: twice-cooked pork slices stir-fried with large cabbage pieces and green pepper in a reddish brown miso sauce, on a plate",
   "items": [
    "takatsuki:r33"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:Twice_cooked_pork,_Jia_Yan,_5_rue_Humblot,_Paris_002.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Twice_cooked_pork,_Jia_Yan,_5_rue_Humblot,_Paris_002.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "jawiki-page",
+    "file": "File:Twice_cooked_pork_of_Gyoza-no-Manshu.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Twice_cooked_pork_of_Gyoza-no-Manshu.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "enwiki",
+    "file": "File:Twice_cooked_pork,_Jia_Yan,_5_rue_Humblot,_Paris_003.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Twice_cooked_pork,_Jia_Yan,_5_rue_Humblot,_Paris_003.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "enwiki-page",
+    "file": "File:Twice_cooked_pork_@_Le_Boky_@_Geneva_(43540070114).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Twice_cooked_pork_@_Le_Boky_@_Geneva_(43540070114).jpg",
+    "ok": true
+   },
+   {
+    "n": 6,
+    "origin": "enwiki-page",
+    "file": "File:Twice-cooked_Pork_回锅肉_(1648213963).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Twice-cooked_Pork_%E5%9B%9E%E9%94%85%E8%82%89_(1648213963).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c0 unclear, c5 set meal, c7 dumplings"
  },
  {
   "key": "takatsuki-r36",
@@ -1756,7 +2482,17 @@
   "desc": "Kimchi udon: thick white udon noodles in a red spicy kimchi broth with pork and green onion, in a bowl",
   "items": [
    "takatsuki:r36"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Udon_noodles_with_chicken,_mushrooms,_kimchi,_and_scallions_in_a_seafood_broth_and_roasted_beetsカツオ昆布出汁の鶏肉キムチキノコうどん、ローストビーツ.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Udon_noodles_with_chicken,_mushrooms,_kimchi,_and_scallions_in_a_seafood_broth_and_roasted_beets%E3%82%AB%E3%83%84%E3%82%AA%E6%98%86%E5%B8%83%E5%87%BA%E6%B1%81%E3%81%AE%E9%B6%8F%E8%82%89%E3%82%AD%E3%83%A0%E3%83%81%E3%82%AD%E3%83%8E%E3%82%B3%E3%81%86%E3%81%A9%E3%82%93%E3%80%81%E3%83%AD%E3%83%BC%E3%82%B9%E3%83%88%E3%83%93%E3%83%BC%E3%83%84.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c0 yaki udon, others unclear"
  },
  {
   "key": "takatsuki-r37",
@@ -1764,7 +2500,24 @@
   "desc": "Sauce spaghetti: spaghetti stir-fried with dark brown Worcester sauce, cabbage, carrot and pork, like yakisoba, on a plate",
   "items": [
    "takatsuki:r37"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:サイゼリヤ_ミートソーススパゲッティ.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E3%82%B5%E3%82%A4%E3%82%BC%E3%83%AA%E3%83%A4_%E3%83%9F%E3%83%BC%E3%83%88%E3%82%BD%E3%83%BC%E3%82%B9%E3%82%B9%E3%83%91%E3%82%B2%E3%83%83%E3%83%86%E3%82%A3.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "commons-search",
+    "file": "File:ミートソーススパ.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E3%83%9F%E3%83%BC%E3%83%88%E3%82%BD%E3%83%BC%E3%82%B9%E3%82%B9%E3%83%91.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c1/c3 tomato pasta, c2 dry pasta"
  },
  {
   "key": "takatsuki-r38",
@@ -1772,7 +2525,45 @@
   "desc": "Vietnamese noodle soup: flat white rice noodles in a clear broth with chicken, bean sprouts and fresh herbs, in a bowl",
   "items": [
    "takatsuki:r38"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Vietnamese_noodle_soup_with_3_Mushrooms_-_Pho,_Brighton_2026-08-14.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Vietnamese_noodle_soup_with_3_Mushrooms_-_Pho,_Brighton_2026-08-14.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Pho_Vietnamese_noodle_soup_in_Ho_Chi_Minh_City,_Vietnam.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Pho_Vietnamese_noodle_soup_in_Ho_Chi_Minh_City,_Vietnam.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:Tofu_noodle_soup_(Phở_chay)_-_Pho_Hanoi_Authentic_2024-12-01.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Tofu_noodle_soup_(Ph%E1%BB%9F_chay)_-_Pho_Hanoi_Authentic_2024-12-01.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "commons-search",
+    "file": "File:Beef_noodle_soup_(Phở_bò)_-_Pho_Hanoi_Authentic_2024-12-01.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Beef_noodle_soup_(Ph%E1%BB%9F_b%C3%B2)_-_Pho_Hanoi_Authentic_2024-12-01.jpg",
+    "ok": true
+   },
+   {
+    "n": 5,
+    "origin": "commons-search",
+    "file": "File:Pho,_popular_Vietnamese_noodle_soup.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Pho,_popular_Vietnamese_noodle_soup.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c3 curry-like"
  },
  {
   "key": "takatsuki-r39",
@@ -1780,7 +2571,24 @@
   "desc": "Japanese curry udon: thick white udon noodles in a thick yellow-brown curry broth with green onion and pork, in a bowl",
   "items": [
    "takatsuki:r39"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:Udon_noodle_in_curry_soup_(4316164692).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Udon_noodle_in_curry_soup_(4316164692).jpg",
+    "ok": true
+   },
+   {
+    "n": 6,
+    "origin": "commons-search",
+    "file": "File:Curry_Udon_(1795336164).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Curry_Udon_(1795336164).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c1 cream style, others unclear"
  },
  {
   "key": "takatsuki-r40",
@@ -1788,7 +2596,24 @@
   "desc": "Kakiage: a round crispy fritter of shredded onion, carrot and vegetables in light golden tempura batter, on a plate",
   "items": [
    "takatsuki:r40"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Kakiage_tendon_by_chidorian.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Kakiage_tendon_by_chidorian.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:Kakiage_(mixed_vegetable_and_seafood_tempura)_(22925391864).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Kakiage_(mixed_vegetable_and_seafood_tempura)_(22925391864).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c4/c5 shrimp tempura, c6/c7 shop"
  },
  {
   "key": "takatsuki-r41",
@@ -1836,7 +2661,17 @@
   "desc": "Grape kanten: firm translucent purple grape agar jelly cubes, in a small glass bowl",
   "items": [
    "takatsuki:r48"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Cup_jelly_80C(grape).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Cup_jelly_80C(grape).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c1 portrait, c2 building"
  },
  {
   "key": "takatsuki-r51",
@@ -1860,7 +2695,17 @@
   "desc": "Basil pasta: spaghetti coated in bright green basil pesto, on a plate",
   "items": [
    "takatsuki:r53"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 4,
+    "origin": "commons-search",
+    "file": "File:Basil_pesto_pasta.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Basil_pesto_pasta.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c0-c3 shrimp/tomato pasta not clearly basil"
  },
  {
   "key": "takatsuki-r55",
@@ -1885,7 +2730,9 @@
   "desc": "Potato pizza bake: sliced potatoes topped with red pizza sauce and melted golden cheese, baked, in a small oven dish",
   "items": [
    "takatsuki:r57"
-  ]
+  ],
+  "refs": [],
+  "vet": "signs, people; c0 unclear"
  },
  {
   "key": "kurume-001",
@@ -1893,7 +2740,38 @@
   "desc": "Gohan: plain steamed white rice, glossy short grains mounded in a rice bowl",
   "items": [
    "kurume:001"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Meshi_001.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Meshi_001.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:Meshi_002.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Meshi_002.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "enwiki-page",
+    "file": "File:Bap_(cooked_rice)_2.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Bap_(cooked_rice)_2.jpg",
+    "ok": true
+   },
+   {
+    "n": 5,
+    "origin": "enwiki-page",
+    "file": "File:Lao_sticky_rice.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Lao_sticky_rice.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c2 thali, c6 black rice, c7 dish"
  },
  {
   "key": "kurume-002",
@@ -1902,7 +2780,17 @@
   "items": [
    "kurume:002",
    "kumagaya:00117"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "jawiki",
+    "file": "File:Mugimeshi.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Mugimeshi.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c1 white rice, others other"
  },
  {
   "key": "kurume-003",
@@ -1910,7 +2798,9 @@
   "desc": "Mushroom mixed rice: rice mixed with plenty of shimeji, shiitake and maitake mushrooms in soy seasoning, light brown, in a rice bowl",
   "items": [
    "kurume:003"
-  ]
+  ],
+  "refs": [],
+  "vet": "stir-fries/other dishes, no mixed rice"
  },
  {
   "key": "kurume-004",
@@ -1918,7 +2808,17 @@
   "desc": "Gomoku takikomi gohan: light brown seasoned rice with chicken, carrot, burdock, shiitake and fried tofu bits, in a rice bowl",
   "items": [
    "kurume:004"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Takikomi_gohan_(7775849146).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Takikomi_gohan_(7775849146).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c1-c5 cooking stir-fry"
  },
  {
   "key": "kurume-007",
@@ -1926,7 +2826,24 @@
   "desc": "Maki sushi: thick sushi rolls in dark nori sliced to show white rice around colourful fillings of egg, cucumber, kanpyo and pink denbu, on a plate",
   "items": [
    "kurume:007"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Makizushi2.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Makizushi2.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "jawiki-page",
+    "file": "File:8hosomak8.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:8hosomak8.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c2-c7 western uramaki rolls"
  },
  {
   "key": "kurume-016",
@@ -1934,7 +2851,38 @@
   "desc": "Chahan: fried rice with scrambled egg, green onion, diced pork, loose golden grains, on a plate",
   "items": [
    "kurume:016"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 2,
+    "origin": "jawiki",
+    "file": "File:Ramen_and_Chahan_002.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Ramen_and_Chahan_002.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "jawiki-page",
+    "file": "File:Arroz_chau_chau.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Arroz_chau_chau.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "jawiki-page",
+    "file": "File:Fried_rice_Japan.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Fried_rice_Japan.jpg",
+    "ok": true
+   },
+   {
+    "n": 6,
+    "origin": "jawiki-page",
+    "file": "File:Yeung_Chow_Fried_Rice_in_Hong_Kong_Fast_Food_Shop.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Yeung_Chow_Fried_Rice_in_Hong_Kong_Fast_Food_Shop.JPG",
+    "ok": true
+   }
+  ],
+  "vet": "c5 ramen set, c7 package"
  },
  {
   "key": "kurume-017",
@@ -1942,7 +2890,24 @@
   "desc": "Kinako mochi: soft white rice cake coated in pale tan roasted soybean flour, on a small plate",
   "items": [
    "kurume:017"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:Kinako_mochi.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Kinako_mochi.JPG",
+    "ok": true
+   },
+   {
+    "n": 5,
+    "origin": "commons-search",
+    "file": "File:Senjuan_Yoshimune_warabimochi.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Senjuan_Yoshimune_warabimochi.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c0/c4 warabimochi-like, c3 ohagi"
  },
  {
   "key": "kurume-018",
@@ -1958,7 +2923,9 @@
   "desc": "Egg and vegetable sandwich: white bread sandwich triangles with egg salad, lettuce and tomato, on a plate",
   "items": [
    "kurume:019"
-  ]
+  ],
+  "refs": [],
+  "vet": "no clear egg-veg sandwich"
  },
  {
   "key": "kurume-020",
@@ -1966,7 +2933,17 @@
   "desc": "Egg sandwich: soft white crustless bread triangles filled with pale yellow mashed egg salad, on a plate",
   "items": [
    "kurume:020"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Egg_Sandwich.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Egg_Sandwich.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "others burgers/open toasts"
  },
  {
   "key": "kurume-021",
@@ -1974,7 +2951,9 @@
   "desc": "Cheese and vegetable sandwich: white bread sandwich triangles with cheese slices, lettuce and cucumber, on a plate",
   "items": [
    "kurume:021"
-  ]
+  ],
+  "refs": [],
+  "vet": "subs/hot dogs, cheese unclear"
  },
  {
   "key": "kurume-022",
@@ -1982,7 +2961,24 @@
   "desc": "Tuna sandwich: white bread sandwich triangles with tuna mayonnaise and lettuce, on a plate",
   "items": [
    "kurume:022"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Tuna_olive_and_avocado_sandwich.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Tuna_olive_and_avocado_sandwich.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "enwiki",
+    "file": "File:Tuna_fish_sandwiches_for_the_National_School_Lunch_Program.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Tuna_fish_sandwiches_for_the_National_School_Lunch_Program.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "others different fillings/unclear"
  },
  {
   "key": "kurume-023",
@@ -1990,7 +2986,24 @@
   "desc": "Toast: a thick slice of Japanese white bread toasted golden-brown with a pat of butter, on a plate",
   "items": [
    "kurume:023"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Toast-2.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Toast-2.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:Toast-3.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Toast-3.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c2/c6 pizza toast, c7 toaster"
  },
  {
   "key": "kurume-025",
@@ -1998,7 +3011,17 @@
   "desc": "Strawberry jam toast: a thick slice of toasted white bread spread with glossy red strawberry jam, on a plate",
   "items": [
    "kurume:025"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:A_modest_breakfast_at_a_London_hotel._Toast_with_strawberry_jam.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:A_modest_breakfast_at_a_London_hotel._Toast_with_strawberry_jam.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "others not jam toast"
  },
  {
   "key": "kurume-037",
@@ -2014,7 +3037,9 @@
   "desc": "Ebi ten udon: thick white udon noodles in clear brown broth topped with a large golden fried shrimp tempura and green onion, in a bowl",
   "items": [
    "kurume:039"
-  ]
+  ],
+  "refs": [],
+  "vet": "c0 unclear udon, c1 fried shrimp only"
  },
  {
   "key": "kurume-040",
@@ -2022,7 +3047,9 @@
   "desc": "Gobo ten udon: thick white udon in clear broth topped with crispy golden fried burdock root strip tempura, in a bowl",
   "items": [
    "kurume:040"
-  ]
+  ],
+  "refs": [],
+  "vet": "plain udon/other noodles, no gobo tempura"
  },
  {
   "key": "kurume-043",
@@ -2030,7 +3057,24 @@
   "desc": "Wakame soba: thin grey-brown buckwheat noodles in dark broth topped with soft green wakame seaweed and green onion, in a bowl",
   "items": [
    "kurume:043"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:Photo-with-Xiaomi15Ultra_079.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Photo-with-Xiaomi15Ultra_079.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "commons-search",
+    "file": "File:Photo-with-Xiaomi15Ultra_082.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Photo-with-Xiaomi15Ultra_082.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c0/c1/c4/c5 tempura-topped"
  },
  {
   "key": "kurume-045",
@@ -2046,7 +3090,38 @@
   "desc": "Meat sauce spaghetti: spaghetti topped with red-brown minced meat bolognese sauce and parmesan, on a plate",
   "items": [
    "kurume:048"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Spaghetti_with_Meat_Sauce_in_Plastic_Container.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Spaghetti_with_Meat_Sauce_in_Plastic_Container.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Spaghetti_with_skipjack_tuna_sauce.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Spaghetti_with_skipjack_tuna_sauce.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "commons-search",
+    "file": "File:Spaghetti_served_with_meat_sauce.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Spaghetti_served_with_meat_sauce.jpg",
+    "ok": true
+   },
+   {
+    "n": 5,
+    "origin": "commons-search",
+    "file": "File:Spaghetti_in_meat_sauce-_Guido_^_Angelina_restaurant_-_panoramio.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Spaghetti_in_meat_sauce-_Guido_%5E_Angelina_restaurant_-_panoramio.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c2/c6 other pasta, c3 bag"
  },
  {
   "key": "kurume-049",
@@ -2054,7 +3129,38 @@
   "desc": "Carbonara: spaghetti in a creamy pale yellow egg and cheese sauce with bacon bits and black pepper, on a plate",
   "items": [
    "kurume:049"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Spaghetti_Carbonara_with_pan_roasted_broccolini_スパゲティカルボナーラとブロッコリーニのロースト.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Spaghetti_Carbonara_with_pan_roasted_broccolini_%E3%82%B9%E3%83%91%E3%82%B2%E3%83%86%E3%82%A3%E3%82%AB%E3%83%AB%E3%83%9C%E3%83%8A%E3%83%BC%E3%83%A9%E3%81%A8%E3%83%96%E3%83%AD%E3%83%83%E3%82%B3%E3%83%AA%E3%83%BC%E3%83%8B%E3%81%AE%E3%83%AD%E3%83%BC%E3%82%B9%E3%83%88.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Lidia_Bastianich's_Easter_Spaghetti_Carbonara_with_broccoli_and_tomatoes_リディアおばさんのイースター風スパゲティカルボナーラ、ブロッコリーとトマト添え.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Lidia_Bastianich%27s_Easter_Spaghetti_Carbonara_with_broccoli_and_tomatoes_%E3%83%AA%E3%83%87%E3%82%A3%E3%82%A2%E3%81%8A%E3%81%B0%E3%81%95%E3%82%93%E3%81%AE%E3%82%A4%E3%83%BC%E3%82%B9%E3%82%BF%E3%83%BC%E9%A2%A8%E3%82%B9%E3%83%91%E3%82%B2%E3%83%86%E3%82%A3%E3%82%AB%E3%83%AB%E3%83%9C%E3%83%8A%E3%83%BC%E3%83%A9%E3%80%81%E3%83%96%E3%83%AD%E3%83%83%E3%82%B3%E3%83%AA%E3%83%BC%E3%81%A8%E3%83%88%E3%83%9E%E3%83%88%E6%B7%BB%E3%81%88.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:Espaguetis_carbonara.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Espaguetis_carbonara.jpg",
+    "ok": true
+   },
+   {
+    "n": 7,
+    "origin": "commons-search",
+    "file": "File:Spaghetti_Carbonara_von_Unico_Tauberbischofsheim_2.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Spaghetti_Carbonara_von_Unico_Tauberbischofsheim_2.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c3 roe pasta, c4-c6 other"
  },
  {
   "key": "kurume-051",
@@ -2063,7 +3169,31 @@
   "items": [
    "kurume:051",
    "toyonaka:128870"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "jawiki",
+    "file": "File:Shogayaki_002.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Shogayaki_002.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:Shogayaki_004.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Shogayaki_004.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "commons-search",
+    "file": "File:Shogayaki_003.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Shogayaki_003.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c4-c6 other cuts/dishes"
  },
  {
   "key": "kurume-052",
@@ -2071,7 +3201,17 @@
   "desc": "Teriyaki chicken thigh: sliced chicken thigh with crisp skin and a glossy dark brown sweet soy glaze, on a plate",
   "items": [
    "kurume:052"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Teriyaki_air-fried_chicken_thighs.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Teriyaki_air-fried_chicken_thighs.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c0 unclear glaze, others other"
  },
  {
   "key": "kurume-053",
@@ -2087,7 +3227,9 @@
   "desc": "Chicken in sweet sour sauce: fried chicken pieces coated in a glossy orange sweet and sour sauce, on a plate",
   "items": [
    "kurume:054"
-  ]
+  ],
+  "refs": [],
+  "vet": "sauce cups; c0 unclear"
  },
  {
   "key": "kurume-055",
@@ -2103,7 +3245,9 @@
   "desc": "Mayo-baked chicken thigh: chicken thigh pieces baked with a browned blistered mayonnaise topping, on a plate",
   "items": [
    "kurume:056"
-  ]
+  ],
+  "refs": [],
+  "vet": "takeout box, illegible"
  },
  {
   "key": "kurume-057",
@@ -2111,7 +3255,9 @@
   "desc": "Marmalade chicken: chicken pieces glazed in glossy orange marmalade sauce with peel strips, on a plate",
   "items": [
    "kurume:057"
-  ]
+  ],
+  "refs": [],
+  "vet": "illustrations, ads, dessert"
  },
  {
   "key": "kurume-059",
@@ -2135,7 +3281,24 @@
   "desc": "Tonkatsu: a breaded deep-fried pork cutlet with a crisp golden panko crust, sliced, with dark brown sauce and shredded cabbage, on a plate",
   "items": [
    "kurume:064"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "jawiki",
+    "file": "File:Tonkatsu_by_ayustety_in_Tokyo.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Tonkatsu_by_ayustety_in_Tokyo.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "jawiki-page",
+    "file": "File:Tonkatsu_001.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Tonkatsu_001.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c1 other dish, c2 katsu sando, c4 building"
  },
  {
   "key": "kurume-065",
@@ -2143,7 +3306,17 @@
   "desc": "Hire katsu: thick round breaded fried pork tenderloin pieces with golden panko crust, with dark brown sauce and shredded cabbage, on a plate",
   "items": [
    "kurume:065"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Tonkatsu_of_Kimukatsu.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Tonkatsu_of_Kimukatsu.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c1/c4/c6 look like loin cutlet; sandwiches, building"
  },
  {
   "key": "kurume-066",
@@ -2151,7 +3324,52 @@
   "desc": "Chicken katsu: a breaded fried chicken cutlet with crisp golden panko crust, sliced, with dark brown sauce and cabbage, on a plate",
   "items": [
    "kurume:066"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "jawiki",
+    "file": "File:Chicken_Cutlet_001_(cropped).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Chicken_Cutlet_001_(cropped).jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "jawiki-page",
+    "file": "File:Chicken_katsu_with_chili_sauce.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Chicken_katsu_with_chili_sauce.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "enwiki",
+    "file": "File:Matsunoya_W_Mega_Chicken_Katsu_Set_20200923-04.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Matsunoya_W_Mega_Chicken_Katsu_Set_20200923-04.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "enwiki-page",
+    "file": "File:202407171822_IMG_7136.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:202407171822_IMG_7136.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "enwiki-page",
+    "file": "File:Chicken_katsu_from_Kamameshi_House.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Chicken_katsu_from_Kamameshi_House.JPG",
+    "ok": true
+   },
+   {
+    "n": 5,
+    "origin": "enwiki-page",
+    "file": "File:Matsunoya_20200930-02.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Matsunoya_20200930-02.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c6 curry, c7 drink"
  },
  {
   "key": "kurume-068",
@@ -2159,7 +3377,17 @@
   "desc": "Potato croquette: oval breaded fried croquettes with golden panko crust, one cut showing mashed potato and minced meat, with sauce, on a plate",
   "items": [
    "kurume:068"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "jawiki",
+    "file": "File:Potato_croquettes_001.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Potato_croquettes_001.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c4 maybe menchi; bentos"
  },
  {
   "key": "kurume-071",
@@ -2167,7 +3395,17 @@
   "desc": "Rolled cabbage: soft pale green cabbage rolls stuffed with minced meat in a clear golden consomme broth, in a bowl",
   "items": [
    "kurume:071"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 3,
+    "origin": "jawiki-page",
+    "file": "File:Lebensmittel-Kohlroulade1a-Asio.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Lebensmittel-Kohlroulade1a-Asio.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c1/c5 sauced, c7 cheese-baked, others not rolls"
  },
  {
   "key": "kurume-072",
@@ -2175,7 +3413,24 @@
   "desc": "Sukiyaki: thin beef slices, tofu, green onion, shiitake, shirataki and greens simmered in sweet brown soy broth in a shallow iron pot",
   "items": [
    "kurume:072"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:Sukiyaki_01.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Sukiyaki_01.jpg",
+    "ok": true
+   },
+   {
+    "n": 7,
+    "origin": "commons-search",
+    "file": "File:Sukiyaki_after_cooking_at_Ebisu_An,_The_Gate_City_Mall,_Beijing_(20201208193258).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Sukiyaki_after_cooking_at_Ebisu_An,_The_Gate_City_Mall,_Beijing_(20201208193258).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c2 bbq, c5 shop, others other"
  },
  {
   "key": "kurume-075",
@@ -2183,7 +3438,31 @@
   "desc": "Reishabu: chilled boiled thin pork slices over lettuce and tomato with a sesame or ponzu dressing, on a plate",
   "items": [
    "kurume:075"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 5,
+    "origin": "commons-search",
+    "file": "File:豚肉の冷しゃぶサラダ---2024-05-22.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E8%B1%9A%E8%82%89%E3%81%AE%E5%86%B7%E3%81%97%E3%82%83%E3%81%B6%E3%82%B5%E3%83%A9%E3%83%80---2024-05-22.jpg",
+    "ok": true
+   },
+   {
+    "n": 6,
+    "origin": "commons-search",
+    "file": "File:冷豚しゃぶサラダ---2024-08-06.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E5%86%B7%E8%B1%9A%E3%81%97%E3%82%83%E3%81%B6%E3%82%B5%E3%83%A9%E3%83%80---2024-08-06.jpg",
+    "ok": true
+   },
+   {
+    "n": 7,
+    "origin": "commons-search",
+    "file": "File:千種駅_冷し豚しゃぶきしめん_730円_20240717_163609.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E5%8D%83%E7%A8%AE%E9%A7%85_%E5%86%B7%E3%81%97%E8%B1%9A%E3%81%97%E3%82%83%E3%81%B6%E3%81%8D%E3%81%97%E3%82%81%E3%82%93_730%E5%86%86_20240717_163609.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c0-c4 hot shabu-shabu/raw meat"
  },
  {
   "key": "kurume-076",
@@ -2215,7 +3494,9 @@
   "desc": "Fish foil bake: a fish fillet with mushrooms, onion and butter in an open aluminium foil parcel, on a plate",
   "items": [
    "kurume:082"
-  ]
+  ],
+  "refs": [],
+  "vet": "campfire"
  },
  {
   "key": "kurume-083",
@@ -2231,7 +3512,31 @@
   "desc": "Ebi chili: shrimp stir-fried in a glossy red-orange sweet chili sauce with green onion, on a plate",
   "items": [
    "kurume:084"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Ebi_chili.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Ebi_chili.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Kkansyo-saeu_DSC00978.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Kkansyo-saeu_DSC00978.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:Spotlight_Thai_Chili_Shrimp_at_The_Revel_Patio_Grill.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Spotlight_Thai_Chili_Shrimp_at_The_Revel_Patio_Grill.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c3-c5 other shrimp dish"
  },
  {
   "key": "kurume-085",
@@ -2239,7 +3544,17 @@
   "desc": "Aji fry: butterflied breaded fried horse mackerel with a golden panko crust, with dark sauce and shredded cabbage, on a plate",
   "items": [
    "kurume:085"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:Deep-fried_horse_mackerel_001.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Deep-fried_horse_mackerel_001.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c0 grilled dried aji, c2 other fried fish, sets, c7 shirasu"
  },
  {
   "key": "kurume-086",
@@ -2263,7 +3578,9 @@
   "desc": "Squid tempura: white squid pieces in light crisp golden tempura batter, with tentsuyu dipping sauce and grated daikon, on a plate",
   "items": [
    "kurume:089"
-  ]
+  ],
+  "refs": [],
+  "vet": "no clear squid tempura"
  },
  {
   "key": "kurume-090",
@@ -2271,7 +3588,24 @@
   "desc": "Shrimp tempura: straight shrimp in light crisp golden tempura batter with red tails, with tentsuyu and grated daikon, on a plate",
   "items": [
    "kurume:090"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Tempura_shrimp_and_vegetables_-_Massachusetts.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Tempura_shrimp_and_vegetables_-_Massachusetts.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:Shrimp_and_vegetables_tempura_-_Massachusetts.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Shrimp_and_vegetables_tempura_-_Massachusetts.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c0 nabe udon, c3 tendon, c4 set, c5 onigiri"
  },
  {
   "key": "kurume-091",
@@ -2279,7 +3613,9 @@
   "desc": "Ika ring: breaded fried squid rings with a golden crumb coating, on a plate",
   "items": [
    "kurume:091"
-  ]
+  ],
+  "refs": [],
+  "vet": "buildings/landscapes"
  },
  {
   "key": "kurume-094",
@@ -2311,7 +3647,9 @@
   "desc": "Squid and taro simmered: soft white squid rings and round grey-white taro pieces simmered in soy, glossy brown, in a bowl",
   "items": [
    "kurume:099"
-  ]
+  ],
+  "refs": [],
+  "vet": "c0 simmered squid but taro not visible"
  },
  {
   "key": "kurume-100",
@@ -2319,7 +3657,9 @@
   "desc": "Maguro akami sashimi: five deep red tuna slices with shredded daikon and shiso, with a small dish of soy sauce, on a plate",
   "items": [
    "kurume:100"
-  ]
+  ],
+  "refs": [],
+  "vet": "curry, burger, fossil, tuna-uni bowls"
  },
  {
   "key": "kurume-101",
@@ -2327,7 +3667,9 @@
   "desc": "Toro sashimi: five pale pink marbled fatty tuna slices with shredded daikon and shiso, with a small dish of soy sauce, on a plate",
   "items": [
    "kurume:101"
-  ]
+  ],
+  "refs": [],
+  "vet": "no toro sashimi; bowls, burger, fossil"
  },
  {
   "key": "kurume-102",
@@ -2335,7 +3677,9 @@
   "desc": "Tai sashimi: five translucent white sea bream slices with pink edges, with shredded daikon and shiso and soy sauce, on a plate",
   "items": [
    "kurume:102"
-  ]
+  ],
+  "refs": [],
+  "vet": "c1-c5 salmon, c0 salmon platter"
  },
  {
   "key": "kurume-103",
@@ -2343,6 +3687,16 @@
   "desc": "Kanpachi sashimi: five glossy pale pink-beige amberjack slices with shredded daikon and shiso and soy sauce, on a plate",
   "items": [
    "kurume:103"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Sashimi_van_kanpachi,_-3_Oct._2012_a.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Sashimi_van_kanpachi,_-3_Oct._2012_a.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "pale yellowtail-type sashimi"
  }
 ]

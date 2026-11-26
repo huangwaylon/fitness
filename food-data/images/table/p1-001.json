@@ -5,7 +5,24 @@
   "desc": "a Japanese miso soup in a red-brown lacquered wooden bowl, cloudy light-brown miso broth with small white tofu cubes and dark green wakame seaweed pieces, a few thin green onion rings floating",
   "items": [
    "dishes:miso-tofu-wakame"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Miso_Soup_001.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Miso_Soup_001.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "jawiki-page",
+    "file": "File:Japanese_Raw_Aonori_Misoshiru.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Japanese_Raw_Aonori_Misoshiru.JPG",
+    "ok": true
+   }
+  ],
+  "vet": "c5 clams, c7 red tofu soup unclear"
  },
  {
   "key": "mext-18028",
@@ -18,7 +35,38 @@
    "kurume:190",
    "toyonaka:265162",
    "kumagaya:00251"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Japanese_tonjiru_2014.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Japanese_tonjiru_2014.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:Jikasei_Tonjiru.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Jikasei_Tonjiru.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "enwiki-page",
+    "file": "File:Higawari_Lunch_Set_20200731_01.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Higawari_Lunch_Set_20200731_01.jpg",
+    "ok": true
+   },
+   {
+    "n": 6,
+    "origin": "enwiki-page",
+    "file": "File:Yayoiken_20210603-10.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Yayoiken_20210603-10.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c5 tonkatsu set, c7 set meal"
  },
  {
   "key": "dishes-curry-pork",
@@ -26,7 +74,31 @@
   "desc": "Japanese pork curry rice on a white oval plate, a mound of white steamed rice beside thick glossy brown curry sauce with chunks of pork, potato and carrot",
   "items": [
    "dishes:curry-pork"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Beef_curry_rice_003.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Beef_curry_rice_003.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "jawiki-page",
+    "file": "File:HK_Sheung_Wan_Hillier_Street_lunch_food_curry_potato_beef_July-2012.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:HK_Sheung_Wan_Hillier_Street_lunch_food_curry_potato_beef_July-2012.JPG",
+    "ok": true
+   },
+   {
+    "n": 7,
+    "origin": "jawiki-page",
+    "file": "File:Mabo_curry_Housefoods.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Mabo_curry_Housefoods.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c2 tikka-like, c1 sauce boat"
  },
  {
   "key": "dishes-oyakodon",
@@ -37,7 +109,24 @@
    "eatout:oyakodon",
    "maff_kyodo:34_12_tokyo",
    "kurume:009"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Oyakodon_003.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Oyakodon_003.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "enwiki-page",
+    "file": "File:Oyakodon_002.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Oyakodon_002.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c1 salmon ikura don"
  },
  {
   "key": "dishes-gyudon",
@@ -50,6 +139,36 @@
    "eatout:gyudon_oo",
    "eatout:gyudon_toku",
    "kurume:011"
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Gyuu-don_001.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Gyuu-don_001.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "jawiki-page",
+    "file": "File:Gyuu-don_003.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Gyuu-don_003.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "jawiki-page",
+    "file": "File:Gyuu-don_005.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Gyuu-don_005.jpg",
+    "ok": true
+   },
+   {
+    "n": 6,
+    "origin": "jawiki-page",
+    "file": "File:Gyuu-don_011.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Gyuu-don_011.jpg",
+    "ok": true
+   }
   ]
  },
  {
@@ -58,7 +177,24 @@
   "desc": "a pile of five Japanese karaage fried chicken pieces, craggy crisp golden-brown coating, bite-sized irregular chunks, on a small bed of shredded cabbage with a lemon wedge",
   "items": [
    "dishes:karaage"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "jawiki",
+    "file": "File:Chicken_karaage_006.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Chicken_karaage_006.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Chicken_karaage_003.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Chicken_karaage_003.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "others mixed/glazed"
  },
  {
   "key": "dishes-shogayaki",
@@ -66,6 +202,29 @@
   "desc": "shogayaki ginger pork on a white plate, thin pan-fried pork loin slices glazed in a glossy brown soy-ginger sauce with soft onion, a heap of finely shredded raw cabbage beside it",
   "items": [
    "dishes:shogayaki"
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "jawiki",
+    "file": "File:Shogayaki_002.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Shogayaki_002.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "commons-search",
+    "file": "File:まいどおおきに食堂_豚の生姜焼き.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E3%81%BE%E3%81%84%E3%81%A9%E3%81%8A%E3%81%8A%E3%81%8D%E3%81%AB%E9%A3%9F%E5%A0%82_%E8%B1%9A%E3%81%AE%E7%94%9F%E5%A7%9C%E7%84%BC%E3%81%8D.jpg",
+    "ok": true
+   },
+   {
+    "n": 5,
+    "origin": "commons-search",
+    "file": "File:Shogayaki_004.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Shogayaki_004.jpg",
+    "ok": true
+   }
   ]
  },
  {
@@ -77,7 +236,31 @@
    "dishes:hamburg",
    "kurume:058",
    "toyonaka:268114"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Hamburg-Steak.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Hamburg-Steak.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "jawiki-page",
+    "file": "File:Japanese_Salisbury_steak_in_rich_brown_gravy.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Japanese_Salisbury_steak_in_rich_brown_gravy.jpg",
+    "ok": true
+   },
+   {
+    "n": 7,
+    "origin": "enwiki-page",
+    "file": "File:Hamburg_steak.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Hamburg_steak.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c1 book, c3 city"
  },
  {
   "key": "mext-18036",
@@ -89,6 +272,22 @@
    "kurume:070",
    "toyonaka:267579",
    "kumagaya:00098"
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Braised_pork_and_potatoes_(3089327692).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Braised_pork_and_potatoes_(3089327692).jpg",
+    "ok": true
+   },
+   {
+    "n": 7,
+    "origin": "commons-cat",
+    "file": "File:Minced_meat_nikujaga_by_kina3.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Minced_meat_nikujaga_by_kina3.jpg",
+    "ok": true
+   }
   ]
  },
  {
@@ -100,7 +299,31 @@
    "dishes:chahan",
    "eatout:chahan",
    "toyonaka:267049"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 2,
+    "origin": "jawiki",
+    "file": "File:Ramen_and_Chahan_002.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Ramen_and_Chahan_002.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "jawiki-page",
+    "file": "File:Fried_rice_Japan.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Fried_rice_Japan.jpg",
+    "ok": true
+   },
+   {
+    "n": 6,
+    "origin": "jawiki-page",
+    "file": "File:Yeung_Chow_Fried_Rice_in_Hong_Kong_Fast_Food_Shop.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Yeung_Chow_Fried_Rice_in_Hong_Kong_Fast_Food_Shop.JPG",
+    "ok": true
+   }
+  ],
+  "vet": "c7 package, c5 ramen set"
  },
  {
   "key": "dishes-gyoza",
@@ -110,7 +333,9 @@
    "dishes:gyoza",
    "eatout:gyoza6",
    "kurume:061"
-  ]
+  ],
+  "refs": [],
+  "vet": "no pan-fried gyoza: steamed/boiled/fried wonton"
  },
  {
   "key": "mext-18049",
@@ -122,7 +347,24 @@
    "eatout:mabotofu",
    "takatsuki:r34",
    "kurume:120"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 3,
+    "origin": "jawiki-page",
+    "file": "File:Cuisine_of_China_0106.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Cuisine_of_China_0106.JPG",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "enwiki",
+    "file": "File:Chen_Mapo_Tofu.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Chen_Mapo_Tofu.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c2 tomato"
  },
  {
   "key": "mext-12021",
@@ -131,7 +373,31 @@
   "items": [
    "mext:12021",
    "dishes:medamayaki"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Pan-fried_egg.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Pan-fried_egg.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "jawiki",
+    "file": "File:Fried_eggs.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Fried_eggs.jpg",
+    "ok": true
+   },
+   {
+    "n": 5,
+    "origin": "enwiki",
+    "file": "File:Fried_Egg_2.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Fried_Egg_2.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c1/c4 ham-egg, c7 painting"
  },
  {
   "key": "mext-12005",
@@ -140,7 +406,17 @@
   "items": [
    "mext:12005",
    "dishes:yudetamago"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Boiled_Egg_-_Crossection.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Boiled_Egg_-_Crossection.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c2 scrambled, c3 raw in pot, c6 oden"
  },
  {
   "key": "dishes-tamagoyaki",
@@ -148,7 +424,24 @@
   "desc": "Japanese tamagoyaki rolled omelette cut into four thick rectangular slices, pale golden-yellow, the cut faces show thin rolled layers, on a small plate",
   "items": [
    "dishes:tamagoyaki"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:鳥焼き居酒屋_(39394233682).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E9%B3%A5%E7%84%BC%E3%81%8D%E5%B1%85%E9%85%92%E5%B1%8B_(39394233682).jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "enwiki-page",
+    "file": "File:Making_heart-shaped_tamagoyaki_-_16451764301.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Making_heart-shaped_tamagoyaki_-_16451764301.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c1/c6 pans, c3 datemaki-like"
  },
  {
   "key": "dishes-yakizake",
@@ -156,7 +449,9 @@
   "desc": "a grilled salted salmon fillet (shiozake) on a rectangular plate, one thick piece with orange-pink flesh, a crisp silver-brown skin edge and light grill marks, a small mound of grated daikon",
   "items": [
    "dishes:yakizake"
-  ]
+  ],
+  "refs": [],
+  "vet": "c0 salmon tiny inside a set meal, c2 grilled ayu, c3 drawing"
  },
  {
   "key": "mext-04046",
@@ -165,7 +460,24 @@
   "items": [
    "mext:04046",
    "toyonaka:266221"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Natto_mixed.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Natto_mixed.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "wikidata",
+    "file": "File:Selfmade_Natto.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Selfmade_Natto.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c7 pack not clear"
  },
  {
   "key": "mext-01088",
@@ -173,7 +485,31 @@
   "desc": "a mound of freshly cooked plain white Japanese short-grain rice in a ceramic rice bowl (chawan), glossy plump grains sticking together slightly",
   "items": [
    "mext:01088"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Meshi_001.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Meshi_001.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:Meshi_002.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Meshi_002.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "enwiki-page",
+    "file": "File:Bap_(cooked_rice)_2.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Bap_(cooked_rice)_2.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c6 black rice, c7 pilaf"
  },
  {
   "key": "mext-01026",
@@ -184,7 +520,24 @@
    "mext:01206",
    "mext:01207",
    "mext:01211"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 2,
+    "origin": "jawiki",
+    "file": "File:Shokupan.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Shokupan.jpg",
+    "ok": true
+   },
+   {
+    "n": 7,
+    "origin": "enwiki-page",
+    "file": "File:Japanese_Milk_Bread.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Japanese_Milk_Bread.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c0 brioche, c1 roll, c5 half toast, c3 brown bread"
  },
  {
   "key": "mext-07107",
@@ -192,7 +545,38 @@
   "desc": "a bunch of three ripe yellow bananas with green-brown tips and a few small brown freckles",
   "items": [
    "mext:07107"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Cavendish_banana_from_Maracaibo.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Cavendish_banana_from_Maracaibo.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "wikidata",
+    "file": "File:Bananas_on_black_background_02.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Bananas_on_black_background_02.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "jawiki-page",
+    "file": "File:Acuminata-バナナ.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Acuminata-%E3%83%90%E3%83%8A%E3%83%8A.jpg",
+    "ok": true
+   },
+   {
+    "n": 5,
+    "origin": "jawiki-page",
+    "file": "File:Banana_Street_Vendor_Kenya.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Banana_Street_Vendor_Kenya.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c2/c6 plants, c3 flower"
  },
  {
   "key": "mext-07176",
@@ -200,7 +584,17 @@
   "desc": "a whole red apple with a short stem and a wedge cut from it, glossy red skin and crisp pale cream flesh",
   "items": [
    "mext:07176"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "jawiki",
+    "file": "File:Red_Apple.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Red_Apple.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c1 moth, c4 painting, c7 cut yellow fruit unclear"
  },
  {
   "key": "mext-07027",
@@ -209,7 +603,24 @@
   "items": [
    "mext:07027",
    "kumagaya:00826"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Citrus_unshiu-温州蜜柑-3.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Citrus_unshiu-%E6%B8%A9%E5%B7%9E%E8%9C%9C%E6%9F%91-3.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "commons-search",
+    "file": "File:Mikan_-_みかん_-_Flickr_-_Kanko.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Mikan_-_%E3%81%BF%E3%81%8B%E3%82%93_-_Flickr_-_Kanko.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c1/c2 on tree, c4 packed"
  },
  {
   "key": "mext-06061",
@@ -217,7 +628,9 @@
   "desc": "a whole round green cabbage with a quarter cut away showing tightly packed pale green and white layered leaves inside",
   "items": [
    "mext:06061"
-  ]
+  ],
+  "refs": [],
+  "vet": "c0/c2 heads still growing in field, c1/c5/c7 red cabbage, c3 coleslaw"
  },
  {
   "key": "mext-06182",
@@ -225,7 +638,24 @@
   "desc": "a whole ripe red tomato with a small green star-shaped calyx on top, and a wedge cut from a second tomato showing juicy seed chambers",
   "items": [
    "mext:06182"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Bright_red_tomato_and_cross_section02.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Bright_red_tomato_and_cross_section02.jpg",
+    "ok": true
+   },
+   {
+    "n": 6,
+    "origin": "commons-cat",
+    "file": "File:2010_in_Photos_(5000032419).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:2010_in_Photos_(5000032419).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c1/c3/c7 plants, c2 cherry-size, c5 market jumble"
  },
  {
   "key": "mext-06153",
@@ -233,7 +663,17 @@
   "desc": "a whole brown onion with dry golden-brown papery skin and a half onion cut across showing white concentric rings",
   "items": [
    "mext:06153"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Mixed_onions.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Mixed_onions.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c0 text, c2-c5 plants/flowers, c6 cooked"
  },
  {
   "key": "mext-06212",
@@ -241,7 +681,24 @@
   "desc": "two whole fresh orange carrots with a little green leafy top, smooth tapered roots",
   "items": [
    "mext:06212"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 4,
+    "origin": "commons-search",
+    "file": "File:A_misshapen_carrot_BW_2026-11-15_18-14-58_stack.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:A_misshapen_carrot_BW_2026-11-15_18-14-58_stack.jpg",
+    "ok": true
+   },
+   {
+    "n": 5,
+    "origin": "commons-search",
+    "file": "File:Carrots_at_Ljubljana_Central_Market.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Carrots_at_Ljubljana_Central_Market.JPG",
+    "ok": true
+   }
+  ],
+  "vet": "c0 art arrangement, c3 fridge"
  },
  {
   "key": "mext-04032",
@@ -249,7 +706,17 @@
   "desc": "a block of Japanese momen (firm) tofu, a white rectangular block with a slightly rough cloth-pressed surface, one slice cut off",
   "items": [
    "mext:04032"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Japanese_tofu_001.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Japanese_tofu_001.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c2-c4 fried/dried tofu products, c5/c7 tofu skins"
  },
  {
   "key": "mext-13003",
@@ -257,7 +724,31 @@
   "desc": "a clear glass full of white cow's milk",
   "items": [
    "mext:13003"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Milk-bottle&cap,japan.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Milk-bottle%26cap,japan.JPG",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:Milk_glass.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Milk_glass.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "jawiki-page",
+    "file": "File:Gyuunyuu-1.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Gyuunyuu-1.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "cows, portraits rejected"
  },
  {
   "key": "dishes-zaru-soba",
@@ -268,7 +759,31 @@
    "eatout:zaru_soba",
    "eatout:zaru_soba_oo",
    "kurume:042"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:Mori-soba_002.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Mori-soba_002.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "jawiki-page",
+    "file": "File:160430_Togakushi_soba_Nagano_Japan02s.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:160430_Togakushi_soba_Nagano_Japan02s.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "jawiki-page",
+    "file": "File:7-Eleven_meal_(2884927884).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:7-Eleven_meal_(2884927884).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c0/c7 dry soba, c5/c6 other dishes"
  },
  {
   "key": "dishes-kake-udon",
@@ -279,7 +794,17 @@
    "eatout:kake_udon",
    "eatout:kake_udon_dai",
    "kurume:033"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 5,
+    "origin": "jawiki-page",
+    "file": "File:Goboten-udon.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Goboten-udon.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c0 thin noodles, c1 raw udon, c2 yakiudon, c3/c6 topped, c4 curry"
  },
  {
   "key": "dishes-onigiri-shake",
@@ -287,7 +812,24 @@
   "desc": "a Japanese onigiri rice ball, a white triangle of rice wrapped at the bottom with a band of dark green nori, a little flaked orange-pink salmon visible at the top",
   "items": [
    "dishes:onigiri-shake"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:Onigiri_002.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Onigiri_002.jpg",
+    "ok": true
+   },
+   {
+    "n": 7,
+    "origin": "enwiki",
+    "file": "File:小料理バルさくら_特製おにぎり.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E5%B0%8F%E6%96%99%E7%90%86%E3%83%90%E3%83%AB%E3%81%95%E3%81%8F%E3%82%89_%E7%89%B9%E8%A3%BD%E3%81%8A%E3%81%AB%E3%81%8E%E3%82%8A.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "filling not visible; c3/c5 packaged, c4 onigirazu"
  },
  {
   "key": "dishes-potato-salad",
@@ -298,6 +840,30 @@
    "eatout:potesala",
    "kurume:145",
    "toyonaka:117803"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "wikidata",
+    "file": "File:Kartoffelsalat_with_mayonnaise.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Kartoffelsalat_with_mayonnaise.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "jawiki",
+    "file": "File:Potato_salad.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Potato_salad.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "enwiki",
+    "file": "File:Potato_salad_(1).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Potato_salad_(1).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c0 other dish, c7 sandwich"
  }
 ]

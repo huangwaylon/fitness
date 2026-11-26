@@ -6,7 +6,17 @@
   "items": [
    "dishes:saba-misoni",
    "kurume:096"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:SABAMISO_(149751533).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:SABAMISO_(149751533).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "mackerel in miso sauce; grilled/sets"
  },
  {
   "key": "dishes-karei-nitsuke",
@@ -14,7 +24,9 @@
   "desc": "karei no nitsuke, a whole flatfish simmered in glossy dark brown sweet soy broth, with ginger, on a plate",
   "items": [
    "dishes:karei-nitsuke"
-  ]
+  ],
+  "refs": [],
+  "vet": "handwritten pages"
  },
  {
   "key": "dishes-kinmedai-nitsuke",
@@ -31,7 +43,9 @@
   "items": [
    "dishes:sake-meuniere",
    "kurume:079"
-  ]
+  ],
+  "refs": [],
+  "vet": "fish on rice/plated, not clearly salmon meuniere"
  },
  {
   "key": "dishes-chanchanyaki",
@@ -40,7 +54,17 @@
   "items": [
    "dishes:chanchanyaki",
    "maff_kyodo:sakenochanchanyaki_hokkaido"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:ChanChanYaki_20190426.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:ChanChanYaki_20190426.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "salmon and cabbage on griddle; c3 gratin-like"
  },
  {
   "key": "dishes-gindara-saikyo",
@@ -65,7 +89,38 @@
   "items": [
    "dishes:sashimi-moriawase",
    "eatout:sashimi_mori"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:刺身の盛り合わせ.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E5%88%BA%E8%BA%AB%E3%81%AE%E7%9B%9B%E3%82%8A%E5%90%88%E3%82%8F%E3%81%9B.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "commons-search",
+    "file": "File:Sashimi,_Kappo_Uosen,_Nagaoka.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Sashimi,_Kappo_Uosen,_Nagaoka.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "commons-search",
+    "file": "File:Sashimi_raw_fish,_Japanese_cuisine.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Sashimi_raw_fish,_Japanese_cuisine.jpg",
+    "ok": true
+   },
+   {
+    "n": 5,
+    "origin": "commons-search",
+    "file": "File:Sashimi.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Sashimi.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "sashimi platters; c2 sushi"
  },
  {
   "key": "dishes-katsuo-tataki",
@@ -74,7 +129,24 @@
   "items": [
    "dishes:katsuo-tataki",
    "maff_kyodo:katuonotataki_kochi"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Katsuo_no_tataki.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Katsuo_no_tataki.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:KatsuoTataki.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:KatsuoTataki.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "seared bonito slices; c3 donburi"
  },
  {
   "key": "dishes-yamakake",
@@ -82,7 +154,9 @@
   "desc": "maguro yamakake, cubes of red tuna under white grated nagaimo yam, with wasabi and nori strips, in a bowl",
   "items": [
    "dishes:yamakake"
-  ]
+  ],
+  "refs": [],
+  "vet": "small set meal only"
  },
  {
   "key": "dishes-tempura-moriawase",
@@ -91,7 +165,31 @@
   "items": [
    "dishes:tempura-moriawase",
    "eatout:tenpura_mori"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:天ぷらの盛り合わせ---2023-11-15.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E5%A4%A9%E3%81%B7%E3%82%89%E3%81%AE%E7%9B%9B%E3%82%8A%E5%90%88%E3%82%8F%E3%81%9B---2023-11-15.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Tempura,_Kappo_Uosen,_Nagaoka.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Tempura,_Kappo_Uosen,_Nagaoka.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:Tenmori.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Tenmori.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "tempura platters; set meals"
  },
  {
   "key": "dishes-kakiage",
@@ -100,7 +198,17 @@
   "items": [
    "dishes:kakiage",
    "eatout:kakiage"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Kakiage_tendon_by_chidorian.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Kakiage_tendon_by_chidorian.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "kakiage on rice; c4/c5 shrimp fritters"
  },
  {
   "key": "dishes-yurinchi",
@@ -109,7 +217,17 @@
   "items": [
    "dishes:yurinchi",
    "eatout:yuurinchi"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 4,
+    "origin": "jawiki-page",
+    "file": "File:Youlinji_of_Gyouza_no_Ohsho_(1).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Youlinji_of_Gyouza_no_Ohsho_(1).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "fried chicken with sauce/veg; c7 steamed chicken"
  },
  {
   "key": "dishes-reishabu",
@@ -117,7 +235,24 @@
   "desc": "reishabu salad, chilled boiled pork slices on lettuce, cucumber and tomato with sesame dressing",
   "items": [
    "dishes:reishabu"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:豚肉の冷しゃぶサラダ---2024-05-22.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E8%B1%9A%E8%82%89%E3%81%AE%E5%86%B7%E3%81%97%E3%82%83%E3%81%B6%E3%82%B5%E3%83%A9%E3%83%80---2024-05-22.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:冷豚しゃぶサラダ---2024-08-06.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E5%86%B7%E8%B1%9A%E3%81%97%E3%82%83%E3%81%B6%E3%82%B5%E3%83%A9%E3%83%80---2024-08-06.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "pork shabu salads"
  },
  {
   "key": "dishes-yudofu",
@@ -125,7 +260,24 @@
   "desc": "yudofu, soft white tofu blocks simmering in a clay pot with kombu, with ponzu, green onion and bonito flakes",
   "items": [
    "dishes:yudofu"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Yudōfu_001.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Yud%C5%8Dfu_001.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "commons-cat",
+    "file": "File:150207_Ryoan-ji_Kyoto_Japan30s3.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:150207_Ryoan-ji_Kyoto_Japan30s3.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "tofu in clay pot; rooms"
  },
  {
   "key": "dishes-agedashi-tofu",
@@ -135,7 +287,52 @@
    "dishes:agedashi-tofu",
    "eatout:agedashi",
    "kurume:119"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Agedashi_tofu,_fried_tofu_with_broth.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Agedashi_tofu,_fried_tofu_with_broth.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "enwiki-page",
+    "file": "File:Agedashi_Tofu_(12609464213).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Agedashi_Tofu_(12609464213).jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "enwiki-page",
+    "file": "File:Agedashi_dofu_by_jjsawrey_in_San_Gabriel,_California.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Agedashi_dofu_by_jjsawrey_in_San_Gabriel,_California.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "enwiki-page",
+    "file": "File:Agedashi_dofu_by_star5112.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Agedashi_dofu_by_star5112.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "enwiki-page",
+    "file": "File:Agedashi_tofu_2.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Agedashi_tofu_2.jpg",
+    "ok": true
+   },
+   {
+    "n": 6,
+    "origin": "commons-cat",
+    "file": "File:Agedashi_dofu_at_Yo!_Sushi_by_projectnada.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Agedashi_dofu_at_Yo!_Sushi_by_projectnada.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "agedashi tofu"
  },
  {
   "key": "dishes-atsuage-yaki",
@@ -151,7 +348,31 @@
   "desc": "natto with tare and karashi in a small bowl, sticky brown beans with white threads, green onion and yellow mustard",
   "items": [
    "dishes:natto"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Natto_mixed.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Natto_mixed.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "wikidata",
+    "file": "File:Selfmade_Natto.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Selfmade_Natto.jpg",
+    "ok": true
+   },
+   {
+    "n": 7,
+    "origin": "jawiki-page",
+    "file": "File:Natto_boxed.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Natto_boxed.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "natto bowls, pack with tare"
  },
  {
   "key": "dishes-onsen-tamago",
@@ -159,7 +380,17 @@
   "desc": "an onsen tamago, a soft barely set egg with a runny yolk in a little light dashi broth in a small cup",
   "items": [
    "dishes:onsen-tamago"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Onsen_tamago_at_minshuku_Korakuen,_Nagano_by_Blue_Lotus.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Onsen_tamago_at_minshuku_Korakuen,_Nagano_by_Blue_Lotus.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "onsen egg in dish; hot springs"
  },
  {
   "key": "dishes-gomaae-horenso",
@@ -168,7 +399,9 @@
   "items": [
    "dishes:gomaae-horenso",
    "kurume:127"
-  ]
+  ],
+  "refs": [],
+  "vet": "dark greens unclear, maybe ohitashi"
  },
  {
   "key": "dishes-kinpira-renkon",
@@ -186,7 +419,17 @@
   "desc": "satoimo no nikkorogashi, small round taro simmered glossy brown in sweet soy, in a bowl",
   "items": [
    "dishes:satoimo-nikkorogashi"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Squid_and_yam_simmering.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Squid_and_yam_simmering.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "glossy simmered taro"
  },
  {
   "key": "dishes-nibitashi-komatsuna",
@@ -202,7 +445,9 @@
   "desc": "nasu no agebitashi, fried eggplant pieces with glossy purple skin soaked in light dashi, topped with grated ginger",
   "items": [
    "dishes:nasu-nibitashi"
-  ]
+  ],
+  "refs": [],
+  "vet": "menus, curry, sushi"
  },
  {
   "key": "dishes-yakinasu",
@@ -210,7 +455,17 @@
   "desc": "yaki nasu, grilled peeled eggplant, soft pale green-gold flesh, topped with grated ginger and bonito flakes",
   "items": [
    "dishes:yakinasu"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:焼きなす.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E7%84%BC%E3%81%8D%E3%81%AA%E3%81%99.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "peeled grilled eggplant with bonito"
  },
  {
   "key": "dishes-nasu-miso",
@@ -218,7 +473,17 @@
   "desc": "eggplant and green pepper stir-fried in glossy brown miso sauce",
   "items": [
    "dishes:nasu-miso"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Stir-fried_eggplant_with_miso_paste_(2705949129).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Stir-fried_eggplant_with_miso_paste_(2705949129).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "eggplant + pepper in glossy sauce"
  },
  {
   "key": "dishes-hiyayakko",
@@ -228,7 +493,45 @@
    "dishes:hiyayakko",
    "eatout:hiyayakko",
    "kurume:118"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Hiyayakko_with_bonito_flakes_and_welsh_onion_2.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Hiyayakko_with_bonito_flakes_and_welsh_onion_2.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:Hiya-yakko_002.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Hiya-yakko_002.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "enwiki-page",
+    "file": "File:Hiyayakko_by_-cipher-.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Hiyayakko_by_-cipher-.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "enwiki-page",
+    "file": "File:Hiyayakko_with_bonito_flakes_and_welsh_onion.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Hiyayakko_with_bonito_flakes_and_welsh_onion.jpg",
+    "ok": true
+   },
+   {
+    "n": 6,
+    "origin": "enwiki-page",
+    "file": "File:Tofu_1.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Tofu_1.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "chilled tofu blocks; c5 plant"
  },
  {
   "key": "dishes-macaroni-salad",
@@ -237,7 +540,24 @@
   "items": [
    "dishes:macaroni-salad",
    "toyonaka:248090"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Grandma's_Macaroni_Salad_-_50594162638.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Grandma%27s_Macaroni_Salad_-_50594162638.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "enwiki-page",
+    "file": "File:Chicken_macaroni_salad.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Chicken_macaroni_salad.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "macaroni salad; c5/c6 unclear, c7 tub"
  },
  {
   "key": "dishes-green-salad",
@@ -247,7 +567,17 @@
    "dishes:green-salad",
    "eatout:konbini_salad",
    "kumagaya:02031-2"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 4,
+    "origin": "commons-search",
+    "file": "File:Siam_Garden_2024-04-28_ac_(4).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Siam_Garden_2024-04-28_ac_(4).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "lettuce-tomato salad; others meat dishes"
  },
  {
   "key": "dishes-wafu-salad",
@@ -255,7 +585,17 @@
   "desc": "daikon and mizuna salad, thin white daikon strips and green mizuna with nori strips and bonito flakes",
   "items": [
    "dishes:wafu-salad"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Mizuna&Daikon.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Mizuna%26Daikon.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "daikon and greens salad; fields"
  },
  {
   "key": "dishes-coleslaw",
@@ -263,7 +603,24 @@
   "desc": "coleslaw, finely shredded cabbage and carrot in creamy dressing, with corn kernels",
   "items": [
    "dishes:coleslaw"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 2,
+    "origin": "enwiki-page",
+    "file": "File:Bavarian_Krautsalat_Munich.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Bavarian_Krautsalat_Munich.JPG",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "enwiki-page",
+    "file": "File:CabbageSalad.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:CabbageSalad.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "shredded cabbage slaw; c4 purple, plates"
  },
  {
   "key": "dishes-harusame-salad",
@@ -273,7 +630,24 @@
    "dishes:harusame-salad",
    "toyonaka:118626",
    "kumagaya:1978"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Yam_wunsen.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Yam_wunsen.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:Yam_wun_sen.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Yam_wun_sen.JPG",
+    "ok": true
+   }
+  ],
+  "vet": "glass noodle salads"
  },
  {
   "key": "dishes-kaiso-salad",
@@ -281,7 +655,38 @@
   "desc": "seaweed salad, mixed green, red and translucent seaweeds on lettuce and cucumber",
   "items": [
    "dishes:kaiso-salad"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:海藻サラダ_(1730883454).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E6%B5%B7%E8%97%BB%E3%82%B5%E3%83%A9%E3%83%80_(1730883454).jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:Wakame_with_sesame_oil.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Wakame_with_sesame_oil.jpg",
+    "ok": true
+   },
+   {
+    "n": 6,
+    "origin": "commons-search",
+    "file": "File:Liat_Portal_for_Foodie_Disorder_-_Seaweed_Salad.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Liat_Portal_for_Foodie_Disorder_-_Seaweed_Salad.jpg",
+    "ok": true
+   },
+   {
+    "n": 7,
+    "origin": "commons-search",
+    "file": "File:Seaweed_salad_(7770045880).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Seaweed_salad_(7770045880).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "seaweed salads; c3 dried"
  },
  {
   "key": "dishes-caesar-salad",
@@ -290,7 +695,31 @@
   "items": [
    "dishes:caesar-salad",
    "eatout:caesar_salad"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Caesar_salad_(2).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Caesar_salad_(2).jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:Caesar_salad_(3010150846).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Caesar_salad_(3010150846).jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "enwiki-page",
+    "file": "File:CaesarSalad3.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:CaesarSalad3.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "caesar salads; posters/hotel"
  },
  {
   "key": "dishes-gobo-salad",
@@ -300,7 +729,24 @@
    "dishes:gobo-salad",
    "kurume:146",
    "kumagaya:2575"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:まほろばのごぼうと牛肉のポテトサラダ_02.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E3%81%BE%E3%81%BB%E3%82%8D%E3%81%B0%E3%81%AE%E3%81%94%E3%81%BC%E3%81%86%E3%81%A8%E7%89%9B%E8%82%89%E3%81%AE%E3%83%9D%E3%83%86%E3%83%88%E3%82%B5%E3%83%A9%E3%83%80_02.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:まほろばのごぼうと牛肉のポテトサラダ_01.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E3%81%BE%E3%81%BB%E3%82%8D%E3%81%B0%E3%81%AE%E3%81%94%E3%81%BC%E3%81%86%E3%81%A8%E7%89%9B%E8%82%89%E3%81%AE%E3%83%9D%E3%83%86%E3%83%88%E3%82%B5%E3%83%A9%E3%83%80_01.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "burdock mayo salad; plants"
  },
  {
   "key": "dishes-kabocha-salad",
@@ -309,7 +755,31 @@
   "items": [
    "dishes:kabocha-salad",
    "toyonaka:269526"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:かぼちゃのマッシュサラダ---2024-06-07.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E3%81%8B%E3%81%BC%E3%81%A1%E3%82%83%E3%81%AE%E3%83%9E%E3%83%83%E3%82%B7%E3%83%A5%E3%82%B5%E3%83%A9%E3%83%80---2024-06-07.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:Danhobak_salad_(kabocha_squash_salad)_(cropped).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Danhobak_salad_(kabocha_squash_salad)_(cropped).jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "commons-search",
+    "file": "File:Danhobak_salad_(kabocha_squash_salad).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Danhobak_salad_(kabocha_squash_salad).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "mashed pumpkin salad; c4 roasted"
  },
  {
   "key": "dishes-tuna-salad",
@@ -318,7 +788,17 @@
   "items": [
    "dishes:tuna-salad",
    "toyonaka:124106"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 5,
+    "origin": "commons-cat",
+    "file": "File:Salat_(4228278270).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Salat_(4228278270).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "tuna on greens; c0/c2 American tuna spread"
  },
  {
   "key": "dishes-sunomono-kyuri",
@@ -343,7 +823,24 @@
   "desc": "spinach namul, green spinach seasoned with sesame oil and sesame seeds",
   "items": [
    "dishes:horenso-namul"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Korean.cuisine-Sigeumchi_namul-01.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Korean.cuisine-Sigeumchi_namul-01.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:Sigeumchi-namul.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Sigeumchi-namul.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "spinach namul; c0 other namul"
  },
  {
   "key": "dishes-hiyashi-tomato",
@@ -352,7 +849,17 @@
   "items": [
    "dishes:hiyashi-tomato",
    "eatout:hiyashi_tomato"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Yakitori_015.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Yakitori_015.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "sliced tomato plate; c0 whole tomato"
  },
  {
   "key": "dishes-kinoko-saute",
@@ -360,7 +867,17 @@
   "desc": "sautéed mixed mushrooms, shimeji, eringi and maitake glossy with butter and soy",
   "items": [
    "dishes:kinoko-saute"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:20161028-AMS-LSC-0104_(30837218735).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:20161028-AMS-LSC-0104_(30837218735).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "sauteed mushrooms; ads/photos"
  },
  {
   "key": "dishes-horenso-butter",
@@ -379,7 +896,38 @@
    "kurume:181",
    "toyonaka:119202",
    "kumagaya:00466"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Bratkartoffeln_1024_768.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Bratkartoffeln_1024_768.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:German_Potato_001.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:German_Potato_001.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "enwiki",
+    "file": "File:Bratkartoffeln-mit-Speck.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Bratkartoffeln-mit-Speck.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "enwiki-page",
+    "file": "File:GT_Bratkartoffeln_1.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:GT_Bratkartoffeln_1.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "fried potatoes with bacon; plated sets"
  },
  {
   "key": "dishes-tororo",
@@ -387,7 +935,31 @@
   "desc": "tororo, a bowl of grated nagaimo yam, frothy sticky white, topped with nori strips and a dash of soy",
   "items": [
    "dishes:tororo"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Tororo_(grated_Dioscorea_polystachya).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Tororo_(grated_Dioscorea_polystachya).jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:Mugitoro_gohan_2.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Mugitoro_gohan_2.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "jawiki-page",
+    "file": "File:Tororo_soba_2_by_verigi_in_Takao,_Tokyo.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Tororo_soba_2_by_verigi_in_Takao,_Tokyo.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "grated yam; c6 whole yam"
  },
  {
   "key": "dishes-mozuku-su",
@@ -395,7 +967,17 @@
   "desc": "mozuku-zu, slippery brown mozuku seaweed in sweet vinegar with grated ginger, in a small glass bowl",
   "items": [
    "dishes:mozuku-su"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:もずく酢---2023-10-16.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E3%82%82%E3%81%9A%E3%81%8F%E9%85%A2---2023-10-16.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "mozuku in vinegar cup"
  },
  {
   "key": "dishes-daigaku-imo",
@@ -403,7 +985,31 @@
   "desc": "daigaku imo, fried sweet potato chunks with purple skin coated in a glossy amber honey-sugar glaze, sprinkled with black sesame",
   "items": [
    "dishes:daigaku-imo"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Daigaku-imo_001.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Daigaku-imo_001.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:Daigaku-imo_002.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Daigaku-imo_002.jpg",
+    "ok": true
+   },
+   {
+    "n": 5,
+    "origin": "commons-cat",
+    "file": "File:Daigaku-Imo.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Daigaku-Imo.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "candied sweet potato; fries"
  },
  {
   "key": "dishes-gomoku-mame",
@@ -419,7 +1025,9 @@
   "desc": "kuri kinton, glossy bright golden-yellow mashed sweet potato with whole candied chestnuts",
   "items": [
    "dishes:kurikinton"
-  ]
+  ],
+  "refs": [],
+  "vet": "chakin-style sweets, not osechi mashed kinton"
  },
  {
   "key": "dishes-tazukuri",
@@ -427,7 +1035,38 @@
   "desc": "tazukuri, small dried sardines candied in a glossy sweet soy glaze with sesame",
   "items": [
    "dishes:tazukuri"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:Gomame.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Gomame.JPG",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "commons-cat",
+    "file": "File:カネハツ_伊勢湾産たつくり_20250106_1815-2.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E3%82%AB%E3%83%8D%E3%83%8F%E3%83%84_%E4%BC%8A%E5%8B%A2%E6%B9%BE%E7%94%A3%E3%81%9F%E3%81%A4%E3%81%8F%E3%82%8A_20250106_1815-2.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "commons-cat",
+    "file": "File:カネハツ_伊勢湾産たつくり_20250106_1815-3.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E3%82%AB%E3%83%8D%E3%83%8F%E3%83%84_%E4%BC%8A%E5%8B%A2%E6%B9%BE%E7%94%A3%E3%81%9F%E3%81%A4%E3%81%8F%E3%82%8A_20250106_1815-3.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "commons-cat",
+    "file": "File:カネハツ_伊勢湾産たつくり_20250106_1815-4.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E3%82%AB%E3%83%8D%E3%83%8F%E3%83%84_%E4%BC%8A%E5%8B%A2%E6%B9%BE%E7%94%A3%E3%81%9F%E3%81%A4%E3%81%8F%E3%82%8A_20250106_1815-4.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "candied sardines; c0 plain dried, c7 building"
  },
  {
   "key": "dishes-okura-katsuobushi",
@@ -443,7 +1082,9 @@
   "desc": "boiled broccoli florets with a dab of mayonnaise on the side",
   "items": [
    "dishes:broccoli-mayo"
-  ]
+  ],
+  "refs": [],
+  "vet": "broccoli salads/sets, no florets with mayo"
  },
  {
   "key": "dishes-natto-gohan",
@@ -451,7 +1092,24 @@
   "desc": "natto gohan, a bowl of white rice topped with sticky brown natto, chopped green onion and yellow mustard",
   "items": [
    "dishes:natto-gohan"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Natto_on_rice.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Natto_on_rice.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Rice_seasoned_with_Natto.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Rice_seasoned_with_Natto.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "natto on rice"
  },
  {
   "key": "dishes-tkg",
@@ -459,7 +1117,24 @@
   "desc": "tamago kake gohan, a bowl of white rice with a raw egg yolk and egg on top, a dash of soy sauce",
   "items": [
    "dishes:tkg"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:Tamagokake-gohan_001.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Tamagokake-gohan_001.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "jawiki-page",
+    "file": "File:たまごかけご飯の一例.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E3%81%9F%E3%81%BE%E3%81%94%E3%81%8B%E3%81%91%E3%81%94%E9%A3%AF%E3%81%AE%E4%B8%80%E4%BE%8B.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "egg on rice; c7 egg in bowl only, buildings"
  },
  {
   "key": "eatout-onigiri_sake",
@@ -467,7 +1142,24 @@
   "desc": "a Japanese onigiri rice ball, a white triangle of rice wrapped at the bottom with a band of dark green nori, a little flaked orange-pink salmon visible at the top",
   "items": [
    "eatout:onigiri_sake"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:Salmon_onigiri_by_yomi955_(cropped).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Salmon_onigiri_by_yomi955_(cropped).jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "commons-search",
+    "file": "File:Salmon_onigiri_by_yomi955.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Salmon_onigiri_by_yomi955.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "salmon onigiri; c0/c1 plain"
  },
  {
   "key": "dishes-onigiri-ume",
@@ -476,7 +1168,9 @@
   "items": [
    "dishes:onigiri-ume",
    "eatout:onigiri_ume"
-  ]
+  ],
+  "refs": [],
+  "vet": "shared generic onigiri set (c0/c1/c7 plain onigiri); ume filling not visible"
  },
  {
   "key": "dishes-onigiri-konbu",
@@ -485,7 +1179,9 @@
   "items": [
    "dishes:onigiri-konbu",
    "eatout:onigiri_konbu"
-  ]
+  ],
+  "refs": [],
+  "vet": "generic onigiri; kombu filling not visible"
  },
  {
   "key": "dishes-onigiri-tunamayo",
@@ -494,7 +1190,9 @@
   "items": [
    "dishes:onigiri-tunamayo",
    "eatout:onigiri_tunamayo"
-  ]
+  ],
+  "refs": [],
+  "vet": "generic onigiri; tuna mayo not visible"
  },
  {
   "key": "dishes-onigiri-okaka",
@@ -503,7 +1201,9 @@
   "items": [
    "dishes:onigiri-okaka",
    "eatout:onigiri_okaka"
-  ]
+  ],
+  "refs": [],
+  "vet": "generic onigiri; okaka not visible"
  },
  {
   "key": "dishes-onigiri-mentaiko",
@@ -512,7 +1212,9 @@
   "items": [
    "dishes:onigiri-mentaiko",
    "eatout:onigiri_mentai"
-  ]
+  ],
+  "refs": [],
+  "vet": "generic onigiri; mentaiko not visible (c7 orange topping unclear)"
  },
  {
   "key": "dishes-onigiri-tarako",
@@ -521,7 +1223,9 @@
   "items": [
    "dishes:onigiri-tarako",
    "eatout:onigiri_tarako"
-  ]
+  ],
+  "refs": [],
+  "vet": "generic onigiri; tarako not visible"
  },
  {
   "key": "dishes-onigiri-ikura",
@@ -530,7 +1234,9 @@
   "items": [
    "dishes:onigiri-ikura",
    "eatout:onigiri_ikura"
-  ]
+  ],
+  "refs": [],
+  "vet": "generic onigiri; ikura not visible (c7 unclear)"
  },
  {
   "key": "dishes-onigiri-takana",
@@ -538,7 +1244,9 @@
   "desc": "a takana onigiri, a rice ball wrapped in a large dark green pickled mustard leaf",
   "items": [
    "dishes:onigiri-takana"
-  ]
+  ],
+  "refs": [],
+  "vet": "nori-wrapped onigiri, not takana-leaf wrapped"
  },
  {
   "key": "dishes-onigiri-shirasu",
@@ -546,7 +1254,9 @@
   "desc": "a shirasu onigiri, a rice ball mixed with tiny white baby sardines, with nori",
   "items": [
    "dishes:onigiri-shirasu"
-  ]
+  ],
+  "refs": [],
+  "vet": "generic onigiri; no shirasu"
  },
  {
   "key": "dishes-tenmusu",
@@ -555,7 +1265,38 @@
   "items": [
    "dishes:tenmusu",
    "eatout:onigiri_tenmusu"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:Jiraiya_20201205-04.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Jiraiya_20201205-04.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "jawiki-page",
+    "file": "File:Tenmusu_by_m-louis_in_Aichi.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Tenmusu_by_m-louis_in_Aichi.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "enwiki-page",
+    "file": "File:Tenmusu_by_yamakazz.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Tenmusu_by_yamakazz.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "commons-cat",
+    "file": "File:20251024_190647_Tenmusu_and_O-o-cha.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:20251024_190647_Tenmusu_and_O-o-cha.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "onigiri with tempura shrimp tail; c5 gunkan"
  },
  {
   "key": "dishes-chazuke-shake",
@@ -564,7 +1305,24 @@
   "items": [
    "dishes:chazuke-shake",
    "eatout:ochazuke"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Sake_chazuke_by_matsukawa1971.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Sake_chazuke_by_matsukawa1971.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "jawiki-page",
+    "file": "File:Nagatanien_Sakechazuke01.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Nagatanien_Sakechazuke01.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "chazuke with salmon/nori; others noodles/sets"
  },
  {
   "key": "dishes-chazuke-ume",
@@ -572,7 +1330,17 @@
   "desc": "ume chazuke, a bowl of rice in green tea topped with a red umeboshi, nori strips and arare",
   "items": [
    "dishes:chazuke-ume"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Chazuke_with_umeboshi_and_chicken_fillet_by_jetalone.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Chazuke_with_umeboshi_and_chicken_fillet_by_jetalone.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "ume chazuke"
  },
  {
   "key": "dishes-chazuke-moto",
@@ -580,7 +1348,17 @@
   "desc": "ochazuke, a bowl of rice in green tea with tiny rice crackers and nori strips",
   "items": [
    "dishes:chazuke-moto"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 3,
+    "origin": "jawiki-page",
+    "file": "File:Nagatanien_Sakechazuke01.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Nagatanien_Sakechazuke01.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "rice with arare/nori bits; others set meals/noodles"
  },
  {
   "key": "dishes-curry-beef",
@@ -590,7 +1368,31 @@
    "dishes:curry-beef",
    "eatout:curry_beef",
    "kurume:014"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Beef_curry_rice_003.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Beef_curry_rice_003.jpg",
+    "ok": true
+   },
+   {
+    "n": 5,
+    "origin": "jawiki-page",
+    "file": "File:Jindai_curry_rice.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Jindai_curry_rice.JPG",
+    "ok": true
+   },
+   {
+    "n": 7,
+    "origin": "jawiki-page",
+    "file": "File:Mabo_curry_Housefoods.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Mabo_curry_Housefoods.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "Japanese curry rice; c2 tikka-like"
  },
  {
   "key": "dishes-curry-chicken",
@@ -600,7 +1402,24 @@
    "dishes:curry-chicken",
    "eatout:curry_chicken",
    "takatsuki:r50"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Beef_curry_rice_003.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Beef_curry_rice_003.jpg",
+    "ok": true
+   },
+   {
+    "n": 6,
+    "origin": "jawiki-page",
+    "file": "File:Jindai_curry_rice.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Jindai_curry_rice.JPG",
+    "ok": true
+   }
+  ],
+  "vet": "Japanese curry rice, chicken not certain"
  },
  {
   "key": "dishes-katsu-curry",
@@ -609,7 +1428,38 @@
   "items": [
    "dishes:katsu-curry",
    "eatout:katsu_curry"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:Katsu-curry_003.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Katsu-curry_003.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "jawiki-page",
+    "file": "File:Katsu_curry_by_luckypines.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Katsu_curry_by_luckypines.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "jawiki-page",
+    "file": "File:Katsucurry.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Katsucurry.jpg",
+    "ok": true
+   },
+   {
+    "n": 5,
+    "origin": "jawiki-page",
+    "file": "File:Katsukare-1111.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Katsukare-1111.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "katsu on curry"
  },
  {
   "key": "dishes-hayashi-rice",
@@ -618,7 +1468,31 @@
   "items": [
    "dishes:hayashi-rice",
    "eatout:hayashi"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Hayashi_rice.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Hayashi_rice.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "jawiki-page",
+    "file": "File:Hayashi_rice_and_curry_rice_in_Tokyo_2023-12-30.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Hayashi_rice_and_curry_rice_in_Tokyo_2023-12-30.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "jawiki-page",
+    "file": "File:Hayashi_rice_by_midorisyu_in_Ueno_Park,_Tokyo.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Hayashi_rice_by_midorisyu_in_Ueno_Park,_Tokyo.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "hayashi rice"
  },
  {
   "key": "dishes-butadon",
@@ -627,7 +1501,31 @@
   "items": [
    "dishes:butadon",
    "eatout:butadon"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Butadon.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Butadon.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "jawiki-page",
+    "file": "File:Buta-don_at_Nakasatsunai.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Buta-don_at_Nakasatsunai.JPG",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "jawiki-page",
+    "file": "File:Butadon_Sukiya.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Butadon_Sukiya.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "pork donburi"
  },
  {
   "key": "dishes-tendon",
@@ -637,7 +1535,38 @@
    "dishes:tendon",
    "eatout:tendon",
    "kurume:012"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Tendon.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Tendon.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:Tendon_of_Dotenoiseya.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Tendon_of_Dotenoiseya.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "jawiki-page",
+    "file": "File:Shinphoto20201229-0011.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Shinphoto20201229-0011.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "jawiki-page",
+    "file": "File:Tendon_set_by_acme_in_Asakusa,_Tokyo.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Tendon_set_by_acme_in_Asakusa,_Tokyo.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "tendon bowls; c5 gyudon"
  },
  {
   "key": "dishes-katsudon",
@@ -647,7 +1576,31 @@
    "dishes:katsudon",
    "eatout:katsudon",
    "kurume:010"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Katsudon_001.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Katsudon_001.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "jawiki-page",
+    "file": "File:Chicken_katsudon_by_avlxyz.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Chicken_katsudon_by_avlxyz.jpg",
+    "ok": true
+   },
+   {
+    "n": 6,
+    "origin": "jawiki-page",
+    "file": "File:Hirekatsudon,_pork_fillet_cutlet_with_rice_by_nishidaryuichi.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Hirekatsudon,_pork_fillet_cutlet_with_rice_by_nishidaryuichi.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "egg-simmered katsudon; c1 sauce variant"
  },
  {
   "key": "dishes-kaisendon",
@@ -656,7 +1609,24 @@
   "items": [
    "dishes:kaisendon",
    "eatout:kaisendon"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Kaisendon.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Kaisendon.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "jawiki-page",
+    "file": "File:Dukedon_of_Tuna_in_Misaki_port_dining_room.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Dukedon_of_Tuna_in_Misaki_port_dining_room.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "mixed seafood bowls; c1/c3 ikura only"
  },
  {
   "key": "dishes-tekkadon",
@@ -665,7 +1635,31 @@
   "items": [
    "dishes:tekkadon",
    "eatout:maguro_don"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Tekkadon_001.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Tekkadon_001.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "jawiki-page",
+    "file": "File:Maguro_don.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Maguro_don.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "enwiki-page",
+    "file": "File:Tekka_don,_tuna_over_sushi_rice_-_Massachusetts.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Tekka_don,_tuna_over_sushi_rice_-_Massachusetts.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "tuna sashimi bowls"
  },
  {
   "key": "dishes-negitorodon",
@@ -674,7 +1668,17 @@
   "items": [
    "dishes:negitorodon",
    "eatout:negitoro_don"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:ミニねぎとろ丼.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E3%83%9F%E3%83%8B%E3%81%AD%E3%81%8E%E3%81%A8%E3%82%8D%E4%B8%BC.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "negitoro bowl; c2 mixed"
  },
  {
   "key": "dishes-unadon",
@@ -683,7 +1687,45 @@
   "items": [
    "dishes:unadon",
    "eatout:unadon"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Tokyo_Chikuyotei_Unadon01s2100.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Tokyo_Chikuyotei_Unadon01s2100.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "jawiki-page",
+    "file": "File:Owada-1.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Owada-1.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "jawiki-page",
+    "file": "File:Unaju_by_Kawatoyo_Honten.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Unaju_by_Kawatoyo_Honten.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "enwiki-page",
+    "file": "File:料亭のうな重.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E6%96%99%E4%BA%AD%E3%81%AE%E3%81%86%E3%81%AA%E9%87%8D.jpg",
+    "ok": true
+   },
+   {
+    "n": 6,
+    "origin": "commons-cat",
+    "file": "File:Eel_bowl,_bowl_of_eel_and_rice;_2013.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Eel_bowl,_bowl_of_eel_and_rice;_2013.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "unadon/unaju; c3 drawing"
  },
  {
   "key": "dishes-chukadon",
@@ -693,7 +1735,17 @@
    "dishes:chukadon",
    "eatout:chukadon",
    "kurume:013"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Chukadon_of_Hidakaya_(1).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Chukadon_of_Hidakaya_(1).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "ankake over rice bowl; c3-5 ramen"
  },
  {
   "key": "dishes-mabodon",
@@ -702,7 +1754,9 @@
   "items": [
    "dishes:mabodon",
    "eatout:mabodon"
-  ]
+  ],
+  "refs": [],
+  "vet": "mapo tofu without rice, tomato, signs"
  },
  {
   "key": "dishes-bibimbap",
@@ -712,7 +1766,38 @@
    "dishes:bibimbap",
    "eatout:bibimbap",
    "kumagaya:03274-2"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Korean.food-Bibimbap-02.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Korean.food-Bibimbap-02.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "jawiki-page",
+    "file": "File:Korean_cuisine-Bibimbap-08.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Korean_cuisine-Bibimbap-08.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "jawiki-page",
+    "file": "File:Korean_cuisine-Jeonju_bibimbap-01.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Korean_cuisine-Jeonju_bibimbap-01.jpg",
+    "ok": true
+   },
+   {
+    "n": 7,
+    "origin": "enwiki",
+    "file": "File:Dolsot-bibimbap.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Dolsot-bibimbap.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "bibimbap bowls; c4/c5 other"
  },
  {
   "key": "dishes-soboro-don",
@@ -729,7 +1814,38 @@
   "items": [
    "dishes:tenshindon",
    "eatout:tenshindon"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Kyoto_Ohsho_Tenshinhan_Ag10.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Kyoto_Ohsho_Tenshinhan_Ag10.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:Tenshin_han_by_jetalone_in_Ginza,_Tokyo.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Tenshin_han_by_jetalone_in_Ginza,_Tokyo.jpg",
+    "ok": true
+   },
+   {
+    "n": 5,
+    "origin": "jawiki-page",
+    "file": "File:Guo_ta_liji_锅塌里脊_(Pan-Pressed_Pork_Tenderloin).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Guo_ta_liji_%E9%94%85%E5%A1%8C%E9%87%8C%E8%84%8A_(Pan-Pressed_Pork_Tenderloin).jpg",
+    "ok": true
+   },
+   {
+    "n": 6,
+    "origin": "jawiki-page",
+    "file": "File:Tennsinndonn.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Tennsinndonn.JPG",
+    "ok": true
+   }
+  ],
+  "vet": "tenshinhan"
  },
  {
   "key": "dishes-fukagawa-meshi",
@@ -737,7 +1853,17 @@
   "desc": "fukagawa meshi, a bowl of rice topped with asari clams simmered in miso broth with green onion",
   "items": [
    "dishes:fukagawa-meshi"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Fukagawameshi.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Fukagawameshi.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "clam rice bowl; bento boxes"
  },
  {
   "key": "dishes-omurice",
@@ -747,7 +1873,31 @@
    "dishes:omurice",
    "eatout:omurice",
    "kurume:015"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Omurice_by_Taimeiken.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Omurice_by_Taimeiken.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:The_Omurice_at_Shiseido_Parlour_Ginza_Restaurant.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:The_Omurice_at_Shiseido_Parlour_Ginza_Restaurant.jpg",
+    "ok": true
+   },
+   {
+    "n": 5,
+    "origin": "jawiki-page",
+    "file": "File:Rice_Omlette,_Renga-Tei,_Ginza_(6639265687).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Rice_Omlette,_Renga-Tei,_Ginza_(6639265687).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "omurice with ketchup; c6 green sauce"
  },
  {
   "key": "dishes-takikomi-gohan",
@@ -755,7 +1905,45 @@
   "desc": "takikomi gohan, light brown seasoned rice with bits of chicken, carrot, burdock, shiitake and konjac in a rice bowl",
   "items": [
    "dishes:takikomi-gohan"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Takenoko_gohan.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Takenoko_gohan.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "enwiki",
+    "file": "File:Maitake_rice_(4348648458).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Maitake_rice_(4348648458).jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "enwiki-page",
+    "file": "File:Bamboo_shoot_rice_(2443018926).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Bamboo_shoot_rice_(2443018926).jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "enwiki-page",
+    "file": "File:Kingyomeshi,_Local_food_in_Kakamigahara.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Kingyomeshi,_Local_food_in_Kakamigahara.jpg",
+    "ok": true
+   },
+   {
+    "n": 7,
+    "origin": "enwiki-page",
+    "file": "File:Salmon_rice_(2917792757).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Salmon_rice_(2917792757).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "mixed seasoned rice; c1/c5 matsutake"
  },
  {
   "key": "dishes-inarizushi",
@@ -765,7 +1953,31 @@
    "dishes:inarizushi",
    "eatout:inari",
    "kurume:006"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Kantofu_Inarizushi.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Kantofu_Inarizushi.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:Inari_zushi_in_201902_001.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Inari_zushi_in_201902_001.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "jawiki-page",
+    "file": "File:Inari_zushi_in_201902_002.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Inari_zushi_in_201902_002.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "inari pouches; c6 nigiri"
  },
  {
   "key": "dishes-chirashizushi",
@@ -775,7 +1987,24 @@
    "dishes:chirashizushi",
    "eatout:chirashi",
    "kurume:008"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Chirashi-zushi.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Chirashi-zushi.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "jawiki-page",
+    "file": "File:Chirashizushi_by_chidorian.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Chirashizushi_by_chidorian.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "chirashi bowls; c5 nigiri, c6 roll"
  },
  {
   "key": "dishes-futomaki",
@@ -784,7 +2013,31 @@
   "items": [
    "dishes:futomaki",
    "eatout:futomaki"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Futomaki_zushi_in_201902.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Futomaki_zushi_in_201902.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "commons-cat",
+    "file": "File:Chicken-katsu_sushi_in_london.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Chicken-katsu_sushi_in_london.jpg",
+    "ok": true
+   },
+   {
+    "n": 5,
+    "origin": "commons-cat",
+    "file": "File:Futomaki_-_Kenzan_(597371228).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Futomaki_-_Kenzan_(597371228).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "futomaki; hosomaki"
  },
  {
   "key": "dishes-kappamaki",
@@ -793,7 +2046,17 @@
   "items": [
    "dishes:kappamaki",
    "eatout:maki_kappa"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:8hosomak8.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:8hosomak8.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "cucumber hosomaki; others other fillings"
  },
  {
   "key": "dishes-tekkamaki",
@@ -802,7 +2065,31 @@
   "items": [
    "dishes:tekkamaki",
    "eatout:maki_tekka"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Kaiten-zushi_005.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Kaiten-zushi_005.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "commons-cat",
+    "file": "File:Makizushi_Tekkamaki_1.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Makizushi_Tekkamaki_1.jpg",
+    "ok": true
+   },
+   {
+    "n": 5,
+    "origin": "commons-cat",
+    "file": "File:Salmon_sushi_closeup,_2008.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Salmon_sushi_closeup,_2008.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "tuna hosomaki; donburi"
  },
  {
   "key": "dishes-kanpyomaki",
@@ -812,7 +2099,24 @@
    "dishes:kanpyomaki",
    "eatout:maki_kanpyo",
    "maff_kyodo:34_13_tokyo"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "jawiki",
+    "file": "File:Kanpyo-maki.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Kanpyo-maki.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "jawiki-page",
+    "file": "File:Kanpyō-maki_001.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Kanpy%C5%8D-maki_001.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "kanpyo rolls; c2/c3 small unclear"
  },
  {
   "key": "dishes-temakizushi",
@@ -820,7 +2124,17 @@
   "desc": "temaki sushi, cone-shaped hand rolls of nori filled with rice, tuna, salmon, cucumber and egg",
   "items": [
    "dishes:temakizushi"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Temaki_sushi.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Temaki_sushi.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "hand roll cone; uramaki"
  },
  {
   "key": "dishes-zosui",
@@ -828,7 +2142,9 @@
   "desc": "tamago zosui, a bowl of rice porridge in clear dashi with soft yellow egg ribbons and green onion",
   "items": [
    "dishes:zosui"
-  ]
+  ],
+  "refs": [],
+  "vet": "porridges, egg not clear"
  },
  {
   "key": "dishes-okayu",
@@ -836,7 +2152,9 @@
   "desc": "a bowl of plain white rice porridge (okayu) with a red umeboshi plum on top",
   "items": [
    "dishes:okayu"
-  ]
+  ],
+  "refs": [],
+  "vet": "portraits of a person, a table"
  },
  {
   "key": "dishes-nanakusagayu",
@@ -844,7 +2162,31 @@
   "desc": "nanakusa gayu, white rice porridge with chopped green spring herbs and small white turnip pieces",
   "items": [
    "dishes:nanakusagayu"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Nanakusa_gayu_on_Nanakusa_no_sekku.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Nanakusa_gayu_on_Nanakusa_no_sekku.jpg",
+    "ok": true
+   },
+   {
+    "n": 5,
+    "origin": "commons-cat",
+    "file": "File:Nanakusa_kayu.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Nanakusa_kayu.jpg",
+    "ok": true
+   },
+   {
+    "n": 6,
+    "origin": "commons-cat",
+    "file": "File:Nanakusa_Porridge_20200107.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Nanakusa_Porridge_20200107.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "herb rice porridge; c1 herb packs"
  },
  {
   "key": "dishes-isobeyaki",
@@ -860,7 +2202,24 @@
   "desc": "kinako mochi, soft white rice cakes coated in golden-tan kinako soybean flour",
   "items": [
    "dishes:kinako-mochi"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Abekawa_Mochi.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Abekawa_Mochi.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "commons-cat",
+    "file": "File:Abekawa_Mochi_001.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Abekawa_Mochi_001.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "kinako-coated mochi; prints/shops"
  },
  {
   "key": "dishes-doria",
@@ -869,7 +2228,38 @@
   "items": [
    "dishes:doria",
    "eatout:doria_chicken"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Meat_doria.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Meat_doria.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:Mirano_hu_Doria.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Mirano_hu_Doria.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "jawiki-page",
+    "file": "File:Milanese_style_doria_of_Saizeriya.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Milanese_style_doria_of_Saizeriya.jpg",
+    "ok": true
+   },
+   {
+    "n": 5,
+    "origin": "commons-cat",
+    "file": "File:Saizeriya_AEON_Komaki_20220214-03.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Saizeriya_AEON_Komaki_20220214-03.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "baked rice gratins; c3 stew"
  },
  {
   "key": "dishes-taco-rice",
@@ -877,7 +2267,31 @@
   "desc": "taco rice, white rice topped with seasoned minced meat, shredded lettuce, diced tomato and grated cheese",
   "items": [
    "dishes:taco-rice"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 4,
+    "origin": "jawiki-page",
+    "file": "File:Taco-Rice-at-Yoshinoya(Tokyo).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Taco-Rice-at-Yoshinoya(Tokyo).jpg",
+    "ok": true
+   },
+   {
+    "n": 5,
+    "origin": "enwiki",
+    "file": "File:Taco_Rice_(cropped).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Taco_Rice_(cropped).jpg",
+    "ok": true
+   },
+   {
+    "n": 7,
+    "origin": "enwiki-page",
+    "file": "File:Taco_rice_as_made_in_Meguro_-_July_2014.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Taco_rice_as_made_in_Meguro_-_July_2014.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "taco rice; streets"
  },
  {
   "key": "dishes-kitsune-udon",
@@ -889,7 +2303,31 @@
    "maff_kyodo:39_17_osaka",
    "takatsuki:r35",
    "kurume:035"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "jawiki",
+    "file": "File:Udon_(Kitsune_udon)_2.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Udon_(Kitsune_udon)_2.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "jawiki-page",
+    "file": "File:Kitsune_soba_by_adactio_at_E-Kagen_in_Brighton.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Kitsune_soba_by_adactio_at_E-Kagen_in_Brighton.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "commons-search",
+    "file": "File:はなまる_きつねうどん_2016_(28661682940).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E3%81%AF%E3%81%AA%E3%81%BE%E3%82%8B_%E3%81%8D%E3%81%A4%E3%81%AD%E3%81%86%E3%81%A9%E3%82%93_2016_(28661682940).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "udon with aburaage; cups"
  },
  {
   "key": "dishes-tanuki-udon",
@@ -898,7 +2336,24 @@
   "items": [
    "dishes:tanuki-udon",
    "eatout:tanuki_udon"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "jawiki",
+    "file": "File:East_Japan-style_Tanuki_Soba.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:East_Japan-style_Tanuki_Soba.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "jawiki-page",
+    "file": "File:Tanuki_soba_by_WordRidden_at_E-Kagen_in_Brighton.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Tanuki_soba_by_WordRidden_at_E-Kagen_in_Brighton.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "noodles with tenkasu; c7 Fuji"
  },
  {
   "key": "dishes-tempura-udon",
@@ -907,7 +2362,17 @@
   "items": [
    "dishes:tempura-udon",
    "eatout:tenpura_udon"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:讃岐うどん（野菜天）_(2147814591).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E8%AE%83%E5%B2%90%E3%81%86%E3%81%A9%E3%82%93%EF%BC%88%E9%87%8E%E8%8F%9C%E5%A4%A9%EF%BC%89_(2147814591).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "udon with tempura; noodle closeups"
  },
  {
   "key": "dishes-tsukimi-udon",
@@ -917,7 +2382,9 @@
    "dishes:tsukimi-udon",
    "eatout:tsukimi_udon",
    "kurume:038"
-  ]
+  ],
+  "refs": [],
+  "vet": "moon photos and prints"
  },
  {
   "key": "dishes-niku-udon",
@@ -928,7 +2395,24 @@
    "eatout:niku_udon",
    "takatsuki:r54",
    "kurume:036"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:肉うどン.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E8%82%89%E3%81%86%E3%81%A9%E3%83%B3.jpg",
+    "ok": true
+   },
+   {
+    "n": 7,
+    "origin": "jawiki-page",
+    "file": "File:Goto_20170727083030_(27776504449).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Goto_20170727083030_(27776504449).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "udon with beef; others other udon"
  },
  {
   "key": "dishes-wakame-udon",
@@ -937,7 +2421,45 @@
   "items": [
    "dishes:wakame-udon",
    "kurume:034"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:はなまるうどん-わかめうどん中---2023-11-28.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E3%81%AF%E3%81%AA%E3%81%BE%E3%82%8B%E3%81%86%E3%81%A9%E3%82%93-%E3%82%8F%E3%81%8B%E3%82%81%E3%81%86%E3%81%A9%E3%82%93%E4%B8%AD---2023-11-28.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Wakame_Udon_10.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Wakame_Udon_10.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:Wakame_Udon_08.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Wakame_Udon_08.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "commons-search",
+    "file": "File:Wakame_Udon_09.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Wakame_Udon_09.jpg",
+    "ok": true
+   },
+   {
+    "n": 5,
+    "origin": "commons-search",
+    "file": "File:Wakame_Udon_07.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Wakame_Udon_07.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "wakame udon"
  },
  {
   "key": "dishes-curry-udon",
@@ -946,7 +2468,31 @@
   "items": [
    "dishes:curry-udon",
    "eatout:curry_udon"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Udon_noodle_in_curry_soup_(4316164692).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Udon_noodle_in_curry_soup_(4316164692).jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "jawiki-page",
+    "file": "File:Curry_udon,_at_Wakashachiya.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Curry_udon,_at_Wakashachiya.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "jawiki-page",
+    "file": "File:Kare-udon.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Kare-udon.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "curry udon; streets"
  },
  {
   "key": "dishes-nabeyaki-udon",
@@ -955,7 +2501,24 @@
   "items": [
    "dishes:nabeyaki-udon",
    "eatout:nabeyaki_udon"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Nabeyaki_udon.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Nabeyaki_udon.jpg",
+    "ok": true
+   },
+   {
+    "n": 7,
+    "origin": "commons-search",
+    "file": "File:Nabeyaki_udon_by_Neeta_Lind.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Nabeyaki_udon_by_Neeta_Lind.JPG",
+    "ok": true
+   }
+  ],
+  "vet": "clay-pot udon; street photos"
  },
  {
   "key": "dishes-zaru-udon",
@@ -964,7 +2527,17 @@
   "items": [
    "dishes:zaru-udon",
    "eatout:zaru_udon"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "jawiki",
+    "file": "File:Udon_by_udono.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Udon_by_udono.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "plain glossy cold udon; hot udon others"
  },
  {
   "key": "dishes-bukkake-udon",
@@ -973,7 +2546,24 @@
   "items": [
    "dishes:bukkake-udon",
    "eatout:bukkake_udon"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 5,
+    "origin": "commons-cat",
+    "file": "File:Bukkake_udon_1_by_yoppy.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Bukkake_udon_1_by_yoppy.jpg",
+    "ok": true
+   },
+   {
+    "n": 6,
+    "origin": "commons-cat",
+    "file": "File:Bukkake_udon_2_by_yoppy.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Bukkake_udon_2_by_yoppy.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "cold udon with toppings"
  },
  {
   "key": "dishes-yaki-udon",
@@ -982,7 +2572,17 @@
   "items": [
    "dishes:yaki-udon",
    "eatout:yakiudon"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Yaki-udon.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Yaki-udon.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "stir-fried udon with veg; others yakisoba"
  },
  {
   "key": "dishes-kake-soba",
@@ -992,7 +2592,17 @@
    "dishes:kake-soba",
    "eatout:kake_soba",
    "kurume:041"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Kakesoba_of_Tachiguisoba.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Kakesoba_of_Tachiguisoba.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "plain soba in broth"
  },
  {
   "key": "dishes-tenzaru-soba",
@@ -1001,7 +2611,24 @@
   "items": [
    "dishes:tenzaru-soba",
    "eatout:tenzaru_soba"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Tempura_soba_3_by_adactio_at_E-Kagen_in_Brighton.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Tempura_soba_3_by_adactio_at_E-Kagen_in_Brighton.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "commons-search",
+    "file": "File:Tempura_soba-04.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Tempura_soba-04.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "cold soba with tempura"
  },
  {
   "key": "dishes-kitsune-soba",
@@ -1010,7 +2637,17 @@
   "items": [
    "dishes:kitsune-soba",
    "eatout:kitsune_soba"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 3,
+    "origin": "commons-search",
+    "file": "File:きつねえきそば.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E3%81%8D%E3%81%A4%E3%81%AD%E3%81%88%E3%81%8D%E3%81%9D%E3%81%B0.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "soba with aburaage; c0/c1 look udon"
  },
  {
   "key": "dishes-tanuki-soba",
@@ -1019,7 +2656,17 @@
   "items": [
    "dishes:tanuki-soba",
    "eatout:tanuki_soba"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "jawiki",
+    "file": "File:East_Japan-style_Tanuki_Soba.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:East_Japan-style_Tanuki_Soba.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "soba with tenkasu"
  },
  {
   "key": "dishes-tempura-soba",
@@ -1028,7 +2675,9 @@
   "items": [
    "dishes:tempura-soba",
    "eatout:tenpura_soba"
-  ]
+  ],
+  "refs": [],
+  "vet": "cold zaru soba and dried bundles, no hot tempura soba"
  },
  {
   "key": "dishes-tsukimi-soba",
@@ -1037,7 +2686,9 @@
   "items": [
    "dishes:tsukimi-soba",
    "eatout:tsukimi_soba"
-  ]
+  ],
+  "refs": [],
+  "vet": "moon photos and prints"
  },
  {
   "key": "dishes-sansai-soba",
@@ -1045,7 +2696,9 @@
   "desc": "sansai soba, soba in hot dashi broth topped with brown and green wild mountain vegetables (warabi fern, nameko)",
   "items": [
    "dishes:sansai-soba"
-  ]
+  ],
+  "refs": [],
+  "vet": "plain soba/zaru, no sansai topping clear"
  },
  {
   "key": "dishes-tororo-soba",
@@ -1053,7 +2706,9 @@
   "desc": "tororo soba, soba in broth topped with white grated yam, nori and green onion",
   "items": [
    "dishes:tororo-soba"
-  ]
+  ],
+  "refs": [],
+  "vet": "tororo not clear; c5 udon"
  },
  {
   "key": "dishes-kamonanban",
@@ -1062,7 +2717,31 @@
   "items": [
    "dishes:kamonanban",
    "eatout:kamonanban"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:鴨南蛮そばと鶏天盛り_-_2.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E9%B4%A8%E5%8D%97%E8%9B%AE%E3%81%9D%E3%81%B0%E3%81%A8%E9%B6%8F%E5%A4%A9%E7%9B%9B%E3%82%8A_-_2.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:鴨南蛮そばと鶏天盛り_-_1.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E9%B4%A8%E5%8D%97%E8%9B%AE%E3%81%9D%E3%81%B0%E3%81%A8%E9%B6%8F%E5%A4%A9%E7%9B%9B%E3%82%8A_-_1.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "commons-search",
+    "file": "File:Kamo_nanban_soba_001.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Kamo_nanban_soba_001.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "duck soba"
  },
  {
   "key": "dishes-somen",
@@ -1071,7 +2750,24 @@
   "items": [
    "dishes:somen",
    "eatout:somen"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:Somen_is_wonderfully_refreshing_summer_noodle_in_Japan.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Somen_is_wonderfully_refreshing_summer_noodle_in_Japan.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "jawiki-page",
+    "file": "File:Abura_somen.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Abura_somen.JPG",
+    "ok": true
+   }
+  ],
+  "vet": "chilled somen; c0 dry bundle, c5-7 nagashi"
  },
  {
   "key": "dishes-nyumen",
@@ -1080,7 +2776,17 @@
   "items": [
    "dishes:nyumen",
    "maff_kyodo:nyuumen_nara"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 4,
+    "origin": "jawiki-page",
+    "file": "File:Janchi-guksu.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Janchi-guksu.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "noodles in hot broth; others chilled/dry"
  },
  {
   "key": "dishes-hiyashi-chuka",
@@ -1091,7 +2797,45 @@
    "eatout:hiyashi_chuka",
    "kurume:047",
    "toyonaka:269368"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Hiyashi_chuka_by_woinary_at_551_Horai_in_Osaka_Intl_Airport.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Hiyashi_chuka_by_woinary_at_551_Horai_in_Osaka_Intl_Airport.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:Hiyashi_chuka_002.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Hiyashi_chuka_002.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "jawiki-page",
+    "file": "File:Gomoku_Hiyashi-soba.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Gomoku_Hiyashi-soba.jpg",
+    "ok": true
+   },
+   {
+    "n": 5,
+    "origin": "commons-cat",
+    "file": "File:3色_(7827427886).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:3%E8%89%B2_(7827427886).jpg",
+    "ok": true
+   },
+   {
+    "n": 7,
+    "origin": "commons-cat",
+    "file": "File:Hiyashi_chuka_001.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Hiyashi_chuka_001.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "hiyashi chuka"
  },
  {
   "key": "dishes-yakisoba",
@@ -1101,7 +2845,38 @@
    "dishes:yakisoba",
    "eatout:yakisoba_yatai",
    "kurume:046"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Kuroishi_Yakisoba01.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Kuroishi_Yakisoba01.JPG",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:Yakisoba_-_01.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Yakisoba_-_01.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "jawiki-page",
+    "file": "File:2014-12-23_Himeji-chanpon_yaki_(姫路ちゃんぽん焼き).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:2014-12-23_Himeji-chanpon_yaki_(%E5%A7%AB%E8%B7%AF%E3%81%A1%E3%82%83%E3%82%93%E3%81%BD%E3%82%93%E7%84%BC%E3%81%8D).jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "jawiki-page",
+    "file": "File:Fujinomiya-yakisoba.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Fujinomiya-yakisoba.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "sauce yakisoba"
  },
  {
   "key": "dishes-shio-yakisoba",
@@ -1109,7 +2884,17 @@
   "desc": "shio yakisoba, stir-fried pale noodles with cabbage, pork, bean sprouts and green onion, no dark sauce",
   "items": [
    "dishes:shio-yakisoba"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 2,
+    "origin": "jawiki-page",
+    "file": "File:Fujinomiya-yakisoba.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Fujinomiya-yakisoba.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "pale stir-fried noodles; others sauce"
  },
  {
   "key": "dishes-ramen-shoyu",
@@ -1118,7 +2903,31 @@
   "items": [
    "dishes:ramen-shoyu",
    "eatout:ramen_shoyu"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "wikidata",
+    "file": "File:Shoyu_ramen,_at_Kasukabe_Station_(2014.05.05)_1.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Shoyu_ramen,_at_Kasukabe_Station_(2014.05.05)_1.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "jawiki",
+    "file": "File:Shoyu_Ramen（Tokyo_Ramen）_-_01.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Shoyu_Ramen%EF%BC%88Tokyo_Ramen%EF%BC%89_-_01.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "jawiki-page",
+    "file": "File:Agodashi_Ramen_Ikitsuki_Nagasaki_2008.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Agodashi_Ramen_Ikitsuki_Nagasaki_2008.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "shoyu ramen; c5 miso-like"
  },
  {
   "key": "dishes-ramen-miso",
@@ -1127,7 +2936,45 @@
   "items": [
    "dishes:ramen-miso",
    "eatout:ramen_miso"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Nagoya_20210316-06.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Nagoya_20210316-06.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:らーめん味噌（大島）.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E3%82%89%E3%83%BC%E3%82%81%E3%82%93%E5%91%B3%E5%99%8C%EF%BC%88%E5%A4%A7%E5%B3%B6%EF%BC%89.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "commons-cat",
+    "file": "File:Nagoya_20201222-02.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Nagoya_20201222-02.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "commons-cat",
+    "file": "File:Nagoya_20201222-04.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Nagoya_20201222-04.jpg",
+    "ok": true
+   },
+   {
+    "n": 6,
+    "origin": "commons-cat",
+    "file": "File:Nagoya_20210316-05.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Nagoya_20210316-05.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "miso ramen"
  },
  {
   "key": "dishes-champon",
@@ -1137,7 +2984,31 @@
    "dishes:champon",
    "eatout:champon",
    "maff_kyodo:46_8_nagasaki"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Shikairo_Nagasaki_Japan05s.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Shikairo_Nagasaki_Japan05s.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "jawiki-page",
+    "file": "File:Hikone_okabe_champon.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Hikone_okabe_champon.jpg",
+    "ok": true
+   },
+   {
+    "n": 6,
+    "origin": "jawiki-page",
+    "file": "File:Okinawa_Champon.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Okinawa_Champon.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "champon; c1 tomato"
  },
  {
   "key": "dishes-napolitan",
@@ -1147,7 +3018,24 @@
    "dishes:napolitan",
    "eatout:napolitan",
    "kumagaya:3514"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "wikidata",
+    "file": "File:Neapolitan,_spaghetti_of_Japanese_origin_2.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Neapolitan,_spaghetti_of_Japanese_origin_2.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "wikidata",
+    "file": "File:Spaghetti_Naporitan_001.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Spaghetti_Naporitan_001.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "ketchup spaghetti; c0/c3 dry pasta, c4 tomato"
  },
  {
   "key": "dishes-meat-sauce",
@@ -1156,7 +3044,17 @@
   "items": [
    "dishes:meat-sauce",
    "eatout:meatsauce"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 3,
+    "origin": "jawiki-page",
+    "file": "File:AnkakeSpa1.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:AnkakeSpa1.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "spaghetti with meat sauce; dry pasta, squid ink"
  },
  {
   "key": "dishes-carbonara",
@@ -1165,7 +3063,17 @@
   "items": [
    "dishes:carbonara",
    "eatout:carbonara"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "wikidata",
+    "file": "File:Espaguetis_carbonara.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Espaguetis_carbonara.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "carbonara; others other pastas"
  },
  {
   "key": "dishes-peperoncino",
@@ -1174,7 +3082,31 @@
   "items": [
    "dishes:peperoncino",
    "eatout:peperoncino"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Spaghetti_aglio_olio_e_peperoncino_by_matsuyuki_retouched.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Spaghetti_aglio_olio_e_peperoncino_by_matsuyuki_retouched.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:Aglio_e_olio.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Aglio_e_olio.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "enwiki-page",
+    "file": "File:Spaghetti_di_Gragnano_e_colatura_di_alici.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Spaghetti_di_Gragnano_e_colatura_di_alici.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "oil-garlic spaghetti; c2 plant"
  },
  {
   "key": "dishes-tarako-spa",
@@ -1183,7 +3115,31 @@
   "items": [
    "dishes:tarako-spa",
    "eatout:tarako_pasta"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Tarako_spaghetti.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Tarako_spaghetti.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "jawiki-page",
+    "file": "File:Convenience_tarako_spaghetti_by_nishidaryuichi.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Convenience_tarako_spaghetti_by_nishidaryuichi.jpg",
+    "ok": true
+   },
+   {
+    "n": 5,
+    "origin": "commons-cat",
+    "file": "File:Mentaiko_spaghetti_by_last.fm.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Mentaiko_spaghetti_by_last.fm.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "tarako spaghetti"
  },
  {
   "key": "dishes-wafu-kinoko-spa",
@@ -1192,7 +3148,17 @@
   "items": [
    "dishes:wafu-kinoko-spa",
    "eatout:wafu_kinoko_pasta"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "jawiki",
+    "file": "File:Wafu_Mushroom_Spaghetti_001.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Wafu_Mushroom_Spaghetti_001.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "mushroom spaghetti with nori"
  },
  {
   "key": "dishes-vongole",
@@ -1201,7 +3167,31 @@
   "items": [
    "dishes:vongole",
    "eatout:vongole"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "jawiki",
+    "file": "File:Trenette_con_le_vongole_(cropped).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Trenette_con_le_vongole_(cropped).jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "commons-search",
+    "file": "File:Spaghetti_alle_vongole.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Spaghetti_alle_vongole.jpg",
+    "ok": true
+   },
+   {
+    "n": 7,
+    "origin": "commons-search",
+    "file": "File:Spaghetti_Vongole_by_ayustety_in_Ginza,_Tokyo.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Spaghetti_Vongole_by_ayustety_in_Ginza,_Tokyo.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "clam spaghetti bianco; c1/c2 tomato"
  },
  {
   "key": "dishes-yosenabe",
@@ -1209,7 +3199,9 @@
   "desc": "yosenabe, a clay pot of clear soy dashi with napa cabbage, chicken, tofu, cod, shiitake and green onion",
   "items": [
    "dishes:yosenabe"
-  ]
+  ],
+  "refs": [],
+  "vet": "no clear yosenabe; soups/tables"
  },
  {
   "key": "dishes-sukiyaki",
@@ -1219,7 +3211,31 @@
    "dishes:sukiyaki",
    "maff_kyodo:32_19_gunma",
    "maff_kyodo:34_17_tokyo"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Sukiyaki_01.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Sukiyaki_01.jpg",
+    "ok": true
+   },
+   {
+    "n": 5,
+    "origin": "enwiki-page",
+    "file": "File:Sukiyaki123.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Sukiyaki123.jpg",
+    "ok": true
+   },
+   {
+    "n": 6,
+    "origin": "commons-cat",
+    "file": "File:-Sukiyaki_(Kansai_style)_with_Matsutake_松茸入り関西式_-すき焼き_(15797715041).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:-Sukiyaki_(Kansai_style)_with_Matsutake_%E6%9D%BE%E8%8C%B8%E5%85%A5%E3%82%8A%E9%96%A2%E8%A5%BF%E5%BC%8F_-%E3%81%99%E3%81%8D%E7%84%BC%E3%81%8D_(15797715041).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "sukiyaki pans"
  },
  {
   "key": "dishes-shabushabu-pork",
@@ -1228,7 +3244,17 @@
   "items": [
    "dishes:shabushabu-pork",
    "dishes:shabushabu-beef"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:A_portion_of_Korean_Shabu-Shabu.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:A_portion_of_Korean_Shabu-Shabu.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "shabu platter with pot; c3 unclear"
  },
  {
   "key": "dishes-kimchi-nabe",
@@ -1236,7 +3262,31 @@
   "desc": "kimchi nabe, a clay pot of red spicy kimchi broth with pork, tofu, napa cabbage and enoki",
   "items": [
    "dishes:kimchi-nabe"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:Korean_stew-Kimchi_jjigae-05.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Korean_stew-Kimchi_jjigae-05.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "jawiki-page",
+    "file": "File:Korean.food-kimchi.jjiggae-01.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Korean.food-kimchi.jjiggae-01.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "enwiki",
+    "file": "File:Korean_stew_dish_-_Kimchi-jjigae_Kimchi_Stew_2019_(01).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Korean_stew_dish_-_Kimchi-jjigae_Kimchi_Stew_2019_(01).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "kimchi nabe; banchan"
  },
  {
   "key": "dishes-mizutaki",
@@ -1244,7 +3294,17 @@
   "desc": "mizutaki, a clay pot of milky white chicken broth with chicken pieces, cabbage, tofu and shungiku",
   "items": [
    "dishes:mizutaki"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "jawiki",
+    "file": "File:Restaurante-shabu-shabu-Yokohama19.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Restaurante-shabu-shabu-Yokohama19.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "milky chicken pot; crab legs"
  },
  {
   "key": "dishes-chanko-nabe",
@@ -1252,7 +3312,31 @@
   "desc": "chanko nabe, a big pot with chicken meatballs, chicken, napa cabbage, tofu and leek in clear broth",
   "items": [
    "dishes:chanko-nabe"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Chankonabe.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Chankonabe.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:Nabe_Kansai_style.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Nabe_Kansai_style.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "enwiki-page",
+    "file": "File:Chanko.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Chanko.JPG",
+    "ok": true
+   }
+  ],
+  "vet": "chanko pots; tables"
  },
  {
   "key": "dishes-motsunabe",
@@ -1260,7 +3344,38 @@
   "desc": "motsunabe, a pot of soy broth with beef offal, cabbage, garlic chives, tofu and garlic slices",
   "items": [
    "dishes:motsunabe"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Motsunabe.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Motsunabe.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "enwiki-page",
+    "file": "File:Motsunabe_002.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Motsunabe_002.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "enwiki-page",
+    "file": "File:Motsunabe_Aug_13_2021_Ikebukuro-_two_views.jpeg",
+    "page": "https://commons.wikimedia.org/wiki/File:Motsunabe_Aug_13_2021_Ikebukuro-_two_views.jpeg",
+    "ok": true
+   },
+   {
+    "n": 5,
+    "origin": "commons-cat",
+    "file": "File:Fukuoka-style_hot_pot_(3637375629).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Fukuoka-style_hot_pot_(3637375629).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "motsunabe; building"
  },
  {
   "key": "dishes-ishikari-nabe",
@@ -1269,7 +3384,24 @@
   "items": [
    "dishes:ishikari-nabe",
    "maff_kyodo:ishikarinabe_hokkaido"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Ishikari_nabe_by_Adonis_Chen_in_Hokkaido.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Ishikari_nabe_by_Adonis_Chen_in_Hokkaido.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "jawiki-page",
+    "file": "File:Ishikari_nabe_by_naotakem.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Ishikari_nabe_by_naotakem.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "salmon miso pots"
  },
  {
   "key": "dishes-tara-chiri",
@@ -1277,7 +3409,9 @@
   "desc": "tarachiri, a pot of clear kombu broth with white cod pieces, tofu, napa cabbage and leek, with ponzu",
   "items": [
    "dishes:tara-chiri"
-  ]
+  ],
+  "refs": [],
+  "vet": "unclear pots, packaged item"
  },
  {
   "key": "dishes-oden-tamago",
@@ -1286,7 +3420,31 @@
   "items": [
    "dishes:oden-tamago",
    "eatout:oden_tamago"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Oden_by_Mori_Chan.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Oden_by_Mori_Chan.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "jawiki-page",
+    "file": "File:Himeji_Oden.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Himeji_Oden.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "jawiki-page",
+    "file": "File:Making_oden.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Making_oden.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "oden with egg visible"
  },
  {
   "key": "dishes-oden-chikuwabu",
@@ -1295,7 +3453,9 @@
   "items": [
    "dishes:oden-chikuwabu",
    "eatout:oden_chikuwabu"
-  ]
+  ],
+  "refs": [],
+  "vet": "generic oden photos, no chikuwabu visible"
  },
  {
   "key": "dishes-oden-gobomaki",
@@ -1303,7 +3463,9 @@
   "desc": "oden gobomaki, a fried fish cake roll with a burdock stick inside, in oden broth",
   "items": [
    "dishes:oden-gobomaki"
-  ]
+  ],
+  "refs": [],
+  "vet": "generic oden photos, no gobomaki visible"
  },
  {
   "key": "dishes-oden-konnyaku",
@@ -1312,7 +3474,9 @@
   "items": [
    "dishes:oden-konnyaku",
    "eatout:oden_konnyaku"
-  ]
+  ],
+  "refs": [],
+  "vet": "generic oden, konjac not clear; c2 dengaku"
  },
  {
   "key": "dishes-oden-shirataki",
@@ -1321,7 +3485,9 @@
   "items": [
    "dishes:oden-shirataki",
    "eatout:oden_shirataki"
-  ]
+  ],
+  "refs": [],
+  "vet": "generic oden, no shirataki"
  },
  {
   "key": "dishes-oden-atsuage",
@@ -1330,7 +3496,9 @@
   "items": [
    "dishes:oden-atsuage",
    "eatout:oden_atsuage"
-  ]
+  ],
+  "refs": [],
+  "vet": "generic oden, no atsuage visible"
  },
  {
   "key": "dishes-oden-ganmo",
@@ -1339,7 +3507,9 @@
   "items": [
    "dishes:oden-ganmo",
    "eatout:oden_ganmo"
-  ]
+  ],
+  "refs": [],
+  "vet": "generic oden, no ganmo clearly"
  },
  {
   "key": "dishes-oden-konbu",
@@ -1348,7 +3518,9 @@
   "items": [
    "dishes:oden-konbu",
    "eatout:oden_konbu"
-  ]
+  ],
+  "refs": [],
+  "vet": "generic oden, no kombu knot"
  },
  {
   "key": "dishes-oden-jagaimo",
@@ -1574,7 +3746,24 @@
   "items": [
    "dishes:teishoku-hamburg",
    "eatout:hamburg_teishoku"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:チーズハンバーグ定食（グリンデル）.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E3%83%81%E3%83%BC%E3%82%BA%E3%83%8F%E3%83%B3%E3%83%90%E3%83%BC%E3%82%B0%E5%AE%9A%E9%A3%9F%EF%BC%88%E3%82%B0%E3%83%AA%E3%83%B3%E3%83%87%E3%83%AB%EF%BC%89.jpg",
+    "ok": true
+   },
+   {
+    "n": 5,
+    "origin": "commons-search",
+    "file": "File:松屋エッグデミグラスハンバーグ定食.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E6%9D%BE%E5%B1%8B%E3%82%A8%E3%83%83%E3%82%B0%E3%83%87%E3%83%9F%E3%82%B0%E3%83%A9%E3%82%B9%E3%83%8F%E3%83%B3%E3%83%90%E3%83%BC%E3%82%B0%E5%AE%9A%E9%A3%9F.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c1-c4 unclear/omelette-like"
  },
  {
   "key": "dishes-teishoku-gyoza",
@@ -1583,7 +3772,38 @@
   "items": [
    "dishes:teishoku-gyoza",
    "eatout:gyoza_teishoku"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:餃子の王将_春日井_20240925_203019.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E9%A4%83%E5%AD%90%E3%81%AE%E7%8E%8B%E5%B0%86_%E6%98%A5%E6%97%A5%E4%BA%95_20240925_203019.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:Hamamatsu_Gyōza_001.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Hamamatsu_Gy%C5%8Dza_001.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "commons-search",
+    "file": "File:Hamamatsu_Gyōza_002.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Hamamatsu_Gy%C5%8Dza_002.jpg",
+    "ok": true
+   },
+   {
+    "n": 5,
+    "origin": "commons-search",
+    "file": "File:Hamamatsugyoza.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Hamamatsugyoza.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c4 yakiniku"
  },
  {
   "key": "dishes-teishoku-shogayaki",
@@ -1592,7 +3812,38 @@
   "items": [
    "dishes:teishoku-shogayaki",
    "eatout:shogayaki_teishoku"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:かんだ食堂_-_豚生姜焼定食、たまご焼き、ナスみそ炒定食_-_通いたいとおもいます。(Pork_ginger_grilled_set,_Rolled_omelet,_Eggplant_miso_stir-fried_set_-_Kanda_Syokudō)_(uploaded_on_2015-07-08_by_TAKA@P.P.R.S).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E3%81%8B%E3%82%93%E3%81%A0%E9%A3%9F%E5%A0%82_-_%E8%B1%9A%E7%94%9F%E5%A7%9C%E7%84%BC%E5%AE%9A%E9%A3%9F%E3%80%81%E3%81%9F%E3%81%BE%E3%81%94%E7%84%BC%E3%81%8D%E3%80%81%E3%83%8A%E3%82%B9%E3%81%BF%E3%81%9D%E7%82%92%E5%AE%9A%E9%A3%9F_-_%E9%80%9A%E3%81%84%E3%81%9F%E3%81%84%E3%81%A8%E3%81%8A%E3%82%82%E3%81%84%E3%81%BE%E3%81%99%E3%80%82(Pork_ginger_grilled_set,_Rolled_omelet,_Eggplant_miso_stir-fried_set_-_Kanda_Syokud%C5%8D)_(uploaded_on_2015-07-08_by_TAKA@P.P.R.S).jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Shogayaki_003.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Shogayaki_003.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "commons-search",
+    "file": "File:NGO_Kita_Shonai-tei_lunch_Buta_Shogayaki_Don_20230224-01.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:NGO_Kita_Shonai-tei_lunch_Buta_Shogayaki_Don_20230224-01.jpg",
+    "ok": true
+   },
+   {
+    "n": 5,
+    "origin": "commons-search",
+    "file": "File:NGO_Kita_Shonai-tei_lunch_Buta_Shogayaki_Don_20230224-02.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:NGO_Kita_Shonai-tei_lunch_Buta_Shogayaki_Don_20230224-02.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c2 unclear, c3 no pork"
  },
  {
   "key": "dishes-teishoku-tonkatsu",
@@ -1601,7 +3852,31 @@
   "items": [
    "dishes:teishoku-tonkatsu",
    "eatout:tonkatsu_teishoku"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:とんから亭_厚切り！棒ひれかつ定食.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E3%81%A8%E3%82%93%E3%81%8B%E3%82%89%E4%BA%AD_%E5%8E%9A%E5%88%87%E3%82%8A%EF%BC%81%E6%A3%92%E3%81%B2%E3%82%8C%E3%81%8B%E3%81%A4%E5%AE%9A%E9%A3%9F.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "commons-search",
+    "file": "File:とんから亭_棒ひれかつ.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E3%81%A8%E3%82%93%E3%81%8B%E3%82%89%E4%BA%AD_%E6%A3%92%E3%81%B2%E3%82%8C%E3%81%8B%E3%81%A4.jpg",
+    "ok": true
+   },
+   {
+    "n": 5,
+    "origin": "commons-search",
+    "file": "File:Tonkatsu_002.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Tonkatsu_002.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c1 c2 c4 unclear cut"
  },
  {
   "key": "dishes-teishoku-chicken-nanban",
@@ -1609,7 +3884,31 @@
   "desc": "a chicken nanban set meal on a tray, fried chicken with tartar sauce and cabbage, rice and miso soup",
   "items": [
    "dishes:teishoku-chicken-nanban"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:かつさと_チキン南蛮定食.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E3%81%8B%E3%81%A4%E3%81%95%E3%81%A8_%E3%83%81%E3%82%AD%E3%83%B3%E5%8D%97%E8%9B%AE%E5%AE%9A%E9%A3%9F.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "commons-search",
+    "file": "File:Chicken_Nanban_Teishoku.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Chicken_Nanban_Teishoku.jpg",
+    "ok": true
+   },
+   {
+    "n": 5,
+    "origin": "commons-search",
+    "file": "File:Tonkaratei-Taishicho_Sep_2026-02.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Tonkaratei-Taishicho_Sep_2026-02.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c1-c3 tartar not visible"
  },
  {
   "key": "dishes-teishoku-aji-fry",
@@ -1625,7 +3924,24 @@
   "desc": "a sashimi set meal on a tray, a plate of assorted sashimi, rice, miso soup and pickles",
   "items": [
    "dishes:teishoku-sashimi"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:ブリ刺身定食（氷見魚市場食堂）20240330-P1040829.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E3%83%96%E3%83%AA%E5%88%BA%E8%BA%AB%E5%AE%9A%E9%A3%9F%EF%BC%88%E6%B0%B7%E8%A6%8B%E9%AD%9A%E5%B8%82%E5%A0%B4%E9%A3%9F%E5%A0%82%EF%BC%8920240330-P1040829.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "commons-search",
+    "file": "File:みなと食堂-千葉-蘇我_11.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E3%81%BF%E3%81%AA%E3%81%A8%E9%A3%9F%E5%A0%82-%E5%8D%83%E8%91%89-%E8%98%87%E6%88%91_11.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c3 platter only, c5 tataki"
  },
  {
   "key": "dishes-teishoku-tempura",
@@ -1633,7 +3949,31 @@
   "desc": "a tempura set meal on a tray, a basket of shrimp and vegetable tempura, rice, miso soup and dipping sauce",
   "items": [
    "dishes:teishoku-tempura"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 3,
+    "origin": "commons-search",
+    "file": "File:Tempura_002.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Tempura_002.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "commons-search",
+    "file": "File:Tempura_001.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Tempura_001.jpg",
+    "ok": true
+   },
+   {
+    "n": 5,
+    "origin": "commons-search",
+    "file": "File:Ebinoya_Tempura_set_meal.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Ebinoya_Tempura_set_meal.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c0 c1 not tempura"
  },
  {
   "key": "dishes-teishoku-mabo",
@@ -1641,7 +3981,24 @@
   "desc": "a mapo tofu set meal on a tray, a dish of red mapo tofu, rice and soup",
   "items": [
    "dishes:teishoku-mabo"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:麻婆豆腐定食_(48179864702).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E9%BA%BB%E5%A9%86%E8%B1%86%E8%85%90%E5%AE%9A%E9%A3%9F_(48179864702).jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "commons-search",
+    "file": "File:Photo-with-Xiaomi17Ultra_0851.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Photo-with-Xiaomi17Ultra_0851.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c2 c3 dish only, c5 gyoza"
  },
  {
   "key": "dishes-teishoku-yasai-itame",
@@ -1649,7 +4006,24 @@
   "desc": "a vegetable stir-fry set meal on a tray, a plate of stir-fried vegetables with pork, rice and miso soup",
   "items": [
    "dishes:teishoku-yasai-itame"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Niku-yasai-itame-teishoku_of_Hidakaya.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Niku-yasai-itame-teishoku_of_Hidakaya.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Yasai-itame_001.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Yasai-itame_001.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c2 raw veg cutout"
  },
  {
   "key": "dishes-teishoku-nikujaga",
@@ -1673,7 +4047,17 @@
   "desc": "a Japanese breakfast on a tray, grilled salmon, rice, miso soup, natto and a few sheets of nori",
   "items": [
    "dishes:wa-choshoku"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:St._Regis_Singapore_Japanese_breakfast_sets_(3504109163).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:St._Regis_Singapore_Japanese_breakfast_sets_(3504109163).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "others other breakfasts"
  },
  {
   "key": "dishes-tkg-choshoku",
@@ -1689,7 +4073,9 @@
   "desc": "a slice of buttered toast and a sunny-side-up fried egg on a plate",
   "items": [
    "dishes:toast-medamayaki"
-  ]
+  ],
+  "refs": [],
+  "vet": "no clear toast+fried egg; full breakfasts / unclear"
  },
  {
   "key": "dishes-yo-choshoku",
@@ -1697,7 +4083,24 @@
   "desc": "a Western breakfast set, toast, bacon and eggs, a small salad, a cup of yogurt and a glass of milk",
   "items": [
    "dishes:yo-choshoku"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:The_Gate_Hotel_Kyoto_Takasegawa_by_Hulic_restaurant_Anchor_Kyoto_breakfast_20200813-001.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:The_Gate_Hotel_Kyoto_Takasegawa_by_Hulic_restaurant_Anchor_Kyoto_breakfast_20200813-001.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "commons-search",
+    "file": "File:Ontbijt_in_het_restaurantje_Two_Heart_in_Akashi,_-2_mei_2016_a.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Ontbijt_in_het_restaurantje_Two_Heart_in_Akashi,_-2_mei_2016_a.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c1 building, c2 ship"
  },
  {
   "key": "dishes-bento-karaage",
@@ -1706,7 +4109,17 @@
   "items": [
    "dishes:bento-karaage",
    "eatout:bento_karaage"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Homemade_lunch_box.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Homemade_lunch_box.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "others kids' character bentos"
  },
  {
   "key": "dishes-bento-shake",
@@ -1715,7 +4128,9 @@
   "items": [
    "dishes:bento-shake",
    "eatout:bento_shake"
-  ]
+  ],
+  "refs": [],
+  "vet": "no salmon visible; kids' bentos"
  },
  {
   "key": "dishes-curry-salad-set",
@@ -1723,7 +4138,24 @@
   "desc": "curry rice on a plate beside a small green salad",
   "items": [
    "dishes:curry-salad-set"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Chicken_curry_rice_with_salad_Dai@dai-a-log_in_Ueno_Zoo.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Chicken_curry_rice_with_salad_Dai@dai-a-log_in_Ueno_Zoo.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:Beef_cheese_curry_rice_with_salad_by_jetalone_in_Tokyo.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Beef_cheese_curry_rice_with_salad_by_jetalone_in_Tokyo.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c3 katsu curry, c5 fried rice"
  },
  {
   "key": "eatout-gyudon_cheese",
@@ -1731,7 +4163,38 @@
   "desc": "cheese gyudon, a beef bowl topped with melted white and yellow cheese",
   "items": [
    "eatout:gyudon_cheese"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "commons-cat",
+    "file": "File:3種起司牛丼,_3種のチーズ牛丼,_すき家,_Sukiya,_台北,_台灣_(15261577799).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:3%E7%A8%AE%E8%B5%B7%E5%8F%B8%E7%89%9B%E4%B8%BC,_3%E7%A8%AE%E3%81%AE%E3%83%81%E3%83%BC%E3%82%BA%E7%89%9B%E4%B8%BC,_%E3%81%99%E3%81%8D%E5%AE%B6,_Sukiya,_%E5%8F%B0%E5%8C%97,_%E5%8F%B0%E7%81%A3_(15261577799).jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "commons-cat",
+    "file": "File:Aichi_Toyohashi_s20260720_133917.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Aichi_Toyohashi_s20260720_133917.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "commons-cat",
+    "file": "File:NGO_Kita_s20260110_011125.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:NGO_Kita_s20260110_011125.jpg",
+    "ok": true
+   },
+   {
+    "n": 5,
+    "origin": "commons-cat",
+    "file": "File:NGO_Kita_s20260110_011128.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:NGO_Kita_s20260110_011128.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c3 plain gyudon, c0 unclear"
  },
  {
   "key": "eatout-gyudon_negitama",
@@ -1739,7 +4202,38 @@
   "desc": "negitama gyudon, a beef bowl topped with a heap of green onion and a raw egg yolk",
   "items": [
    "eatout:gyudon_negitama"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:吉野家_ねぎ玉牛丼_-_2.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E5%90%89%E9%87%8E%E5%AE%B6_%E3%81%AD%E3%81%8E%E7%8E%89%E7%89%9B%E4%B8%BC_-_2.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:蔥溫玉牛丼,_可樂餅,_ねぎ玉牛丼,_すき家,_Sukiya,_台北,_台灣_(15261577549).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E8%94%A5%E6%BA%AB%E7%8E%89%E7%89%9B%E4%B8%BC,_%E5%8F%AF%E6%A8%82%E9%A4%85,_%E3%81%AD%E3%81%8E%E7%8E%89%E7%89%9B%E4%B8%BC,_%E3%81%99%E3%81%8D%E5%AE%B6,_Sukiya,_%E5%8F%B0%E5%8C%97,_%E5%8F%B0%E7%81%A3_(15261577549).jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "commons-search",
+    "file": "File:ねぎ玉牛丼,_すき家,_Sukiya,_廣島,_Hiroshima_(6238301090).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E3%81%AD%E3%81%8E%E7%8E%89%E7%89%9B%E4%B8%BC,_%E3%81%99%E3%81%8D%E5%AE%B6,_Sukiya,_%E5%BB%A3%E5%B3%B6,_Hiroshima_(6238301090).jpg",
+    "ok": true
+   },
+   {
+    "n": 5,
+    "origin": "commons-search",
+    "file": "File:Negitama_gyudon,_at_Sukiya_(2013.06.09).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Negitama_gyudon,_at_Sukiya_(2013.06.09).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c0 c4 plain gyudon"
  },
  {
   "key": "eatout-gyuteishoku",
@@ -1747,7 +4241,24 @@
   "desc": "a gyu-sara set meal, a plate of simmered beef and onion, a bowl of rice, miso soup and salad on a tray",
   "items": [
    "eatout:gyuteishoku"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Grilled_beef_on_iron_plate_set_meal_of_Yoshinoya.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Grilled_beef_on_iron_plate_set_meal_of_Yoshinoya.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:Grilled_beef_kalbi_on_iron_plate_set_meal_of_Yoshinoya.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Grilled_beef_kalbi_on_iron_plate_set_meal_of_Yoshinoya.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "others steak/burgers"
  },
  {
   "key": "eatout-butadon_obihiro",
@@ -1755,7 +4266,31 @@
   "desc": "Obihiro-style butadon, thick charcoal-grilled pork slices glazed in sweet soy sauce on rice",
   "items": [
    "eatout:butadon_obihiro"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:Butadon_of_Pancho.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Butadon_of_Pancho.jpg",
+    "ok": true
+   },
+   {
+    "n": 6,
+    "origin": "enwiki",
+    "file": "File:Sauced_pork_bowl_of_Sukiya.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Sauced_pork_bowl_of_Sukiya.jpg",
+    "ok": true
+   },
+   {
+    "n": 7,
+    "origin": "enwiki-page",
+    "file": "File:Butadon_001.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Butadon_001.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c0 stir-fry, c5 egg pork bowl"
  },
  {
   "key": "eatout-sauce_katsudon",
@@ -1763,7 +4298,17 @@
   "desc": "sauce katsudon, a bowl of rice and shredded cabbage topped with breaded pork cutlets soaked in dark brown sauce",
   "items": [
    "eatout:sauce_katsudon"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "jawiki-page",
+    "file": "File:Aidukatudon.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Aidukatudon.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c0 c6 egg katsudon, others unclear"
  },
  {
   "key": "eatout-kakiage_don",
@@ -1771,7 +4316,17 @@
   "desc": "kakiage don, a round vegetable and shrimp tempura fritter on rice with sweet sauce",
   "items": [
    "eatout:kakiage_don"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:大洗マリンタワーかき揚げ丼.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E5%A4%A7%E6%B4%97%E3%83%9E%E3%83%AA%E3%83%B3%E3%82%BF%E3%83%AF%E3%83%BC%E3%81%8B%E3%81%8D%E6%8F%9A%E3%81%92%E4%B8%BC.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c3-c5 scenery"
  },
  {
   "key": "eatout-unaju",
@@ -1779,7 +4334,59 @@
   "desc": "unaju, glossy glazed grilled eel on rice in a lacquered rectangular box",
   "items": [
    "eatout:unaju"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:小川菊鰻魚飯_(49287165332).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E5%B0%8F%E5%B7%9D%E8%8F%8A%E9%B0%BB%E9%AD%9A%E9%A3%AF_(49287165332).jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "wikidata",
+    "file": "File:Unagi1.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Unagi1.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "jawiki-page",
+    "file": "File:Owada-1.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Owada-1.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "jawiki-page",
+    "file": "File:Unaju_by_Kawatoyo_Honten.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Unaju_by_Kawatoyo_Honten.jpg",
+    "ok": true
+   },
+   {
+    "n": 5,
+    "origin": "commons-cat",
+    "file": "File:CodazziUnaju1.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:CodazziUnaju1.jpg",
+    "ok": true
+   },
+   {
+    "n": 6,
+    "origin": "commons-cat",
+    "file": "File:CodazziUnaju2.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:CodazziUnaju2.jpg",
+    "ok": true
+   },
+   {
+    "n": 7,
+    "origin": "commons-cat",
+    "file": "File:Eel_and_rice_lunch_set_(4127122137).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Eel_and_rice_lunch_set_(4127122137).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c2 bowl (unadon)"
  },
  {
   "key": "eatout-salmon_ikura_don",
@@ -1787,7 +4394,38 @@
   "desc": "salmon ikura don, rice topped with orange salmon slices and glossy orange salmon roe",
   "items": [
    "eatout:salmon_ikura_don"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:松屋_炙りサーモンいくら丼_-_2.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E6%9D%BE%E5%B1%8B_%E7%82%99%E3%82%8A%E3%82%B5%E3%83%BC%E3%83%A2%E3%83%B3%E3%81%84%E3%81%8F%E3%82%89%E4%B8%BC_-_2.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:松屋_炙りサーモンいくら丼_-_1.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E6%9D%BE%E5%B1%8B_%E7%82%99%E3%82%8A%E3%82%B5%E3%83%BC%E3%83%A2%E3%83%B3%E3%81%84%E3%81%8F%E3%82%89%E4%B8%BC_-_1.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:Salmon_Ikura_don_02.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Salmon_Ikura_don_02.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "commons-search",
+    "file": "File:Salmon_Ikura_don_01.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Salmon_Ikura_don_01.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c4 menu"
  },
  {
   "key": "eatout-butakimu_don",
@@ -1795,7 +4433,17 @@
   "desc": "pork kimchi don, rice topped with stir-fried pork and kimchi and an egg yolk",
   "items": [
    "eatout:butakimu_don"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Pork_kimchi_bowl_with_raw_egg_of_Matsuya.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Pork_kimchi_bowl_with_raw_egg_of_Matsuya.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c3 c5 bibimbap, c0 plain pork"
  },
  {
   "key": "eatout-sutadon",
@@ -1803,7 +4451,24 @@
   "desc": "stamina don, rice topped with garlicky soy-glazed pork slices, green onion and a raw egg yolk",
   "items": [
    "eatout:sutadon"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "jawiki",
+    "file": "File:Butadon_of_Pancho.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Butadon_of_Pancho.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "jawiki-page",
+    "file": "File:Sutadon_of_Densetsu_no_Sutadon'ya.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Sutadon_of_Densetsu_no_Sutadon%27ya.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c1-c3 butadon"
  },
  {
   "key": "eatout-stake_don",
@@ -1811,7 +4476,17 @@
   "desc": "steak don, rice topped with sliced medium-rare beef steak with sauce and green onion",
   "items": [
    "eatout:stake_don"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "jawiki-page",
+    "file": "File:150418_Awaji_beef_at_Sumoto_Hyogo_pref_Japan02s5.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:150418_Awaji_beef_at_Sumoto_Hyogo_pref_Japan02s5.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "raw meat, watermelon"
  },
  {
   "key": "eatout-rosutobifu_don",
@@ -1819,7 +4494,45 @@
   "desc": "roast beef don, rice topped with a rose of pink roast beef slices, sauce and an egg yolk",
   "items": [
    "eatout:rosutobifu_don"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:ローストビーフ丼.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E3%83%AD%E3%83%BC%E3%82%B9%E3%83%88%E3%83%93%E3%83%BC%E3%83%95%E4%B8%BC.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:レッドロック_ローストビーフ丼.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E3%83%AC%E3%83%83%E3%83%89%E3%83%AD%E3%83%83%E3%82%AF_%E3%83%AD%E3%83%BC%E3%82%B9%E3%83%88%E3%83%93%E3%83%BC%E3%83%95%E4%B8%BC.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:Galaxy-A53-5G_Food-Photos_006.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Galaxy-A53-5G_Food-Photos_006.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "commons-search",
+    "file": "File:Galaxy-A53-5G_Food-Photos_004.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Galaxy-A53-5G_Food-Photos_004.jpg",
+    "ok": true
+   },
+   {
+    "n": 5,
+    "origin": "commons-search",
+    "file": "File:Galaxy-A53-5G_Food-Photos_005.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Galaxy-A53-5G_Food-Photos_005.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c3 tray unclear"
  },
  {
   "key": "eatout-karaage_don",
@@ -1827,7 +4540,24 @@
   "desc": "karaage don, rice topped with fried chicken, shredded cabbage, sweet sauce and mayonnaise",
   "items": [
    "eatout:karaage_don"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:日本流行丼大賞2021_グランプリ_『とろろ唐揚げ丼』.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E6%97%A5%E6%9C%AC%E6%B5%81%E8%A1%8C%E4%B8%BC%E5%A4%A7%E8%B3%9E2021_%E3%82%B0%E3%83%A9%E3%83%B3%E3%83%97%E3%83%AA_%E3%80%8E%E3%81%A8%E3%82%8D%E3%82%8D%E5%94%90%E6%8F%9A%E3%81%92%E4%B8%BC%E3%80%8F.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "commons-search",
+    "file": "File:Karaage_don.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Karaage_don.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c5 oyakodon, c2 plate"
  },
  {
   "key": "eatout-mixfry_teishoku",
@@ -1835,7 +4565,31 @@
   "desc": "a mixed fry set meal, a fried shrimp, a croquette and a white fish fry with cabbage, rice and miso soup",
   "items": [
    "eatout:mixfry_teishoku"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Kitanoyu_20221206-02.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Kitanoyu_20221206-02.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:NGO_Kita_20221021-09.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:NGO_Kita_20221021-09.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "commons-search",
+    "file": "File:みなと食堂-千葉-蘇我_12.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E3%81%BF%E3%81%AA%E3%81%A8%E9%A3%9F%E5%A0%82-%E5%8D%83%E8%91%89-%E8%98%87%E6%88%91_12.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c0 dark"
  },
  {
   "key": "eatout-yakiniku_teishoku",
@@ -1843,7 +4597,31 @@
   "desc": "a yakiniku set meal, grilled beef slices with onion in sauce, shredded cabbage, rice and miso soup",
   "items": [
    "eatout:yakiniku_teishoku"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:松屋_牛焼肉定食（ご飯大盛り）.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E6%9D%BE%E5%B1%8B_%E7%89%9B%E7%84%BC%E8%82%89%E5%AE%9A%E9%A3%9F%EF%BC%88%E3%81%94%E9%A3%AF%E5%A4%A7%E7%9B%9B%E3%82%8A%EF%BC%89.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:松屋_豚カルビ焼肉定食_-_2.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E6%9D%BE%E5%B1%8B_%E8%B1%9A%E3%82%AB%E3%83%AB%E3%83%93%E7%84%BC%E8%82%89%E5%AE%9A%E9%A3%9F_-_2.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:松屋_豚カルビ焼肉定食_-_1.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E6%9D%BE%E5%B1%8B_%E8%B1%9A%E3%82%AB%E3%83%AB%E3%83%93%E7%84%BC%E8%82%89%E5%AE%9A%E9%A3%9F_-_1.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c3-c5 other sets"
  },
  {
   "key": "eatout-nira_reba_teishoku",
@@ -1851,7 +4629,17 @@
   "desc": "a nira reba set meal on a tray, a plate of stir-fried pork liver with bright green garlic chives and bean sprouts in glossy sauce, a bowl of white rice, a bowl of miso soup and pickles",
   "items": [
    "eatout:nira_reba_teishoku"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 5,
+    "origin": "commons-search",
+    "file": "File:Tokyo-Shibuya-and-Shinbashi---2025-07-13_072.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Tokyo-Shibuya-and-Shinbashi---2025-07-13_072.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c0-c4 dish only, no set"
  },
  {
   "key": "eatout-kaki_fry_teishoku",
@@ -1859,7 +4647,31 @@
   "desc": "a kaki fry set meal, breaded fried oysters with cabbage and tartar sauce, rice and miso soup",
   "items": [
    "eatout:kaki_fry_teishoku"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:とんから亭_カキフライ定食_-_2.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E3%81%A8%E3%82%93%E3%81%8B%E3%82%89%E4%BA%AD_%E3%82%AB%E3%82%AD%E3%83%95%E3%83%A9%E3%82%A4%E5%AE%9A%E9%A3%9F_-_2.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "commons-search",
+    "file": "File:Matsunoya_Kiyosu_20221010-02.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Matsunoya_Kiyosu_20221010-02.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "commons-search",
+    "file": "File:NGO_Nishi_Machikado-ya_20221105-02.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:NGO_Nishi_Machikado-ya_20221105-02.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c1 c2 tonkatsu-like"
  },
  {
   "key": "eatout-ramen_shio",
@@ -1867,7 +4679,9 @@
   "desc": "shio ramen, thin noodles in clear pale golden salt broth with chashu, menma, half a boiled egg and green onion",
   "items": [
    "eatout:ramen_shio"
-  ]
+  ],
+  "refs": [],
+  "vet": "can't tell shio from shoyu/tonkotsu at sheet size"
  },
  {
   "key": "eatout-ramen_tonkotsu",
@@ -1875,7 +4689,17 @@
   "desc": "tonkotsu ramen, thin straight noodles in rich milky white pork bone broth with chashu, wood ear mushroom, red pickled ginger and green onion",
   "items": [
    "eatout:ramen_tonkotsu"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 4,
+    "origin": "jawiki-page",
+    "file": "File:An-yōji_Ramen.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:An-y%C5%8Dji_Ramen.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "others shoyu/miso-looking"
  },
  {
   "key": "eatout-kaedama",
@@ -1883,7 +4707,17 @@
   "desc": "kaedama, a portion of thin boiled ramen noodles in a small bowl, plain",
   "items": [
    "eatout:kaedama"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:Gaga_100_Extra_Pedas_Goreng_Jalapeno.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Gaga_100_Extra_Pedas_Goreng_Jalapeno.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c3 portrait, c1 shop"
  },
  {
   "key": "eatout-ramen_iekei",
@@ -1891,7 +4725,59 @@
   "desc": "iekei ramen, thick noodles in rich brown pork-soy broth with chashu, spinach, three large nori sheets and a boiled egg",
   "items": [
    "eatout:ramen_iekei"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:ラーメンとライス_吉村家_2025年2月23日の横浜_202502231704_IMG_9709.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E3%83%A9%E3%83%BC%E3%83%A1%E3%83%B3%E3%81%A8%E3%83%A9%E3%82%A4%E3%82%B9_%E5%90%89%E6%9D%91%E5%AE%B6_2025%E5%B9%B42%E6%9C%8823%E6%97%A5%E3%81%AE%E6%A8%AA%E6%B5%9C_202502231704_IMG_9709.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "jawiki-page",
+    "file": "File:チャーシューメン_吉村家_2025年6月7日の横浜_202506072022_IMG_5765.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E3%83%81%E3%83%A3%E3%83%BC%E3%82%B7%E3%83%A5%E3%83%BC%E3%83%A1%E3%83%B3_%E5%90%89%E6%9D%91%E5%AE%B6_2025%E5%B9%B46%E6%9C%887%E6%97%A5%E3%81%AE%E6%A8%AA%E6%B5%9C_202506072022_IMG_5765.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "commons-cat",
+    "file": "File:Iekeira--men.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Iekeira--men.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "commons-cat",
+    "file": "File:Iekeiramen111.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Iekeiramen111.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "commons-cat",
+    "file": "File:家系_寿々㐂家.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E5%AE%B6%E7%B3%BB_%E5%AF%BF%E3%80%85%E3%90%82%E5%AE%B6.jpg",
+    "ok": true
+   },
+   {
+    "n": 5,
+    "origin": "commons-cat",
+    "file": "File:横浜家系ラーメン今村屋_01.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E6%A8%AA%E6%B5%9C%E5%AE%B6%E7%B3%BB%E3%83%A9%E3%83%BC%E3%83%A1%E3%83%B3%E4%BB%8A%E6%9D%91%E5%B1%8B_01.jpg",
+    "ok": true
+   },
+   {
+    "n": 6,
+    "origin": "commons-cat",
+    "file": "File:横浜家系ラーメン今村屋_02.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E6%A8%AA%E6%B5%9C%E5%AE%B6%E7%B3%BB%E3%83%A9%E3%83%BC%E3%83%A1%E3%83%B3%E4%BB%8A%E6%9D%91%E5%B1%8B_02.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c7 street"
  },
  {
   "key": "eatout-ramen_jiro",
@@ -1899,7 +4785,24 @@
   "desc": "Jiro-style ramen, thick noodles in rich broth under a towering heap of bean sprouts and cabbage, thick slabs of pork and chopped garlic",
   "items": [
    "eatout:ramen_jiro"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 3,
+    "origin": "jawiki-page",
+    "file": "File:Ramen_Jiro_001.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Ramen_Jiro_001.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "jawiki-page",
+    "file": "File:ラーメン二郎_三田本店IMG_20221001_124315_HDR_09.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E3%83%A9%E3%83%BC%E3%83%A1%E3%83%B3%E4%BA%8C%E9%83%8E_%E4%B8%89%E7%94%B0%E6%9C%AC%E5%BA%97IMG_20221001_124315_HDR_09.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "shopfronts, raw noodles"
  },
  {
   "key": "eatout-ramen_chashu",
@@ -1907,7 +4810,24 @@
   "desc": "chashu men, ramen in brown soy broth covered with many slices of chashu pork, menma and green onion",
   "items": [
    "eatout:ramen_chashu"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:チャーシュー麺.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E3%83%81%E3%83%A3%E3%83%BC%E3%82%B7%E3%83%A5%E3%83%BC%E9%BA%BA.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "commons-search",
+    "file": "File:来来亭_チャーシュー麺.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E6%9D%A5%E6%9D%A5%E4%BA%AD_%E3%83%81%E3%83%A3%E3%83%BC%E3%82%B7%E3%83%A5%E3%83%BC%E9%BA%BA.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "others few chashu"
  },
  {
   "key": "eatout-tsukemen",
@@ -1916,7 +4836,45 @@
   "items": [
    "eatout:tsukemen",
    "eatout:tsukemen_oo"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "wikidata",
+    "file": "File:Tsuke-men_001.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Tsuke-men_001.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "jawiki-page",
+    "file": "File:Tsukemen_at_a_restaurant.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Tsukemen_at_a_restaurant.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "jawiki-page",
+    "file": "File:トマトエビつけ麺.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:%E3%83%88%E3%83%9E%E3%83%88%E3%82%A8%E3%83%93%E3%81%A4%E3%81%91%E9%BA%BA.JPG",
+    "ok": true
+   },
+   {
+    "n": 5,
+    "origin": "enwiki-page",
+    "file": "File:Hiyashi_chuka_with_sesami_miso_sauce_of_Hidakaya.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Hiyashi_chuka_with_sesami_miso_sauce_of_Hidakaya.jpg",
+    "ok": true
+   },
+   {
+    "n": 6,
+    "origin": "enwiki-page",
+    "file": "File:Tsukemen_bowls.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Tsukemen_bowls.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c2 tomato, c7 unclear"
  },
  {
   "key": "eatout-abura_soba",
@@ -1924,7 +4882,31 @@
   "desc": "abura soba, thick noodles without soup coated in oily soy sauce, topped with chashu, menma, green onion and an egg yolk",
   "items": [
    "eatout:abura_soba"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Aburasoba.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Aburasoba.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "enwiki",
+    "file": "File:Abura_soba_by_shibainu_in_Kichijoji,_Tokyo.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Abura_soba_by_shibainu_in_Kichijoji,_Tokyo.jpg",
+    "ok": true
+   },
+   {
+    "n": 5,
+    "origin": "commons-cat",
+    "file": "File:20260618_175905_Taichung_Abura_soba.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:20260618_175905_Taichung_Abura_soba.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c6 c7 look soupy, c1 shop"
  },
  {
   "key": "eatout-tantanmen",
@@ -1932,7 +4914,31 @@
   "desc": "tantanmen, ramen in red sesame chili broth topped with minced pork and bok choy",
   "items": [
    "eatout:tantanmen"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Dan-dan_noodles,_Shanghai.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Dan-dan_noodles,_Shanghai.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "jawiki-page",
+    "file": "File:Dandan_noodles_in_Japan_-_tantanmen_-_September_2014.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Dandan_noodles_in_Japan_-_tantanmen_-_September_2014.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "enwiki-page",
+    "file": "File:Dan_dan_mian_of_Mister_Donut_in_Japan.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Dan_dan_mian_of_Mister_Donut_in_Japan.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c1 c6 dry style, c5 unclear"
  },
  {
   "key": "eatout-sara_udon",
@@ -1940,7 +4946,17 @@
   "desc": "sara udon, crisp fried thin noodles under a glossy thick sauce of stir-fried cabbage, pork, shrimp, squid and vegetables",
   "items": [
    "eatout:sara_udon"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 4,
+    "origin": "enwiki-page",
+    "file": "File:リンガーハット_(51281316427).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E3%83%AA%E3%83%B3%E3%82%AC%E3%83%BC%E3%83%8F%E3%83%83%E3%83%88_(51281316427).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "crispy fine noodles hard to see in others"
  },
  {
   "key": "eatout-kamatama",
@@ -1948,7 +4964,24 @@
   "desc": "kamatama udon, hot thick udon in a bowl tossed with a raw egg, green onion and soy sauce",
   "items": [
    "eatout:kamatama"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "commons-cat",
+    "file": "File:100408_釜玉うどん.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:100408_%E9%87%9C%E7%8E%89%E3%81%86%E3%81%A9%E3%82%93.jpg",
+    "ok": true
+   },
+   {
+    "n": 5,
+    "origin": "commons-cat",
+    "file": "File:釜玉うどん_feat._桃屋きざみしょうが.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E9%87%9C%E7%8E%89%E3%81%86%E3%81%A9%E3%82%93_feat._%E6%A1%83%E5%B1%8B%E3%81%8D%E3%81%96%E3%81%BF%E3%81%97%E3%82%87%E3%81%86%E3%81%8C.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c3 c6 other udon"
  },
  {
   "key": "eatout-mori_soba",
@@ -1957,6 +4990,8 @@
   "items": [
    "eatout:mori_soba",
    "eatout:mori_soba_oo"
-  ]
+  ],
+  "refs": [],
+  "vet": "all candidates are tsukemen/tomato"
  }
 ]

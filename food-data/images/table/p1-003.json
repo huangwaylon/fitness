@@ -5,7 +5,17 @@
   "desc": "a bunch of kaiware daikon radish sprouts, thin white stems with small pale green two-lobed leaves",
   "items": [
    "mext:06128"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Musun_(Korean_radish_sprout).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Musun_(Korean_radish_sprout).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "seedlings, other sprouts"
  },
  {
   "key": "mext-06130",
@@ -13,7 +23,9 @@
   "desc": "fresh daikon radish leaves, long deeply lobed rough dark green leaves on pale stalks",
   "items": [
    "mext:06130"
-  ]
+  ],
+  "refs": [],
+  "vet": "c0 roots main subject, fields"
  },
  {
   "key": "mext-06134",
@@ -21,7 +33,24 @@
   "desc": "a whole long white Japanese daikon radish with green leafy top, a section cut into thick round slices",
   "items": [
    "mext:06134"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Daikon.Japan.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Daikon.Japan.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Daikon_radish_-_Minowase.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Daikon_radish_-_Minowase.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "plants in field"
  },
  {
   "key": "mext-06367",
@@ -29,7 +58,17 @@
   "desc": "a small mound of grated daikon radish, moist white grated pulp in a small dish",
   "items": [
    "mext:06367"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:丸亀製麺_大根おろし.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E4%B8%B8%E4%BA%80%E8%A3%BD%E9%BA%BA_%E5%A4%A7%E6%A0%B9%E3%81%8A%E3%82%8D%E3%81%97.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c3 with ikura, sets"
  },
  {
   "key": "mext-06135",
@@ -37,7 +76,9 @@
   "desc": "thick round slices of simmered daikon radish, soft translucent pale amber discs, in a shallow bowl",
   "items": [
    "mext:06135"
-  ]
+  ],
+  "refs": [],
+  "vet": "raw daikon/plants only"
  },
  {
   "key": "mext-06136",
@@ -45,7 +86,17 @@
   "desc": "a pile of kiriboshi daikon, dried shredded radish in curly pale tan-yellow strips",
   "items": [
    "mext:06136"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Dried_strips_of_radish.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Dried_strips_of_radish.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c1/c2 rehydrated/cooked, sets"
  },
  {
   "key": "mext-06388",
@@ -53,7 +104,17 @@
   "desc": "slices of iburigakko, smoked pickled daikon, dark brown smoky skin around pale amber-yellow crunchy rounds",
   "items": [
    "mext:06388"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:Iburigakko_sliced.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Iburigakko_sliced.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c2 drying daikon, shop, dishes"
  },
  {
   "key": "mext-06138",
@@ -63,7 +124,31 @@
    "mext:06138",
    "dishes:takuan",
    "mext:06139"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Takuan.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Takuan.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:Takuan_by_-puamelia-.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Takuan_by_-puamelia-.jpg",
+    "ok": true
+   },
+   {
+    "n": 7,
+    "origin": "enwiki-page",
+    "file": "File:Takuan_by_mdid.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Takuan_by_mdid.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c3/c4 drying, c5 iburigakko, c6 packed"
  },
  {
   "key": "mext-06143",
@@ -71,7 +156,24 @@
   "desc": "a small dish of fukujinzuke, chopped vegetables pickled in sweet soy, glossy red-brown pieces of daikon, lotus root and cucumber",
   "items": [
    "mext:06143"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Fukujinzuke.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Fukujinzuke.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:Fukujin-zuke_001.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Fukujin-zuke_001.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "curry/meals with tiny side"
  },
  {
   "key": "mext-06150",
@@ -80,7 +182,9 @@
   "items": [
    "mext:06150",
    "mext:06151"
-  ]
+  ],
+  "refs": [],
+  "vet": "raw shoots/plant; c2 peeled unclear"
  },
  {
   "key": "mext-06152",
@@ -88,7 +192,24 @@
   "desc": "a small dish of menma, seasoned fermented bamboo shoot strips, glossy amber-brown flat strips",
   "items": [
    "mext:06152"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Japanese_Hosaki_Menma.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Japanese_Hosaki_Menma.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "wikidata",
+    "file": "File:Many_Menma_on_Ramen_-_2.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Many_Menma_on_Ramen_-_2.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "ramen bowls, dried bamboo, buns"
  },
  {
   "key": "mext-06336",
@@ -96,7 +217,9 @@
   "desc": "sauteed sliced onion, soft glossy translucent golden onion strips with browned edges on a plate",
   "items": [
    "mext:06336"
-  ]
+  ],
+  "refs": [],
+  "vet": "raw onion/plants; c4 unclear dish"
  },
  {
   "key": "mext-06160",
@@ -104,7 +227,38 @@
   "desc": "two heads of bok choy (chingensai), spoon-shaped smooth green leaves with thick pale green stalks",
   "items": [
    "mext:06160"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "wikidata",
+    "file": "File:Brassica_rapa_var._chinensis_(leaf).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Brassica_rapa_var._chinensis_(leaf).jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "enwiki",
+    "file": "File:Bok_Choy_(49553125456).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Bok_Choy_(49553125456).jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "enwiki-page",
+    "file": "File:Baby_Pak_Choi_(01).JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Baby_Pak_Choi_(01).JPG",
+    "ok": true
+   },
+   {
+    "n": 6,
+    "origin": "enwiki-page",
+    "file": "File:Bokchoy.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Bokchoy.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "field, flower, cooked"
  },
  {
   "key": "mext-06175",
@@ -112,7 +266,24 @@
   "desc": "a fresh ear of sweet corn with its green husk pulled back, rows of plump bright yellow kernels and silky threads",
   "items": [
    "mext:06175"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 2,
+    "origin": "jawiki",
+    "file": "File:VegCorn.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:VegCorn.jpg",
+    "ok": true
+   },
+   {
+    "n": 5,
+    "origin": "jawiki-page",
+    "file": "File:Corn-raw-boiled-and-dry.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Corn-raw-boiled-and-dry.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "plants, art, flint corn"
  },
  {
   "key": "mext-06176",
@@ -120,7 +291,9 @@
   "desc": "a boiled ear of sweet corn, glossy bright yellow kernels, cut in half",
   "items": [
    "mext:06176"
-  ]
+  ],
+  "refs": [],
+  "vet": "raw cobs/plants only"
  },
  {
   "key": "mext-06179",
@@ -128,7 +301,9 @@
   "desc": "a small bowl of cream-style corn, thick pale yellow creamy corn puree with kernels",
   "items": [
    "mext:06179"
-  ]
+  ],
+  "refs": [],
+  "vet": "soups/dishes, no cream corn"
  },
  {
   "key": "mext-06180",
@@ -136,7 +311,24 @@
   "desc": "a small bowl of whole kernel sweet corn, loose glossy bright yellow kernels",
   "items": [
    "mext:06180"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Canned_corn.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Canned_corn.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "commons-search",
+    "file": "File:Canned_corn_~08ciiuka.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Canned_corn_~08ciiuka.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "other cans, c5 creamed"
  },
  {
   "key": "mext-06183",
@@ -145,7 +337,24 @@
   "items": [
    "mext:06183",
    "kurume:174"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 2,
+    "origin": "jawiki",
+    "file": "File:Tomates_cerises_Luc_Viatour.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Tomates_cerises_Luc_Viatour.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "jawiki-page",
+    "file": "File:Cherry_Tomato_Mix_(6033999022).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Cherry_Tomato_Mix_(6033999022).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c0/c3/c5 on plant, c7 large tomatoes"
  },
  {
   "key": "mext-06184",
@@ -153,7 +362,17 @@
   "desc": "a bowl of canned whole peeled tomatoes, soft glossy red tomatoes in red tomato juice",
   "items": [
    "mext:06184"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "jawiki",
+    "file": "File:Tinned_tomatoes.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Tinned_tomatoes.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "fresh tomatoes, jar pickles, old can"
  },
  {
   "key": "mext-06185",
@@ -162,7 +381,24 @@
   "items": [
    "mext:06185",
    "mext:06340"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "wikidata",
+    "file": "File:Томатный_сок.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%D0%A2%D0%BE%D0%BC%D0%B0%D1%82%D0%BD%D1%8B%D0%B9_%D1%81%D0%BE%D0%BA.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "enwiki",
+    "file": "File:Tomato_juice_316744.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Tomato_juice_316744.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c0 cocktail, c5 orange juice"
  },
  {
   "key": "mext-06191",
@@ -170,7 +406,9 @@
   "desc": "two Japanese eggplants, glossy deep purple-black oval fruits with green caps, one cut showing white flesh",
   "items": [
    "mext:06191"
-  ]
+  ],
+  "refs": [],
+  "vet": "streets/old photos, no eggplant"
  },
  {
   "key": "mext-06342",
@@ -178,7 +416,9 @@
   "desc": "stir-fried eggplant pieces, glossy purple skin and soft golden-brown flesh, on a plate",
   "items": [
    "mext:06342"
-  ]
+  ],
+  "refs": [],
+  "vet": "raw eggplants/plants only, none stir-fried"
  },
  {
   "key": "mext-06199",
@@ -186,7 +426,31 @@
   "desc": "a small dish of shibazuke, finely chopped eggplant and cucumber pickled with red shiso, vivid purple-red",
   "items": [
    "mext:06199"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Shibazuke,_at_Yoshinoya.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Shibazuke,_at_Yoshinoya.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "jawiki-page",
+    "file": "File:発酵しば漬け_京都大原産.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E7%99%BA%E9%85%B5%E3%81%97%E3%81%B0%E6%BC%AC%E3%81%91_%E4%BA%AC%E9%83%BD%E5%A4%A7%E5%8E%9F%E7%94%A3.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:Shibazuke_(4357771471).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Shibazuke_(4357771471).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "shop, factory"
  },
  {
   "key": "mext-06205",
@@ -194,7 +458,52 @@
   "desc": "a bitter melon (goya), a long bright green fruit covered with warty bumps, one cut showing white pith and seeds",
   "items": [
    "mext:06205"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "commons-cat",
+    "file": "File:120313_06_Pasar_Borong_Serdang_Momordica_charantia.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:120313_06_Pasar_Borong_Serdang_Momordica_charantia.JPG",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "commons-cat",
+    "file": "File:1Bitter-gourdgohya.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:1Bitter-gourdgohya.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "commons-cat",
+    "file": "File:68_-_CIMG2744.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:68_-_CIMG2744.jpg",
+    "ok": true
+   },
+   {
+    "n": 5,
+    "origin": "commons-cat",
+    "file": "File:A_close_up_view_of_an_Indian_bittergourd..jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:A_close_up_view_of_an_Indian_bittergourd..jpg",
+    "ok": true
+   },
+   {
+    "n": 6,
+    "origin": "commons-cat",
+    "file": "File:Ampalaya_2017_A1.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Ampalaya_2017_A1.jpg",
+    "ok": true
+   },
+   {
+    "n": 7,
+    "origin": "commons-search",
+    "file": "File:これが、ゴーヤです。-このゴーヤは、栽培が簡単で、誰でもできる普通のにがうりです。_2014-06-30_10-52.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E3%81%93%E3%82%8C%E3%81%8C%E3%80%81%E3%82%B4%E3%83%BC%E3%83%A4%E3%81%A7%E3%81%99%E3%80%82-%E3%81%93%E3%81%AE%E3%82%B4%E3%83%BC%E3%83%A4%E3%81%AF%E3%80%81%E6%A0%BD%E5%9F%B9%E3%81%8C%E7%B0%A1%E5%8D%98%E3%81%A7%E3%80%81%E8%AA%B0%E3%81%A7%E3%82%82%E3%81%A7%E3%81%8D%E3%82%8B%E6%99%AE%E9%80%9A%E3%81%AE%E3%81%AB%E3%81%8C%E3%81%86%E3%82%8A%E3%81%A7%E3%81%99%E3%80%82_2014-06-30_10-52.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c0 on vine, c4 leaves"
  },
  {
   "key": "mext-06207",
@@ -202,7 +511,9 @@
   "desc": "a bunch of nira garlic chives, long flat dark green leaves",
   "items": [
    "mext:06207"
-  ]
+  ],
+  "refs": [],
+  "vet": "namahage/people, no nira"
  },
  {
   "key": "mext-06214",
@@ -210,7 +521,24 @@
   "desc": "two whole fresh orange carrots with a little green leafy top, smooth tapered roots",
   "items": [
    "mext:06214"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 4,
+    "origin": "commons-search",
+    "file": "File:A_misshapen_carrot_BW_2026-11-15_18-14-58_stack.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:A_misshapen_carrot_BW_2026-11-15_18-14-58_stack.jpg",
+    "ok": true
+   },
+   {
+    "n": 5,
+    "origin": "commons-search",
+    "file": "File:Carrots_at_Ljubljana_Central_Market.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Carrots_at_Ljubljana_Central_Market.JPG",
+    "ok": true
+   }
+  ],
+  "vet": "items say 皮なし but ja/desc whole carrots; c0 art, c3 fridge"
  },
  {
   "key": "mext-06215",
@@ -218,7 +546,9 @@
   "desc": "boiled carrot rounds, soft bright orange slices on a plate",
   "items": [
    "mext:06215"
-  ]
+  ],
+  "refs": [],
+  "vet": "raw carrots only, none boiled"
  },
  {
   "key": "mext-06217",
@@ -226,7 +556,38 @@
   "desc": "a glass of carrot juice, opaque bright orange",
   "items": [
    "mext:06217"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:人参ジュース,_津南高原の人参ジュース,_雪下にんじん,_東京,_日本,_Tokyo,_Japan_(13748712613).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E4%BA%BA%E5%8F%82%E3%82%B8%E3%83%A5%E3%83%BC%E3%82%B9,_%E6%B4%A5%E5%8D%97%E9%AB%98%E5%8E%9F%E3%81%AE%E4%BA%BA%E5%8F%82%E3%82%B8%E3%83%A5%E3%83%BC%E3%82%B9,_%E9%9B%AA%E4%B8%8B%E3%81%AB%E3%82%93%E3%81%98%E3%82%93,_%E6%9D%B1%E4%BA%AC,_%E6%97%A5%E6%9C%AC,_Tokyo,_Japan_(13748712613).jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:GlassOfJuice_and_carrots.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:GlassOfJuice_and_carrots.JPG",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "commons-search",
+    "file": "File:Carrot_juice_-_July_2023_-_Sarah_Stierch.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Carrot_juice_-_July_2023_-_Sarah_Stierch.jpg",
+    "ok": true
+   },
+   {
+    "n": 5,
+    "origin": "commons-search",
+    "file": "File:Carrot_juice_with_Ginger_and_Lemon.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Carrot_juice_with_Ginger_and_Lemon.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c1 cans box, c4/c6 cocktails"
  },
  {
   "key": "mext-06223",
@@ -234,7 +595,24 @@
   "desc": "a bulb of garlic with papery white skin and a few separated cloves",
   "items": [
    "mext:06223"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Garlic_bulbs_and_cloves.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Garlic_bulbs_and_cloves.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "jawiki-page",
+    "file": "File:All_Garlic_Ail_Ajo.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:All_Garlic_Ail_Ajo.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "plants, c3 garlic bread"
  },
  {
   "key": "mext-06226",
@@ -242,7 +620,24 @@
   "desc": "a long Japanese leek (naganegi), a thick white stalk turning green at the top, cut in round pieces at one end",
   "items": [
    "mext:06226"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:HK_SYP_Best_of_Best_Vegetable_Peking_Welsh_onion_Allium_Aug-2012.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:HK_SYP_Best_of_Best_Vegetable_Peking_Welsh_onion_Allium_Aug-2012.JPG",
+    "ok": true
+   },
+   {
+    "n": 7,
+    "origin": "jawiki-page",
+    "file": "File:Porre_Leek.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Porre_Leek.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c2 field, drawings, clover"
  },
  {
   "key": "mext-06227",
@@ -250,7 +645,17 @@
   "desc": "a bunch of green onions (aonegi), long thin hollow green leaves with small white ends",
   "items": [
    "mext:06227"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:Liat_Portal_for_Foodie_Disorder_-_Green_onion.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Liat_Portal_for_Foodie_Disorder_-_Green_onion.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c0/c4 leek-like, c5 red-based, c1 small"
  },
  {
   "key": "mext-06228",
@@ -258,7 +663,17 @@
   "desc": "finely chopped small green onions (konegi), tiny bright green rings in a small dish, beside a few whole thin stalks",
   "items": [
    "mext:06228"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "jawiki",
+    "file": "File:Sliced_green_onion_by_Joshua_Rappeneker.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Sliced_green_onion_by_Joshua_Rappeneker.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c1 spring onions, dishes"
  },
  {
   "key": "mext-06233",
@@ -266,7 +681,9 @@
   "desc": "a head of napa cabbage (hakusai) cut in half lengthwise, pale yellow-green crinkled leaves with thick white ribs",
   "items": [
    "mext:06233"
-  ]
+  ],
+  "refs": [],
+  "vet": "all bok choy/chingensai, not napa cabbage"
  },
  {
   "key": "mext-06235",
@@ -274,7 +691,9 @@
   "desc": "salt-pickled napa cabbage, soft pale green and white pieces in a small dish",
   "items": [
    "mext:06235"
-  ]
+  ],
+  "refs": [],
+  "vet": "bok choy, no salted napa"
  },
  {
   "key": "mext-06236",
@@ -284,7 +703,17 @@
    "mext:06236",
    "dishes:kimchi",
    "eatout:kimchi"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Gimchi.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Gimchi.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "jars/side dishes, water kimchi, chillies"
  },
  {
   "key": "mext-06239",
@@ -292,7 +721,38 @@
   "desc": "a sprig of curly parsley, bright green frilly leaves",
   "items": [
    "mext:06239"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:13-08-31-wien-redaktionstreffen-EuT-by-Bi-frie-095.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:13-08-31-wien-redaktionstreffen-EuT-by-Bi-frie-095.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "commons-cat",
+    "file": "File:-2021-06-24_Chopped_parsley_(Petroselinum_crispum),_Trimingham,_Norfolk.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:-2021-06-24_Chopped_parsley_(Petroselinum_crispum),_Trimingham,_Norfolk.JPG",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "commons-cat",
+    "file": "File:-2021-06-24_Harvested_parsley_(Petroselinum_crispum),_Trimingham,_Norfolk.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:-2021-06-24_Harvested_parsley_(Petroselinum_crispum),_Trimingham,_Norfolk.JPG",
+    "ok": true
+   },
+   {
+    "n": 6,
+    "origin": "commons-search",
+    "file": "File:Petroselinum_crispum_003.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Petroselinum_crispum_003.JPG",
+    "ok": true
+   }
+  ],
+  "vet": "c3 sauce, c4/c5 salads, c7 drawing"
  },
  {
   "key": "mext-06245",
@@ -300,7 +760,24 @@
   "desc": "two green bell peppers (Japanese piman), glossy small green peppers, one cut showing white seeds",
   "items": [
    "mext:06245"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 2,
+    "origin": "jawiki",
+    "file": "File:GreenPeppers.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:GreenPeppers.jpg",
+    "ok": true
+   },
+   {
+    "n": 6,
+    "origin": "jawiki-page",
+    "file": "File:ピーマンの断面_P0825290eu329e.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E3%83%94%E3%83%BC%E3%83%9E%E3%83%B3%E3%81%AE%E6%96%AD%E9%9D%A2_P0825290eu329e.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "red/yellow bell peppers are paprika, c5 plant"
  },
  {
   "key": "mext-06246",
@@ -308,7 +785,9 @@
   "desc": "stir-fried green pepper strips, glossy bright green with light brown edges",
   "items": [
    "mext:06246"
-  ]
+  ],
+  "refs": [],
+  "vet": "raw peppers only"
  },
  {
   "key": "mext-06247",
@@ -316,7 +795,31 @@
   "desc": "a whole red bell pepper, glossy deep red with a green stem, one cut in strips",
   "items": [
    "mext:06247"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Baby_Bell_pepper_Capsicum_annuum_3.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Baby_Bell_pepper_Capsicum_annuum_3.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:Red_capsicum_and_cross_section.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Red_capsicum_and_cross_section.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "commons-search",
+    "file": "File:Red_bell_pepper.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Red_bell_pepper.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c1 chilli, mixed colours"
  },
  {
   "key": "mext-06249",
@@ -324,7 +827,17 @@
   "desc": "a whole yellow bell pepper, glossy bright yellow with a green stem, one cut in strips",
   "items": [
    "mext:06249"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 5,
+    "origin": "commons-search",
+    "file": "File:A_yellow_bell_pepper.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:A_yellow_bell_pepper.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "red/mixed peppers, chilli"
  },
  {
   "key": "mext-06263",
@@ -332,7 +845,24 @@
   "desc": "a head of green broccoli with tight dark green florets on a thick pale stem",
   "items": [
    "mext:06263"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "wikidata",
+    "file": "File:Broccoli_bunches.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Broccoli_bunches.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "jawiki-page",
+    "file": "File:Broccoli_and_cross_section_edit.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Broccoli_and_cross_section_edit.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "heads still on plant, flowers"
  },
  {
   "key": "mext-06264",
@@ -340,7 +870,9 @@
   "desc": "boiled broccoli florets, bright green, in a small bowl",
   "items": [
    "mext:06264"
-  ]
+  ],
+  "refs": [],
+  "vet": "raw/plants only"
  },
  {
   "key": "mext-06354",
@@ -348,7 +880,9 @@
   "desc": "a bunch of broccoli sprouts, thin white stems with tiny green leaves",
   "items": [
    "mext:06354"
-  ]
+  ],
+  "refs": [],
+  "vet": "seedlings/other sprouts"
  },
  {
   "key": "mext-06267",
@@ -356,7 +890,17 @@
   "desc": "a bunch of fresh spinach, dark green broad leaves on long stems with pink roots",
   "items": [
    "mext:06267"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Jeunes_pousses_d'épinards.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Jeunes_pousses_d%27%C3%A9pinards.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "growing plants, mint, berries"
  },
  {
   "key": "mext-06268",
@@ -365,7 +909,17 @@
   "items": [
    "mext:06268",
    "dishes:ohitashi-horenso"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:Spinach_Ohitashi.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Spinach_Ohitashi.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "raw/plants"
  },
  {
   "key": "mext-06072",
@@ -373,7 +927,17 @@
   "desc": "a bunch of mizuna, thin white stalks with feathery serrated bright green leaves",
   "items": [
    "mext:06072"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 4,
+    "origin": "commons-search",
+    "file": "File:Sensuji-mizuna.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Sensuji-mizuna.JPG",
+    "ok": true
+   }
+  ],
+  "vet": "portrait, chicken, crest, c5 field"
  },
  {
   "key": "mext-06280",
@@ -381,7 +945,31 @@
   "desc": "two myoga ginger buds, plump pinkish-red and cream tear-shaped buds, one sliced thin",
   "items": [
    "mext:06280"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Mioga.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Mioga.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "commons-search",
+    "file": "File:Zingiber_mioga_Blütenknospem.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Zingiber_mioga_Bl%C3%BCtenknospem.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "commons-search",
+    "file": "File:Zingiber_mioga_(1411661607).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Zingiber_mioga_(1411661607).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "flower, drawing, noodle dish"
  },
  {
   "key": "mext-06287",
@@ -389,7 +977,17 @@
   "desc": "soybean sprouts, white stems with yellow soybean heads",
   "items": [
    "mext:06287"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Kongnamul_(soybean_sprout)_2.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Kongnamul_(soybean_sprout)_2.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "dishes"
  },
  {
   "key": "mext-06291",
@@ -397,7 +995,9 @@
   "desc": "a pile of bean sprouts (moyashi), crisp thin white stems with small pale yellow tips",
   "items": [
    "mext:06291"
-  ]
+  ],
+  "refs": [],
+  "vet": "c0 two specimens on ruler, dishes"
  },
  {
   "key": "mext-06293",
@@ -405,7 +1005,9 @@
   "desc": "a bunch of molokhia leaves, oval serrated dark green leaves on stems",
   "items": [
    "mext:06293"
-  ]
+  ],
+  "refs": [],
+  "vet": "plants/drawing, c1 soup"
  },
  {
   "key": "mext-06306",
@@ -413,7 +1015,17 @@
   "desc": "a small dish of rakkyo pickled shallots, plump glossy translucent white bulbs",
   "items": [
    "mext:06306"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Rakkyo---2024-07-29.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Rakkyo---2024-07-29.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c2 raw bulbs, plants/fields"
  },
  {
   "key": "mext-06319",
@@ -421,7 +1033,9 @@
   "desc": "a bunch of arugula, lobed dark green leaves",
   "items": [
    "mext:06319"
-  ]
+  ],
+  "refs": [],
+  "vet": "flowering plants"
  },
  {
   "key": "mext-06312",
@@ -429,7 +1043,9 @@
   "desc": "a whole head of iceberg lettuce, round pale green crisp leaves, one leaf peeled off",
   "items": [
    "mext:06312"
-  ]
+  ],
+  "refs": [],
+  "vet": "romaine/leaf lettuces, no head (iceberg) lettuce as subject"
  },
  {
   "key": "mext-06313",
@@ -437,7 +1053,9 @@
   "desc": "a head of butter lettuce (saladana), soft loose round smooth green leaves",
   "items": [
    "mext:06313"
-  ]
+  ],
+  "refs": [],
+  "vet": "salads/beans, no butterhead"
  },
  {
   "key": "mext-06314",
@@ -445,7 +1063,17 @@
   "desc": "a bunch of green leaf lettuce, frilly ruffled bright green leaves",
   "items": [
    "mext:06314"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Lactuca_sativa_'Lollo_Bionda'.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Lactuca_sativa_%27Lollo_Bionda%27.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c1 heads in field small, c2/c5 red leaf"
  },
  {
   "key": "mext-06315",
@@ -453,7 +1081,24 @@
   "desc": "sunny lettuce, frilly leaves with reddish-purple tips and green bases",
   "items": [
    "mext:06315"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Red_leaf_lettuce_J1.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Red_leaf_lettuce_J1.JPG",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:Lettuce_Anubi.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Lettuce_Anubi.JPG",
+    "ok": true
+   }
+  ],
+  "vet": "c4 iceberg, c5 field, c6 salad"
  },
  {
   "key": "mext-06362",
@@ -461,7 +1106,9 @@
   "desc": "a stack of sanchu lettuce leaves, flat smooth oval green leaves for wrapping",
   "items": [
    "mext:06362"
-  ]
+  ],
+  "refs": [],
+  "vet": "romaine/lettuce heads, no loose sanchu leaves"
  },
  {
   "key": "mext-06317",
@@ -469,7 +1116,9 @@
   "desc": "a lotus root (renkon), pale tan segmented root, a few round slices showing the pattern of holes",
   "items": [
    "mext:06317"
-  ]
+  ],
+  "refs": [],
+  "vet": "lotus flowers/leaves only"
  },
  {
   "key": "mext-06371",
@@ -477,7 +1126,17 @@
   "desc": "sweet pickled lotus root slices, white rounds with a pattern of holes, in a small dish",
   "items": [
    "mext:06371"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Pickled_lotus_root.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Pickled_lotus_root.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c1 other pickle, dishes"
  },
  {
   "key": "mext-06322",
@@ -485,7 +1144,17 @@
   "desc": "a fresh wasabi root, a knobbly green rhizome with leaf stalks, beside a small mound of grated pale green wasabi",
   "items": [
    "mext:06322"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Wasabi_002.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Wasabi_002.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "crackers, sushi, plants"
  },
  {
   "key": "mext-06382",
@@ -493,7 +1162,17 @@
   "desc": "a bowl of mixed vegetables, small diced orange carrot, yellow corn kernels and green peas",
   "items": [
    "mext:06382"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:三色豆.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E4%B8%89%E8%89%B2%E8%B1%86.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c3-c5 cooked/fresh vegetables"
  },
  {
   "key": "mext-06399",
@@ -502,7 +1181,9 @@
   "items": [
    "mext:06399",
    "eatout:vege_juice"
-  ]
+  ],
+  "refs": [],
+  "vet": "generic juices/cocktails/ads"
  },
  {
   "key": "mext-07181",
@@ -510,7 +1191,9 @@
   "desc": "an acai bowl, thick deep purple acai puree topped with sliced banana, granola and berries",
   "items": [
    "mext:07181"
-  ]
+  ],
+  "refs": [],
+  "vet": "palms, berries, drink; no frozen pulp"
  },
  {
   "key": "mext-07006",
@@ -518,7 +1201,24 @@
   "desc": "an avocado cut in half, dark green bumpy skin, pale green-yellow flesh with a big round brown pit in one half",
   "items": [
    "mext:07006"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Avocado_Hass_-_single_and_halved.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Avocado_Hass_-_single_and_halved.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "wikidata",
+    "file": "File:Avocado-in-bowl.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Avocado-in-bowl.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "tree, toast, leaf"
  },
  {
   "key": "mext-07012",
@@ -526,7 +1226,31 @@
   "desc": "a few fresh strawberries, glossy red with tiny seeds and green tops, one cut in half",
   "items": [
    "mext:07012"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Fraises_1_Luc_Viatour.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Fraises_1_Luc_Viatour.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "wikidata",
+    "file": "File:Erdbeerschalen_Viktualienmarkt_München.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Erdbeerschalen_Viktualienmarkt_M%C3%BCnchen.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "jawiki-page",
+    "file": "File:Fragaria_,Strawberry_イチゴ_とよのか_4115995.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Fragaria_,Strawberry_%E3%82%A4%E3%83%81%E3%82%B4_%E3%81%A8%E3%82%88%E3%81%AE%E3%81%8B_4115995.JPG",
+    "ok": true
+   }
+  ],
+  "vet": "plants/greenhouse, chocolate-dipped"
  },
  {
   "key": "mext-07013",
@@ -535,7 +1259,31 @@
   "items": [
    "mext:07013",
    "mext:07014"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Strawberry_jam_(home_preservation).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Strawberry_jam_(home_preservation).jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "commons-cat",
+    "file": "File:-2023-09-01_Stawberry_Jam_Preparation,_Trimingham_(1).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:-2023-09-01_Stawberry_Jam_Preparation,_Trimingham_(1).jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "commons-cat",
+    "file": "File:2009-365-278_Tasty_Topper_(3986095692).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:2009-365-278_Tasty_Topper_(3986095692).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "person, shelf, meals"
  },
  {
   "key": "mext-07015",
@@ -543,7 +1291,17 @@
   "desc": "two figs, purple-brown teardrop fruits, one cut open showing pink-red seedy flesh",
   "items": [
    "mext:07015"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Bowl_of_Figs.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Bowl_of_Figs.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "drawings, paintings, trees"
  },
  {
   "key": "mext-07022",
@@ -553,7 +1311,24 @@
    "mext:07022",
    "dishes:umeboshi",
    "mext:07023"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Umeboshi.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Umeboshi.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:Umeboshi_20101209_c.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Umeboshi_20101209_c.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c3-c7 fresh/drying ume, bento"
  },
  {
   "key": "mext-07049",
@@ -561,7 +1336,17 @@
   "desc": "two Japanese persimmons (kaki), glossy orange squat round fruits with four green leaves on top, one cut showing orange flesh",
   "items": [
    "mext:07049"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Fuyu_Persimmon_(Diospyros_Kaki).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Fuyu_Persimmon_(Diospyros_Kaki).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "buildings, tree"
  },
  {
   "key": "mext-07051",
@@ -569,7 +1354,17 @@
   "desc": "a few hoshigaki dried persimmons, wrinkled dark orange-brown dried fruits with a white bloom, with their stems",
   "items": [
    "mext:07051"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Gotgam_(dried_persimmon).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Gotgam_(dried_persimmon).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "hanging/drying displays, c3/c6 unclear"
  },
  {
   "key": "mext-07018",
@@ -578,7 +1373,17 @@
   "items": [
    "mext:07018",
    "kumagaya:00662"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:Iyokan_for_sake_in_Kanagawa_Japan_-_2024_Feb_21.jpeg",
+    "page": "https://commons.wikimedia.org/wiki/File:Iyokan_for_sake_in_Kanagawa_Japan_-_2024_Feb_21.jpeg",
+    "ok": true
+   }
+  ],
+  "vet": "on tree, c3 orange among apples"
  },
  {
   "key": "mext-07031",
@@ -589,7 +1394,24 @@
    "mext:07042",
    "mext:07043",
    "eatout:orange_juice"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Orange_juice_without_any_fruits.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Orange_juice_without_any_fruits.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "jawiki",
+    "file": "File:Oranges_and_orange_juice.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Oranges_and_orange_juice.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c1 cocktail glass, meals, shops"
  },
  {
   "key": "mext-07035",
@@ -597,7 +1419,31 @@
   "desc": "a small glass bowl of canned mandarin orange segments, glossy peeled orange segments in clear syrup",
   "items": [
    "mext:07035"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:(20250916)_Penny_Greenland_canned_mandarin_oranges_02.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:(20250916)_Penny_Greenland_canned_mandarin_oranges_02.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "commons-search",
+    "file": "File:Canned_Mandarin_Oranges.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Canned_Mandarin_Oranges.jpg",
+    "ok": true
+   },
+   {
+    "n": 5,
+    "origin": "commons-search",
+    "file": "File:Mandarin_oranges_canned.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Mandarin_oranges_canned.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "stadium, closed can"
  },
  {
   "key": "mext-07040",
@@ -605,7 +1451,17 @@
   "desc": "a navel orange, round bright orange, one cut in half showing juicy segments",
   "items": [
    "mext:07040"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Oranges_-_whole-halved-segment.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Oranges_-_whole-halved-segment.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "trees/markets, c4 blood orange"
  },
  {
   "key": "mext-07046",
@@ -613,7 +1469,24 @@
   "desc": "a small glass jar of orange marmalade, glossy amber jelly with thin strips of orange peel",
   "items": [
    "mext:07046"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "wikidata",
+    "file": "File:Sevilleorangemarmalade.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Sevilleorangemarmalade.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "enwiki",
+    "file": "File:Homemade_marmalade,_England.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Homemade_marmalade,_England.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c0 jelly block, statue, portrait"
  },
  {
   "key": "mext-07062",
@@ -621,7 +1494,38 @@
   "desc": "a grapefruit, a large yellow citrus, one half cut showing pale yellow juicy segments",
   "items": [
    "mext:07062"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Grapefruits_-_whole-halved-segments.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Grapefruits_-_whole-halved-segments.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "jawiki-page",
+    "file": "File:2017-02-26_Pink_Grapefruit_Ruby_DSCF4528☆彡.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:2017-02-26_Pink_Grapefruit_Ruby_DSCF4528%E2%98%86%E5%BD%A1.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "jawiki-page",
+    "file": "File:Citrus_paradisi_(Grapefruit,_pink)_white_bg.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Citrus_paradisi_(Grapefruit,_pink)_white_bg.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "jawiki-page",
+    "file": "File:Empty_grapefruit_halfs.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Empty_grapefruit_halfs.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c2 other fruit, bottles, tree"
  },
  {
   "key": "mext-07064",
@@ -629,7 +1533,9 @@
   "desc": "a glass of grapefruit juice, pale cloudy yellow",
   "items": [
    "mext:07064"
-  ]
+  ],
+  "refs": [],
+  "vet": "generic coloured drinks, fresh grapefruit, cans"
  },
  {
   "key": "mext-07165",
@@ -637,7 +1543,45 @@
   "desc": "a dekopon citrus, a large orange fruit with a distinctive bump on top",
   "items": [
    "mext:07165"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "jawiki",
+    "file": "File:Dekopon_-_Tokyo_area_-_April_16_2019.jpeg",
+    "page": "https://commons.wikimedia.org/wiki/File:Dekopon_-_Tokyo_area_-_April_16_2019.jpeg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Dekopon.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Dekopon.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:Dekopon-at-greenhouse.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Dekopon-at-greenhouse.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "commons-search",
+    "file": "File:Sumo_citrus.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Sumo_citrus.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "commons-search",
+    "file": "File:Dekopon_hako.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Dekopon_hako.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c5 apples, c6 generic pile"
  },
  {
   "key": "mext-07105",
@@ -645,7 +1589,17 @@
   "desc": "a hassaku citrus, a large pale orange-yellow fruit with thick peel, one peeled showing segments",
   "items": [
    "mext:07105"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Hassaku_fruit_and_cross_section.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Hassaku_fruit_and_cross_section.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c2/c3 generic orange, flower, building"
  },
  {
   "key": "mext-07155",
@@ -653,7 +1607,31 @@
   "desc": "a whole yellow lemon and a half lemon showing pale yellow segments",
   "items": [
    "mext:07155"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Lemon.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Lemon.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:Lemon_-_whole_and_split.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Lemon_-_whole_and_split.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "commons-search",
+    "file": "File:Zitrone_--_2025_--_7294.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Zitrone_--_2025_--_7294.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "tree, drawing, with lime"
  },
  {
   "key": "mext-07156",
@@ -661,7 +1639,9 @@
   "desc": "a small glass of lemon juice, pale translucent yellow, beside a squeezed lemon half",
   "items": [
    "mext:07156"
-  ]
+  ],
+  "refs": [],
+  "vet": "cordial label, cocktails, juices unclear"
  },
  {
   "key": "mext-07054",
@@ -669,7 +1649,31 @@
   "desc": "a kiwi fruit, fuzzy brown oval skin, one cut in half showing bright green flesh with black seeds",
   "items": [
    "mext:07054"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Kiwi_(Actinidia_chinensis)_1_Luc_Viatour.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Kiwi_(Actinidia_chinensis)_1_Luc_Viatour.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "wikidata",
+    "file": "File:(kiwifruit_or_Chinese_gooseberry)_is_the_edible_berry_of_a_woody_vine_in_the_genus_Actinidia.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:(kiwifruit_or_Chinese_gooseberry)_is_the_edible_berry_of_a_woody_vine_in_the_genus_Actinidia.JPG",
+    "ok": true
+   },
+   {
+    "n": 7,
+    "origin": "enwiki-page",
+    "file": "File:Hardy-Kiwi-Comparison-3.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Hardy-Kiwi-Comparison-3.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "bird, flowers, vines"
  },
  {
   "key": "mext-07168",
@@ -677,7 +1681,9 @@
   "desc": "a golden kiwi fruit, smooth brown skin, cut in half showing bright yellow flesh with black seeds",
   "items": [
    "mext:07168"
-  ]
+  ],
+  "refs": [],
+  "vet": "only green-flesh kiwi"
  },
  {
   "key": "mext-07158",
@@ -685,7 +1691,24 @@
   "desc": "a small bowl of coconut milk, smooth creamy white liquid, beside half a coconut shell",
   "items": [
    "mext:07158"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Coconut_milk_from_can01.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Coconut_milk_from_can01.JPG",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:Cononut_milk.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Cononut_milk.JPG",
+    "ok": true
+   }
+  ],
+  "vet": "c2 coconut, c4 glass ambiguous, c7 dish"
  },
  {
   "key": "mext-07170",
@@ -693,7 +1716,38 @@
   "desc": "a small glass bowl of nata de coco, translucent white chewy cubes in clear syrup",
   "items": [
    "mext:07170"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 4,
+    "origin": "commons-cat",
+    "file": "File:0424Cuisine_food_of_Bulacan_58.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:0424Cuisine_food_of_Bulacan_58.jpg",
+    "ok": true
+   },
+   {
+    "n": 5,
+    "origin": "commons-cat",
+    "file": "File:0424Cuisine_food_of_Bulacan_59.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:0424Cuisine_food_of_Bulacan_59.jpg",
+    "ok": true
+   },
+   {
+    "n": 6,
+    "origin": "commons-cat",
+    "file": "File:0424Cuisine_food_of_Bulacan_60.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:0424Cuisine_food_of_Bulacan_60.jpg",
+    "ok": true
+   },
+   {
+    "n": 7,
+    "origin": "commons-cat",
+    "file": "File:05239jfFoods_of_Bulacan_Philippinesfvf_27.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:05239jfFoods_of_Bulacan_Philippinesfvf_27.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c0 fruit punch, coconut, jelly"
  },
  {
   "key": "mext-07070",
@@ -702,7 +1756,31 @@
   "items": [
    "mext:07070",
    "toyonaka:267633"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Cherry_Stella444.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Cherry_Stella444.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "commons-search",
+    "file": "File:Sweet_cherries_in_basket_2018_G1.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Sweet_cherries_in_basket_2018_G1.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "commons-search",
+    "file": "File:02024_May_Duke_Cherry,_Beskids_mts.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:02024_May_Duke_Cherry,_Beskids_mts.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "wood, stump"
  },
  {
   "key": "mext-07077",
@@ -710,7 +1788,45 @@
   "desc": "a wedge of watermelon, green striped rind, bright red juicy flesh with black seeds",
   "items": [
    "mext:07077"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Water_melon_2015.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Water_melon_2015.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "wikidata",
+    "file": "File:Watermelon001.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Watermelon001.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "commons-cat",
+    "file": "File:02292jfHoly_Wednesday_Good_Friday_processions_Baliuag_Bulacan_Augustine_Parish_Churchfvf_04.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:02292jfHoly_Wednesday_Good_Friday_processions_Baliuag_Bulacan_Augustine_Parish_Churchfvf_04.JPG",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "commons-cat",
+    "file": "File:05981jfCuisine_of_Bulacanfvf_07.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:05981jfCuisine_of_Bulacanfvf_07.JPG",
+    "ok": true
+   },
+   {
+    "n": 6,
+    "origin": "commons-cat",
+    "file": "File:09242jfSan_Rafael_Bulacan_Sampaloc_Highway_Paddy_Fields_Halls_Roadsfvf_07.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:09242jfSan_Rafael_Bulacan_Sampaloc_Highway_Paddy_Fields_Halls_Roadsfvf_07.JPG",
+    "ok": true
+   }
+  ],
+  "vet": "c2 pumpkins"
  },
  {
   "key": "mext-07082",
@@ -718,7 +1834,17 @@
   "desc": "a small pile of dried prunes, wrinkled glossy dark purple-black dried plums",
   "items": [
    "mext:07082"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Rosales_-_Dried_Prunus_domestica_d.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Rosales_-_Dried_Prunus_domestica_d.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "fresh plums, drawings, baked dishes"
  },
  {
   "key": "mext-07088",
@@ -726,7 +1852,17 @@
   "desc": "a Japanese nashi pear, a round brown-yellow speckled fruit, one cut showing crisp juicy white flesh",
   "items": [
    "mext:07088"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Pyrus_pyrifolia.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Pyrus_pyrifolia.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c1 on tree, documents"
  },
  {
   "key": "mext-07091",
@@ -734,7 +1870,9 @@
   "desc": "a European pear (La France), bell-shaped greenish-yellow pear",
   "items": [
    "mext:07091"
-  ]
+  ],
+  "refs": [],
+  "vet": "trees/blossoms only"
  },
  {
   "key": "mext-07097",
@@ -742,7 +1880,38 @@
   "desc": "a pineapple with spiky green crown, one cut showing yellow flesh in wedges",
   "items": [
    "mext:07097"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:D85_0033_สับปะรด_Pine_Apple_in_Thailand_Photographed_by_Trisorn_Triboon.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:D85_0033_%E0%B8%AA%E0%B8%B1%E0%B8%9A%E0%B8%9B%E0%B8%B0%E0%B8%A3%E0%B8%94_Pine_Apple_in_Thailand_Photographed_by_Trisorn_Triboon.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "wikidata",
+    "file": "File:Ananas~May_2008-1.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Ananas~May_2008-1.jpg",
+    "ok": true
+   },
+   {
+    "n": 6,
+    "origin": "commons-cat",
+    "file": "File:2022._Краснодар_IMG_20221223_154935.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:2022._%D0%9A%D1%80%D0%B0%D1%81%D0%BD%D0%BE%D0%B4%D0%B0%D1%80_IMG_20221223_154935.jpg",
+    "ok": true
+   },
+   {
+    "n": 7,
+    "origin": "commons-cat",
+    "file": "File:2022._Краснодар_IMG_20221223_154944.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:2022._%D0%9A%D1%80%D0%B0%D1%81%D0%BD%D0%BE%D0%B4%D0%B0%D1%80_IMG_20221223_154944.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "plants/stall"
  },
  {
   "key": "mext-07102",
@@ -750,7 +1919,17 @@
   "desc": "canned pineapple rings, glossy yellow rings in syrup, in a small dish",
   "items": [
    "mext:07102"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Canned_Pineapple_Chunks.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Canned_Pineapple_Chunks.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "labels/ad, c3/c4 fresh cut"
  },
  {
   "key": "mext-07114",
@@ -758,7 +1937,9 @@
   "desc": "a few loquats (biwa), small oval orange-yellow fruits, one peeled showing juicy orange flesh and a brown seed",
   "items": [
    "mext:07114"
-  ]
+  ],
+  "refs": [],
+  "vet": "tea bag, statues, instrument; c0 market jumble"
  },
  {
   "key": "mext-07116",
@@ -767,7 +1948,31 @@
   "items": [
    "mext:07116",
    "toyonaka:268115"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:Autumn_Royal_grapes.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Autumn_Royal_grapes.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "jawiki-page",
+    "file": "File:Delaware_(grape).JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Delaware_(grape).JPG",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "enwiki",
+    "file": "File:Grapes,_Rostov-on-Don,_Russia.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Grapes,_Rostov-on-Don,_Russia.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c0/c5 on vine, c2 drink, c6 dolma"
  },
  {
   "key": "mext-07187",
@@ -775,7 +1980,38 @@
   "desc": "a bunch of Shine Muscat grapes, large oval pale yellow-green glossy grapes",
   "items": [
    "mext:07187"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Shine_muscat_grapes_(20240913).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Shine_muscat_grapes_(20240913).jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:Shine_Muscat_Grape_from_Peru.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Shine_Muscat_Grape_from_Peru.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "commons-search",
+    "file": "File:Shine_Muscat_(20241101).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Shine_Muscat_(20241101).jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "commons-search",
+    "file": "File:Shine_muscat_grapes.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Shine_muscat_grapes.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c0 bagged on vine"
  },
  {
   "key": "mext-07117",
@@ -783,7 +2019,24 @@
   "desc": "a small pile of raisins, wrinkled dark brown dried grapes",
   "items": [
    "mext:07117"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:2023_Rodzynki_(1).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:2023_Rodzynki_(1).jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "jawiki",
+    "file": "File:Raisins.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Raisins.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c1 date?, c4 on stem, drying field, dishes"
  },
  {
   "key": "mext-07119",
@@ -791,7 +2044,24 @@
   "desc": "a glass of grape juice, deep purple-red",
   "items": [
    "mext:07119"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Glass_of_grape_juice.jpeg",
+    "page": "https://commons.wikimedia.org/wiki/File:Glass_of_grape_juice.jpeg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:Juice_Grape_(15297660759).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Juice_Grape_(15297660759).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c1 may be wine; vines, shelves, ads"
  },
  {
   "key": "mext-07124",
@@ -799,7 +2069,24 @@
   "desc": "a small heap of blueberries, round dusky blue berries with crowned tops",
   "items": [
    "mext:07124"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Dish_of_blueberries.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Dish_of_blueberries.jpg",
+    "ok": true
+   },
+   {
+    "n": 6,
+    "origin": "jawiki-page",
+    "file": "File:Gepflückte_Wald-Heidelbeeren.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Gepfl%C3%BCckte_Wald-Heidelbeeren.JPG",
+    "ok": true
+   }
+  ],
+  "vet": "on bush, flowers, art"
  },
  {
   "key": "mext-07125",
@@ -807,7 +2094,9 @@
   "desc": "a small glass jar of blueberry jam, glossy deep purple jam with whole berries",
   "items": [
    "mext:07125"
-  ]
+  ],
+  "refs": [],
+  "vet": "red/strawberry jams, no blueberry jam"
  },
  {
   "key": "mext-07132",
@@ -815,7 +2104,31 @@
   "desc": "a ripe mango, red-orange skin, one cut in a hedgehog pattern showing deep orange cubes of flesh",
   "items": [
    "mext:07132"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "wikidata",
+    "file": "File:Mangos_-_single_and_halved.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Mangos_-_single_and_halved.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "jawiki",
+    "file": "File:Mango_and_cross_section_edit.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Mango_and_cross_section_edit.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "jawiki-page",
+    "file": "File:Carica_papaya_1_(Piotr_Kuczynski).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Carica_papaya_1_(Piotr_Kuczynski).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "tree, jars, art, papaya"
  },
  {
   "key": "mext-07179",
@@ -823,7 +2136,17 @@
   "desc": "slices of dried mango, flat chewy translucent orange strips",
   "items": [
    "mext:07179"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 3,
+    "origin": "commons-search",
+    "file": "File:Mangues_sechees.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Mangues_sechees.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c0 packets, c4/c6 other dried fruit"
  },
  {
   "key": "mext-07134",
@@ -832,7 +2155,24 @@
   "items": [
    "mext:07134",
    "mext:07135"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Cantaloupe_and_canary_melon.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Cantaloupe_and_canary_melon.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:Cucumis_melo_var._reticulatus_(photo_by_Scott_Bauer).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Cucumis_melo_var._reticulatus_(photo_by_Scott_Bauer).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "plants, cucumbers, chayote"
  },
  {
   "key": "mext-07136",
@@ -840,7 +2180,24 @@
   "desc": "two Japanese white peaches, soft fuzzy pale pink and cream fruits, one cut showing white juicy flesh",
   "items": [
    "mext:07136"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Annual_report_of_the_Commissioner_of_Agriculture_.._(1894-1911)_(18403908636).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Annual_report_of_the_Commissioner_of_Agriculture_.._(1894-1911)_(18403908636).jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "wikidata",
+    "file": "File:Oszibarack_01.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Oszibarack_01.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "on tree, drawings, orchard"
  },
  {
   "key": "mext-07138",
@@ -848,7 +2205,9 @@
   "desc": "canned white peach halves, glossy pale cream peach halves in syrup in a glass dish",
   "items": [
    "mext:07138"
-  ]
+  ],
+  "refs": [],
+  "vet": "yellow peaches, can't confirm white peach"
  },
  {
   "key": "mext-07148",
@@ -856,7 +2215,9 @@
   "desc": "peeled apple wedges, crisp pale cream flesh without skin, on a small plate",
   "items": [
    "mext:07148"
-  ]
+  ],
+  "refs": [],
+  "vet": "no peeled apple; moth, painting"
  },
  {
   "key": "mext-07149",
@@ -865,7 +2226,24 @@
   "items": [
    "mext:07149",
    "mext:07150"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Apfelsaft.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Apfelsaft.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "enwiki",
+    "file": "File:Apfelsaft_im_Glas.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Apfelsaft_im_Glas.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c4 orange juice, c6/c7 unclear"
  },
  {
   "key": "mext-07154",
@@ -873,7 +2251,9 @@
   "desc": "a small glass jar of apple jam, translucent golden-amber jam with soft apple pieces",
   "items": [
    "mext:07154"
-  ]
+  ],
+  "refs": [],
+  "vet": "strawberry/other jams"
  },
  {
   "key": "mext-08001",
@@ -881,7 +2261,9 @@
   "desc": "a bunch of enoki mushrooms, long thin white stems with tiny round white caps",
   "items": [
    "mext:08001"
-  ]
+  ],
+  "refs": [],
+  "vet": "bird, wild mushrooms, no white enoki"
  },
  {
   "key": "mext-08003",
@@ -889,7 +2271,9 @@
   "desc": "a small dish of nametake, enoki mushroom pieces in a glossy thick brown soy sauce",
   "items": [
    "mext:08003"
-  ]
+  ],
+  "refs": [],
+  "vet": "rugby/road"
  },
  {
   "key": "mext-08006",
@@ -897,7 +2281,9 @@
   "desc": "dried wood ear mushrooms (kikurage), crinkled hard black-brown ear-shaped pieces",
   "items": [
    "mext:08006"
-  ]
+  ],
+  "refs": [],
+  "vet": "fresh growing on wood only"
  },
  {
   "key": "mext-08007",
@@ -905,7 +2291,9 @@
   "desc": "rehydrated wood ear mushrooms, glossy dark brown wavy ear-shaped pieces",
   "items": [
    "mext:08007"
-  ]
+  ],
+  "refs": [],
+  "vet": "fresh growing on wood only"
  },
  {
   "key": "mext-08039",
@@ -913,7 +2301,38 @@
   "desc": "fresh shiitake mushrooms, brown domed caps with pale cream gills underneath and short stems",
   "items": [
    "mext:08039"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Lentinula_edodes.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Lentinula_edodes.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "commons-search",
+    "file": "File:Shiitake_(Lentinula_edodes).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Shiitake_(Lentinula_edodes).jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "commons-search",
+    "file": "File:Lentinula_edodes_20101113_c.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Lentinula_edodes_20101113_c.jpg",
+    "ok": true
+   },
+   {
+    "n": 5,
+    "origin": "commons-search",
+    "file": "File:Lentinula_edodes_20101113_d.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Lentinula_edodes_20101113_d.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c0 market, c2 growing"
  },
  {
   "key": "mext-08013",
@@ -921,7 +2340,38 @@
   "desc": "dried shiitake mushrooms, thick wrinkled dark brown caps with deeply cracked tops and pale gills",
   "items": [
    "mext:08013"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Dried_shiitake_mushrooms_(20240907).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Dried_shiitake_mushrooms_(20240907).jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Black_pearl_shiitake_mushrooms.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Black_pearl_shiitake_mushrooms.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:Dried_shiitake_mushrooms.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Dried_shiitake_mushrooms.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "commons-search",
+    "file": "File:Dried_shiitake_mushrooms_(Lentinula_edodes)_from_Taiwan,_2026-11-07.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Dried_shiitake_mushrooms_(Lentinula_edodes)_from_Taiwan,_2026-11-07.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c4 market, c5 other"
  },
  {
   "key": "mext-08053",
@@ -929,7 +2379,9 @@
   "desc": "sweet simmered shiitake mushrooms, glossy dark brown whole caps in sweet soy glaze",
   "items": [
    "mext:08053"
-  ]
+  ],
+  "refs": [],
+  "vet": "raw shiitake/dishes, none simmered sweet"
  },
  {
   "key": "mext-08016",
@@ -937,7 +2389,24 @@
   "desc": "a cluster of bunashimeji mushrooms, many small round grey-brown caps on white stems joined at the base",
   "items": [
    "mext:08016"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Hon-shimeji_mushrooms_-_Cambridge,_MA.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Hon-shimeji_mushrooms_-_Cambridge,_MA.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "commons-search",
+    "file": "File:Shimeji_Tokyo_area_2020_5_11.jpeg",
+    "page": "https://commons.wikimedia.org/wiki/File:Shimeji_Tokyo_area_2020_5_11.jpeg",
+    "ok": true
+   }
+  ],
+  "vet": "c1 white bunapi/enoki-like, c2 packed other, c4 wild"
  },
  {
   "key": "mext-08020",
@@ -945,7 +2414,9 @@
   "desc": "a small bowl of nameko mushrooms, small glossy slippery orange-brown caps",
   "items": [
    "mext:08020"
-  ]
+  ],
+  "refs": [],
+  "vet": "c0 miso soup, rest wild growing"
  },
  {
   "key": "mext-08025",
@@ -953,7 +2424,24 @@
   "desc": "king oyster mushrooms (eringi), thick white stems with small brown caps",
   "items": [
    "mext:08025"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Seta_de_cardo_(Pleurotus_eryngii),_2012-10-03,_DD_01.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Seta_de_cardo_(Pleurotus_eryngii),_2012-10-03,_DD_01.JPG",
+    "ok": true
+   },
+   {
+    "n": 5,
+    "origin": "commons-search",
+    "file": "File:Fungi_-_Pleurotus_eryngii_-_3.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Fungi_-_Pleurotus_eryngii_-_3.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c1 oyster, wild, market"
  },
  {
   "key": "mext-08028",
@@ -961,7 +2449,9 @@
   "desc": "a cluster of maitake mushrooms, ruffled overlapping grey-brown frond-like caps",
   "items": [
    "mext:08028"
-  ]
+  ],
+  "refs": [],
+  "vet": "wild growing/person"
  },
  {
   "key": "mext-08031",
@@ -969,7 +2459,45 @@
   "desc": "white button mushrooms, smooth round white caps, one cut in half",
   "items": [
    "mext:08031"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:2016-01_Agaricus_bisporus_06.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:2016-01_Agaricus_bisporus_06.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:2016-01_Agaricus_bisporus_07.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:2016-01_Agaricus_bisporus_07.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:2016-01_Agaricus_bisporus_03.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:2016-01_Agaricus_bisporus_03.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "commons-search",
+    "file": "File:2016-01_Agaricus_bisporus_01.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:2016-01_Agaricus_bisporus_01.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "commons-search",
+    "file": "File:Button_mushroom_in_Yuen_Long.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Button_mushroom_in_Yuen_Long.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c5 micrograph"
  },
  {
   "key": "mext-08033",
@@ -977,7 +2505,9 @@
   "desc": "sliced canned mushrooms, pale soft slices in a small dish",
   "items": [
    "mext:08033"
-  ]
+  ],
+  "refs": [],
+  "vet": "jars/cans unclear, mixed contents"
  },
  {
   "key": "mext-08034",
@@ -985,7 +2515,9 @@
   "desc": "two matsutake mushrooms, thick white-brown stems with dark brown caps, one cut lengthwise",
   "items": [
    "mext:08034"
-  ]
+  ],
+  "refs": [],
+  "vet": "shop, wild, mixed dried mushrooms"
  },
  {
   "key": "mext-09002",
@@ -993,7 +2525,9 @@
   "desc": "a small dish of aonori, fine flakes of bright green dried seaweed",
   "items": [
    "mext:09002"
-  ]
+  ],
+  "refs": [],
+  "vet": "river, other seaweeds, cooking"
  },
  {
   "key": "mext-09004",
@@ -1001,7 +2535,9 @@
   "desc": "a stack of square sheets of toasted nori, dark glossy green-black",
   "items": [
    "mext:09004"
-  ]
+  ],
+  "refs": [],
+  "vet": "dishes/packages, no nori sheets"
  },
  {
   "key": "mext-09005",
@@ -1009,7 +2545,9 @@
   "desc": "small rectangular strips of seasoned nori, glossy dark green with a sheen",
   "items": [
    "mext:09005"
-  ]
+  ],
+  "refs": [],
+  "vet": "meals, paintings, baseball"
  },
  {
   "key": "mext-09012",
@@ -1017,7 +2555,24 @@
   "desc": "sea grapes (umibudo), stalks covered in tiny glossy bright green bubble-like beads",
   "items": [
    "mext:09012"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 4,
+    "origin": "commons-cat",
+    "file": "File:Caulerpa_lentillifera.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Caulerpa_lentillifera.jpg",
+    "ok": true
+   },
+   {
+    "n": 7,
+    "origin": "commons-search",
+    "file": "File:Caulerpa_lentillifera_1.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Caulerpa_lentillifera_1.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "dishes/salads, c2 plant"
  },
  {
   "key": "mext-09017",
@@ -1025,7 +2580,17 @@
   "desc": "a sheet of dried kombu kelp, a thick wide dark olive-green strip with a white powdery bloom",
   "items": [
    "mext:09017"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Kombu.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Kombu.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "sea, packages, people"
  },
  {
   "key": "mext-09022",
@@ -1033,7 +2598,9 @@
   "desc": "a small dish of shio kombu, thin dark brown strips of salted kelp with salt crystals",
   "items": [
    "mext:09022"
-  ]
+  ],
+  "refs": [],
+  "vet": "side dishes, shop shelf"
  },
  {
   "key": "mext-09023",
@@ -1041,7 +2608,17 @@
   "desc": "a small dish of kombu tsukudani, glossy dark brown-black kelp pieces simmered in sweet soy",
   "items": [
    "mext:09023"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:Tsukudaniphoto.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Tsukudaniphoto.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "shops"
  },
  {
   "key": "mext-09026",
@@ -1050,7 +2627,24 @@
   "items": [
    "mext:09026",
    "maff_kyodo:36_12_shizuoka"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 2,
+    "origin": "jawiki-page",
+    "file": "File:ところてん_(15910550701).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E3%81%A8%E3%81%93%E3%82%8D%E3%81%A6%E3%82%93_(15910550701).jpg",
+    "ok": true
+   },
+   {
+    "n": 7,
+    "origin": "commons-cat",
+    "file": "File:Tokoroten2.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Tokoroten2.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c0/c1 other jellies, desserts"
  },
  {
   "key": "mext-09028",
@@ -1058,7 +2652,9 @@
   "desc": "sticks of dried kanten agar, light white porous rectangular sticks",
   "items": [
    "mext:09028"
-  ]
+  ],
+  "refs": [],
+  "vet": "c0 powder unclear, seaweed, dishes"
  },
  {
   "key": "mext-09050",
@@ -1066,7 +2662,9 @@
   "desc": "dried hijiki seaweed, small twig-like black pieces in a small dish",
   "items": [
    "mext:09050"
-  ]
+  ],
+  "refs": [],
+  "vet": "underwater, drawing, c3 cooked, c6 market unclear"
  },
  {
   "key": "mext-09051",
@@ -1074,7 +2672,9 @@
   "desc": "soaked hijiki seaweed, glossy short black sprigs in a small dish",
   "items": [
    "mext:09051"
-  ]
+  ],
+  "refs": [],
+  "vet": "c1 simmered nimono dish, rest plants/sea"
  },
  {
   "key": "mext-09037",
@@ -1083,7 +2683,45 @@
   "items": [
    "mext:09037",
    "mext:09038"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Japanese_Mozuku.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Japanese_Mozuku.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "commons-cat",
+    "file": "File:JP_日本_Japan_沖繩_OKINAWA_那霸_Naha_Takara_Chome_shop_沖繩魚屋直食堂_Sakanaya_Chokuei_Shokudo_Uomaru_Restaurant_food_dinner_水雲褐藻_Japanese_Mozuku_January_2025_R12S_06.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:JP_%E6%97%A5%E6%9C%AC_Japan_%E6%B2%96%E7%B9%A9_OKINAWA_%E9%82%A3%E9%9C%B8_Naha_Takara_Chome_shop_%E6%B2%96%E7%B9%A9%E9%AD%9A%E5%B1%8B%E7%9B%B4%E9%A3%9F%E5%A0%82_Sakanaya_Chokuei_Shokudo_Uomaru_Restaurant_food_dinner_%E6%B0%B4%E9%9B%B2%E8%A4%90%E8%97%BB_Japanese_Mozuku_January_2025_R12S_06.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "commons-cat",
+    "file": "File:JP_日本_Japan_沖繩_OKINAWA_那霸_Naha_Takara_Chome_shop_沖繩魚屋直食堂_Sakanaya_Chokuei_Shokudo_Uomaru_Restaurant_food_dinner_水雲褐藻_Japanese_Mozuku_January_2025_R12S_07.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:JP_%E6%97%A5%E6%9C%AC_Japan_%E6%B2%96%E7%B9%A9_OKINAWA_%E9%82%A3%E9%9C%B8_Naha_Takara_Chome_shop_%E6%B2%96%E7%B9%A9%E9%AD%9A%E5%B1%8B%E7%9B%B4%E9%A3%9F%E5%A0%82_Sakanaya_Chokuei_Shokudo_Uomaru_Restaurant_food_dinner_%E6%B0%B4%E9%9B%B2%E8%A4%90%E8%97%BB_Japanese_Mozuku_January_2025_R12S_07.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "commons-cat",
+    "file": "File:JP_日本_Japan_沖繩_OKINAWA_那霸_Naha_Takara_Chome_shop_沖繩魚屋直食堂_Sakanaya_Chokuei_Shokudo_Uomaru_Restaurant_food_dinner_水雲褐藻_Japanese_Mozuku_January_2025_R12S_08.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:JP_%E6%97%A5%E6%9C%AC_Japan_%E6%B2%96%E7%B9%A9_OKINAWA_%E9%82%A3%E9%9C%B8_Naha_Takara_Chome_shop_%E6%B2%96%E7%B9%A9%E9%AD%9A%E5%B1%8B%E7%9B%B4%E9%A3%9F%E5%A0%82_Sakanaya_Chokuei_Shokudo_Uomaru_Restaurant_food_dinner_%E6%B0%B4%E9%9B%B2%E8%A4%90%E8%97%BB_Japanese_Mozuku_January_2025_R12S_08.jpg",
+    "ok": true
+   },
+   {
+    "n": 5,
+    "origin": "commons-cat",
+    "file": "File:JP_日本_Japan_沖繩_OKINAWA_那霸_Naha_水雲褐藻_Japanese_Mozuku_January_2025_R12S_01.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:JP_%E6%97%A5%E6%9C%AC_Japan_%E6%B2%96%E7%B9%A9_OKINAWA_%E9%82%A3%E9%9C%B8_Naha_%E6%B0%B4%E9%9B%B2%E8%A4%90%E8%97%BB_Japanese_Mozuku_January_2025_R12S_01.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c1 in soup"
  },
  {
   "key": "mext-09041",
@@ -1092,7 +2730,17 @@
   "items": [
    "mext:09041",
    "mext:09045"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 6,
+    "origin": "jawiki-page",
+    "file": "File:Korea.food-Miyeok.guk-01.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Korea.food-Miyeok.guk-01.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "dry/sea/diver, miso soup"
  },
  {
   "key": "mext-09044",
@@ -1100,7 +2748,17 @@
   "desc": "dried cut wakame, small crinkled dark green-black dry pieces in a small dish",
   "items": [
    "mext:09044"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Dried_wakame.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Dried_wakame.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "kelp drying, packages"
  },
  {
   "key": "mext-09047",
@@ -1108,7 +2766,17 @@
   "desc": "a small dish of mekabu, chopped slimy wakame root in thin dark green-brown strips",
   "items": [
    "mext:09047"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:めかぶ？_(1736830016).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E3%82%81%E3%81%8B%E3%81%B6%EF%BC%9F_(1736830016).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "soups/bento"
  },
  {
   "key": "mext-10003",
@@ -1116,7 +2784,9 @@
   "desc": "a whole fresh horse mackerel (aji), silver-blue fish with a line of hard scales along its side",
   "items": [
    "mext:10003"
-  ]
+  ],
+  "refs": [],
+  "vet": "shrines/monuments/crest"
  },
  {
   "key": "mext-10005",
@@ -1124,7 +2794,9 @@
   "desc": "a whole grilled horse mackerel, golden-brown charred silver skin, on a rectangular plate",
   "items": [
    "mext:10005"
-  ]
+  ],
+  "refs": [],
+  "vet": "live/raw fish, fry set, fish skeletons"
  },
  {
   "key": "mext-10390",
@@ -1135,7 +2807,31 @@
    "dishes:aji-fry",
    "toyonaka:125962",
    "kumagaya:277"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Deep-fried_horse_mackerel_lunch_002.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Deep-fried_horse_mackerel_lunch_002.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:Deep-fried_horse_mackerel_001.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Deep-fried_horse_mackerel_001.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "jawiki-page",
+    "file": "File:Aji_Fry_(Banya).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Aji_Fry_(Banya).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c4 packed, sets, c7 shirasu"
  },
  {
   "key": "mext-10006",
@@ -1143,7 +2839,9 @@
   "desc": "a butterflied salted horse mackerel (aji no hiraki), split flat fish showing pale pink flesh, raw",
   "items": [
    "mext:10006"
-  ]
+  ],
+  "refs": [],
+  "vet": "c0 grilled set, c1 dried small fish, diagram"
  },
  {
   "key": "mext-10007",
@@ -1152,7 +2850,17 @@
   "items": [
    "mext:10007",
    "dishes:aji-hiraki"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Breakfast_by_kina3_in_Tokyo.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Breakfast_by_kina3_in_Tokyo.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c1 small dried fish, diagram"
  },
  {
   "key": "mext-10016",
@@ -1160,7 +2868,9 @@
   "desc": "steamed conger eel (anago), long soft pale brown fillets",
   "items": [
    "mext:10016"
-  ]
+  ],
+  "refs": [],
+  "vet": "raw eels, tempura dishes"
  },
  {
   "key": "mext-10021",
@@ -1169,7 +2879,24 @@
   "items": [
    "mext:10021",
    "mext:10025"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Sweetfish,_Plecoglossus_altivelis.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Sweetfish,_Plecoglossus_altivelis.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:Plecoglossus_altivelis_altivelis_ayu.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Plecoglossus_altivelis_altivelis_ayu.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "live in water, stones"
  },
  {
   "key": "mext-10045",
@@ -1177,7 +2904,31 @@
   "desc": "a small pile of niboshi, small dried silver sardines, curved and stiff",
   "items": [
    "mext:10045"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Niboshi,_Kawana_Dried_Foods,_Tsukiji,_Tokyo_-_Oct_17,_2005.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Niboshi,_Kawana_Dried_Foods,_Tsukiji,_Tokyo_-_Oct_17,_2005.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:Niboshi,_Kawana_Dried_Foods,_Tsukiji,_Tokyo_-_Oct_17,_2005_(cropped).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Niboshi,_Kawana_Dried_Foods,_Tsukiji,_Tokyo_-_Oct_17,_2005_(cropped).jpg",
+    "ok": true
+   },
+   {
+    "n": 5,
+    "origin": "enwiki-page",
+    "file": "File:Tatsukuri_Engraulis_japonica.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Tatsukuri_Engraulis_japonica.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "ramen, packs"
  },
  {
   "key": "mext-10047",
@@ -1185,7 +2936,17 @@
   "desc": "two whole fresh sardines, slim blue-green and silver fish with a row of dark spots",
   "items": [
    "mext:10047"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 4,
+    "origin": "commons-search",
+    "file": "File:Sarde_01_-_Wiki_Loves_Sicilia_02.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Sarde_01_-_Wiki_Loves_Sicilia_02.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "live schools, aquarium, illustration"
  },
  {
   "key": "mext-10052",
@@ -1193,7 +2954,9 @@
   "desc": "whole dried sardines (maruboshi), stiff grilled-looking silver-brown small fish on a plate",
   "items": [
    "mext:10052"
-  ]
+  ],
+  "refs": [],
+  "vet": "tiny dried fish/drying yard, unclear maruboshi"
  },
  {
   "key": "mext-10445",
@@ -1201,7 +2964,17 @@
   "desc": "a small bowl of kamaage shirasu, soft moist tiny white boiled baby sardines with black eyes",
   "items": [
    "mext:10445"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 3,
+    "origin": "commons-search",
+    "file": "File:Shirasu-don_003.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Shirasu-don_003.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "donburi with egg, bus"
  },
  {
   "key": "mext-10055",
@@ -1209,7 +2982,9 @@
   "desc": "a small dish of shirasu boshi, tiny dried white baby sardines with black eyes",
   "items": [
    "mext:10055"
-  ]
+  ],
+  "refs": [],
+  "vet": "buses, harbour, shop sign"
  },
  {
   "key": "mext-10063",
@@ -1217,7 +2992,24 @@
   "desc": "an open flat tin of oil sardines, small silver fish packed side by side in oil",
   "items": [
    "mext:10063"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Smoked_sardines_in_olive_oil_on_paratha_-_Massachusetts.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Smoked_sardines_in_olive_oil_on_paratha_-_Massachusetts.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:Sardines,_corn,_tomato,_and_olives,_with_olive_oil_-_Massachusetts.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Sardines,_corn,_tomato,_and_olives,_with_olive_oil_-_Massachusetts.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c3/c4 dishes, c5 dried fish"
  },
  {
   "key": "mext-10069",
@@ -1225,7 +3017,9 @@
   "desc": "shirayaki eel, grilled unseasoned eel fillet, pale golden-white with lightly charred edges, with wasabi",
   "items": [
    "mext:10069"
-  ]
+  ],
+  "refs": [],
+  "vet": "all kabayaki (sauced) eel, no shirayaki"
  },
  {
   "key": "mext-10070",
@@ -1233,7 +3027,24 @@
   "desc": "kabayaki eel, a grilled eel fillet glazed with glossy dark brown sweet sauce, on a plate",
   "items": [
    "mext:10070"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Grilled_eel.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Grilled_eel.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "commons-search",
+    "file": "File:Kabayaki_grilled_eel.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Kabayaki_grilled_eel.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c0 garnish plate, c2 sushi, c4/c5 packed"
  },
  {
   "key": "mext-10085",
@@ -1241,7 +3052,9 @@
   "desc": "a thick steak of raw swordfish, pale pinkish-white firm flesh with concentric rings",
   "items": [
    "mext:10085"
-  ]
+  ],
+  "refs": [],
+  "vet": "live/whole marlin images, no meat; species unclear"
  },
  {
   "key": "mext-10086",
@@ -1250,7 +3063,24 @@
   "items": [
    "mext:10086",
    "mext:10087"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Katsuwonus_pelamis_Thailand.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Katsuwonus_pelamis_Thailand.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:Katsuwonus_pelamis_Dominican_Republic.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Katsuwonus_pelamis_Dominican_Republic.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "live swimming, drawing"
  },
  {
   "key": "mext-10091",
@@ -1258,7 +3088,24 @@
   "desc": "a whole block of katsuobushi, a hard dried smoked bonito, dark brown wood-like",
   "items": [
    "mext:10091"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "wikidata",
+    "file": "File:Katsuobushi_block.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Katsuobushi_block.JPG",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "jawiki",
+    "file": "File:Katsuobushi_Kagoshima.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Katsuobushi_Kagoshima.JPG",
+    "ok": true
+   }
+  ],
+  "vet": "c0 shavings, box shaver, prints"
  },
  {
   "key": "mext-10092",
@@ -1266,7 +3113,17 @@
   "desc": "a small heap of katsuobushi bonito flakes, thin curly pale pinkish-brown shavings",
   "items": [
    "mext:10092"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Katsuobushi_02.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Katsuobushi_02.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c1/c2 whole blocks, c5 bag"
  },
  {
   "key": "mext-10096",
@@ -1274,7 +3131,9 @@
   "desc": "flaked seasoned skipjack in a small dish, brown flaky fish",
   "items": [
    "mext:10096"
-  ]
+  ],
+  "refs": [],
+  "vet": "shelf of cans, c1 plain tuna can, drawing"
  },
  {
   "key": "mext-10104",
@@ -1290,7 +3149,9 @@
   "desc": "a few slices of kanpachi amberjack sashimi, pale pink-white glossy flesh",
   "items": [
    "mext:10108"
-  ]
+  ],
+  "refs": [],
+  "vet": "live underwater fish only"
  },
  {
   "key": "mext-10109",
@@ -1298,7 +3159,9 @@
   "desc": "a whole fresh kisu sillago, a slim pale silvery fish",
   "items": [
    "mext:10109"
-  ]
+  ],
+  "refs": [],
+  "vet": "buildings/people"
  },
  {
   "key": "mext-10400",
@@ -1306,7 +3169,17 @@
   "desc": "kisu tempura, butterflied whiting in light crisp pale golden tempura batter",
   "items": [
    "mext:10400"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Kisu_(Sillago)_Tempura.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Kisu_(Sillago)_Tempura.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "prints, birds, bridge"
  },
  {
   "key": "mext-10115",
@@ -1314,7 +3187,9 @@
   "desc": "a raw sablefish fillet, thick white fatty flesh with dark grey skin",
   "items": [
    "mext:10115"
-  ]
+  ],
+  "refs": [],
+  "vet": "people, vase, aerial"
  },
  {
   "key": "mext-10116",

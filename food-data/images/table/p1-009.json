@@ -5,7 +5,31 @@
   "desc": "nikomi hamburg, a thick oval hamburg steak simmered in a rich glossy dark-brown demi-glace sauce with sliced mushrooms and onion, in a shallow dish",
   "items": [
    "dishes:nikomi-hamburg"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:煮込みハンバーグ.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E7%85%AE%E8%BE%BC%E3%81%BF%E3%83%8F%E3%83%B3%E3%83%90%E3%83%BC%E3%82%B0.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:松屋_煮込みビーフシチューハンバーグ_-_1.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E6%9D%BE%E5%B1%8B_%E7%85%AE%E8%BE%BC%E3%81%BF%E3%83%93%E3%83%BC%E3%83%95%E3%82%B7%E3%83%81%E3%83%A5%E3%83%BC%E3%83%8F%E3%83%B3%E3%83%90%E3%83%BC%E3%82%B0_-_1.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:松屋_煮込みビーフシチューハンバーグ_-_3.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E6%9D%BE%E5%B1%8B_%E7%85%AE%E8%BE%BC%E3%81%BF%E3%83%93%E3%83%BC%E3%83%95%E3%82%B7%E3%83%81%E3%83%A5%E3%83%BC%E3%83%8F%E3%83%B3%E3%83%90%E3%83%BC%E3%82%B0_-_3.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c4 c5 egg/curry"
  },
  {
   "key": "dishes-oroshi-hamburg",
@@ -22,7 +46,17 @@
   "items": [
    "dishes:cheese-hamburg",
    "eatout:cheese_hamburg"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:チーズハンバーグ定食（グリンデル）.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E3%83%81%E3%83%BC%E3%82%BA%E3%83%8F%E3%83%B3%E3%83%90%E3%83%BC%E3%82%B0%E5%AE%9A%E9%A3%9F%EF%BC%88%E3%82%B0%E3%83%AA%E3%83%B3%E3%83%87%E3%83%AB%EF%BC%89.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c4 c5 unclear, c2 no cheese"
  },
  {
   "key": "dishes-natto-kimchi",
@@ -30,7 +64,9 @@
   "desc": "natto mixed with kimchi in a small bowl: sticky brown fermented soybeans with stringy threads tossed with red-orange napa cabbage kimchi pieces, a few green onion rings",
   "items": [
    "dishes:natto-kimchi"
-  ]
+  ],
+  "refs": [],
+  "vet": "kimchi pasta, natto rice"
  },
  {
   "key": "dishes-tori-ham",
@@ -38,7 +74,9 @@
   "desc": "Japanese homemade chicken ham: a rolled poached chicken breast cut into round pale pink-white slices fanned on a small plate, moist and smooth, no skin",
   "items": [
    "dishes:tori-ham"
-  ]
+  ],
+  "refs": [],
+  "vet": "no clear sliced chicken ham; plates, packs, sandwiches"
  },
  {
   "key": "dishes-ajitama",
@@ -46,7 +84,17 @@
   "desc": "ajitama marinated eggs: two soft-boiled eggs with smooth light-brown soy-stained whites, one cut in half showing a jammy deep orange yolk, on a small plate",
   "items": [
    "dishes:ajitama"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Ajitama.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Ajitama.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c1 tea eggs, others dishes"
  },
  {
   "key": "dishes-jaga-butter",
@@ -54,7 +102,24 @@
   "desc": "jaga butter: one whole steamed potato in its skin split open with a cross cut, fluffy pale yellow inside, a melting pat of butter on top, on a small plate",
   "items": [
    "dishes:jaga-butter"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "jawiki",
+    "file": "File:Potato&butter,mitinoeki-kurimoto,katori-city,japan.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Potato%26butter,mitinoeki-kurimoto,katori-city,japan.JPG",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "commons-cat",
+    "file": "File:Boiled_potato_@_Bondy_@_Jimbocho_(11821578663).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Boiled_potato_@_Bondy_@_Jimbocho_(11821578663).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c1 butter only, chips, stall"
  },
  {
   "key": "dishes-zakkoku-gohan",
@@ -62,7 +127,9 @@
   "desc": "multigrain rice in a rice bowl: cooked white rice speckled with small purple-brown, yellow and beige grains (barley, millet, black rice), slightly pinkish tint",
   "items": [
    "dishes:zakkoku-gohan"
-  ]
+  ],
+  "refs": [],
+  "vet": "package, corn, meals, people"
  },
  {
   "key": "dishes-mentaiko-udon",
@@ -70,7 +137,17 @@
   "desc": "mentaiko udon: thick white udon noodles in a bowl without soup, tossed with pink-orange spicy cod roe and melted butter, topped with thin strips of dark nori and a green shiso leaf",
   "items": [
    "dishes:mentaiko-udon"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Mentaiko_Udon.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Mentaiko_Udon.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c0 tempura plate"
  },
  {
   "key": "dishes-tantan-nabe",
@@ -86,7 +163,24 @@
   "desc": "anmitsu Japanese dessert in a glass bowl: clear agar jelly cubes, a scoop of smooth dark red bean paste, boiled red peas, canned mandarin segments and white peach slices, dark brown kuromitsu syrup",
   "items": [
    "eatout:anmitsu"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Anmitsu_in_Isezakicho.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Anmitsu_in_Isezakicho.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "commons-search",
+    "file": "File:Anmitsu_001.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Anmitsu_001.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c1 shop, c3 menu"
  },
  {
   "key": "eatout-ginger_ale",
@@ -94,6 +188,23 @@
   "desc": "ginger ale in a tall clear glass with ice: pale golden-amber sparkling soda with small bubbles",
   "items": [
    "eatout:ginger_ale"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:レッドブル・オーガニックス・ジンジャーエール.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E3%83%AC%E3%83%83%E3%83%89%E3%83%96%E3%83%AB%E3%83%BB%E3%82%AA%E3%83%BC%E3%82%AC%E3%83%8B%E3%83%83%E3%82%AF%E3%82%B9%E3%83%BB%E3%82%B8%E3%83%B3%E3%82%B8%E3%83%A3%E3%83%BC%E3%82%A8%E3%83%BC%E3%83%AB.jpg",
+    "ok": true
+   },
+   {
+    "n": 6,
+    "origin": "commons-search",
+    "file": "File:Canada_Dry_ginger_ale_can.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Canada_Dry_ginger_ale_can.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c1 iced tea-like, c5 beer, others unclear"
  }
 ]

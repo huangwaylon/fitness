@@ -5,7 +5,17 @@
   "desc": "kakiage soba, soba in hot dashi broth topped with a round crisp vegetable tempura fritter and green onion",
   "items": [
    "eatout:kakiage_soba"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 4,
+    "origin": "commons-search",
+    "file": "File:冷やしかき揚げそば.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E5%86%B7%E3%82%84%E3%81%97%E3%81%8B%E3%81%8D%E6%8F%9A%E3%81%92%E3%81%9D%E3%81%B0.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c7 c6 udon, c1 don"
  },
  {
   "key": "eatout-korokke_soba",
@@ -13,7 +23,52 @@
   "desc": "korokke soba, soba in hot dashi broth topped with a breaded potato croquette and green onion",
   "items": [
    "eatout:korokke_soba"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Korokke_soba.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Korokke_soba.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:Korokke_soba_-_01.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Korokke_soba_-_01.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "jawiki-page",
+    "file": "File:Korokke_soba_Hakone.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Korokke_soba_Hakone.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "jawiki-page",
+    "file": "File:Korokke_soba_Shioya.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Korokke_soba_Shioya.jpg",
+    "ok": true
+   },
+   {
+    "n": 6,
+    "origin": "commons-cat",
+    "file": "File:Korokke_soba_(2017-06-24)_1.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Korokke_soba_(2017-06-24)_1.jpg",
+    "ok": true
+   },
+   {
+    "n": 7,
+    "origin": "commons-cat",
+    "file": "File:Korokke_soba_(2017-06-24)_2.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Korokke_soba_(2017-06-24)_2.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c5 menu"
  },
  {
   "key": "eatout-niku_soba",
@@ -22,7 +77,9 @@
   "items": [
    "eatout:niku_soba",
    "kurume:044"
-  ]
+  ],
+  "refs": [],
+  "vet": "no clear meat soba; ramen, building"
  },
  {
   "key": "eatout-sushi_maguro",
@@ -30,7 +87,17 @@
   "desc": "two pieces of maguro nigiri sushi, deep red lean tuna slices on oval mounds of white sushi rice, on a wooden geta board",
   "items": [
    "eatout:sushi_maguro"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "jawiki",
+    "file": "File:Rokusanen_Wakayama_Japan07s5.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Rokusanen_Wakayama_Japan07s5.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c3 print, c4 baran, c5 chef"
  },
  {
   "key": "eatout-sushi_chutoro",
@@ -38,7 +105,9 @@
   "desc": "two pieces of chutoro nigiri sushi, pink marbled medium-fatty tuna on sushi rice",
   "items": [
    "eatout:sushi_chutoro"
-  ]
+  ],
+  "refs": [],
+  "vet": "generic sushi set; c0 akami"
  },
  {
   "key": "eatout-sushi_otoro",
@@ -46,7 +115,9 @@
   "desc": "two pieces of otoro nigiri sushi, pale pink heavily marbled fatty tuna on sushi rice",
   "items": [
    "eatout:sushi_otoro"
-  ]
+  ],
+  "refs": [],
+  "vet": "generic sushi set; c0 akami"
  },
  {
   "key": "eatout-sushi_salmon",
@@ -54,7 +125,17 @@
   "desc": "two pieces of salmon nigiri sushi, bright orange salmon with white fat lines on sushi rice",
   "items": [
    "eatout:sushi_salmon"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 6,
+    "origin": "commons-search",
+    "file": "File:トリトンのサーモンにぎり.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E3%83%88%E3%83%AA%E3%83%88%E3%83%B3%E3%81%AE%E3%82%B5%E3%83%BC%E3%83%A2%E3%83%B3%E3%81%AB%E3%81%8E%E3%82%8A.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "generic set otherwise"
  },
  {
   "key": "eatout-sushi_aburi_salmon",
@@ -62,7 +143,9 @@
   "desc": "two pieces of seared salmon nigiri topped with lightly browned mayonnaise",
   "items": [
    "eatout:sushi_aburi_salmon"
-  ]
+  ],
+  "refs": [],
+  "vet": "generic sushi set"
  },
  {
   "key": "eatout-sushi_hamachi",
@@ -71,7 +154,9 @@
   "items": [
    "eatout:sushi_hamachi",
    "eatout:sushi_buri_toro"
-  ]
+  ],
+  "refs": [],
+  "vet": "generic sushi set"
  },
  {
   "key": "eatout-sushi_tai",
@@ -80,7 +165,9 @@
   "items": [
    "eatout:sushi_tai",
    "eatout:sushi_hirame"
-  ]
+  ],
+  "refs": [],
+  "vet": "generic sushi set"
  },
  {
   "key": "eatout-sushi_engawa",
@@ -88,7 +175,9 @@
   "desc": "two pieces of engawa nigiri sushi, ribbed translucent white flounder fin on sushi rice",
   "items": [
    "eatout:sushi_engawa"
-  ]
+  ],
+  "refs": [],
+  "vet": "generic sushi set"
  },
  {
   "key": "eatout-sushi_aji",
@@ -96,7 +185,9 @@
   "desc": "two pieces of aji nigiri sushi, silver-skinned horse mackerel topped with grated ginger and green onion",
   "items": [
    "eatout:sushi_aji"
-  ]
+  ],
+  "refs": [],
+  "vet": "generic sushi set"
  },
  {
   "key": "eatout-sushi_shimesaba",
@@ -104,7 +195,9 @@
   "desc": "two pieces of shime saba nigiri sushi, silver-blue patterned skin of vinegared mackerel on sushi rice",
   "items": [
    "eatout:sushi_shimesaba"
-  ]
+  ],
+  "refs": [],
+  "vet": "generic sushi set"
  },
  {
   "key": "eatout-sushi_ika",
@@ -112,7 +205,9 @@
   "desc": "two pieces of squid nigiri sushi, opaque white scored squid on sushi rice",
   "items": [
    "eatout:sushi_ika"
-  ]
+  ],
+  "refs": [],
+  "vet": "generic sushi set"
  },
  {
   "key": "eatout-sushi_tako",
@@ -120,7 +215,9 @@
   "desc": "two pieces of octopus nigiri sushi, red-purple skinned octopus slices on sushi rice",
   "items": [
    "eatout:sushi_tako"
-  ]
+  ],
+  "refs": [],
+  "vet": "generic sushi set"
  },
  {
   "key": "eatout-sushi_ebi",
@@ -128,7 +225,9 @@
   "desc": "two pieces of ebi nigiri sushi, butterflied boiled shrimp with red and white stripes and a tail on sushi rice",
   "items": [
    "eatout:sushi_ebi"
-  ]
+  ],
+  "refs": [],
+  "vet": "generic sushi set"
  },
  {
   "key": "eatout-sushi_amaebi",
@@ -136,7 +235,9 @@
   "desc": "two pieces of amaebi nigiri sushi, translucent pinkish sweet shrimp on sushi rice",
   "items": [
    "eatout:sushi_amaebi"
-  ]
+  ],
+  "refs": [],
+  "vet": "generic sushi set"
  },
  {
   "key": "eatout-sushi_hotate",
@@ -144,7 +245,9 @@
   "desc": "two pieces of scallop nigiri sushi, a plump white scallop on sushi rice",
   "items": [
    "eatout:sushi_hotate"
-  ]
+  ],
+  "refs": [],
+  "vet": "generic sushi set"
  },
  {
   "key": "eatout-sushi_tsubu",
@@ -152,7 +255,9 @@
   "desc": "two pieces of whelk nigiri sushi, crunchy cream and dark-edged sliced whelk on sushi rice",
   "items": [
    "eatout:sushi_tsubu"
-  ]
+  ],
+  "refs": [],
+  "vet": "generic sushi set"
  },
  {
   "key": "eatout-sushi_tamago",
@@ -160,7 +265,9 @@
   "desc": "two pieces of tamago nigiri sushi, a thick block of sweet yellow omelette tied to rice with a nori band",
   "items": [
    "eatout:sushi_tamago"
-  ]
+  ],
+  "refs": [],
+  "vet": "generic sushi set"
  },
  {
   "key": "eatout-sushi_anago",
@@ -168,7 +275,9 @@
   "desc": "two pieces of anago nigiri sushi, soft brown conger eel brushed with glossy dark sweet sauce on sushi rice",
   "items": [
    "eatout:sushi_anago"
-  ]
+  ],
+  "refs": [],
+  "vet": "generic sushi set"
  },
  {
   "key": "eatout-sushi_unagi",
@@ -176,7 +285,9 @@
   "desc": "two pieces of unagi nigiri sushi, glossy dark glazed grilled eel on sushi rice",
   "items": [
    "eatout:sushi_unagi"
-  ]
+  ],
+  "refs": [],
+  "vet": "generic sushi set"
  },
  {
   "key": "eatout-sushi_katsuo",
@@ -184,7 +295,9 @@
   "desc": "two pieces of katsuo nigiri sushi, deep red skipjack topped with ginger and green onion",
   "items": [
    "eatout:sushi_katsuo"
-  ]
+  ],
+  "refs": [],
+  "vet": "generic sushi set"
  },
  {
   "key": "eatout-sushi_kanikama",
@@ -192,7 +305,9 @@
   "desc": "two pieces of kanikama nigiri, red and white crab sticks on sushi rice with mayonnaise",
   "items": [
    "eatout:sushi_kanikama"
-  ]
+  ],
+  "refs": [],
+  "vet": "generic sushi set"
  },
  {
   "key": "eatout-sushi_hamburg",
@@ -200,7 +315,9 @@
   "desc": "two pieces of hamburg steak nigiri, small slices of brown hamburg patty with mayonnaise on sushi rice",
   "items": [
    "eatout:sushi_hamburg"
-  ]
+  ],
+  "refs": [],
+  "vet": "generic sushi set"
  },
  {
   "key": "eatout-gunkan_ikura",
@@ -208,7 +325,17 @@
   "desc": "two pieces of ikura gunkan sushi, nori-wrapped rice ovals topped with glossy orange salmon roe",
   "items": [
    "eatout:gunkan_ikura"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 5,
+    "origin": "commons-search",
+    "file": "File:Ikura_gunkan_maki_sushi_by_sunday_driver_in_Kyoto.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Ikura_gunkan_maki_sushi_by_sunday_driver_in_Kyoto.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c0-c4 warships (軍艦), c6 mixed"
  },
  {
   "key": "eatout-gunkan_uni",
@@ -216,7 +343,9 @@
   "desc": "two pieces of uni gunkan sushi, nori-wrapped rice ovals topped with orange-yellow sea urchin",
   "items": [
    "eatout:gunkan_uni"
-  ]
+  ],
+  "refs": [],
+  "vet": "warships only"
  },
  {
   "key": "eatout-gunkan_negitoro",
@@ -224,7 +353,9 @@
   "desc": "two pieces of negitoro gunkan sushi, nori-wrapped rice topped with minced pink tuna and green onion",
   "items": [
    "eatout:gunkan_negitoro"
-  ]
+  ],
+  "refs": [],
+  "vet": "warships; c5/c7 unsure topping"
  },
  {
   "key": "eatout-gunkan_tunamayo",
@@ -232,7 +363,9 @@
   "desc": "two pieces of tuna mayo gunkan sushi, nori-wrapped rice topped with creamy tuna mayonnaise",
   "items": [
    "eatout:gunkan_tunamayo"
-  ]
+  ],
+  "refs": [],
+  "vet": "warships only"
  },
  {
   "key": "eatout-gunkan_corn",
@@ -240,7 +373,9 @@
   "desc": "two pieces of corn mayo gunkan sushi, nori-wrapped rice topped with yellow corn kernels in mayonnaise",
   "items": [
    "eatout:gunkan_corn"
-  ]
+  ],
+  "refs": [],
+  "vet": "warships, ship relics"
  },
  {
   "key": "eatout-gunkan_shirasu",
@@ -248,7 +383,9 @@
   "desc": "two pieces of shirasu gunkan sushi, nori-wrapped rice topped with tiny white boiled baby sardines and ginger",
   "items": [
    "eatout:gunkan_shirasu"
-  ]
+  ],
+  "refs": [],
+  "vet": "warships only"
  },
  {
   "key": "eatout-gunkan_kanisarada",
@@ -256,7 +393,9 @@
   "desc": "two pieces of crab salad gunkan sushi, nori-wrapped rice topped with shredded crab stick salad",
   "items": [
    "eatout:gunkan_kanisarada"
-  ]
+  ],
+  "refs": [],
+  "vet": "warships only"
  },
  {
   "key": "eatout-gunkan_mentai",
@@ -264,7 +403,9 @@
   "desc": "two pieces of mentaiko gunkan sushi, nori-wrapped rice topped with pink-red spicy cod roe",
   "items": [
    "eatout:gunkan_mentai"
-  ]
+  ],
+  "refs": [],
+  "vet": "warships only"
  },
  {
   "key": "eatout-maki_natto",
@@ -272,7 +413,24 @@
   "desc": "natto maki, thin nori sushi rolls cut in six pieces with sticky brown natto in the middle",
   "items": [
    "eatout:maki_natto"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:納豆まき.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E7%B4%8D%E8%B1%86%E3%81%BE%E3%81%8D.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "commons-cat",
+    "file": "File:Natto_hosomaki_by_NattoKun_in_Honolulu,_HI.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Natto_hosomaki_by_NattoKun_in_Honolulu,_HI.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c2 c3 natto gunkan, c5 c6 handrolls"
  },
  {
   "key": "eatout-maki_negitoro",
@@ -280,7 +438,17 @@
   "desc": "negitoro maki, thin nori sushi rolls cut in six with pink minced tuna and green onion in the middle",
   "items": [
    "eatout:maki_negitoro"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Negitoro_(243099726).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Negitoro_(243099726).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c4-c6 gunkan, c3 futomaki"
  },
  {
   "key": "eatout-maki_salad",
@@ -288,7 +456,17 @@
   "desc": "salad maki, a sushi roll with lettuce, crab stick, cucumber and mayonnaise, cut in rounds",
   "items": [
    "eatout:maki_salad"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "jawiki",
+    "file": "File:Salad-maki_(sushi).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Salad-maki_(sushi).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c3 c5 spring rolls, c1 inari"
  },
  {
   "key": "eatout-kaisen_ehomaki",
@@ -304,7 +482,17 @@
   "desc": "an assorted nigiri sushi platter, ten pieces of tuna, salmon, shrimp, squid, egg and white fish nigiri on a wooden board with gari",
   "items": [
    "eatout:nigiri_moriawase"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 2,
+    "origin": "jawiki-page",
+    "file": "File:Hebinome_Sushi.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Hebinome_Sushi.JPG",
+    "ok": true
+   }
+  ],
+  "vet": "c0 c1 single nigiri, c3 print"
  },
  {
   "key": "eatout-onigiri_ebimayo",
@@ -328,7 +516,17 @@
   "desc": "a sekihan onigiri, a triangle of pinkish-red rice with dark azuki beans and black sesame",
   "items": [
    "eatout:onigiri_sekihan"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Sekihan_onigiri,_at_Lawson.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Sekihan_onigiri,_at_Lawson.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c4 dango, menus, person"
  },
  {
   "key": "eatout-onigiri_torigomoku",
@@ -336,7 +534,9 @@
   "desc": "a gomoku onigiri, a triangle of light brown seasoned rice with bits of chicken, carrot and burdock",
   "items": [
    "eatout:onigiri_torigomoku"
-  ]
+  ],
+  "refs": [],
+  "vet": "c0 tray, rice ball content unclear"
  },
  {
   "key": "eatout-onigiri_wakame",
@@ -352,7 +552,17 @@
   "desc": "a bakudan onigiri, a big round rice ball fully wrapped in nori, cut in half showing several fillings",
   "items": [
    "eatout:onigiri_bakudan"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "jawiki",
+    "file": "File:Bakudan_onigiri_by_yomi955.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Bakudan_onigiri_by_yomi955.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c1 c2 sushi-roll cross-sections"
  },
  {
   "key": "eatout-sand_ham",
@@ -360,7 +570,9 @@
   "desc": "ham sandwiches, crustless white bread triangles with pink ham and lettuce",
   "items": [
    "eatout:sand_ham"
-  ]
+  ],
+  "refs": [],
+  "vet": "PB&J, BLT, filling not clearly ham"
  },
  {
   "key": "eatout-sand_tuna",
@@ -368,7 +580,9 @@
   "desc": "tuna sandwiches, crustless white bread triangles with creamy tuna and cucumber",
   "items": [
    "eatout:sand_tuna"
-  ]
+  ],
+  "refs": [],
+  "vet": "no tuna sandwich among candidates"
  },
  {
   "key": "eatout-sand_katsu",
@@ -376,7 +590,38 @@
   "desc": "katsu sando, thick sandwiches of white bread with a breaded pork cutlet in dark sauce and cabbage, cut in rectangles",
   "items": [
    "eatout:sand_katsu"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:KatsuSando6515.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:KatsuSando6515.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "jawiki-page",
+    "file": "File:Isen_Katsusando.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Isen_Katsusando.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "enwiki-page",
+    "file": "File:Beef_Katsu_Sandwich.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Beef_Katsu_Sandwich.jpg",
+    "ok": true
+   },
+   {
+    "n": 7,
+    "origin": "commons-cat",
+    "file": "File:Isen_Katsu_sand.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Isen_Katsu_sand.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c2 c6 packaging, c4 c5 unclear"
  },
  {
   "key": "eatout-sand_blt",
@@ -384,7 +629,45 @@
   "desc": "a BLT sandwich, toasted bread with bacon, lettuce and tomato, cut diagonally",
   "items": [
    "eatout:sand_blt"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:BLT_sandwich_with_pommes_frites.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:BLT_sandwich_with_pommes_frites.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "wikidata",
+    "file": "File:Bacon,_lettuce,_tomato,_and_avocado.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Bacon,_lettuce,_tomato,_and_avocado.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "jawiki",
+    "file": "File:BLT_sandwich_(1).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:BLT_sandwich_(1).jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "jawiki-page",
+    "file": "File:BLT-sandwich-1.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:BLT-sandwich-1.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "jawiki-page",
+    "file": "File:Classic_BLT_sandwich_at_Marcoola_Surf_Life_Saving_Club,_Queensland_in_July_2019,_06.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Classic_BLT_sandwich_at_Marcoola_Surf_Life_Saving_Club,_Queensland_in_July_2019,_06.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c5 c6 burgers, c7 diagram"
  },
  {
   "key": "eatout-sand_fruit",
@@ -392,7 +675,59 @@
   "desc": "fruit sando, crustless white bread with whipped cream and colourful strawberry, kiwi and mandarin slices showing in the cut face",
   "items": [
    "eatout:sand_fruit"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Yaoiso_Fruits_sand.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Yaoiso_Fruits_sand.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:Fruit_sandwich_in_Da-cafe,_Tokyo_2022-06-29_as(1).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Fruit_sandwich_in_Da-cafe,_Tokyo_2022-06-29_as(1).jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "jawiki-page",
+    "file": "File:Fruits_Sandwich.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Fruits_Sandwich.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "commons-cat",
+    "file": "File:Cream_and_Sweet_bean_paste_and_Strawberry_sandwich_in_Nagoya.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Cream_and_Sweet_bean_paste_and_Strawberry_sandwich_in_Nagoya.jpg",
+    "ok": true
+   },
+   {
+    "n": 5,
+    "origin": "commons-cat",
+    "file": "File:Fruit_sandwich.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Fruit_sandwich.jpg",
+    "ok": true
+   },
+   {
+    "n": 6,
+    "origin": "commons-cat",
+    "file": "File:Fruit_sandwiches_-_in_Tokyo_-_2024_feb_13_various_17_44_39_842000.jpeg",
+    "page": "https://commons.wikimedia.org/wiki/File:Fruit_sandwiches_-_in_Tokyo_-_2024_feb_13_various_17_44_39_842000.jpeg",
+    "ok": true
+   },
+   {
+    "n": 7,
+    "origin": "commons-cat",
+    "file": "File:Fruit_sandwiches_-_in_Tokyo_-_2024_feb_13_various_17_44_53_374000.jpeg",
+    "page": "https://commons.wikimedia.org/wiki/File:Fruit_sandwiches_-_in_Tokyo_-_2024_feb_13_various_17_44_53_374000.jpeg",
+    "ok": true
+   }
+  ],
+  "vet": "c3 building"
  },
  {
   "key": "eatout-bento_makunouchi",
@@ -400,7 +735,52 @@
   "desc": "a makunouchi bento, a box with white rice and a black sesame, grilled salmon, tamagoyaki, karaage, simmered vegetables and pickles in compartments",
   "items": [
    "eatout:bento_makunouchi"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:FoodCourt.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:FoodCourt.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "jawiki-page",
+    "file": "File:Tokaiken_幕の内_02.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Tokaiken_%E5%B9%95%E3%81%AE%E5%86%85_02.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "enwiki",
+    "file": "File:Makunouchi_bento_of_Origin_Bento.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Makunouchi_bento_of_Origin_Bento.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "enwiki-page",
+    "file": "File:Bento_001.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Bento_001.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "enwiki-page",
+    "file": "File:Makunouchi_bento_of_FamilyMart.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Makunouchi_bento_of_FamilyMart.jpg",
+    "ok": true
+   },
+   {
+    "n": 6,
+    "origin": "enwiki-page",
+    "file": "File:Shiso_wakame_gohan_makunouchi_bento_of_7-Eleven_in_Japan.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Shiso_wakame_gohan_makunouchi_bento_of_7-Eleven_in_Japan.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c5 saba bento, c7 packaging"
  },
  {
   "key": "eatout-bento_nori",
@@ -409,7 +789,45 @@
   "items": [
    "eatout:bento_nori",
    "eatout:bento_mentai_nori"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "jawiki",
+    "file": "File:Noriben_(Honke_Kamadoya).JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Noriben_(Honke_Kamadoya).JPG",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "jawiki-page",
+    "file": "File:Noriben,_at_Honke_Kamadoya_(2017-05-16)_1.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Noriben,_at_Honke_Kamadoya_(2017-05-16)_1.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "jawiki-page",
+    "file": "File:のり弁当_2017_(33242279156).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E3%81%AE%E3%82%8A%E5%BC%81%E5%BD%93_2017_(33242279156).jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "jawiki-page",
+    "file": "File:ほっかほっか亭_のり弁当.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E3%81%BB%E3%81%A3%E3%81%8B%E3%81%BB%E3%81%A3%E3%81%8B%E4%BA%AD_%E3%81%AE%E3%82%8A%E5%BC%81%E5%BD%93.jpg",
+    "ok": true
+   },
+   {
+    "n": 7,
+    "origin": "commons-cat",
+    "file": "File:Mentaiko_nori_bento_of_FamilyMart.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Mentaiko_nori_bento_of_FamilyMart.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c1 nori not visible, c6 wrapped"
  },
  {
   "key": "eatout-bento_shogayaki",
@@ -417,7 +835,24 @@
   "desc": "a ginger pork bento, rice with glossy ginger pork slices and shredded cabbage in a box",
   "items": [
    "eatout:bento_shogayaki"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Spicy_chicken_and_stir-fry_pork_with_ginger_lunch_box_of_7-Eleven_in_Japan.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Spicy_chicken_and_stir-fry_pork_with_ginger_lunch_box_of_7-Eleven_in_Japan.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:Ginger_grilled_pork_lunch_box_of_Lawson.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Ginger_grilled_pork_lunch_box_of_Lawson.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c3 sweet-sour, c5 c6 not bento"
  },
  {
   "key": "eatout-bento_hamburg",
@@ -425,7 +860,31 @@
   "desc": "a hamburg bento, rice with a hamburg patty in demi-glace sauce, spaghetti and a small sausage in a box",
   "items": [
    "eatout:bento_hamburg"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:ハンバーグと帆立コロッケ弁当（つばめグリルDELIエキュート東京店・東京駅）20220623-P1380796.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E3%83%8F%E3%83%B3%E3%83%90%E3%83%BC%E3%82%B0%E3%81%A8%E5%B8%86%E7%AB%8B%E3%82%B3%E3%83%AD%E3%83%83%E3%82%B1%E5%BC%81%E5%BD%93%EF%BC%88%E3%81%A4%E3%81%B0%E3%82%81%E3%82%B0%E3%83%AA%E3%83%ABDELI%E3%82%A8%E3%82%AD%E3%83%A5%E3%83%BC%E3%83%88%E6%9D%B1%E4%BA%AC%E5%BA%97%E3%83%BB%E6%9D%B1%E4%BA%AC%E9%A7%85%EF%BC%8920220623-P1380796.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "commons-search",
+    "file": "File:黒毛和牛のハンバーグ弁当,_駅弁屋,_ＪＲ東京駅,_東京駅,_東京,_日本,_Lunch,_JR_East_Station,_Tokyo_Station,_Tokyo,_Japan_(13744493784).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E9%BB%92%E6%AF%9B%E5%92%8C%E7%89%9B%E3%81%AE%E3%83%8F%E3%83%B3%E3%83%90%E3%83%BC%E3%82%B0%E5%BC%81%E5%BD%93,_%E9%A7%85%E5%BC%81%E5%B1%8B,_%EF%BC%AA%EF%BC%B2%E6%9D%B1%E4%BA%AC%E9%A7%85,_%E6%9D%B1%E4%BA%AC%E9%A7%85,_%E6%9D%B1%E4%BA%AC,_%E6%97%A5%E6%9C%AC,_Lunch,_JR_East_Station,_Tokyo_Station,_Tokyo,_Japan_(13744493784).jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "commons-search",
+    "file": "File:LunchBox_humberg_Hasegawa.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:LunchBox_humberg_Hasegawa.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c2 box art, c0 unclear"
  },
  {
   "key": "eatout-bento_nanban",
@@ -433,7 +892,17 @@
   "desc": "a chicken nanban bento, rice with fried chicken under tartar sauce and cabbage in a box",
   "items": [
    "eatout:bento_nanban"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Chicken_nanban_lunch_box_of_Lawson.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Chicken_nanban_lunch_box_of_Lawson.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c1 c2 no tartar visible"
  },
  {
   "key": "eatout-bento_yakiniku",
@@ -441,7 +910,24 @@
   "desc": "a yakiniku bento, rice covered with grilled beef slices in sweet sauce in a box",
   "items": [
    "eatout:bento_yakiniku"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:豚焼肉弁当（船橋市・肉波）20240830-P1056779.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E8%B1%9A%E7%84%BC%E8%82%89%E5%BC%81%E5%BD%93%EF%BC%88%E8%88%B9%E6%A9%8B%E5%B8%82%E3%83%BB%E8%82%89%E6%B3%A2%EF%BC%8920240830-P1056779.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:豚焼肉弁当（船橋市・肉波）20240830-P1056778.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E8%B1%9A%E7%84%BC%E8%82%89%E5%BC%81%E5%BD%93%EF%BC%88%E8%88%B9%E6%A9%8B%E5%B8%82%E3%83%BB%E8%82%89%E6%B3%A2%EF%BC%8920240830-P1056778.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c2 tamago, c3-c5 packaged ekiben"
  },
  {
   "key": "eatout-bento_katsu",
@@ -449,7 +935,24 @@
   "desc": "a pork cutlet bento, rice with sliced tonkatsu and shredded cabbage in a box",
   "items": [
    "eatout:bento_katsu"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 5,
+    "origin": "commons-search",
+    "file": "File:新宿さぼてん弁当.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E6%96%B0%E5%AE%BF%E3%81%95%E3%81%BC%E3%81%A6%E3%82%93%E5%BC%81%E5%BD%93.jpg",
+    "ok": true
+   },
+   {
+    "n": 6,
+    "origin": "commons-search",
+    "file": "File:新宿さぼてん弁当13.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E6%96%B0%E5%AE%BF%E3%81%95%E3%81%BC%E3%81%A6%E3%82%93%E5%BC%81%E5%BD%9313.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c0 c3 not bento, c2 sandwich"
  },
  {
   "key": "eatout-bento_chuka",
@@ -457,7 +960,9 @@
   "desc": "a Chinese bento, rice with sweet and sour pork, chili shrimp, a gyoza and a spring roll in a box",
   "items": [
    "eatout:bento_chuka"
-  ]
+  ],
+  "refs": [],
+  "vet": "no subuta/ebichiri visible; shopfronts"
  },
  {
   "key": "eatout-chicken_hot",
@@ -465,7 +970,17 @@
   "desc": "a piece of fried chicken with a thick craggy crisp golden-brown seasoned coating",
   "items": [
    "eatout:chicken_hot"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Fried_Boneless_Chicken_with_Fried_Rice_(Taiwan).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Fried_Boneless_Chicken_with_Fried_Rice_(Taiwan).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c0 karaage with fries, c4 c5 other"
  },
  {
   "key": "eatout-americandog",
@@ -474,7 +989,31 @@
   "items": [
    "eatout:americandog",
    "kumagaya:2775"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Corn_dog_001.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Corn_dog_001.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "jawiki-page",
+    "file": "File:FiveCornDogProntoPups.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:FiveCornDogProntoPups.JPG",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "enwiki",
+    "file": "File:CornDog.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:CornDog.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c1 plane, c2 corn"
  },
  {
   "key": "eatout-pizzaman",
@@ -482,7 +1021,9 @@
   "desc": "a pizza bun, a soft orange-tinted steamed bun torn open showing tomato sauce and cheese",
   "items": [
    "eatout:pizzaman"
-  ]
+  ],
+  "refs": [],
+  "vet": "xiaolongbao, anman/curry man; c4 unsure"
  },
  {
   "key": "eatout-curryman",
@@ -490,7 +1031,17 @@
   "desc": "a curry bun, a soft yellow steamed bun torn open showing brown curry filling",
   "items": [
    "eatout:curryman"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 2,
+    "origin": "jawiki-page",
+    "file": "File:Curryman_(baozi).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Curryman_(baozi).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "others nikuman/xiaolongbao"
  },
  {
   "key": "eatout-hashpotato",
@@ -498,7 +1049,24 @@
   "desc": "a hash brown, a flat oval crisp golden-brown fried potato patty",
   "items": [
    "eatout:hashpotato"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 2,
+    "origin": "jawiki-page",
+    "file": "File:HK_food_SW_Sheung_Wan_Shun_Tak_Centre_shop_McDonald's_Restaurant_脆薯餅_potato_January_2021_SS2_02.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:HK_food_SW_Sheung_Wan_Shun_Tak_Centre_shop_McDonald%27s_Restaurant_%E8%84%86%E8%96%AF%E9%A4%85_potato_January_2021_SS2_02.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "jawiki-page",
+    "file": "File:Hashbrown_potato_patty.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Hashbrown_potato_patty.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c0 rosti, others breakfasts"
  },
  {
   "key": "eatout-saladchicken",
@@ -507,7 +1075,17 @@
   "items": [
    "eatout:saladchicken",
    "eatout:saladchicken_bar"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "jawiki",
+    "file": "File:サラダチキン.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E3%82%B5%E3%83%A9%E3%83%80%E3%83%81%E3%82%AD%E3%83%B3.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c2 salad, others meals"
  },
  {
   "key": "eatout-harusame_soup",
@@ -515,7 +1093,9 @@
   "desc": "a cup of glass noodle soup, clear broth with translucent noodles, wakame and green onion",
   "items": [
    "eatout:harusame_soup"
-  ]
+  ],
+  "refs": [],
+  "vet": "c0 shelf unclear, others other soups"
  },
  {
   "key": "eatout-oden_sausage",
@@ -523,7 +1103,9 @@
   "desc": "oden wiener-maki, a sausage wrapped in fish cake, in clear oden broth",
   "items": [
    "eatout:oden_sausage"
-  ]
+  ],
+  "refs": [],
+  "vet": "no wiener-maki visible; general oden"
  },
  {
   "key": "eatout-hamburger",
@@ -531,7 +1113,52 @@
   "desc": "a hamburger, a grilled beef patty with ketchup, pickles and onion in a soft round bun",
   "items": [
    "eatout:hamburger"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Burger_King_double_cheeseburger.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Burger_King_double_cheeseburger.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "wikidata",
+    "file": "File:NCI_Visuals_Food_Hamburger.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:NCI_Visuals_Food_Hamburger.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "jawiki",
+    "file": "File:ベーコンチーズバーガー.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E3%83%99%E3%83%BC%E3%82%B3%E3%83%B3%E3%83%81%E3%83%BC%E3%82%BA%E3%83%90%E3%83%BC%E3%82%AC%E3%83%BC.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "enwiki",
+    "file": "File:RedDot_Burger.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:RedDot_Burger.jpg",
+    "ok": true
+   },
+   {
+    "n": 5,
+    "origin": "enwiki-page",
+    "file": "File:A_party_tray_of_sliders_at_a_restaurant.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:A_party_tray_of_sliders_at_a_restaurant.jpg",
+    "ok": true
+   },
+   {
+    "n": 7,
+    "origin": "enwiki-page",
+    "file": "File:Bulgogi_burger_2.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Bulgogi_burger_2.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c3 griddle, c6 egg on plate"
  },
  {
   "key": "eatout-cheeseburger",
@@ -539,7 +1166,31 @@
   "desc": "a cheeseburger, a beef patty with melted yellow cheese, pickles and onion in a soft bun",
   "items": [
    "eatout:cheeseburger"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Cheeseburger.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Cheeseburger.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "jawiki-page",
+    "file": "File:McDonald's_McDouble_burger.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:McDonald%27s_McDouble_burger.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "enwiki-page",
+    "file": "File:Burger_King_Quad_Stacker_cheeseburger.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Burger_King_Quad_Stacker_cheeseburger.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c2 salad, others unclear cheese"
  },
  {
   "key": "eatout-double_cheeseburger",
@@ -547,7 +1198,17 @@
   "desc": "a double cheeseburger, two beef patties with two slices of melted cheese in a bun",
   "items": [
    "eatout:double_cheeseburger"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:チーズチーズダブルチーズバーガー_s20250516_184159.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E3%83%81%E3%83%BC%E3%82%BA%E3%83%81%E3%83%BC%E3%82%BA%E3%83%80%E3%83%96%E3%83%AB%E3%83%81%E3%83%BC%E3%82%BA%E3%83%90%E3%83%BC%E3%82%AC%E3%83%BC_s20250516_184159.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "wrappers, single patties"
  },
  {
   "key": "eatout-big_burger",
@@ -563,7 +1224,17 @@
   "desc": "a teriyaki burger, a pork patty in glossy dark teriyaki sauce with lettuce and mayonnaise in a bun",
   "items": [
    "eatout:teriyaki_burger"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:MOS_TeriyakiBurger_2007-01.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:MOS_TeriyakiBurger_2007-01.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "others big mac/plain/unclear sauce"
  },
  {
   "key": "eatout-fish_burger",
@@ -571,7 +1242,38 @@
   "desc": "a fish burger, a breaded white fish patty with tartar sauce and cheese in a soft bun",
   "items": [
    "eatout:fish_burger"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:McDonald's_Filet-O-Fish_sandwich_(1).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:McDonald%27s_Filet-O-Fish_sandwich_(1).jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "commons-search",
+    "file": "File:McDonald's_Filet-O-Fish_sandwich_(2).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:McDonald%27s_Filet-O-Fish_sandwich_(2).jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "commons-search",
+    "file": "File:McDonald's_Filet-O-Fish_sandwich_(3).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:McDonald%27s_Filet-O-Fish_sandwich_(3).jpg",
+    "ok": true
+   },
+   {
+    "n": 5,
+    "origin": "commons-search",
+    "file": "File:McDonald's_Filet-O-Fish_sandwich_in_Taiwan.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:McDonald%27s_Filet-O-Fish_sandwich_in_Taiwan.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c0 c1 c6 unclear"
  },
  {
   "key": "eatout-chicken_burger",
@@ -579,7 +1281,24 @@
   "desc": "a fried chicken burger, a crisp golden chicken fillet with lettuce and mayonnaise in a bun",
   "items": [
    "eatout:chicken_burger"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:McD-Classic-Grilled-Chicken-Sand.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:McD-Classic-Grilled-Chicken-Sand.jpg",
+    "ok": true
+   },
+   {
+    "n": 5,
+    "origin": "enwiki-page",
+    "file": "File:Long_Chicken_au_restaurant_Quick_à_Coignières_le_12_avril_2017_-_2.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Long_Chicken_au_restaurant_Quick_%C3%A0_Coigni%C3%A8res_le_12_avril_2017_-_2.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c1 c2 sandwiches, c4 pork"
  },
  {
   "key": "eatout-ebi_burger",
@@ -587,7 +1306,9 @@
   "desc": "a shrimp cutlet burger, a breaded shrimp patty with cabbage and pink sauce in a bun",
   "items": [
    "eatout:ebi_burger"
-  ]
+  ],
+  "refs": [],
+  "vet": "can't confirm ebi filling at sheet size"
  },
  {
   "key": "eatout-rice_burger",
@@ -595,7 +1316,17 @@
   "desc": "a rice burger, two pressed grilled rice patties sandwiching beef yakiniku and lettuce",
   "items": [
    "eatout:rice_burger"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 3,
+    "origin": "commons-cat",
+    "file": "File:Korean_burger.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Korean_burger.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c0 c7 kakiage, c4 c6 fried fillings"
  },
  {
   "key": "eatout-nugget_sauce",
@@ -603,7 +1334,17 @@
   "desc": "a small tub of dark red-brown barbecue sauce",
   "items": [
    "eatout:nugget_sauce"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Chicken_McNuggets_with_Szechuan_Sauce_(20180329181732).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Chicken_McNuggets_with_Szechuan_Sauce_(20180329181732).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "only c0 shows the BBQ-type sauce"
  },
  {
   "key": "eatout-ff_applepie",
@@ -611,7 +1352,9 @@
   "desc": "a fried fast-food apple pie, a rectangular crisp blistered golden turnover with apple filling",
   "items": [
    "eatout:ff_applepie"
-  ]
+  ],
+  "refs": [],
+  "vet": "lattice pies, no fried FF pocket pie"
  },
  {
   "key": "eatout-shake",
@@ -619,7 +1362,17 @@
   "desc": "a milkshake in a tall cup with a straw, thick creamy white",
   "items": [
    "eatout:shake"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Strawberry_milk_shake_(cropped).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Strawberry_milk_shake_(cropped).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c4 milk, c6 iced coffee, c3 mixer"
  },
  {
   "key": "eatout-pizza_slice",
@@ -627,7 +1380,31 @@
   "desc": "a slice of mixed pizza, melted cheese with sausage, green pepper, mushroom and onion on tomato sauce",
   "items": [
    "eatout:pizza_slice"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Eq_it-na_pizza-margherita_sep2005_sml.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Eq_it-na_pizza-margherita_sep2005_sml.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "wikidata",
+    "file": "File:Pizza-3007395.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Pizza-3007395.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "jawiki-page",
+    "file": "File:Costco_Pizza_CLS_5635_(6753145757).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Costco_Pizza_CLS_5635_(6753145757).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c2 margherita, c3 deep dish, c7 boxes"
  },
  {
   "key": "eatout-margherita",
@@ -635,7 +1412,52 @@
   "desc": "a Neapolitan margherita pizza, a puffy charred crust, red tomato sauce, white mozzarella and green basil leaves",
   "items": [
    "eatout:margherita"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Margherita_Originale.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Margherita_Originale.JPG",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "wikidata",
+    "file": "File:Pizza-napoletana.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Pizza-napoletana.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "jawiki",
+    "file": "File:Eq_it-na_pizza-margherita_sep2005_sml.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Eq_it-na_pizza-margherita_sep2005_sml.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "enwiki",
+    "file": "File:Neapolitan_pizza_at_Trappica_(48701940197).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Neapolitan_pizza_at_Trappica_(48701940197).jpg",
+    "ok": true
+   },
+   {
+    "n": 5,
+    "origin": "enwiki-page",
+    "file": "File:La_vera_pizza_Napolitana_(319020748).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:La_vera_pizza_Napolitana_(319020748).jpg",
+    "ok": true
+   },
+   {
+    "n": 7,
+    "origin": "enwiki-page",
+    "file": "File:Margherita_-_Stone_and_Embers_-_Nov_2018_-_Stierch_04.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Margherita_-_Stone_and_Embers_-_Nov_2018_-_Stierch_04.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c3 portrait, c6 plaque"
  },
  {
   "key": "eatout-gyudon_set",
@@ -643,7 +1465,17 @@
   "desc": "a gyudon set, a beef bowl with a bowl of miso soup and a small salad on a tray",
   "items": [
    "eatout:gyudon_set"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:牛丼.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E7%89%9B%E4%B8%BC.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "others gyudon alone/curry"
  },
  {
   "key": "eatout-curry_pork_chain",
@@ -651,7 +1483,24 @@
   "desc": "a curry shop pork curry rice, white rice and thick brown curry with pork on an oval plate, red fukujinzuke pickles",
   "items": [
    "eatout:curry_pork_chain"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Beef_curry_rice_003.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Beef_curry_rice_003.jpg",
+    "ok": true
+   },
+   {
+    "n": 7,
+    "origin": "jawiki-page",
+    "file": "File:Mabo_curry_Housefoods.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Mabo_curry_Housefoods.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c2 c6 other curries"
  },
  {
   "key": "eatout-cheese_curry",
@@ -659,7 +1508,24 @@
   "desc": "cheese curry, brown curry sauce over rice topped with melted white cheese",
   "items": [
    "eatout:cheese_curry"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "commons-cat",
+    "file": "File:202405111644_IMG_5730.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:202405111644_IMG_5730.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "commons-cat",
+    "file": "File:202405191811_IMG_7796.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:202405191811_IMG_7796.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c3 rice w cheese unclear, c7 cup"
  },
  {
   "key": "eatout-hamburg_curry",
@@ -667,7 +1533,31 @@
   "desc": "hamburg curry, rice and brown curry topped with a hamburg patty",
   "items": [
    "eatout:hamburg_curry"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Asakusa_curry_with_hamburger.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Asakusa_curry_with_hamburger.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Hamburg-rice-curry.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Hamburg-rice-curry.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "commons-search",
+    "file": "File:Curry_rice_and_Hamburger_steak_Oct_2025.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Curry_rice_and_Hamburger_steak_Oct_2025.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c3 sausage, c5 tray"
  },
  {
   "key": "eatout-karaage_curry",
@@ -675,7 +1565,9 @@
   "desc": "karaage curry, rice and brown curry topped with fried chicken pieces",
   "items": [
    "eatout:karaage_curry"
-  ]
+  ],
+  "refs": [],
+  "vet": "karaage basket, soup curries, rice"
  },
  {
   "key": "eatout-keema_curry",
@@ -683,7 +1575,24 @@
   "desc": "keema curry, dry minced meat curry over rice with a soft egg yolk in the middle",
   "items": [
    "eatout:keema_curry"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 2,
+    "origin": "commons-cat",
+    "file": "File:Aaloo_Keema.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Aaloo_Keema.JPG",
+    "ok": true
+   },
+   {
+    "n": 7,
+    "origin": "commons-cat",
+    "file": "File:Dal_Keema.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Dal_Keema.JPG",
+    "ok": true
+   }
+  ],
+  "vet": "Indian sides/other dishes"
  },
  {
   "key": "eatout-soup_curry",
@@ -691,7 +1600,31 @@
   "desc": "Sapporo soup curry, a thin spicy red-brown curry broth with a chicken leg and large chunks of grilled vegetables, rice on the side",
   "items": [
    "eatout:soup_curry"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Soupcurry-hareruya.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Soupcurry-hareruya.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:スープカレー_Soup_Curry.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E3%82%B9%E3%83%BC%E3%83%97%E3%82%AB%E3%83%AC%E3%83%BC_Soup_Curry.jpg",
+    "ok": true
+   },
+   {
+    "n": 7,
+    "origin": "commons-cat",
+    "file": "File:Chicken_vegetable_soup_curry_(2813142985).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Chicken_vegetable_soup_curry_(2813142985).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c4 c5 pot pie, c6 shop"
  },
  {
   "key": "eatout-butter_chicken",
@@ -699,7 +1632,17 @@
   "desc": "butter chicken curry, a bowl of creamy orange-red curry with chicken pieces beside a large naan",
   "items": [
    "eatout:butter_chicken"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 6,
+    "origin": "commons-search",
+    "file": "File:Butter_Chicken_&_Naan.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Butter_Chicken_%26_Naan.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "others thalis/other curries"
  },
  {
   "key": "eatout-naan",
@@ -707,7 +1650,31 @@
   "desc": "a large teardrop-shaped Indian naan flatbread, soft and puffy with dark brown charred blisters, glossy with butter",
   "items": [
    "eatout:naan"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "jawiki",
+    "file": "File:Naan_shiva.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Naan_shiva.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "jawiki-page",
+    "file": "File:Indian_naan_bread.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Indian_naan_bread.jpg",
+    "ok": true
+   },
+   {
+    "n": 7,
+    "origin": "jawiki-page",
+    "file": "File:Naan-and-Curry-1.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Naan-and-Curry-1.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c1 tomato, c3 bread, c5 baker"
  },
  {
   "key": "eatout-pescatore",
@@ -715,7 +1682,45 @@
   "desc": "spaghetti pescatore, spaghetti in red tomato sauce with clams, shrimp and squid rings",
   "items": [
    "eatout:pescatore"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "jawiki",
+    "file": "File:Linguine_seafood.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Linguine_seafood.JPG",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:Prawns_and_Squid_Rings_in_a_tomato_suce_on_spaghetti_(36208289276).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Prawns_and_Squid_Rings_in_a_tomato_suce_on_spaghetti_(36208289276).jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "commons-search",
+    "file": "File:19_05_2018_Spaghetti_Marinara_with_mussels,_squid_rings,_prawns,_scallops_&_chorizo_in_a_tomato_and_onion_cream_sauce_(made_with_love_by_my_lovely_hubby)_(41506021664).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:19_05_2018_Spaghetti_Marinara_with_mussels,_squid_rings,_prawns,_scallops_%26_chorizo_in_a_tomato_and_onion_cream_sauce_(made_with_love_by_my_lovely_hubby)_(41506021664).jpg",
+    "ok": true
+   },
+   {
+    "n": 5,
+    "origin": "commons-search",
+    "file": "File:Pasta_with_Calamari,_Mussels_&_Prawns_in_a_spicy_tomato_sauce._(43496515800).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Pasta_with_Calamari,_Mussels_%26_Prawns_in_a_spicy_tomato_sauce._(43496515800).jpg",
+    "ok": true
+   },
+   {
+    "n": 6,
+    "origin": "commons-search",
+    "file": "File:Pasta_with_Calamari,_Mussels_&_Prawns_in_a_spicy_tomato_sauce._(43496515810).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Pasta_with_Calamari,_Mussels_%26_Prawns_in_a_spicy_tomato_sauce._(43496515810).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c3 not seafood tomato"
  },
  {
   "key": "eatout-doria_meat",
@@ -723,7 +1728,31 @@
   "desc": "meat sauce doria, a small baking dish of rice under meat sauce, white sauce and browned cheese",
   "items": [
    "eatout:doria_meat"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Meat_doria.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Meat_doria.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:Mirano_hu_Doria.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Mirano_hu_Doria.jpg",
+    "ok": true
+   },
+   {
+    "n": 5,
+    "origin": "commons-cat",
+    "file": "File:Saizeriya_AEON_Komaki_20220214-03.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Saizeriya_AEON_Komaki_20220214-03.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c3 stew, c6 pilaf"
  },
  {
   "key": "eatout-hamburg_yoshoku",
@@ -731,7 +1760,24 @@
   "desc": "a hamburg steak with demi-glace on a sizzling plate, with French fries, corn and broccoli",
   "items": [
    "eatout:hamburg_yoshoku"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Hamburg-Steak.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Hamburg-Steak.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "jawiki-page",
+    "file": "File:Japanese_Salisbury_steak_in_rich_brown_gravy.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Japanese_Salisbury_steak_in_rich_brown_gravy.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c1 book, c3 city"
  },
  {
   "key": "eatout-yakitori_negima",
@@ -739,7 +1785,24 @@
   "desc": "negima yakitori, skewers of grilled chicken thigh alternating with pieces of leek, glazed in sweet sauce",
   "items": [
    "eatout:yakitori_negima"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 6,
+    "origin": "jawiki-page",
+    "file": "File:Yakitori_001.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Yakitori_001.jpg",
+    "ok": true
+   },
+   {
+    "n": 7,
+    "origin": "jawiki-page",
+    "file": "File:Yakitori_002.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Yakitori_002.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "negi not visible in others"
  },
  {
   "key": "eatout-yakitori_mune",
@@ -747,7 +1810,9 @@
   "desc": "salt yakitori of chicken breast, skewered white meat with grill marks",
   "items": [
    "eatout:yakitori_mune"
-  ]
+  ],
+  "refs": [],
+  "vet": "can't confirm shio breast skewers"
  },
  {
   "key": "eatout-yakitori_sasami",
@@ -755,7 +1820,9 @@
   "desc": "sasami yakitori, skewered tender chicken topped with red ume paste and green shiso",
   "items": [
    "eatout:yakitori_sasami"
-  ]
+  ],
+  "refs": [],
+  "vet": "generic mixed yakitori; this cut not identifiable"
  },
  {
   "key": "eatout-yakitori_kawa",
@@ -763,7 +1830,9 @@
   "desc": "kawa yakitori, chicken skin wound on skewers, grilled crisp golden-brown",
   "items": [
    "eatout:yakitori_kawa"
-  ]
+  ],
+  "refs": [],
+  "vet": "generic mixed yakitori; this cut not identifiable"
  },
  {
   "key": "eatout-yakitori_reba",
@@ -771,7 +1840,9 @@
   "desc": "reba yakitori, skewered chicken liver glazed glossy dark brown",
   "items": [
    "eatout:yakitori_reba"
-  ]
+  ],
+  "refs": [],
+  "vet": "generic mixed yakitori; this cut not identifiable"
  },
  {
   "key": "eatout-yakitori_sunagimo",
@@ -779,7 +1850,9 @@
   "desc": "sunagimo yakitori, skewered chicken gizzard pieces grilled with salt",
   "items": [
    "eatout:yakitori_sunagimo"
-  ]
+  ],
+  "refs": [],
+  "vet": "generic mixed yakitori; this cut not identifiable"
  },
  {
   "key": "eatout-yakitori_hatsu",
@@ -787,7 +1860,9 @@
   "desc": "hatsu yakitori, skewered small chicken hearts grilled with salt",
   "items": [
    "eatout:yakitori_hatsu"
-  ]
+  ],
+  "refs": [],
+  "vet": "generic mixed yakitori; this cut not identifiable"
  },
  {
   "key": "eatout-yakitori_tebasaki",
@@ -795,7 +1870,9 @@
   "desc": "grilled salted chicken wing tips, crisp golden skin",
   "items": [
    "eatout:yakitori_tebasaki"
-  ]
+  ],
+  "refs": [],
+  "vet": "generic mixed yakitori; this cut not identifiable"
  },
  {
   "key": "eatout-yakitori_bonjiri",
@@ -803,7 +1880,9 @@
   "desc": "bonjiri yakitori, skewered fatty chicken tail pieces grilled golden",
   "items": [
    "eatout:yakitori_bonjiri"
-  ]
+  ],
+  "refs": [],
+  "vet": "generic mixed yakitori; this cut not identifiable"
  },
  {
   "key": "eatout-yakitori_nankotsu",
@@ -811,7 +1890,9 @@
   "desc": "nankotsu yakitori, skewered white chicken cartilage grilled with salt",
   "items": [
    "eatout:yakitori_nankotsu"
-  ]
+  ],
+  "refs": [],
+  "vet": "generic mixed yakitori; this cut not identifiable"
  },
  {
   "key": "eatout-yakitori_butabara",
@@ -819,7 +1900,9 @@
   "desc": "pork belly yakitori, skewered pork belly slices grilled crisp",
   "items": [
    "eatout:yakitori_butabara"
-  ]
+  ],
+  "refs": [],
+  "vet": "generic mixed yakitori; this cut not identifiable"
  },
  {
   "key": "eatout-yakitori_moriawase",
@@ -827,7 +1910,38 @@
   "desc": "an assorted yakitori plate, five skewers of thigh, tsukune, liver, skin and negima, some glazed, some salted",
   "items": [
    "eatout:yakitori_moriawase"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 3,
+    "origin": "jawiki-page",
+    "file": "File:Pork_Belly_Skewers.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Pork_Belly_Skewers.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "jawiki-page",
+    "file": "File:Sate_Ponorogo.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Sate_Ponorogo.jpg",
+    "ok": true
+   },
+   {
+    "n": 6,
+    "origin": "jawiki-page",
+    "file": "File:Yakitori_001.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Yakitori_001.jpg",
+    "ok": true
+   },
+   {
+    "n": 7,
+    "origin": "jawiki-page",
+    "file": "File:Yakitori_002.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Yakitori_002.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c0 grill, c1 c2 c5 unclear"
  },
  {
   "key": "eatout-takowasa",
@@ -835,7 +1949,17 @@
   "desc": "takowasa, chopped raw octopus in a pale green wasabi marinade, in a small dish",
   "items": [
    "eatout:takowasa"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 6,
+    "origin": "commons-cat",
+    "file": "File:Japanese_takowasa_2014.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Japanese_takowasa_2014.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c1 ramen, c2 gunkan, others unclear"
  },
  {
   "key": "eatout-motsuni",
@@ -843,7 +1967,31 @@
   "desc": "motsu nikomi, pork offal stewed in miso with daikon, konjac and carrot, topped with green onion",
   "items": [
    "eatout:motsuni"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Nikomi.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Nikomi.jpg",
+    "ok": true
+   },
+   {
+    "n": 6,
+    "origin": "jawiki-page",
+    "file": "File:Motsu_nikomi_by_Kossy@FINEDAYS_in_Shibukawa,_Gunma.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Motsu_nikomi_by_Kossy@FINEDAYS_in_Shibukawa,_Gunma.jpg",
+    "ok": true
+   },
+   {
+    "n": 7,
+    "origin": "jawiki-page",
+    "file": "File:Motsu_nikomi_by_rhosoi_in_Kyoto.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Motsu_nikomi_by_rhosoi_in_Kyoto.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c2 c3 kimchi/tomato stews, c5 don"
  },
  {
   "key": "eatout-nankotsu_age",
@@ -852,7 +2000,9 @@
   "items": [
    "eatout:nankotsu_age",
    "eatout:ika_nankotsu_age"
-  ]
+  ],
+  "refs": [],
+  "vet": "c0 looks like regular karaage, c2 menu"
  },
  {
   "key": "eatout-kushikatsu",
@@ -861,7 +2011,31 @@
   "items": [
    "eatout:kushikatsu",
    "maff_kyodo:39_28_osaka"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:KushikatsuDaruma01.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:KushikatsuDaruma01.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "jawiki-page",
+    "file": "File:Kushikatsu_(3603151166).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Kushikatsu_(3603151166).jpg",
+    "ok": true
+   },
+   {
+    "n": 5,
+    "origin": "jawiki-page",
+    "file": "File:二度付け禁止！_(24338188949).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E4%BA%8C%E5%BA%A6%E4%BB%98%E3%81%91%E7%A6%81%E6%AD%A2%EF%BC%81_(24338188949).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c0 sauced misokatsu-like, c3 katsu, signs/art"
  },
  {
   "key": "eatout-karubi",
@@ -869,7 +2043,17 @@
   "desc": "yakiniku kalbi, marbled beef short rib slices sizzling on a grill with grill marks",
   "items": [
    "eatout:karubi"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 4,
+    "origin": "jawiki-page",
+    "file": "File:Nagoya_20210204-10.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Nagoya_20210204-10.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "generic grills, shopfronts, menus"
  },
  {
   "key": "eatout-rosu_yakiniku",
@@ -877,7 +2061,9 @@
   "desc": "yakiniku rosu, thin slices of beef loin grilled on a mesh grill",
   "items": [
    "eatout:rosu_yakiniku"
-  ]
+  ],
+  "refs": [],
+  "vet": "no lean loin cut identifiable; c4 is karubi"
  },
  {
   "key": "eatout-namuru",
@@ -885,6 +2071,15 @@
   "desc": "a namul platter, three small mounds of seasoned spinach, bean sprouts and carrot",
   "items": [
    "eatout:namuru"
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:0秒レモンサワー_仙台ホルモン焼肉酒場_ときわ亭_名駅三丁目店IMG_20220518_01.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:0%E7%A7%92%E3%83%AC%E3%83%A2%E3%83%B3%E3%82%B5%E3%83%AF%E3%83%BC_%E4%BB%99%E5%8F%B0%E3%83%9B%E3%83%AB%E3%83%A2%E3%83%B3%E7%84%BC%E8%82%89%E9%85%92%E5%A0%B4_%E3%81%A8%E3%81%8D%E3%82%8F%E4%BA%AD_%E5%90%8D%E9%A7%85%E4%B8%89%E4%B8%81%E7%9B%AE%E5%BA%97IMG_20220518_01.jpg",
+    "ok": true
+   }
   ]
  },
  {
@@ -893,7 +2088,24 @@
   "desc": "chikuwa isobe-age, chikuwa tubes fried in green aonori tempura batter",
   "items": [
    "eatout:isobeage"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:焼鳥日高のちくわの磯辺揚げ_(cropped).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E7%84%BC%E9%B3%A5%E6%97%A5%E9%AB%98%E3%81%AE%E3%81%A1%E3%81%8F%E3%82%8F%E3%81%AE%E7%A3%AF%E8%BE%BA%E6%8F%9A%E3%81%92_(cropped).jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:焼鳥日高のちくわの磯辺揚げ.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E7%84%BC%E9%B3%A5%E6%97%A5%E9%AB%98%E3%81%AE%E3%81%A1%E3%81%8F%E3%82%8F%E3%81%AE%E7%A3%AF%E8%BE%BA%E6%8F%9A%E3%81%92.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c2 too small"
  },
  {
   "key": "eatout-ikaten",
@@ -901,7 +2113,9 @@
   "desc": "squid tempura, a ring of squid in light golden batter",
   "items": [
    "eatout:ikaten"
-  ]
+  ],
+  "refs": [],
+  "vet": "generic ebi tempura/tendon; this piece not identifiable"
  },
  {
   "key": "eatout-nasuten",
@@ -909,7 +2123,9 @@
   "desc": "eggplant tempura, a fan-cut eggplant with purple skin in light golden batter",
   "items": [
    "eatout:nasuten"
-  ]
+  ],
+  "refs": [],
+  "vet": "generic ebi tempura/tendon; this piece not identifiable"
  },
  {
   "key": "eatout-imoten",
@@ -917,7 +2133,9 @@
   "desc": "sweet potato tempura, a round slice with purple skin in light golden batter",
   "items": [
    "eatout:imoten"
-  ]
+  ],
+  "refs": [],
+  "vet": "generic ebi tempura/tendon; this piece not identifiable"
  },
  {
   "key": "eatout-toriten",
@@ -925,7 +2143,9 @@
   "desc": "toriten, chicken tempura pieces in light golden batter",
   "items": [
    "eatout:toriten"
-  ]
+  ],
+  "refs": [],
+  "vet": "generic ebi tempura/tendon; this piece not identifiable"
  },
  {
   "key": "eatout-highball",
@@ -934,7 +2154,24 @@
   "items": [
    "eatout:highball",
    "eatout:highball_koime"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:HiBall-1.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:HiBall-1.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:豚料理専門店_豚都IMG_20220601_222946_05.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E8%B1%9A%E6%96%99%E7%90%86%E5%B0%82%E9%96%80%E5%BA%97_%E8%B1%9A%E9%83%BDIMG_20220601_222946_05.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c2 cans, c5 gin tonic, c6 poster"
  },
  {
   "key": "eatout-oolong_hai",
@@ -942,7 +2179,17 @@
   "desc": "oolong-hai, a tall glass of amber oolong tea with shochu and ice",
   "items": [
    "eatout:oolong_hai"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:ウーロンハイ.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E3%82%A6%E3%83%BC%E3%83%AD%E3%83%B3%E3%83%8F%E3%82%A4.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c1 menu"
  },
  {
   "key": "eatout-ryokucha_hai",
@@ -950,7 +2197,17 @@
   "desc": "ryokucha-hai, a tall glass of green tea with shochu and ice",
   "items": [
    "eatout:ryokucha_hai"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:静岡割り.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E9%9D%99%E5%B2%A1%E5%89%B2%E3%82%8A.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c0 menu"
  },
  {
   "key": "eatout-shochu_mizuwari",
@@ -966,7 +2223,9 @@
   "desc": "umeshu soda, a tall glass of fizzy pale amber plum wine soda with ice",
   "items": [
    "eatout:umeshu_soda"
-  ]
+  ],
+  "refs": [],
+  "vet": "menu only"
  },
  {
   "key": "eatout-cassis_orange",
@@ -974,7 +2233,17 @@
   "desc": "cassis orange, a tall glass of orange juice with dark red cassis at the bottom and ice",
   "items": [
    "eatout:cassis_orange"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "jawiki",
+    "file": "File:Cassis_and_Orange_8757100129_173bcfcb9d_o.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Cassis_and_Orange_8757100129_173bcfcb9d_o.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c1-c3 people on stage"
  },
  {
   "key": "eatout-gin_tonic",
@@ -982,7 +2251,31 @@
   "desc": "a gin and tonic in a tall glass with ice and a lime wedge",
   "items": [
    "eatout:gin_tonic"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Gin_and_Tonic_with_ingredients.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Gin_and_Tonic_with_ingredients.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:Gin_and_tonic_20121122.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Gin_and_tonic_20121122.jpg",
+    "ok": true
+   },
+   {
+    "n": 6,
+    "origin": "enwiki-page",
+    "file": "File:Gin_and_tonic_with_lemon.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Gin_and_tonic_with_lemon.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c3 pink, c4 shelves, c5 green"
  },
  {
   "key": "eatout-hoppy",
@@ -998,7 +2291,24 @@
   "desc": "a glass of iced black coffee with ice cubes",
   "items": [
    "eatout:iced_coffee"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Ice_coffee_image.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Ice_coffee_image.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:Japanese_iced_coffee_-_01.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Japanese_iced_coffee_-_01.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "others with milk/cream, c7 shelves"
  },
  {
   "key": "eatout-cafe_latte",
@@ -1007,7 +2317,59 @@
   "items": [
    "eatout:cafe_latte",
    "eatout:cappuccino"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Caffè_latte_as_being_served_at_Kaffebrenneriet_Torshov,_Oslo,_Norway_2_600x600_100KB.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Caff%C3%A8_latte_as_being_served_at_Kaffebrenneriet_Torshov,_Oslo,_Norway_2_600x600_100KB.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "wikidata",
+    "file": "File:Roma_-_Cappuccini_al_caffè_Tazza_d'Oro.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Roma_-_Cappuccini_al_caff%C3%A8_Tazza_d%27Oro.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "jawiki",
+    "file": "File:Latte.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Latte.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "jawiki-page",
+    "file": "File:Soymilk_caffe_latte_art_flickr_user_avlxyz.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Soymilk_caffe_latte_art_flickr_user_avlxyz.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "jawiki",
+    "file": "File:Cappuccino_big.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Cappuccino_big.jpg",
+    "ok": true
+   },
+   {
+    "n": 5,
+    "origin": "jawiki-page",
+    "file": "File:Cappuccino_Loves_Italy.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Cappuccino_Loves_Italy.jpg",
+    "ok": true
+   },
+   {
+    "n": 6,
+    "origin": "enwiki",
+    "file": "File:Caffe_Latte_at_Pulse_Cafe.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Caffe_Latte_at_Pulse_Cafe.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c7 pouring, coffee beans"
  },
  {
   "key": "eatout-iced_latte",
@@ -1015,7 +2377,31 @@
   "desc": "a glass of iced cafe latte, coffee and milk layered over ice",
   "items": [
    "eatout:iced_latte"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Vanilla_Iced_Latte_-_Caffè_Nero_2025-08-09.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Vanilla_Iced_Latte_-_Caff%C3%A8_Nero_2025-08-09.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:Mc_ice_caffe_latte_jp.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Mc_ice_caffe_latte_jp.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "commons-search",
+    "file": "File:Flickr_-_cyclonebill_-_Caffe_latte_og_iskaffe.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Flickr_-_cyclonebill_-_Caffe_latte_og_iskaffe.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c1 parfait, c4 dark"
  },
  {
   "key": "eatout-cafe_mocha",
@@ -1023,7 +2409,9 @@
   "desc": "a cafe mocha topped with whipped cream and chocolate sauce, in a glass mug",
   "items": [
    "eatout:cafe_mocha"
-  ]
+  ],
+  "refs": [],
+  "vet": "no whipped-cream mocha; chocolate, cacao pods"
  },
  {
   "key": "eatout-caramel_latte",
@@ -1031,7 +2419,38 @@
   "desc": "a caramel latte topped with milk foam and a drizzle of caramel",
   "items": [
    "eatout:caramel_latte"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Latte_macchiato_with_coffee_beans.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Latte_macchiato_with_coffee_beans.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:Latte_macchiato.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Latte_macchiato.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "commons-search",
+    "file": "File:Latte_macchiato_doublediff.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Latte_macchiato_doublediff.jpg",
+    "ok": true
+   },
+   {
+    "n": 5,
+    "origin": "commons-search",
+    "file": "File:Latte_Macchiato_(1).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Latte_Macchiato_(1).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "layered lattes; caramel syrup not visible"
  },
  {
   "key": "eatout-matcha_latte",
@@ -1039,7 +2458,31 @@
   "desc": "a matcha latte, a cup of pale green milk tea with foam",
   "items": [
    "eatout:matcha_latte"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "enwiki",
+    "file": "File:Matcha_tea_art.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Matcha_tea_art.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "commons-cat",
+    "file": "File:Coffe_matcha_greentea_18_Oktober_2019.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Coffe_matcha_greentea_18_Oktober_2019.jpg",
+    "ok": true
+   },
+   {
+    "n": 7,
+    "origin": "commons-search",
+    "file": "File:Matcha_tea_latte_with_rosetta_latte_art.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Matcha_tea_latte_with_rosetta_latte_art.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c6 plain matcha, c5 sandwich"
  },
  {
   "key": "eatout-royal_milktea",
@@ -1047,7 +2490,17 @@
   "desc": "royal milk tea, a cup of creamy light caramel-brown milk tea",
   "items": [
    "eatout:royal_milktea"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "jawiki-page",
+    "file": "File:A_cup_of_chai.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:A_cup_of_chai.JPG",
+    "ok": true
+   }
+  ],
+  "vet": "c0 straight tea, c2 thai tea, c3 cans"
  },
  {
   "key": "eatout-frozen_coffee",
@@ -1055,7 +2508,9 @@
   "desc": "a frozen coffee drink in a clear cup with a domed lid, icy blended beige drink topped with whipped cream and caramel",
   "items": [
    "eatout:frozen_coffee"
-  ]
+  ],
+  "refs": [],
+  "vet": "menu board only"
  },
  {
   "key": "eatout-frozen_matcha",
@@ -1063,7 +2518,9 @@
   "desc": "a frozen matcha drink in a clear cup, icy blended green drink topped with whipped cream",
   "items": [
    "eatout:frozen_matcha"
-  ]
+  ],
+  "refs": [],
+  "vet": "menu board only"
  },
  {
   "key": "eatout-gumsyrup",
@@ -1071,7 +2528,17 @@
   "desc": "a small single-portion cup of clear gum syrup with a peeled foil lid",
   "items": [
    "eatout:gumsyrup"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "jawiki",
+    "file": "File:A_gum_syrup.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:A_gum_syrup.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c1 honey, bottles, bartender"
  },
  {
   "key": "eatout-tapioca",
@@ -1079,7 +2546,24 @@
   "desc": "tapioca milk tea, a clear cup of milky tea with black tapioca pearls at the bottom and a wide straw",
   "items": [
    "eatout:tapioca"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Pearl_Milk_Tea_in_Chun_Shui_Tang.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Pearl_Milk_Tea_in_Chun_Shui_Tang.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "jawiki",
+    "file": "File:Ice_bubble_milk_tea_with_tapioca_balls_of_Mister_Donut_in_Japan.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Ice_bubble_milk_tea_with_tapioca_balls_of_Mister_Donut_in_Japan.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "straws, signs"
  },
  {
   "key": "eatout-water",
@@ -1087,7 +2571,17 @@
   "desc": "a clear glass of water with a few ice cubes",
   "items": [
    "eatout:water"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Stilles_Mineralwasser.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Stilles_Mineralwasser.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c3 sparkling, others unrelated"
  },
  {
   "key": "eatout-tansansui",
@@ -1095,7 +2589,9 @@
   "desc": "a clear glass of sparkling water full of bubbles",
   "items": [
    "eatout:tansansui"
-  ]
+  ],
+  "refs": [],
+  "vet": "old ads, portraits, apparatus"
  },
  {
   "key": "eatout-danish",
@@ -1104,7 +2600,38 @@
   "items": [
    "eatout:danish",
    "kumagaya:02256"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Glazed_apple_Danish.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Glazed_apple_Danish.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:Danish_Roll_Raisin.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Danish_Roll_Raisin.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "commons-search",
+    "file": "File:Danish_-_29785349265.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Danish_-_29785349265.jpg",
+    "ok": true
+   },
+   {
+    "n": 5,
+    "origin": "commons-search",
+    "file": "File:Fruit_Danish_-_The_Roastery_2024-06-09.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Fruit_Danish_-_The_Roastery_2024-06-09.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c0 earth, c3 display"
  },
  {
   "key": "eatout-sausagepan",
@@ -1112,7 +2639,9 @@
   "desc": "a sausage bread roll, a soft golden bun wrapped around a sausage, with ketchup and mayonnaise",
   "items": [
    "eatout:sausagepan"
-  ]
+  ],
+  "refs": [],
+  "vet": "US hot dogs, not JP sausage roll"
  },
  {
   "key": "eatout-yakisobapan",
@@ -1120,7 +2649,24 @@
   "desc": "a yakisoba pan, a soft koppepan roll split and stuffed with sauce yakisoba noodles, topped with red pickled ginger",
   "items": [
    "eatout:yakisobapan"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Yakisobapan_001.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Yakisobapan_001.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "jawiki-page",
+    "file": "File:Yakisobapan_boxes_at_Tukuyomi_Maid_Café_booth_20180520.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Yakisobapan_boxes_at_Tukuyomi_Maid_Caf%C3%A9_booth_20180520.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "others events"
  },
  {
   "key": "eatout-korokkepan",
@@ -1128,7 +2674,24 @@
   "desc": "a korokke pan, a soft roll filled with a sauced potato croquette and shredded cabbage",
   "items": [
    "eatout:korokkepan"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "jawiki-page",
+    "file": "File:Broodje_Kroket.jpeg",
+    "page": "https://commons.wikimedia.org/wiki/File:Broodje_Kroket.jpeg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "commons-cat",
+    "file": "File:Croquette_bread.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Croquette_bread.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c0 c5 curry bread, c2 dorayaki-like"
  },
  {
   "key": "eatout-bagel",
@@ -1136,7 +2699,31 @@
   "desc": "two round bagels with a hole in the middle, shiny dense golden-brown crust, one cut in half",
   "items": [
    "eatout:bagel"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Bagel-Plain-Alt.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Bagel-Plain-Alt.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:Bagel.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Bagel.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "jawiki-page",
+    "file": "File:Bublik_in_Kiev.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Bublik_in_Kiev.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c2 c6 topped, c7 simit"
  },
  {
   "key": "eatout-choco_donut",
@@ -1144,7 +2731,31 @@
   "desc": "a chocolate-coated cake doughnut, a ring with shiny dark chocolate glaze",
   "items": [
    "eatout:choco_donut"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:リボン_アソートミニドーナツ_スイート&チョコ_c20250327_1839.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E3%83%AA%E3%83%9C%E3%83%B3_%E3%82%A2%E3%82%BD%E3%83%BC%E3%83%88%E3%83%9F%E3%83%8B%E3%83%89%E3%83%BC%E3%83%8A%E3%83%84_%E3%82%B9%E3%82%A4%E3%83%BC%E3%83%88%26%E3%83%81%E3%83%A7%E3%82%B3_c20250327_1839.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:リボン_アソートミニドーナツ_スイート&チョコ_c20250327_1840.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E3%83%AA%E3%83%9C%E3%83%B3_%E3%82%A2%E3%82%BD%E3%83%BC%E3%83%88%E3%83%9F%E3%83%8B%E3%83%89%E3%83%BC%E3%83%8A%E3%83%84_%E3%82%B9%E3%82%A4%E3%83%BC%E3%83%88%26%E3%83%81%E3%83%A7%E3%82%B3_c20250327_1840.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:Mister_Donut_Croissant_Donut_Baked_Chocolate.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Mister_Donut_Croissant_Donut_Baked_Chocolate.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c3-c5 trays"
  },
  {
   "key": "eatout-pudding",
@@ -1152,7 +2763,52 @@
   "desc": "a custard pudding (purin), a pale yellow custard with dark caramel sauce on top, on a small plate",
   "items": [
    "eatout:pudding"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Crème_caramel_2.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Cr%C3%A8me_caramel_2.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "enwiki",
+    "file": "File:Cremecaramel.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Cremecaramel.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "enwiki-page",
+    "file": "File:Abade_de_Priscos.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Abade_de_Priscos.JPG",
+    "ok": true
+   },
+   {
+    "n": 5,
+    "origin": "enwiki-page",
+    "file": "File:Creme_Caramel_India.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Creme_Caramel_India.JPG",
+    "ok": true
+   },
+   {
+    "n": 6,
+    "origin": "enwiki-page",
+    "file": "File:CremeCaramelPrd.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:CremeCaramelPrd.jpg",
+    "ok": true
+   },
+   {
+    "n": 7,
+    "origin": "enwiki-page",
+    "file": "File:Crème_Caramel_(Caramel_Custard).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Cr%C3%A8me_Caramel_(Caramel_Custard).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c2 creme brulee"
  },
  {
   "key": "eatout-eclair",
@@ -1160,7 +2816,24 @@
   "desc": "an éclair, a long golden choux pastry with a glossy chocolate top, filled with custard",
   "items": [
    "eatout:eclair"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Two_Safeway_Chocolate_Eclairs_(19043880936).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Two_Safeway_Chocolate_Eclairs_(19043880936).jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:Liebesknochen1.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Liebesknochen1.JPG",
+    "ok": true
+   }
+  ],
+  "vet": "c5 c6 c7 other pastries"
  },
  {
   "key": "eatout-tiramisu",
@@ -1168,7 +2841,38 @@
   "desc": "tiramisu, layers of coffee-soaked sponge and pale mascarpone cream dusted with brown cocoa",
   "items": [
    "eatout:tiramisu"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Classic_Italian_Tiramisu-3_(29989504485).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Classic_Italian_Tiramisu-3_(29989504485).jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:Tiramisu_Fanes.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Tiramisu_Fanes.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "jawiki-page",
+    "file": "File:Tira_mi_su.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Tira_mi_su.JPG",
+    "ok": true
+   },
+   {
+    "n": 6,
+    "origin": "enwiki",
+    "file": "File:Tiramisu_-_Raffaele_Diomede.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Tiramisu_-_Raffaele_Diomede.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c2 ladyfingers, c7 cake"
  },
  {
   "key": "eatout-rollcake",
@@ -1176,7 +2880,31 @@
   "desc": "a Swiss roll cake, a golden sponge rolled around white whipped cream, sliced showing the spiral",
   "items": [
    "eatout:rollcake"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Kääretorttu.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:K%C3%A4%C3%A4retorttu.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:Swiss_roll_004.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Swiss_roll_004.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "enwiki",
+    "file": "File:Sri_Lankan_Swiss_roll.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Sri_Lankan_Swiss_roll.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c2 buche, c3 c5 c6 unclear"
  },
  {
   "key": "eatout-pancake_cafe",
@@ -1184,7 +2912,24 @@
   "desc": "a stack of three fluffy pancakes with whipped cream, butter and maple syrup",
   "items": [
    "eatout:pancake_cafe"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Banana_on_pancake.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Banana_on_pancake.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "jawiki",
+    "file": "File:ホットケーキ.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E3%83%9B%E3%83%83%E3%83%88%E3%82%B1%E3%83%BC%E3%82%AD.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "crepes, hotcake with sides"
  },
  {
   "key": "eatout-taiyaki",
@@ -1192,7 +2937,45 @@
   "desc": "taiyaki, a fish-shaped golden-brown cake, one broken open showing red bean paste",
   "items": [
    "eatout:taiyaki"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Taiyaki.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Taiyaki.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:Taiyaki_003.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Taiyaki_003.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "jawiki-page",
+    "file": "File:Koinoboriyaki.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Koinoboriyaki.JPG",
+    "ok": true
+   },
+   {
+    "n": 5,
+    "origin": "jawiki-page",
+    "file": "File:Small_taiyaki_by_yomi955.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Small_taiyaki_by_yomi955.jpg",
+    "ok": true
+   },
+   {
+    "n": 6,
+    "origin": "jawiki-page",
+    "file": "File:Taiyaki_-_cut_section.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Taiyaki_-_cut_section.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c2 wrapped, c4 shop"
  },
  {
   "key": "eatout-lacto_ice",
@@ -1200,7 +2983,24 @@
   "desc": "an ice cream bar on a wooden stick, coated in chocolate, a bite taken showing vanilla",
   "items": [
    "eatout:lacto_ice"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:2020-03-29_20_25_48_A_partially_eaten_Häagen-Dazs_Vanilla_Milk_Chocolate_Almond_Ice_Cream_Bar_in_the_Franklin_Farm_section_of_Oak_Hill,_Fairfax_County,_Virginia.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:2020-03-29_20_25_48_A_partially_eaten_H%C3%A4agen-Dazs_Vanilla_Milk_Chocolate_Almond_Ice_Cream_Bar_in_the_Franklin_Farm_section_of_Oak_Hill,_Fairfax_County,_Virginia.jpg",
+    "ok": true
+   },
+   {
+    "n": 6,
+    "origin": "enwiki-page",
+    "file": "File:Taro_ice_cream_bar1.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Taro_ice_cream_bar1.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c4 strawberry crunch bar, c2 cake"
  },
  {
   "key": "eatout-kakigori",
@@ -1208,7 +3008,38 @@
   "desc": "kakigori, a mound of fluffy shaved ice soaked with bright red strawberry syrup in a glass bowl",
   "items": [
    "eatout:kakigori"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Macha_kakigori_snow_cone.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Macha_kakigori_snow_cone.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "jawiki-page",
+    "file": "File:Azabujuban_summer_festival.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Azabujuban_summer_festival.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "jawiki-page",
+    "file": "File:Bing_guan_cau_mei.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Bing_guan_cau_mei.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "jawiki-page",
+    "file": "File:CdazziAkafukuKoori1.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:CdazziAkafukuKoori1.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c5 c7 heavily topped, c6 sign"
  },
  {
   "key": "eatout-parfait",
@@ -1216,7 +3047,24 @@
   "desc": "a chocolate parfait in a tall glass, layers of ice cream, whipped cream, cornflakes, banana and chocolate sauce",
   "items": [
    "eatout:parfait"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "jawiki-page",
+    "file": "File:Beantobar_parfait.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Beantobar_parfait.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "jawiki-page",
+    "file": "File:Chocolate_banana_parfait_20250901_130307.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Chocolate_banana_parfait_20250901_130307.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "fruit parfaits, yogurt"
  },
  {
   "key": "eatout-xiaolongbao",
@@ -1224,7 +3072,38 @@
   "desc": "xiaolongbao, four soup dumplings with fine twisted pleats in a bamboo steamer, one on a spoon",
   "items": [
    "eatout:xiaolongbao"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Xiao_Long_Bao_at_Nanxiang_Mantou_Dian_1.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Xiao_Long_Bao_at_Nanxiang_Mantou_Dian_1.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "wikidata",
+    "file": "File:Xiao_Long_Bao_by_Junhao!.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Xiao_Long_Bao_by_Junhao!.jpg",
+    "ok": true
+   },
+   {
+    "n": 6,
+    "origin": "enwiki",
+    "file": "File:A_Xiaolongbao_from_The_Modern_Shanghai.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:A_Xiaolongbao_from_The_Modern_Shanghai.jpg",
+    "ok": true
+   },
+   {
+    "n": 7,
+    "origin": "enwiki-page",
+    "file": "File:A_Xiaolongbao_from_Wu_Yeung_Chun_Causeway_Bay.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:A_Xiaolongbao_from_Wu_Yeung_Chun_Causeway_Bay.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c2 tomato, c4 kitchen"
  },
  {
   "key": "eatout-annin",
@@ -1233,7 +3112,38 @@
   "items": [
    "eatout:annin",
    "toyonaka:284490"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Almond_jelly.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Almond_jelly.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:Anninndofu-1-.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Anninndofu-1-.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "jawiki-page",
+    "file": "File:Annin_Tofu_-_20160722.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Annin_Tofu_-_20160722.jpg",
+    "ok": true
+   },
+   {
+    "n": 6,
+    "origin": "commons-cat",
+    "file": "File:Almond_jelly_in_Sapporo.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Almond_jelly_in_Sapporo.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c4 chawanmushi, c5 c7 unclear"
  },
  {
   "key": "eatout-jajamen",
@@ -1241,7 +3151,31 @@
   "desc": "jajamen, thick noodles topped with dark brown sweet bean minced pork sauce and julienned cucumber",
   "items": [
    "eatout:jajamen"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "wikidata",
+    "file": "File:Zhajiangmian_in_Handan.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Zhajiangmian_in_Handan.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "enwiki",
+    "file": "File:Billyzhajiang1.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Billyzhajiang1.jpg",
+    "ok": true
+   },
+   {
+    "n": 7,
+    "origin": "enwiki-page",
+    "file": "File:Taste_of_Beijing,_Soho,_London_(4363231155).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Taste_of_Beijing,_Soho,_London_(4363231155).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c3 c6 sides spread, c2 shop"
  },
  {
   "key": "eatout-ankake_yakisoba",
@@ -1257,7 +3191,24 @@
   "desc": "a ramen and half fried rice set, a bowl of soy ramen beside a small dome of fried rice",
   "items": [
    "eatout:ramen_chahan_set"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Ramen_with_half_sized_fried_rice（ラーメン半チャーハンセット）.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Ramen_with_half_sized_fried_rice%EF%BC%88%E3%83%A9%E3%83%BC%E3%83%A1%E3%83%B3%E5%8D%8A%E3%83%81%E3%83%A3%E3%83%BC%E3%83%8F%E3%83%B3%E3%82%BB%E3%83%83%E3%83%88%EF%BC%89.JPG",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:Ramen_and_Chahan_001.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Ramen_and_Chahan_001.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c1 c3 one of the pair"
  },
  {
   "key": "eatout-chijimi",
@@ -1265,7 +3216,31 @@
   "desc": "haemul jeon, a Korean seafood pancake with garlic chives and squid, cut in squares, golden crisp edges, with dipping sauce",
   "items": [
    "eatout:chijimi"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Banga_buchimgae_(Korean_mint_pancake)_(Agastache_rugosa).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Banga_buchimgae_(Korean_mint_pancake)_(Agastache_rugosa).jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "jawiki-page",
+    "file": "File:Korean_pancake-Kimchijeon-05.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Korean_pancake-Kimchijeon-05.jpg",
+    "ok": true
+   },
+   {
+    "n": 5,
+    "origin": "jawiki-page",
+    "file": "File:Korean_pancake-Pajeon-05.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Korean_pancake-Pajeon-05.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c7 potato jeon-like, c1 unclear"
  },
  {
   "key": "eatout-sundubu",
@@ -1275,7 +3250,31 @@
    "eatout:sundubu",
    "toyonaka:269278",
    "kumagaya:3040"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Korean_stew-Sundubu_jjigae-05.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Korean_stew-Sundubu_jjigae-05.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:Sundubu-jjigae.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Sundubu-jjigae.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "jawiki-page",
+    "file": "File:Korean_stew-Sundubu_jjigae-03.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Korean_stew-Sundubu_jjigae-03.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c7 white soup, c3 plant"
  },
  {
   "key": "eatout-samgyeopsal",
@@ -1283,7 +3282,38 @@
   "desc": "samgyeopsal, thick slices of grilled pork belly with lettuce leaves, garlic and ssamjang",
   "items": [
    "eatout:samgyeopsal"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Korean.cuisine-Samgyeopsal-01.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Korean.cuisine-Samgyeopsal-01.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:Samgyeopsal_(pork_belly).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Samgyeopsal_(pork_belly).jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "jawiki-page",
+    "file": "File:Samgyeopsal_table.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Samgyeopsal_table.jpg",
+    "ok": true
+   },
+   {
+    "n": 5,
+    "origin": "enwiki-page",
+    "file": "File:Korean_barbeque-Samgyeopsal-05.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Korean_barbeque-Samgyeopsal-05.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c4 diagram, c6 c7 other"
  },
  {
   "key": "eatout-protein_whey",
@@ -1292,7 +3322,31 @@
   "items": [
    "eatout:protein_whey",
    "eatout:protein_soy"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "jawiki-page",
+    "file": "File:Protein_shake.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Protein_shake.jpg",
+    "ok": true
+   },
+   {
+    "n": 6,
+    "origin": "commons-cat",
+    "file": "File:Fish-protein-powder-500x500_(1).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Fish-protein-powder-500x500_(1).jpg",
+    "ok": true
+   },
+   {
+    "n": 7,
+    "origin": "commons-cat",
+    "file": "File:ON_Gold_Standard.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:ON_Gold_Standard.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c1 shelf; tubs unbranded/ok but not drink"
  },
  {
   "key": "eatout-protein_whey_milk",
@@ -1300,7 +3354,17 @@
   "desc": "a glass of creamy milky protein shake beside a scoop of powder",
   "items": [
    "eatout:protein_whey_milk"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "jawiki-page",
+    "file": "File:Protein_shake.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Protein_shake.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "only c0 shows the drink"
  },
  {
   "key": "eatout-greek_yogurt",
@@ -1308,7 +3372,24 @@
   "desc": "a small bowl of thick Greek yogurt, dense creamy white with a spoon standing in it",
   "items": [
    "eatout:greek_yogurt"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Turkish_strained_yogurt.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Turkish_strained_yogurt.jpg",
+    "ok": true
+   },
+   {
+    "n": 6,
+    "origin": "enwiki-page",
+    "file": "File:Obstjoghurt01.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Obstjoghurt01.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c1 straining, c2 labneh"
  },
  {
   "key": "eatout-protein_bar",
@@ -1316,6 +3397,37 @@
   "desc": "a protein bar, a dense rectangular bar coated in chocolate, cut to show a nutty inside",
   "items": [
    "eatout:protein_bar"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Three_protein_bars.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Three_protein_bars.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:LUNA_Protein_Mint_Chocolate_Chip_bar_cut_in_half.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:LUNA_Protein_Mint_Chocolate_Chip_bar_cut_in_half.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:Three_protein_bars,_two_cut_in_half.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Three_protein_bars,_two_cut_in_half.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "commons-search",
+    "file": "File:LUNA_Protein_Mint_Chocolate_Chip_bar.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:LUNA_Protein_Mint_Chocolate_Chip_bar.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c3 packaging"
  }
 ]

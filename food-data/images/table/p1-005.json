@@ -6,7 +6,45 @@
   "items": [
    "mext:15088",
    "kurume:239"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Coffee_jelly.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Coffee_jelly.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "enwiki-page",
+    "file": "File:Coffee_Jelly_01.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Coffee_Jelly_01.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "commons-cat",
+    "file": "File:Coffee_jelly_(2014-01-23).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Coffee_jelly_(2014-01-23).jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "commons-cat",
+    "file": "File:Coffee_jelly_(2014-01-26).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Coffee_jelly_(2014-01-26).jpg",
+    "ok": true
+   },
+   {
+    "n": 5,
+    "origin": "commons-cat",
+    "file": "File:Coffee_Jelly_02.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Coffee_Jelly_02.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "coffee jelly in glass; c1 parfait"
  },
  {
   "key": "mext-15091",
@@ -14,7 +52,24 @@
   "desc": "a bavarois, a smooth pale cream moulded dessert with a strawberry on top, on a small plate",
   "items": [
    "mext:15091"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Bavarian_cream,_strawberries,_caramel_sauce,_spoon.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Bavarian_cream,_strawberries,_caramel_sauce,_spoon.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "enwiki-page",
+    "file": "File:Bavarian_cream_with_strawberries.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Bavarian_cream_with_strawberries.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "moulded bavarois with strawberries; others pastries/text"
  },
  {
   "key": "mext-15092",
@@ -22,7 +77,24 @@
   "desc": "a few rectangular wafers, light pale golden grid-patterned layers with cream between",
   "items": [
    "mext:15092"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Waffle-2016.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Waffle-2016.jpg",
+    "ok": true
+   },
+   {
+    "n": 7,
+    "origin": "enwiki-page",
+    "file": "File:Pink_Wafers.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Pink_Wafers.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "wafers; c3 stroopwafel, c5 wafer disc"
  },
  {
   "key": "mext-15094",
@@ -30,7 +102,17 @@
   "desc": "a few square soda crackers, pale golden with small pin holes",
   "items": [
    "mext:15094"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 2,
+    "origin": "jawiki-page",
+    "file": "File:2021-05-17_01_09_54_A_FritoLay_Munchies_Cheetos_Cheddar_Cheese_Flavored_Sandwich_Cracker_in_the_Dulles_section_of_Sterling,_Loudoun_County,_Virginia.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:2021-05-17_01_09_54_A_FritoLay_Munchies_Cheetos_Cheddar_Cheese_Flavored_Sandwich_Cracker_in_the_Dulles_section_of_Sterling,_Loudoun_County,_Virginia.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "square soda cracker with pin holes; c0 Ritz-like, c1 Cheez-It"
  },
  {
   "key": "mext-15095",
@@ -38,7 +120,17 @@
   "desc": "a few round butter sablé cookies, golden with a crumbly sandy texture",
   "items": [
    "mext:15095"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Sablés_au_parmesan_et_au_poivre_vert.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Sabl%C3%A9s_au_parmesan_et_au_poivre_vert.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "round crumbly sablés; packages/shapes"
  },
  {
   "key": "mext-15097",
@@ -47,7 +139,17 @@
   "items": [
    "mext:15097",
    "mext:15098"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 7,
+    "origin": "enwiki-page",
+    "file": "File:Biskuit_Marie_Regal.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Biskuit_Marie_Regal.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "round patterned biscuits; c1 assorted mixed"
  },
  {
   "key": "mext-15102",
@@ -55,7 +157,9 @@
   "desc": "a bowl of puffy curved corn snacks, golden-yellow crunchy puffs",
   "items": [
    "mext:15102"
-  ]
+  ],
+  "refs": [],
+  "vet": "no puffy corn snacks; corn kernels, unrelated"
  },
  {
   "key": "mext-15103",
@@ -64,7 +168,31 @@
   "items": [
    "mext:15103",
    "eatout:potato_chips"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Potato-Chips.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Potato-Chips.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "enwiki-page",
+    "file": "File:Cape_Cod_potato_chips_2.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Cape_Cod_potato_chips_2.jpg",
+    "ok": true
+   },
+   {
+    "n": 7,
+    "origin": "enwiki-page",
+    "file": "File:Pizza_potato.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Pizza_potato.JPG",
+    "ok": true
+   }
+  ],
+  "vet": "potato chips; c1 stacked crisps, c3 tortilla"
  },
  {
   "key": "mext-15105",
@@ -73,7 +201,24 @@
   "items": [
    "mext:15105",
    "kurume:232"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 3,
+    "origin": "jawiki-page",
+    "file": "File:Caramel-1.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Caramel-1.jpg",
+    "ok": true
+   },
+   {
+    "n": 7,
+    "origin": "enwiki-page",
+    "file": "File:Caramels.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Caramels.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "caramel cubes/wrapped; sauces, flan"
  },
  {
   "key": "mext-15113",
@@ -81,7 +226,24 @@
   "desc": "a few marshmallows, soft puffy white cylinders, one pink",
   "items": [
    "mext:15113"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:Marshmallows.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Marshmallows.JPG",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "jawiki-page",
+    "file": "File:Pink_Marshmallows.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Pink_Marshmallows.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "marshmallows; c3 flower, c6 Peeps"
  },
  {
   "key": "mext-15137",
@@ -89,7 +251,17 @@
   "desc": "almond chocolates, round chocolate-coated almonds, one cut showing a whole almond",
   "items": [
    "mext:15137"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 4,
+    "origin": "commons-search",
+    "file": "File:Armond_chocolate_of_TOPVALU.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Armond_chocolate_of_TOPVALU.JPG",
+    "ok": true
+   }
+  ],
+  "vet": "packaged almond chocolate; c3 doughnut"
  },
  {
   "key": "mext-15186",
@@ -98,7 +270,24 @@
   "items": [
    "mext:15186",
    "mext:15187"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:2023_Gorzka_czekolada.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:2023_Gorzka_czekolada.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Green_and_Black's_dark_chocolate_bar_2.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Green_and_Black%27s_dark_chocolate_bar_2.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "dark chocolate bar squares; c2-4 bark with toppings"
  },
  {
   "key": "mext-15115",
@@ -106,7 +295,31 @@
   "desc": "a bar of white chocolate broken into squares, ivory cream colour",
   "items": [
    "mext:15115"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:WeisseLuftschokolade.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:WeisseLuftschokolade.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:Meiji_white_chocolate.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Meiji_white_chocolate.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "enwiki",
+    "file": "File:Chopped_white_chocolate_chunks.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Chopped_white_chocolate_chunks.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "white chocolate; c2 mixed, c3 cacao"
  },
  {
   "key": "mext-15116",
@@ -116,7 +329,24 @@
    "mext:15116",
    "eatout:chocolate_bar",
    "kurume:234"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Milk_chocolate.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Milk_chocolate.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:Meiji_milk_chocolate.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Meiji_milk_chocolate.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "milk chocolate bar, Meiji package; c2/c4 mixed"
  },
  {
   "key": "mext-15118",
@@ -124,7 +354,9 @@
   "desc": "a few sticks of chewing gum, thin flat pale pink strips, one half unwrapped from silver foil",
   "items": [
    "mext:15118"
-  ]
+  ],
+  "refs": [],
+  "vet": "no gum; honey, bottles, bartender"
  },
  {
   "key": "mext-15119",
@@ -132,7 +364,9 @@
   "desc": "a few candy-coated chewing gum pellets, small glossy white pillow shapes",
   "items": [
    "mext:15119"
-  ]
+  ],
+  "refs": [],
+  "vet": "no gum; honey, bottles, bartender"
  },
  {
   "key": "mext-15138",
@@ -140,7 +374,24 @@
   "desc": "a small bowl of custard cream, thick glossy pale yellow cream with a spatula",
   "items": [
    "mext:15138"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Pastry_cream.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Pastry_cream.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "commons-cat",
+    "file": "File:Crème_pâtissière_(8718516095).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Cr%C3%A8me_p%C3%A2tissi%C3%A8re_(8718516095).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "custard cream bowls; c7 cream bun"
  },
  {
   "key": "mext-15139",
@@ -148,7 +399,31 @@
   "desc": "oshiruko in a lacquer bowl, smooth thick dark red-purple sweet bean soup with a toasted white mochi",
   "items": [
    "mext:15139"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Shiruko(Zenzai)6.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Shiruko(Zenzai)6.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:Japanese_shiruko_with_rice_cake.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Japanese_shiruko_with_rice_cake.JPG",
+    "ok": true
+   },
+   {
+    "n": 5,
+    "origin": "enwiki-page",
+    "file": "File:Japanese_zenzai_with_rice_cake.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Japanese_zenzai_with_rice_cake.JPG",
+    "ok": true
+   }
+  ],
+  "vet": "oshiruko bowls"
  },
  {
   "key": "mext-15140",
@@ -157,7 +432,24 @@
   "items": [
    "mext:15140",
    "dishes:zenzai"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Shiruko(Zenzai)6.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Shiruko(Zenzai)6.jpg",
+    "ok": true
+   },
+   {
+    "n": 6,
+    "origin": "commons-cat",
+    "file": "File:Anmitsu,_zenzai_and_matcha_by_akira_yamada_in_Yokohama.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Anmitsu,_zenzai_and_matcha_by_akira_yamada_in_Yokohama.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "bean soup with shiratama/beans; c3 kakigori"
  },
  {
   "key": "mext-16001",
@@ -169,7 +461,31 @@
    "eatout:junmai",
    "mext:16004",
    "eatout:sake_ichigo"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Sake_set.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Sake_set.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "jawiki-page",
+    "file": "File:Craft_sake,_Ine_to_Agave,_クラフトサケの稲とアガベ.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Craft_sake,_Ine_to_Agave,_%E3%82%AF%E3%83%A9%E3%83%95%E3%83%88%E3%82%B5%E3%82%B1%E3%81%AE%E7%A8%B2%E3%81%A8%E3%82%A2%E3%82%AC%E3%83%99.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "enwiki",
+    "file": "File:Overflowing_sake_glass_in_masu.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Overflowing_sake_glass_in_masu.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "masu/ochoko, sake bottles; c4 text, c7 vase"
  },
  {
   "key": "mext-16006",
@@ -182,7 +498,38 @@
    "eatout:beer_can",
    "mext:16009",
    "eatout:happoshu"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:NCI_Visuals_Food_Beer.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:NCI_Visuals_Food_Beer.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "wikidata",
+    "file": "File:Pilsner_urquell_mug.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Pilsner_urquell_mug.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "jawiki",
+    "file": "File:Weizenbier-ukko.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Weizenbier-ukko.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "jawiki-page",
+    "file": "File:Asahi_Beer.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Asahi_Beer.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "lager glasses/mug, bottle+glass; c3 barley field"
  },
  {
   "key": "mext-16007",
@@ -191,7 +538,45 @@
   "items": [
    "mext:16007",
    "eatout:kurobeer"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "jawiki",
+    "file": "File:Lidskoje_dark_beer.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Lidskoje_dark_beer.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:YEBISU_BEER,_BLACK_BEER.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:YEBISU_BEER,_BLACK_BEER.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:Black_Beer_(8523272839).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Black_Beer_(8523272839).jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "commons-search",
+    "file": "File:Black_beer_(7907897350).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Black_beer_(7907897350).jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "commons-search",
+    "file": "File:Licorne_Black_(beer).JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Licorne_Black_(beer).JPG",
+    "ok": true
+   }
+  ],
+  "vet": "dark beer bottles/glasses/can; c6 bear"
  },
  {
   "key": "mext-16010",
@@ -200,7 +585,24 @@
   "items": [
    "mext:16010",
    "eatout:wine_white"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Two_Chenin_Blanc_wines_in_glass.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Two_Chenin_Blanc_wines_in_glass.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "jawiki-page",
+    "file": "File:A_glass_of_Tokaji.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:A_glass_of_Tokaji.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "white wine glasses; c6 liquor bottles"
  },
  {
   "key": "mext-16011",
@@ -209,7 +611,38 @@
   "items": [
    "mext:16011",
    "eatout:wine_red"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Pouring_a_glass_of_red_wine.tiff",
+    "page": "https://commons.wikimedia.org/wiki/File:Pouring_a_glass_of_red_wine.tiff",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:Red_Wine_Glass.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Red_Wine_Glass.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "commons-cat",
+    "file": "File:13-08-31-Kochtreffen-Wien-RalfR-N3S_8073-172.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:13-08-31-Kochtreffen-Wien-RalfR-N3S_8073-172.jpg",
+    "ok": true
+   },
+   {
+    "n": 7,
+    "origin": "commons-cat",
+    "file": "File:2014-01-25-Rødvin_med_spejl_og_blitz_(12179284594).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:2014-01-25-R%C3%B8dvin_med_spejl_og_blitz_(12179284594).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "red wine glasses; paintings"
  },
  {
   "key": "mext-16012",
@@ -217,7 +650,31 @@
   "desc": "a wine glass of pink rosé wine",
   "items": [
    "mext:16012"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Sancerre_rose_Wine.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Sancerre_rose_Wine.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "enwiki",
+    "file": "File:Rosé_wine_-_July_2023_-_Sarah_Stierch_01-cropped.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Ros%C3%A9_wine_-_July_2023_-_Sarah_Stierch_01-cropped.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "enwiki-page",
+    "file": "File:Bandol_rose.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Bandol_rose.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "rose glasses/bottles; c3 red, c5 grapes"
  },
  {
   "key": "mext-16013",
@@ -226,7 +683,24 @@
   "items": [
    "mext:16013",
    "eatout:shokoshu"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:ShaoxingwinefromXianHengInn.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:ShaoxingwinefromXianHengInn.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "enwiki-page",
+    "file": "File:Shaoxing_Rice_Wine,_Huadiao,_10ys,_bottle_and_glass.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Shaoxing_Rice_Wine,_Huadiao,_10ys,_bottle_and_glass.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "shaoxing jar, glass with ceramic bottle; shelves"
  },
  {
   "key": "mext-16014",
@@ -236,7 +710,24 @@
    "mext:16014",
    "mext:16015",
    "eatout:shochu_rock"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Shochu_001.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Shochu_001.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "wikidata",
+    "file": "File:Shiranami.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Shiranami.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "shochu on rocks, shochu bottle; c3 kettle, c5 awamori brand"
  },
  {
   "key": "mext-16060",
@@ -244,7 +735,24 @@
   "desc": "a small glass of clear awamori beside an Okinawan ceramic karakara flask",
   "items": [
    "mext:16060"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Kikunotsuyu_Awamori.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Kikunotsuyu_Awamori.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "jawiki-page",
+    "file": "File:Awamori_Omoto_of_Ishigaki,_Okinawa.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Awamori_Omoto_of_Ishigaki,_Okinawa.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "awamori glass with bottle, awamori bottle; shelves/prints"
  },
  {
   "key": "mext-16016",
@@ -253,7 +761,24 @@
   "items": [
    "mext:16016",
    "eatout:whisky"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:A_Glass_of_Whiskey_on_the_Rocks.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:A_Glass_of_Whiskey_on_the_Rocks.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "enwiki",
+    "file": "File:Whiskyhogmanay2010.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Whiskyhogmanay2010.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "whisky glasses; bottles/distillery"
  },
  {
   "key": "mext-16017",
@@ -261,7 +786,24 @@
   "desc": "a brandy snifter with a little deep amber brandy",
   "items": [
    "mext:16017"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Martell_in_brandy_snifter.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Martell_in_brandy_snifter.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "enwiki",
+    "file": "File:Cognac_glass.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Cognac_glass.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "brandy snifters"
  },
  {
   "key": "mext-16018",
@@ -270,7 +812,45 @@
   "items": [
    "mext:16018",
    "mext:16019"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Monopolowa_Baczewski.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Monopolowa_Baczewski.JPG",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "jawiki",
+    "file": "File:Monopolowa.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Monopolowa.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "enwiki",
+    "file": "File:Smirnoff_Red_Label_8213.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Smirnoff_Red_Label_8213.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "enwiki-page",
+    "file": "File:Chopamerd.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Chopamerd.jpg",
+    "ok": true
+   },
+   {
+    "n": 7,
+    "origin": "enwiki-page",
+    "file": "File:Luksusowa_Vodka_700ml.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Luksusowa_Vodka_700ml.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vodka bottles; c5 pasta, shelves"
  },
  {
   "key": "mext-16022",
@@ -279,7 +859,31 @@
   "items": [
    "mext:16022",
    "eatout:umeshu_rock"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Jisaku_Umeshu_with_ume.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Jisaku_Umeshu_with_ume.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "wikidata",
+    "file": "File:Umeshu_(6290326929).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Umeshu_(6290326929).jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "jawiki-page",
+    "file": "File:Umeshu_on_the_rocks.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Umeshu_on_the_rocks.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "umeshu glasses/bottle; c4 steeping jar"
  },
  {
   "key": "mext-16025",
@@ -288,7 +892,31 @@
   "items": [
    "mext:16025",
    "mext:17054"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "enwiki-page",
+    "file": "File:Mirin_(Japanese_sweet_rice_wine_for_cooking).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Mirin_(Japanese_sweet_rice_wine_for_cooking).jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "commons-cat",
+    "file": "File:Kankyo_Brewery_2023-03_ac_(1).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Kankyo_Brewery_2023-03_ac_(1).jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "commons-cat",
+    "file": "File:Kokonoe_Mirin_2024-09_ac.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Kokonoe_Mirin_2024-09_ac.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "hon-mirin bottles; c0 dish unclear, c6 person"
  },
  {
   "key": "mext-16059",
@@ -300,7 +928,45 @@
    "eatout:lemon_sour",
    "eatout:lemon_sour_koime",
    "eatout:strong_chuhai"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:TAKARA焼酎ハイボールレモン.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:TAKARA%E7%84%BC%E9%85%8E%E3%83%8F%E3%82%A4%E3%83%9C%E3%83%BC%E3%83%AB%E3%83%AC%E3%83%A2%E3%83%B3.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Chuhai_Japanese_Hard_Seltzer.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Chuhai_Japanese_Hard_Seltzer.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "commons-search",
+    "file": "File:缶チューハイ_(1490841498).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E7%BC%B6%E3%83%81%E3%83%A5%E3%83%BC%E3%83%8F%E3%82%A4_(1490841498).jpg",
+    "ok": true
+   },
+   {
+    "n": 6,
+    "origin": "commons-search",
+    "file": "File:缶チューハイ_(1559757955).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E7%BC%B6%E3%83%81%E3%83%A5%E3%83%BC%E3%83%8F%E3%82%A4_(1559757955).jpg",
+    "ok": true
+   },
+   {
+    "n": 7,
+    "origin": "commons-search",
+    "file": "File:缶チューハイ_(1490841172).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E7%BC%B6%E3%83%81%E3%83%A5%E3%83%BC%E3%83%8F%E3%82%A4_(1490841172).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "chuhai cans/can+glass"
  },
  {
   "key": "mext-16034",
@@ -310,7 +976,24 @@
    "mext:16034",
    "mext:16037",
    "eatout:green_tea_pet"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 2,
+    "origin": "wikidata",
+    "file": "File:Green_tea_-_緑茶_-_Flickr_-_Kanko.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Green_tea_-_%E7%B7%91%E8%8C%B6_-_Flickr_-_Kanko.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "jawiki",
+    "file": "File:Small_cup_of_green_tea.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Small_cup_of_green_tea.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "cups of green tea; leaves/fields"
  },
  {
   "key": "mext-16035",
@@ -318,7 +1001,24 @@
   "desc": "matcha, a small heap of bright green powdered tea beside a bowl of frothy green matcha with a bamboo whisk",
   "items": [
    "mext:16035"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Matcha_Scoop.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Matcha_Scoop.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "jawiki-page",
+    "file": "File:Bamboo_chasen_to_whisk_koicha_(15455038443).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Bamboo_chasen_to_whisk_koicha_(15455038443).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "matcha powder, whisked bowl; c7 beans"
  },
  {
   "key": "mext-16039",
@@ -327,7 +1027,17 @@
   "items": [
    "mext:16039",
    "mext:16040"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 5,
+    "origin": "jawiki-page",
+    "file": "File:Image-Hoji-cha-2.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Image-Hoji-cha-2.JPG",
+    "ok": true
+   }
+  ],
+  "vet": "cup of amber tea; leaves alone not the drink"
  },
  {
   "key": "mext-16041",
@@ -335,7 +1045,38 @@
   "desc": "a teacup of genmaicha, pale yellow-green tea, beside loose tea leaves with toasted brown rice grains",
   "items": [
    "mext:16041"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Genmaicha.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Genmaicha.JPG",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "wikidata",
+    "file": "File:Genmaicha.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Genmaicha.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "enwiki-page",
+    "file": "File:Genmaicha_tea_brewed_and_unbrewed.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Genmaicha_tea_brewed_and_unbrewed.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "commons-cat",
+    "file": "File:Genmaicha_-_Sencha_green_tea_with_toasted_rice.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Genmaicha_-_Sencha_green_tea_with_toasted_rice.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "genmaicha loose and brewed"
  },
  {
   "key": "mext-16042",
@@ -343,7 +1084,17 @@
   "desc": "a glass of oolong tea with ice, clear amber-brown",
   "items": [
    "mext:16042"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:China_tea.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:China_tea.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "gongfu cup of oolong; rest dry leaves"
  },
  {
   "key": "mext-16044",
@@ -352,7 +1103,45 @@
   "items": [
    "mext:16044",
    "eatout:tea"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:A_cup_of_black_tea_from_Srimangal_Bangladesh.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:A_cup_of_black_tea_from_Srimangal_Bangladesh.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:Black-tea.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Black-tea.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "jawiki-page",
+    "file": "File:Meissen-teacup_pinkrose01.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Meissen-teacup_pinkrose01.jpg",
+    "ok": true
+   },
+   {
+    "n": 5,
+    "origin": "enwiki",
+    "file": "File:Cup_of_black_tea.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Cup_of_black_tea.JPG",
+    "ok": true
+   },
+   {
+    "n": 7,
+    "origin": "enwiki-page",
+    "file": "File:Black_Tea_from_Kerala_IMG_20200924_201237.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Black_Tea_from_Kerala_IMG_20200924_201237.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "cups of black tea; c4 iced, c6 field"
  },
  {
   "key": "mext-16045",
@@ -362,7 +1151,17 @@
    "mext:16045",
    "eatout:drip_coffee",
    "mext:16064"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:A_small_cup_of_coffee.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:A_small_cup_of_coffee.JPG",
+    "ok": true
+   }
+  ],
+  "vet": "black coffee cup; c6 milk coffee can, beans"
  },
  {
   "key": "mext-16046",
@@ -370,7 +1169,17 @@
   "desc": "a small jar of instant coffee granules, dark brown freeze-dried granules with a spoon",
   "items": [
    "mext:16046"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Instant_coffee.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Instant_coffee.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "instant coffee granules; c4 jar unclear"
  },
  {
   "key": "mext-16047",
@@ -379,7 +1188,24 @@
   "items": [
    "mext:16047",
    "eatout:can_coffee"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:JP_Chiba_MAX_Coffee.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:JP_Chiba_MAX_Coffee.JPG",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "enwiki-page",
+    "file": "File:Australian_Boss_Coffee_Double_Expresso.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Australian_Boss_Coffee_Double_Expresso.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "MAX/BOSS milk coffee cans"
  },
  {
   "key": "mext-16048",
@@ -387,7 +1213,9 @@
   "desc": "a small dish of pure cocoa powder, fine dark reddish-brown powder",
   "items": [
    "mext:16048"
-  ]
+  ],
+  "refs": [],
+  "vet": "water tower, buildings, flower"
  },
  {
   "key": "mext-16049",
@@ -395,7 +1223,17 @@
   "desc": "milk cocoa powder, a small dish of fine light brown sweetened cocoa powder with a spoon",
   "items": [
    "mext:16049"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:2019-01-29_19_32_36_Land_O'Lakes_Cocoa_Classics_Chocolate_Supreme_Hot_Chocolate_Mix_after_being_dumped_into_a_mug_of_hot_water_but_before_being_mixed_in_the_Dulles_section_of_Sterling,_Loudoun_County,_Virginia.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:2019-01-29_19_32_36_Land_O%27Lakes_Cocoa_Classics_Chocolate_Supreme_Hot_Chocolate_Mix_after_being_dumped_into_a_mug_of_hot_water_but_before_being_mixed_in_the_Dulles_section_of_Sterling,_Loudoun_County,_Virginia.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "light brown cocoa powder; c0 drink"
  },
  {
   "key": "mext-16056",
@@ -403,7 +1241,24 @@
   "desc": "a glass of aojiru green juice, opaque deep green, beside a little green powder",
   "items": [
    "mext:16056"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:やまだの青汁.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E3%82%84%E3%81%BE%E3%81%A0%E3%81%AE%E9%9D%92%E6%B1%81.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "enwiki",
+    "file": "File:Aojiru-inbottles-forsale-dec18-2015.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Aojiru-inbottles-forsale-dec18-2015.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "aojiru glass/bottles; signs"
  },
  {
   "key": "mext-16050",
@@ -411,7 +1266,24 @@
   "desc": "a cup of amazake, thick milky white sweet rice drink with soft rice grains",
   "items": [
    "mext:16050"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 6,
+    "origin": "commons-cat",
+    "file": "File:Amazake_001.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Amazake_001.jpg",
+    "ok": true
+   },
+   {
+    "n": 7,
+    "origin": "commons-cat",
+    "file": "File:Amazake_with_sign_oct_29_2021.jpeg",
+    "page": "https://commons.wikimedia.org/wiki/File:Amazake_with_sign_oct_29_2021.jpeg",
+    "ok": true
+   }
+  ],
+  "vet": "milky amazake cups; packs"
  },
  {
   "key": "mext-16051",
@@ -419,7 +1291,9 @@
   "desc": "a teacup of kombu tea, clear pale golden-brown",
   "items": [
    "mext:16051"
-  ]
+  ],
+  "refs": [],
+  "vet": "no clear kombu tea; dumplings, mixed"
  },
  {
   "key": "mext-16057",
@@ -428,7 +1302,31 @@
   "items": [
    "mext:16057",
    "eatout:sports_drink"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:HK_Soft_drink_pre-packed_plastic_bottles_Watsons_Water_Gatorade_July_2017_IX1.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:HK_Soft_drink_pre-packed_plastic_bottles_Watsons_Water_Gatorade_July_2017_IX1.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "enwiki",
+    "file": "File:Gatorade_185838.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Gatorade_185838.jpg",
+    "ok": true
+   },
+   {
+    "n": 7,
+    "origin": "commons-cat",
+    "file": "File:Korean_Low_Calorie_Gatorade_(Blue_Bolt_flavor).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Korean_Low_Calorie_Gatorade_(Blue_Bolt_flavor).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "sports drink bottles; c2 Lucozade/c3 player, c5 table"
  },
  {
   "key": "mext-16053",
@@ -438,7 +1336,38 @@
    "mext:16053",
    "eatout:cola_m",
    "eatout:cola_pet"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Glass_cola.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Glass_cola.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "jawiki-page",
+    "file": "File:15-09-26-RalfR-WLC-0098_-_Coca-Cola_glass_bottle_(Germany).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:15-09-26-RalfR-WLC-0098_-_Coca-Cola_glass_bottle_(Germany).jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "jawiki-page",
+    "file": "File:15-09-26-RalfR-WLC-0098.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:15-09-26-RalfR-WLC-0098_-_Coca-Cola_glass_bottle_(Germany).jpg",
+    "ok": true
+   },
+   {
+    "n": 7,
+    "origin": "jawiki-page",
+    "file": "File:Pepsi.cola.japan.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Pepsi.cola.japan.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "cola glass and bottles; c3 ad art"
  },
  {
   "key": "mext-16054",
@@ -447,7 +1376,24 @@
   "items": [
    "mext:16054",
    "eatout:cider_pet"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 3,
+    "origin": "jawiki-page",
+    "file": "File:Cider_(lemon-lime_drink).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Cider_(lemon-lime_drink).jpg",
+    "ok": true
+   },
+   {
+    "n": 6,
+    "origin": "jawiki-page",
+    "file": "File:Mitsuya_cider1500.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Mitsuya_cider1500.JPG",
+    "ok": true
+   }
+  ],
+  "vet": "clear soda poured, Mitsuya cider; c1/c2/c4 apple cider lookalike"
  },
  {
   "key": "mext-16058",
@@ -456,7 +1402,24 @@
   "items": [
    "mext:16058",
    "eatout:non_alc_beer"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "jawiki",
+    "file": "File:Hoppy-20190908.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Hoppy-20190908.JPG",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Suntory_allfree_500ml.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Suntory_allfree_500ml.JPG",
+    "ok": true
+   }
+  ],
+  "vet": "Hoppy with glass, All-Free; c3 can unclear"
  },
  {
   "key": "mext-16055",
@@ -464,7 +1427,24 @@
   "desc": "a glass of cold barley tea (mugicha), clear amber-brown with ice cubes",
   "items": [
    "mext:16055"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Boricha_(barley_tea).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Boricha_(barley_tea).jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:Mugicha_by_CR_01.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Mugicha_by_CR_01.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "barley tea in cup/glass; grains/fields"
  },
  {
   "key": "mext-17001",
@@ -472,7 +1452,38 @@
   "desc": "a small glass bottle of thin dark brown Worcester sauce and a small dish of sauce",
   "items": [
    "mext:17001"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Worcester_Sauce_001.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Worcester_Sauce_001.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "wikidata",
+    "file": "File:Lea_and_Perrins_800.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Lea_and_Perrins_800.JPG",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "jawiki-page",
+    "file": "File:Lea_&_Perrins_worcestershire_sauce_150ml.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Lea_%26_Perrins_worcestershire_sauce_150ml.jpg",
+    "ok": true
+   },
+   {
+    "n": 6,
+    "origin": "enwiki-page",
+    "file": "File:18-10-20_MG_4632.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:18-10-20_MG_4632.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "dish of thin sauce, Lea & Perrins, bottles"
  },
  {
   "key": "mext-17002",
@@ -482,7 +1493,9 @@
    "mext:17002",
    "mext:17003",
    "mext:17085"
-  ]
+  ],
+  "refs": [],
+  "vet": "only worcester bottles/thin dish; no thick chuno sauce clearly"
  },
  {
   "key": "mext-17004",
@@ -490,7 +1503,24 @@
   "desc": "a small dish of doubanjiang, chunky dark red chili bean paste",
   "items": [
    "mext:17004"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Doubanjiang.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Doubanjiang.jpg",
+    "ok": true
+   },
+   {
+    "n": 7,
+    "origin": "commons-cat",
+    "file": "File:Juan-cheng_Doubanjiang.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Juan-cheng_Doubanjiang.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "chunky chili bean paste, jar; c1 hot sauce"
  },
  {
   "key": "mext-17006",
@@ -498,7 +1528,24 @@
   "desc": "a small dish of rayu chili oil, clear red oil with chili flakes at the bottom",
   "items": [
    "mext:17006"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Chilioil.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Chilioil.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:ラー油.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E3%83%A9%E3%83%BC%E6%B2%B9.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "chili oil dish, rayu bottle"
  },
  {
   "key": "mext-17007",
@@ -508,7 +1555,31 @@
    "mext:17007",
    "mext:17086",
    "mext:17087"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Soja_Sauce_zum_Sushi_(25966205154).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Soja_Sauce_zum_Sushi_(25966205154).jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:Soy_sauce_2.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Soy_sauce_2.jpg",
+    "ok": true
+   },
+   {
+    "n": 5,
+    "origin": "jawiki-page",
+    "file": "File:Kikkoman_soysauce.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Kikkoman_soysauce.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "dark soy dishes, Kikkoman dispenser; c7 beans"
  },
  {
   "key": "mext-17008",
@@ -516,7 +1587,9 @@
   "desc": "a small dish of light soy sauce (usukuchi), clear reddish-amber, beside a cruet",
   "items": [
    "mext:17008"
-  ]
+  ],
+  "refs": [],
+  "vet": "shelves of Chinese sauces, no clear usukuchi"
  },
  {
   "key": "mext-17012",
@@ -524,7 +1597,24 @@
   "desc": "a small dish of fine white table salt with a small spoon",
   "items": [
    "mext:17012"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Salt_shaker_on_white_background.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Salt_shaker_on_white_background.jpg",
+    "ok": true
+   },
+   {
+    "n": 5,
+    "origin": "commons-search",
+    "file": "File:Table_salt_with_salt_shaker_V1.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Table_salt_with_salt_shaker_V1.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "salt shaker, spilled fine salt; c3/c4 coarse crystals, c0 salt pans"
  },
  {
   "key": "mext-17090",
@@ -532,7 +1622,31 @@
   "desc": "a small glass of black vinegar, clear deep reddish-brown",
   "items": [
    "mext:17090"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Black_Vinegar.jpeg",
+    "page": "https://commons.wikimedia.org/wiki/File:Black_Vinegar.jpeg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "jawiki-page",
+    "file": "File:黒酢.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E9%BB%92%E9%85%A2.jpg",
+    "ok": true
+   },
+   {
+    "n": 5,
+    "origin": "commons-cat",
+    "file": "File:Black-vinegar.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Black-vinegar.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "black vinegar bottles, dark glass"
  },
  {
   "key": "mext-17015",
@@ -541,7 +1655,17 @@
   "items": [
    "mext:17015",
    "mext:17016"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 6,
+    "origin": "enwiki-page",
+    "file": "File:Coconut_Vinegar_(8681608491).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Coconut_Vinegar_(8681608491).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vinegar bottle; others dark/ambiguous"
  },
  {
   "key": "mext-17094",
@@ -550,7 +1674,17 @@
   "items": [
    "mext:17094",
    "mext:17101"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "wikidata",
+    "file": "File:Sushi_vinegar.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Sushi_vinegar.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "sushi-zu bottle; c2-7 red dipping sauces"
  },
  {
   "key": "mext-17021",
@@ -566,7 +1700,17 @@
   "desc": "a bowl of chicken stock, clear pale golden broth with a few droplets of fat",
   "items": [
    "mext:17024"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 3,
+    "origin": "commons-search",
+    "file": "File:Chicken_Stock.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Chicken_Stock.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "golden broth bowl; pots of bones"
  },
  {
   "key": "mext-17027",
@@ -574,7 +1718,24 @@
   "desc": "bouillon cubes, small golden-brown square cubes, one in a cup of clear broth",
   "items": [
    "mext:17027"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Bruehe-2.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Bruehe-2.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "enwiki-page",
+    "file": "File:Bruehe-1.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Bruehe-1.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "clear consomme broth bowls; no cube visible"
  },
  {
   "key": "mext-17093",
@@ -583,7 +1744,9 @@
   "items": [
    "mext:17093",
    "mext:17028"
-  ]
+  ],
+  "refs": [],
+  "vet": "only a plant illustration"
  },
  {
   "key": "mext-17029",
@@ -593,7 +1756,17 @@
    "mext:17029",
    "mext:17141",
    "mext:17030"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "jawiki-page",
+    "file": "File:Teraoka-Yuki-Jozo-1.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Teraoka-Yuki-Jozo-1.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "tsuyu bottles; c0 shelf unclear"
  },
  {
   "key": "mext-17031",
@@ -601,7 +1774,24 @@
   "desc": "a small dish of oyster sauce, thick glossy dark brown sauce",
   "items": [
    "mext:17031"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:OysterSauce2.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:OysterSauce2.jpg",
+    "ok": true
+   },
+   {
+    "n": 6,
+    "origin": "commons-cat",
+    "file": "File:LEE_KUM_KEE_SALT_REDUCED_OYSTER_SAUCE_CHINA_VERSION_(2).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:LEE_KUM_KEE_SALT_REDUCED_OYSTER_SAUCE_CHINA_VERSION_(2).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "thick oyster sauce spoon, bottle"
  },
  {
   "key": "mext-17107",
@@ -609,7 +1799,24 @@
   "desc": "a small bottle of fish sauce, clear amber-brown",
   "items": [
    "mext:17107"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Thaifishsauce0609.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Thaifishsauce0609.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Phrik_nam_pla_(cropped).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Phrik_nam_pla_(cropped).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "fish sauce bottles shelf, dish with chili"
  },
  {
   "key": "mext-17098",
@@ -617,7 +1824,17 @@
   "desc": "a small dish of sesame sauce, creamy light tan sauce",
   "items": [
    "mext:17098"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 5,
+    "origin": "commons-search",
+    "file": "File:Sesame_sauce_for_fugu_nabe_by_june29_in_Osaka.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Sesame_sauce_for_fugu_nabe_by_june29_in_Osaka.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "small dish of tan sesame sauce; others dishes"
  },
  {
   "key": "mext-17105",
@@ -625,7 +1842,24 @@
   "desc": "a small saucepan of demi-glace sauce, glossy thick dark brown",
   "items": [
    "mext:17105"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Demiglace.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Demiglace.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "jawiki-page",
+    "file": "File:Sauce_demi-glace_01.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Sauce_demi-glace_01.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "ladle/saucepan of demi-glace; plated dishes"
  },
  {
   "key": "mext-17106",
@@ -633,7 +1867,24 @@
   "desc": "a small dish of tianmianjiang, thick glossy dark brown-black sweet bean sauce",
   "items": [
    "mext:17106"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Sweetnoodlesauce.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Sweetnoodlesauce.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "enwiki-page",
+    "file": "File:Chunjang_(cropped).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Chunjang_(cropped).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "dark glossy sweet bean paste; noodle dishes"
  },
  {
   "key": "mext-17108",
@@ -641,7 +1892,9 @@
   "desc": "a small pitcher of hiyashi chuka sauce, clear amber sweet-sour soy dressing",
   "items": [
    "mext:17108"
-  ]
+  ],
+  "refs": [],
+  "vet": "only hiyashi chuka dishes, no sauce"
  },
  {
   "key": "mext-17109",
@@ -649,7 +1902,17 @@
   "desc": "a small saucepan of white sauce (bechamel), smooth thick creamy white",
   "items": [
    "mext:17109"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 7,
+    "origin": "commons-search",
+    "file": "File:Making_White_sauce_5.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Making_White_sauce_5.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "white sauce in pan; pasta dishes, roux stages"
  },
  {
   "key": "mext-17110",
@@ -658,7 +1921,9 @@
   "items": [
    "mext:17110",
    "mext:17137"
-  ]
+  ],
+  "refs": [],
+  "vet": "dishes with dipping sauces, no clear ponzu"
  },
  {
   "key": "mext-17032",
@@ -666,7 +1931,9 @@
   "desc": "mapo tofu sauce base, thick glossy red-brown spicy sauce with minced meat in a small dish",
   "items": [
    "mext:17032"
-  ]
+  ],
+  "refs": [],
+  "vet": "mapo tofu dishes, not the sauce base"
  },
  {
   "key": "mext-17033",
@@ -674,7 +1941,17 @@
   "desc": "a small bowl of meat sauce, thick red-brown minced meat and tomato sauce",
   "items": [
    "mext:17033"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Ragu.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Ragu.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "bowl of meat sauce; pasta dishes, c6 tomato puree"
  },
  {
   "key": "mext-17112",
@@ -683,7 +1960,9 @@
   "items": [
    "mext:17112",
    "mext:17113"
-  ]
+  ],
+  "refs": [],
+  "vet": "red dipping sauces, skewers, vending machine"
  },
  {
   "key": "mext-17115",
@@ -691,7 +1970,17 @@
   "desc": "a small dish of yuzu kosho, a pale green chunky citrus chili paste",
   "items": [
    "mext:17115"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Yuzukosyou.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Yuzukosyou.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "jar of green yuzu kosho; plated dishes"
  },
  {
   "key": "mext-17036",
@@ -699,7 +1988,31 @@
   "desc": "a small dish of tomato ketchup, glossy bright red, with a squeeze bottle",
   "items": [
    "mext:17036"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Ketchup-01.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Ketchup-01.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "jawiki-page",
+    "file": "File:Heinz_USDA_Organic_Tomato_Ketchup.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Heinz_USDA_Organic_Tomato_Ketchup.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "jawiki-page",
+    "file": "File:Ketchuppacket.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Ketchuppacket.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "ketchup dish, Heinz bottle, packet; c3 soy bottles"
  },
  {
   "key": "mext-17037",
@@ -707,7 +2020,31 @@
   "desc": "a small bowl of tomato sauce, smooth red sauce with herbs",
   "items": [
    "mext:17037"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Fresh_Tomato_Sauce_(Unsplash).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Fresh_Tomato_Sauce_(Unsplash).jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:Concasse_de_tomate2.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Concasse_de_tomate2.JPG",
+    "ok": true
+   },
+   {
+    "n": 7,
+    "origin": "enwiki-page",
+    "file": "File:Tomate_natural_triturado.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Tomate_natural_triturado.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "tomato sauce jar/pan/bowl; pasta dishes"
  },
  {
   "key": "mext-17042",
@@ -717,7 +2054,31 @@
    "mext:17042",
    "mext:17043",
    "mext:17118"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Zaanse_mayonaise.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Zaanse_mayonaise.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "jawiki-page",
+    "file": "File:2016_0529_Kewpie_mayonnaise_NL.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:2016_0529_Kewpie_mayonnaise_NL.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "jawiki-page",
+    "file": "File:Duke's_Mayonnaise.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Duke%27s_Mayonnaise.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "mayo swirl, squeeze bottle, jar; c6 oil"
  },
  {
   "key": "mext-17040",
@@ -727,7 +2088,17 @@
    "mext:17040",
    "mext:17116",
    "mext:17039"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 3,
+    "origin": "jawiki-page",
+    "file": "File:フレンチドレッシングセパレート.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E3%83%95%E3%83%AC%E3%83%B3%E3%83%81%E3%83%89%E3%83%AC%E3%83%83%E3%82%B7%E3%83%B3%E3%82%B0%E3%82%BB%E3%83%91%E3%83%AC%E3%83%BC%E3%83%88.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "clear separated dressing in bowl; others unclear"
  },
  {
   "key": "mext-17117",
@@ -735,7 +2106,9 @@
   "desc": "a small dish of creamy sesame dressing, smooth light tan with sesame seeds",
   "items": [
    "mext:17117"
-  ]
+  ],
+  "refs": [],
+  "vet": "salad, dark sauce, labels; none clearly creamy sesame dressing"
  },
  {
   "key": "mext-17041",
@@ -743,7 +2116,17 @@
   "desc": "a small dish of Thousand Island dressing, creamy pale orange-pink with relish bits",
   "items": [
    "mext:17041"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 2,
+    "origin": "jawiki-page",
+    "file": "File:Thousand-Island-Dressing.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Thousand-Island-Dressing.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "pink-orange sauce bowl; salads/boxes"
  },
  {
   "key": "mext-17149",
@@ -751,7 +2134,31 @@
   "desc": "a small dish of creamy French dressing, smooth pale orange",
   "items": [
    "mext:17149"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 5,
+    "origin": "enwiki-page",
+    "file": "File:Kroger_Creamy_French_Dressing_-_October_2023_-_Sarah_Stierch.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Kroger_Creamy_French_Dressing_-_October_2023_-_Sarah_Stierch.jpg",
+    "ok": true
+   },
+   {
+    "n": 6,
+    "origin": "commons-cat",
+    "file": "File:2020-06-19_22_14_16_A_sample_of_Kraft_Creamy_French_Dressing_in_the_Dulles_section_of_Sterling,_Loudoun_County,_Virginia.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:2020-06-19_22_14_16_A_sample_of_Kraft_Creamy_French_Dressing_in_the_Dulles_section_of_Sterling,_Loudoun_County,_Virginia.jpg",
+    "ok": true
+   },
+   {
+    "n": 7,
+    "origin": "commons-cat",
+    "file": "File:2020-06-24_03_04_46_A_sample_of_Kraft_Creamy_French_Dressing_in_the_Dulles_section_of_Sterling,_Loudoun_County,_Virginia.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:2020-06-24_03_04_46_A_sample_of_Kraft_Creamy_French_Dressing_in_the_Dulles_section_of_Sterling,_Loudoun_County,_Virginia.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "Kraft creamy French, orange dollops"
  },
  {
   "key": "mext-17044",
@@ -759,7 +2166,9 @@
   "desc": "a small dish of white miso (shiro miso), smooth pale cream-yellow paste",
   "items": [
    "mext:17044"
-  ]
+  ],
+  "refs": [],
+  "vet": "Shinshu white-type (light kara miso) tub, not sweet shiro miso"
  },
  {
   "key": "mext-17045",
@@ -770,7 +2179,24 @@
    "mext:17120",
    "mext:17119",
    "mext:17050"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Miso_001.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Miso_001.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "wikidata",
+    "file": "File:Miso_002.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Miso_002.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "tan miso bowl, Shinshu miso tub"
  },
  {
   "key": "mext-17046",
@@ -779,7 +2205,9 @@
   "items": [
    "mext:17046",
    "mext:17048"
-  ]
+  ],
+  "refs": [],
+  "vet": "no clear dark red miso"
  },
  {
   "key": "mext-17047",
@@ -787,7 +2215,9 @@
   "desc": "a small dish of barley miso, chunky light brown paste with barley grains",
   "items": [
    "mext:17047"
-  ]
+  ],
+  "refs": [],
+  "vet": "no clear barley miso"
  },
  {
   "key": "mext-17049",
@@ -796,7 +2226,24 @@
   "items": [
    "mext:17049",
    "eatout:instant_miso"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Instant_miso_soup_(cropped).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Instant_miso_soup_(cropped).jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "commons-search",
+    "file": "File:Instant_miso_soup.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Instant_miso_soup.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "miso soup bowls with tofu; c4/c5 packs unclear"
  },
  {
   "key": "mext-17051",
@@ -804,7 +2251,31 @@
   "desc": "a block of Japanese curry roux, a dark brown bar divided into squares",
   "items": [
    "mext:17051"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Curry_Roux_blocks_01.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Curry_Roux_blocks_01.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:Curry_Roux_blocks_02.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Curry_Roux_blocks_02.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "commons-search",
+    "file": "File:Curry_Roux_blocks_03.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Curry_Roux_blocks_03.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "curry roux blocks; c0 rice dish, c4 curry"
  },
  {
   "key": "mext-17052",
@@ -812,7 +2283,9 @@
   "desc": "a block of hayashi rice roux, a dark reddish-brown bar divided into squares",
   "items": [
    "mext:17052"
-  ]
+  ],
+  "refs": [],
+  "vet": "magazine cover only"
  },
  {
   "key": "mext-17125",
@@ -828,7 +2301,24 @@
   "desc": "sheets of sake kasu, sake lees, soft pale cream-white irregular sheets",
   "items": [
    "mext:17053"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Japanese_Sakekasu.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Japanese_Sakekasu.JPG",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:Sakekasu_20070116.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Sakekasu_20070116.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "sake kasu sheets/pieces; c2 kasujiru, c4 kasuzuke fish"
  },
  {
   "key": "mext-17127",
@@ -836,7 +2326,24 @@
   "desc": "a small dish of egg furikake, yellow egg granules with green nori flakes and sesame",
   "items": [
    "mext:17127"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 4,
+    "origin": "enwiki-page",
+    "file": "File:Noritama_(2020).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Noritama_(2020).jpg",
+    "ok": true
+   },
+   {
+    "n": 5,
+    "origin": "enwiki-page",
+    "file": "File:Noritama01.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Noritama01.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "egg furikake loose and on rice; c0 chirimen pack"
  },
  {
   "key": "mext-17138",
@@ -844,7 +2351,9 @@
   "desc": "a small bottle of clear cooking sake",
   "items": [
    "mext:17138"
-  ]
+  ],
+  "refs": [],
+  "vet": "shelves/unlabelled bottles, no clear cooking sake"
  },
  {
   "key": "mext-17058",
@@ -852,7 +2361,17 @@
   "desc": "a small dab of Japanese karashi mustard, bright yellow smooth paste on a small dish",
   "items": [
    "mext:17058"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 7,
+    "origin": "commons-cat",
+    "file": "File:2017-01-01桃園-藏王日本家庭料理_(31980446951).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:2017-01-01%E6%A1%83%E5%9C%92-%E8%97%8F%E7%8E%8B%E6%97%A5%E6%9C%AC%E5%AE%B6%E5%BA%AD%E6%96%99%E7%90%86_(31980446951).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "dab of yellow karashi; c0 western mustard dish, jars"
  },
  {
   "key": "mext-17059",
@@ -860,7 +2379,31 @@
   "desc": "a small dish of smooth yellow prepared mustard",
   "items": [
    "mext:17059"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:Bread_with_mustard.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Bread_with_mustard.JPG",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "jawiki-page",
+    "file": "File:Dijon_mustard_on_a_spoon_-_20051218.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Dijon_mustard_on_a_spoon_-_20051218.jpg",
+    "ok": true
+   },
+   {
+    "n": 5,
+    "origin": "enwiki",
+    "file": "File:Mustard.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Mustard.JPG",
+    "ok": true
+   }
+  ],
+  "vet": "prepared yellow mustard spread/spoon/dish"
  },
  {
   "key": "mext-17060",
@@ -868,7 +2411,9 @@
   "desc": "a small dish of whole grain mustard, yellow-brown with visible seeds",
   "items": [
    "mext:17060"
-  ]
+  ],
+  "refs": [],
+  "vet": "dishes only, no whole grain mustard"
  },
  {
   "key": "mext-17061",
@@ -876,7 +2421,31 @@
   "desc": "a small dish of curry powder, fine bright yellow-orange powder",
   "items": [
    "mext:17061"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Nahrungsmittel_2012-07-08-9517.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Nahrungsmittel_2012-07-08-9517.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:Curry_powder_in_the_spice-bazaar_in_Istanbul.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Curry_powder_in_the_spice-bazaar_in_Istanbul.jpg",
+    "ok": true
+   },
+   {
+    "n": 6,
+    "origin": "commons-cat",
+    "file": "File:AdhocCurry.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:AdhocCurry.JPG",
+    "ok": true
+   }
+  ],
+  "vet": "curry powder heaps/dish; text pages"
  },
  {
   "key": "mext-17063",
@@ -884,7 +2453,9 @@
   "desc": "a small dish of ground black pepper, beside whole black peppercorns",
   "items": [
    "mext:17063"
-  ]
+  ],
+  "refs": [],
+  "vet": "only whole peppercorn mixes and plants, no ground black pepper"
  },
  {
   "key": "mext-17064",
@@ -892,7 +2463,9 @@
   "desc": "a small dish of ground white pepper, fine pale beige powder",
   "items": [
    "mext:17064"
-  ]
+  ],
+  "refs": [],
+  "vet": "only whole peppercorn mixes and plants, no white pepper"
  },
  {
   "key": "mext-17073",
@@ -900,7 +2473,24 @@
   "desc": "a small dish of ichimi chili powder, fine bright red powder, beside two dried red chilies",
   "items": [
    "mext:17073"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 4,
+    "origin": "commons-search",
+    "file": "File:Red_Chili_Powder_(Lall_Mirch)_(49695826571).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Red_Chili_Powder_(Lall_Mirch)_(49695826571).jpg",
+    "ok": true
+   },
+   {
+    "n": 5,
+    "origin": "commons-search",
+    "file": "File:Byadgi_chili_powder.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Byadgi_chili_powder.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "red chili powder heaps; c0 shichimi gourds"
  },
  {
   "key": "mext-17081",
@@ -908,7 +2498,17 @@
   "desc": "a small mound of wasabi paste, smooth pale green, on a small dish",
   "items": [
    "mext:17081"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 3,
+    "origin": "commons-cat",
+    "file": "File:75_-_IMG_20150901_133804.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:75_-_IMG_20150901_133804.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "dab of pale green paste; c0 fresh grated root, c5 plants"
  },
  {
   "key": "mext-17084",
@@ -916,7 +2516,31 @@
   "desc": "a small dish of baking powder, fine bright white powder with a measuring spoon",
   "items": [
    "mext:17084"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Backpulver_RZ.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Backpulver_RZ.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:Backpulver.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Backpulver.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "enwiki",
+    "file": "File:BakingPowder.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:BakingPowder.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "white powder spoon/heap, baking powder can"
  },
  {
   "key": "mext-18024",
@@ -925,7 +2549,9 @@
   "items": [
    "mext:18024",
    "dishes:shiraae"
-  ]
+  ],
+  "refs": [],
+  "vet": "no clear shiraae; spinach and set meals"
  },
  {
   "key": "mext-18025",
@@ -935,7 +2561,9 @@
    "mext:18025",
    "dishes:gomaae-ingen",
    "toyonaka:127689"
-  ]
+  ],
+  "refs": [],
+  "vet": "green bean stir-fries, no clear goma-ae"
  },
  {
   "key": "mext-18026",
@@ -953,7 +2581,24 @@
    "mext:18027",
    "dishes:namasu",
    "kurume:141"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 6,
+    "origin": "commons-search",
+    "file": "File:紅白なます.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E7%B4%85%E7%99%BD%E3%81%AA%E3%81%BE%E3%81%99.jpg",
+    "ok": true
+   },
+   {
+    "n": 7,
+    "origin": "commons-search",
+    "file": "File:紅白なます_(cropped).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E7%B4%85%E7%99%BD%E3%81%AA%E3%81%BE%E3%81%99_(cropped).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "daikon-carrot namasu bowls; sandwiches"
  },
  {
   "key": "mext-18029",
@@ -962,7 +2607,24 @@
   "items": [
    "mext:18029",
    "dishes:unohana"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Okara_(soybean_pulp).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Okara_(soybean_pulp).jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:U-no-hana,_at_The_Meshiya_(2014-10-18).JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:U-no-hana,_at_The_Meshiya_(2014-10-18).JPG",
+    "ok": true
+   }
+  ],
+  "vet": "okara dishes; c2 flowers, c7 map"
  },
  {
   "key": "mext-18030",
@@ -979,7 +2641,31 @@
   "items": [
    "mext:18031",
    "eatout:gyudon_atama"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:JP_日本_Japan_京都_Kyoto_四條_Shijo_side_Sukiya_Restaurant_food_Gyudon_牛肉丼_beef_toppings_and_rice_bowl_1914pm_June_2026_N13P_02.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:JP_%E6%97%A5%E6%9C%AC_Japan_%E4%BA%AC%E9%83%BD_Kyoto_%E5%9B%9B%E6%A2%9D_Shijo_side_Sukiya_Restaurant_food_Gyudon_%E7%89%9B%E8%82%89%E4%B8%BC_beef_toppings_and_rice_bowl_1914pm_June_2026_N13P_02.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "commons-search",
+    "file": "File:JP_日本_Japan_京都_Kyoto_四條_Shijo_side_Sukiya_Restaurant_food_Gyudon_牛肉丼_beef_toppings_and_rice_bowl_1914pm_June_2026_N13P_06.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:JP_%E6%97%A5%E6%9C%AC_Japan_%E4%BA%AC%E9%83%BD_Kyoto_%E5%9B%9B%E6%A2%9D_Shijo_side_Sukiya_Restaurant_food_Gyudon_%E7%89%9B%E8%82%89%E4%B8%BC_beef_toppings_and_rice_bowl_1914pm_June_2026_N13P_06.jpg",
+    "ok": true
+   },
+   {
+    "n": 6,
+    "origin": "commons-search",
+    "file": "File:JP_日本_Japan_京都_Kyoto_四條_Shijo_side_Sukiya_Restaurant_food_Gyudon_牛肉丼_beef_toppings_and_rice_bowl_1914pm_June_2026_N13P_04.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:JP_%E6%97%A5%E6%9C%AC_Japan_%E4%BA%AC%E9%83%BD_Kyoto_%E5%9B%9B%E6%A2%9D_Shijo_side_Sukiya_Restaurant_food_Gyudon_%E7%89%9B%E8%82%89%E4%B8%BC_beef_toppings_and_rice_bowl_1914pm_June_2026_N13P_04.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "gyudon beef; c4/c5 with toppings"
  },
  {
   "key": "mext-18032",
@@ -988,7 +2674,17 @@
   "items": [
    "mext:18032",
    "dishes:kiriboshi-ni"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Kiriboshi_daikon_002.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Kiriboshi_daikon_002.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "shredded simmered radish bowl; c1 looks namasu-like"
  },
  {
   "key": "mext-18033",
@@ -998,7 +2694,31 @@
    "mext:18033",
    "dishes:kinpira-gobo",
    "toyonaka:127411"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "jawiki",
+    "file": "File:Kinpira_002.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Kinpira_002.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "commons-search",
+    "file": "File:Kinpira_gobou.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Kinpira_gobou.jpg",
+    "ok": true
+   },
+   {
+    "n": 5,
+    "origin": "commons-search",
+    "file": "File:伏見の一位IMG_20220310_09.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E4%BC%8F%E8%A6%8B%E3%81%AE%E4%B8%80%E4%BD%8DIMG_20220310_09.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "kinpira; c1 carrots, c2 other dish"
  },
  {
   "key": "mext-18034",
@@ -1019,7 +2739,38 @@
    "kurume:069",
    "toyonaka:119089",
    "kumagaya:02330"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Chikuzen-ni.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Chikuzen-ni.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "wikidata",
+    "file": "File:がめ煮（筑前煮）P1010424.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E3%81%8C%E3%82%81%E7%85%AE%EF%BC%88%E7%AD%91%E5%89%8D%E7%85%AE%EF%BC%89P1010424.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:イニシオフーズ東大阪工場_筑前煮_大_20260828b.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E3%82%A4%E3%83%8B%E3%82%B7%E3%82%AA%E3%83%95%E3%83%BC%E3%82%BA%E6%9D%B1%E5%A4%A7%E9%98%AA%E5%B7%A5%E5%A0%B4_%E7%AD%91%E5%89%8D%E7%85%AE_%E5%A4%A7_20260828b.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "commons-search",
+    "file": "File:イニシオフーズ東大阪工場_筑前煮_大_20260828a.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E3%82%A4%E3%83%8B%E3%82%B7%E3%82%AA%E3%83%95%E3%83%BC%E3%82%BA%E6%9D%B1%E5%A4%A7%E9%98%AA%E5%B7%A5%E5%A0%B4_%E7%AD%91%E5%89%8D%E7%85%AE_%E5%A4%A7_20260828a.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "chikuzenni"
  },
  {
   "key": "mext-18037",
@@ -1029,7 +2780,9 @@
    "mext:18037",
    "dishes:hijiki-ni",
    "toyonaka:118562"
-  ]
+  ],
+  "refs": [],
+  "vet": "hijiki not clearly the subject"
  },
  {
   "key": "mext-18038",
@@ -1039,7 +2792,17 @@
    "mext:18038",
    "dishes:aji-nanbanzuke",
    "kumagaya:03286"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Koiwashi_Nanbanzuke.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Koiwashi_Nanbanzuke.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "fried fish under julienned veg; c2 different fish dish"
  },
  {
   "key": "mext-18053",
@@ -1052,7 +2815,31 @@
    "maff_kyodo:39_20_osaka",
    "kurume:229",
    "toyonaka:265163"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Okonomiyaki_001.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Okonomiyaki_001.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "wikidata",
+    "file": "File:Okonomiyaki_with_tomato_and_cheeze_(4716607523).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Okonomiyaki_with_tomato_and_cheeze_(4716607523).jpg",
+    "ok": true
+   },
+   {
+    "n": 6,
+    "origin": "jawiki-page",
+    "file": "File:Modern-yaki_モダン焼き_DSCF3092.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Modern-yaki_%E3%83%A2%E3%83%80%E3%83%B3%E7%84%BC%E3%81%8D_DSCF3092.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "okonomiyaki; c3 different dish, c2 shop"
  },
  {
   "key": "mext-18023",
@@ -1060,7 +2847,9 @@
   "desc": "matsumaezuke, thin strips of dried squid and kombu with golden herring roe in a sticky soy marinade, in a small dish",
   "items": [
    "mext:18023"
-  ]
+  ],
+  "refs": [],
+  "vet": "no clear matsumaezuke"
  },
  {
   "key": "mext-18040",
@@ -1070,7 +2859,24 @@
    "mext:18040",
    "mext:18001",
    "mext:18041"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:Indian_curry_with_dosa.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Indian_curry_with_dosa.jpg",
+    "ok": true
+   },
+   {
+    "n": 7,
+    "origin": "jawiki-page",
+    "file": "File:Curry_soba_by_nyaa_birdies_perch_in_Izu,_Shizuoka.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Curry_soba_by_nyaa_birdies_perch_in_Izu,_Shizuoka.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "Japanese curry sauce bowls/pot; c3/c5 Indian curry"
  },
  {
   "key": "mext-18043",
@@ -1079,7 +2885,17 @@
   "items": [
    "mext:18043",
    "dishes:cream-croquette"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:カニクリームコロッケをウーバーで.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E3%82%AB%E3%83%8B%E3%82%AF%E3%83%AA%E3%83%BC%E3%83%A0%E3%82%B3%E3%83%AD%E3%83%83%E3%82%B1%E3%82%92%E3%82%A6%E3%83%BC%E3%83%90%E3%83%BC%E3%81%A7.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "oval croquettes; c4/c5 drawings"
  },
  {
   "key": "mext-18044",
@@ -1087,7 +2903,9 @@
   "desc": "corn cream croquettes, oval golden panko croquettes, one cut showing creamy pale yellow filling with corn kernels",
   "items": [
    "mext:18044"
-  ]
+  ],
+  "refs": [],
+  "vet": "butter ad, old photo"
  },
  {
   "key": "mext-18018",
@@ -1099,7 +2917,24 @@
    "eatout:korokke_hot",
    "toyonaka:268162",
    "kumagaya:3211"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Korokke.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Korokke.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:Potato_croquettes_001.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Potato_croquettes_001.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "potato croquettes; tonkatsu, burger, set meals"
  },
  {
   "key": "mext-18045",
@@ -1110,7 +2945,38 @@
    "dishes:cream-stew",
    "eatout:cream_stew",
    "kurume:074"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:Cream_Stew_001.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Cream_Stew_001.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:9736Fried_milkfish_stew_with_bottle_gourd,_tomatoes_and_cream_of_mushroom_11.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:9736Fried_milkfish_stew_with_bottle_gourd,_tomatoes_and_cream_of_mushroom_11.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "commons-search",
+    "file": "File:9736Fried_milkfish_stew_with_bottle_gourd,_tomatoes_and_cream_of_mushroom_10.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:9736Fried_milkfish_stew_with_bottle_gourd,_tomatoes_and_cream_of_mushroom_10.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "commons-search",
+    "file": "File:9736Fried_milkfish_stew_with_bottle_gourd,_tomatoes_and_cream_of_mushroom_07.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:9736Fried_milkfish_stew_with_bottle_gourd,_tomatoes_and_cream_of_mushroom_07.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "white cream stew; c5 plants"
  },
  {
   "key": "mext-18011",
@@ -1121,7 +2987,17 @@
    "dishes:beef-stew",
    "eatout:beef_stew",
    "kurume:073"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "jawiki-page",
+    "file": "File:Arima_Grand_Hotel09s4s4272.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Arima_Grand_Hotel09s4s4272.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "brown beef stew; c0 curry-like, c3 cream stew"
  },
  {
   "key": "mext-18015",
@@ -1130,7 +3006,24 @@
   "items": [
    "mext:18015",
    "kumagaya:02212"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:Gehaktballetjes.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Gehaktballetjes.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "jawiki-page",
+    "file": "File:Albóndigas_caseras.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Alb%C3%B3ndigas_caseras.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "meatballs in brown/sauce; c0 with peas unclear"
  },
  {
   "key": "mext-18042",
@@ -1138,7 +3031,38 @@
   "desc": "a bowl of pumpkin soup, smooth thick bright orange-yellow cream soup with a swirl of cream",
   "items": [
    "mext:18042"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Cremas_de_calabaza-2.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Cremas_de_calabaza-2.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "enwiki",
+    "file": "File:Kürbissuppe_mit_Kernöl.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:K%C3%BCrbissuppe_mit_Kern%C3%B6l.JPG",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "enwiki-page",
+    "file": "File:Crema_de_calabaza.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Crema_de_calabaza.JPG",
+    "ok": true
+   },
+   {
+    "n": 5,
+    "origin": "enwiki-page",
+    "file": "File:Harefield,_Harefield,_London_(3363509227).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Harefield,_Harefield,_London_(3363509227).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "pumpkin soup; c4 squash, c7 tomato-like"
  },
  {
   "key": "mext-18005",
@@ -1150,7 +3074,31 @@
    "eatout:corn_soup",
    "mext:18004",
    "kurume:200"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 3,
+    "origin": "commons-cat",
+    "file": "File:Asakuma_Komaki_20211031-03.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Asakuma_Komaki_20211031-03.jpg",
+    "ok": true
+   },
+   {
+    "n": 5,
+    "origin": "commons-cat",
+    "file": "File:Corn_cream_soup.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Corn_cream_soup.jpg",
+    "ok": true
+   },
+   {
+    "n": 6,
+    "origin": "commons-cat",
+    "file": "File:Corn_soup_cropped.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Corn_soup_cropped.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "corn potage; c1 corn cobs"
  },
  {
   "key": "mext-18051",
@@ -1158,7 +3106,9 @@
   "desc": "a chicken hamburg steak, a pale golden-brown oval patty with a glossy teriyaki glaze, on a plate",
   "items": [
    "mext:18051"
-  ]
+  ],
+  "refs": [],
+  "vet": "fried cutlets, burgers; no chicken hamburg patty"
  },
  {
   "key": "mext-18052",
@@ -1167,7 +3117,31 @@
   "items": [
    "mext:18052",
    "dishes:tofu-hamburg"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Tofu_Hamburg_steak_20141107.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Tofu_Hamburg_steak_20141107.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "commons-cat",
+    "file": "File:Tofu_hamburg_(4916034130).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Tofu_hamburg_(4916034130).jpg",
+    "ok": true
+   },
+   {
+    "n": 5,
+    "origin": "commons-cat",
+    "file": "File:Tofu_hamburg_stake_(4605952443).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Tofu_hamburg_stake_(4605952443).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "pale patties with green onion; tofu not certain"
  },
  {
   "key": "mext-18019",
@@ -1177,7 +3151,17 @@
    "mext:18019",
    "toyonaka:117825",
    "kumagaya:02116"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "jawiki-page",
+    "file": "File:Fried_calamari.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Fried_calamari.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "fried squid rings; c0 unclear"
  },
  {
   "key": "mext-18020",
@@ -1189,7 +3173,31 @@
    "eatout:ebi_fry_yoshoku",
    "kurume:092",
    "kumagaya:03370"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:CdazziEbifurai1.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:CdazziEbifurai1.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:Ebi_Fry_003.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Ebi_Fry_003.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "jawiki-page",
+    "file": "File:Ebi_Fry_of_Kazumura,_Itō,_-27_Oct._2012_a.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Ebi_Fry_of_Kazumura,_It%C5%8D,_-27_Oct._2012_a.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "ebi fry; set meals/omurice"
  },
  {
   "key": "mext-18021",
@@ -1199,7 +3207,24 @@
    "mext:18021",
    "toyonaka:266174",
    "kumagaya:908"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "jawiki",
+    "file": "File:Fried_fish_001.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Fried_fish_001.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "commons-search",
+    "file": "File:白身魚のフライ.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:%E7%99%BD%E8%BA%AB%E9%AD%9A%E3%81%AE%E3%83%95%E3%83%A9%E3%82%A4.JPG",
+    "ok": true
+   }
+  ],
+  "vet": "breaded white fish fillet; c1 fish sticks"
  },
  {
   "key": "mext-18022",
@@ -1210,7 +3235,24 @@
    "dishes:menchikatsu",
    "eatout:menchi_hot",
    "kumagaya:02495"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 3,
+    "origin": "enwiki-page",
+    "file": "File:Curry_House_menchi_katsu_carry_with_onion_rings.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Curry_House_menchi_katsu_carry_with_onion_rings.jpg",
+    "ok": true
+   },
+   {
+    "n": 7,
+    "origin": "enwiki-page",
+    "file": "File:豚料理専門店_豚都IMG_20220601_222946_06.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E8%B1%9A%E6%96%99%E7%90%86%E5%B0%82%E9%96%80%E5%BA%97_%E8%B1%9A%E9%83%BDIMG_20220601_222946_06.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "menchi katsu cut; curry/sets"
  },
  {
   "key": "mext-18009",
@@ -1218,7 +3260,9 @@
   "desc": "frozen raw breaded prawns before frying, pale white panko coating with red tails",
   "items": [
    "mext:18009"
-  ]
+  ],
+  "refs": [],
+  "vet": "all already fried, no frozen raw breaded prawns"
  },
  {
   "key": "mext-18007",
@@ -1226,7 +3270,9 @@
   "desc": "frozen potato croquettes before frying, pale white panko-coated oval patties",
   "items": [
    "mext:18007"
-  ]
+  ],
+  "refs": [],
+  "vet": "all fried croquettes, none frozen raw"
  },
  {
   "key": "mext-18003",
@@ -1235,7 +3281,17 @@
   "items": [
    "mext:18003",
    "eatout:ebi_gratin"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Shrimp_gratin_(4782471125).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Shrimp_gratin_(4782471125).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "gratin in oval dish; c0 burger"
  },
  {
   "key": "mext-18014",
@@ -1245,7 +3301,9 @@
    "mext:18014",
    "dishes:ebi-pilaf",
    "eatout:pilaf"
-  ]
+  ],
+  "refs": [],
+  "vet": "pilafs/biryani without shrimp"
  },
  {
   "key": "mext-18002",
@@ -1255,7 +3313,17 @@
    "mext:18002",
    "toyonaka:265173",
    "kumagaya:395"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 2,
+    "origin": "jawiki-page",
+    "file": "File:Potstickers_RTE.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Potstickers_RTE.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "pan-fried dumplings; others boiled/soup/xiaolongbao"
  },
  {
   "key": "mext-18012",
@@ -1266,7 +3334,38 @@
    "dishes:shumai",
    "eatout:shumai",
    "toyonaka:266153"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Shaomai_by_Kent_Wang_in_Seattle,_Vancouver.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Shaomai_by_Kent_Wang_in_Seattle,_Vancouver.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:Siumaai.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Siumaai.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "jawiki-page",
+    "file": "File:烧麦.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E7%83%A7%E9%BA%A6.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "enwiki",
+    "file": "File:Yellow_dim_sum_in_steamer_basket.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Yellow_dim_sum_in_steamer_basket.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "shumai; c6 chicken"
  },
  {
   "key": "mext-18046",
@@ -1274,7 +3373,24 @@
   "desc": "Chinese zongzi sticky rice, a triangular parcel in a bamboo leaf, opened to show brown seasoned glutinous rice with pork and shiitake",
   "items": [
    "mext:18046"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:中華ちまき_(24353406524).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E4%B8%AD%E8%8F%AF%E3%81%A1%E3%81%BE%E3%81%8D_(24353406524).jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Taiwanese_zongzi_by_fhisa_in_Yokohama_Chinatown.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Taiwanese_zongzi_by_fhisa_in_Yokohama_Chinatown.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "zongzi parcels; c2 onigiri"
  },
  {
   "key": "mext-18056",
@@ -1286,7 +3402,31 @@
    "eatout:harumaki",
    "toyonaka:120285",
    "kumagaya:3041"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:Cuisine_of_China_0086.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Cuisine_of_China_0086.JPG",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "jawiki-page",
+    "file": "File:Cha_Gio.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Cha_Gio.jpg",
+    "ok": true
+   },
+   {
+    "n": 7,
+    "origin": "jawiki-page",
+    "file": "File:Shrimp_eggrolls.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Shrimp_eggrolls.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "fried spring rolls; c6 fresh rolls"
  },
  {
   "key": "mext-18047",
@@ -1296,7 +3436,31 @@
    "mext:18047",
    "dishes:subuta",
    "eatout:subuta"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "jawiki",
+    "file": "File:Subuta_20260411.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Subuta_20260411.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "jawiki-page",
+    "file": "File:Tángcù_lǐji.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:T%C3%A1ngc%C3%B9_l%C7%90ji.jpg",
+    "ok": true
+   },
+   {
+    "n": 6,
+    "origin": "commons-cat",
+    "file": "File:Subuta_20260411_2.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Subuta_20260411_2.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "subuta; c1 dongpo pork"
  },
  {
   "key": "mext-18048",
@@ -1306,7 +3470,24 @@
    "mext:18048",
    "dishes:happosai",
    "eatout:happosai"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Palbo-chae.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Palbo-chae.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:Happosai,_at_Gyoza-no-Ohsho_(2012.08.18).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Happosai,_at_Gyoza-no-Ohsho_(2012.08.18).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "happosai stir-fry; c2 buns, c7 flowers"
  },
  {
   "key": "mext-18039",
@@ -1316,7 +3497,9 @@
    "mext:18039",
    "dishes:moyashi-namul",
    "kumagaya:02267"
-  ]
+  ],
+  "refs": [],
+  "vet": "no clear bean sprout namul"
  },
  {
   "key": "dishes-miso-tofu-negi",
@@ -1324,7 +3507,17 @@
   "desc": "miso soup in a lacquered wooden bowl, cloudy light-brown miso broth with small white tofu cubes and green onion rings",
   "items": [
    "dishes:miso-tofu-negi"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 7,
+    "origin": "enwiki-page",
+    "file": "File:Aka-Dashi_001.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Aka-Dashi_001.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "tofu miso soup; c0/c4 have wakame, c5 clams"
  },
  {
   "key": "dishes-miso-wakame-negi",
@@ -1332,7 +3525,17 @@
   "desc": "miso soup in a lacquered wooden bowl, cloudy light-brown miso broth with dark green wakame and green onion rings",
   "items": [
    "dishes:miso-wakame-negi"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 4,
+    "origin": "jawiki-page",
+    "file": "File:Japanese_Raw_Aonori_Misoshiru.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Japanese_Raw_Aonori_Misoshiru.JPG",
+    "ok": true
+   }
+  ],
+  "vet": "wakame miso soup; others tofu, clams, crab, red miso"
  },
  {
   "key": "dishes-miso-nameko",
@@ -1341,7 +3544,9 @@
   "items": [
    "dishes:miso-nameko",
    "toyonaka:285963"
-  ]
+  ],
+  "refs": [],
+  "vet": "only a set meal with rice"
  },
  {
   "key": "dishes-miso-daikon-age",
@@ -1349,7 +3554,9 @@
   "desc": "miso soup in a lacquered bowl with thin daikon strips and golden aburaage strips in cloudy brown broth",
   "items": [
    "dishes:miso-daikon-age"
-  ]
+  ],
+  "refs": [],
+  "vet": "generic miso soups, none clearly daikon+aburaage"
  },
  {
   "key": "dishes-miso-jagaimo-tamanegi",
@@ -1357,7 +3564,9 @@
   "desc": "miso soup in a lacquered bowl with potato chunks and soft onion slices",
   "items": [
    "dishes:miso-jagaimo-tamanegi"
-  ]
+  ],
+  "refs": [],
+  "vet": "generic miso soups, no potato"
  },
  {
   "key": "dishes-miso-shijimi",
@@ -1365,7 +3574,9 @@
   "desc": "shijimi clam miso soup, small dark clam shells in red-brown miso broth with green onion",
   "items": [
    "dishes:miso-shijimi"
-  ]
+  ],
+  "refs": [],
+  "vet": "packs of beans only"
  },
  {
   "key": "dishes-miso-asari",
@@ -1374,7 +3585,17 @@
   "items": [
    "dishes:miso-asari",
    "toyonaka:271220"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Miso_soup_of_Japanese_littleneck_clam(asari)_2014.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Miso_soup_of_Japanese_littleneck_clam(asari)_2014.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "clam miso soup; c0 set meal"
  },
  {
   "key": "dishes-miso-cabbage",
@@ -1382,7 +3603,9 @@
   "desc": "miso soup with soft cabbage pieces and aburaage strips in a lacquered bowl",
   "items": [
    "dishes:miso-cabbage"
-  ]
+  ],
+  "refs": [],
+  "vet": "generic miso soups, no cabbage"
  },
  {
   "key": "dishes-miso-nasu",
@@ -1390,7 +3613,9 @@
   "desc": "eggplant miso soup, soft purple-skinned eggplant pieces in brown miso broth with myoga",
   "items": [
    "dishes:miso-nasu"
-  ]
+  ],
+  "refs": [],
+  "vet": "set meals, no eggplant miso soup"
  },
  {
   "key": "dishes-miso-kinoko",
@@ -1398,7 +3623,9 @@
   "desc": "mushroom miso soup with shimeji and enoki mushrooms and green onion in a lacquered bowl",
   "items": [
    "dishes:miso-kinoko"
-  ]
+  ],
+  "refs": [],
+  "vet": "set meals, no mushroom miso soup"
  },
  {
   "key": "dishes-miso-horenso",
@@ -1406,7 +3633,9 @@
   "desc": "spinach miso soup with dark green spinach and aburaage strips in a lacquered bowl",
   "items": [
    "dishes:miso-horenso"
-  ]
+  ],
+  "refs": [],
+  "vet": "set meals, no clear spinach miso soup"
  },
  {
   "key": "dishes-miso-hakusai",
@@ -1414,7 +3643,9 @@
   "desc": "napa cabbage miso soup with soft pale cabbage and aburaage in a lacquered bowl",
   "items": [
    "dishes:miso-hakusai"
-  ]
+  ],
+  "refs": [],
+  "vet": "set meals only"
  },
  {
   "key": "dishes-miso-tamago",
@@ -1431,7 +3662,17 @@
   "items": [
    "dishes:akadashi",
    "eatout:sushi_akadashi"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Aka-Dashi_001.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Aka-Dashi_001.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "red miso soup with tofu; packs, sets"
  },
  {
   "key": "dishes-kenchinjiru",
@@ -1443,7 +3684,17 @@
    "maff_kyodo:35_1_kanagawa",
    "toyonaka:110012",
    "kumagaya:2715"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Kenchinjiru_Yoshinoya_D&C_2007.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Kenchinjiru_Yoshinoya_D%26C_2007.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vegetable soup bowl; others ramen/sets"
  },
  {
   "key": "dishes-kasujiru",
@@ -1452,7 +3703,31 @@
   "items": [
    "dishes:kasujiru",
    "maff_kyodo:40_13_hyogo"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Japanese_kasujiru_2014.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Japanese_kasujiru_2014.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "commons-cat",
+    "file": "File:NGO_Kita_Machikadoya_Kamiiida_20230203-02.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:NGO_Kita_Machikadoya_Kamiiida_20230203-02.jpg",
+    "ok": true
+   },
+   {
+    "n": 5,
+    "origin": "commons-cat",
+    "file": "File:Sake_cake_and_pork_soup_(Kasu_jiru)_(6885605196).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Sake_cake_and_pork_soup_(Kasu_jiru)_(6885605196).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "milky sake-lees soups"
  },
  {
   "key": "dishes-sumashi-kamaboko",
@@ -1460,7 +3735,17 @@
   "desc": "suimono clear soup in a lacquered bowl, clear golden dashi with a slice of pink-rimmed kamaboko and green mitsuba leaves",
   "items": [
    "dishes:sumashi-kamaboko"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:Suimono_with_crab_and_tofu_by_Mullenkedheim_in_Tonami,_Toyama.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Suimono_with_crab_and_tofu_by_Mullenkedheim_in_Tonami,_Toyama.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "clear soup with kamaboko and greens; sets"
  },
  {
   "key": "dishes-kakitamajiru",
@@ -1468,7 +3753,31 @@
   "desc": "kakitama-jiru, a clear slightly thickened soup with soft wispy yellow egg ribbons and mitsuba",
   "items": [
    "dishes:kakitamajiru"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "jawiki-page",
+    "file": "File:Egg_drop_soup_(in_Fresno_California)_-_蛋花湯_-_(在加利福尼亞州的弗雷斯諾）.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Egg_drop_soup_(in_Fresno_California)_-_%E8%9B%8B%E8%8A%B1%E6%B9%AF_-_(%E5%9C%A8%E5%8A%A0%E5%88%A9%E7%A6%8F%E5%B0%BC%E4%BA%9E%E5%B7%9E%E7%9A%84%E5%BC%97%E9%9B%B7%E6%96%AF%E8%AB%BE%EF%BC%89.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "commons-search",
+    "file": "File:Einlaufsuppe_im_Teller-0372.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Einlaufsuppe_im_Teller-0372.jpg",
+    "ok": true
+   },
+   {
+    "n": 6,
+    "origin": "commons-search",
+    "file": "File:Egg_drop_soup_(蛋花湯).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Egg_drop_soup_(%E8%9B%8B%E8%8A%B1%E6%B9%AF).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "egg-drop soups; c4/c7 thick"
  },
  {
   "key": "dishes-asari-sumashi",
@@ -1477,7 +3786,9 @@
   "items": [
    "dishes:asari-sumashi",
    "kumagaya:03352"
-  ]
+  ],
+  "refs": [],
+  "vet": "no clear asari clear soup"
  },
  {
   "key": "dishes-chuka-wakame-tamago",
@@ -1486,7 +3797,9 @@
   "items": [
    "dishes:chuka-wakame-tamago",
    "eatout:chuka_soup"
-  ]
+  ],
+  "refs": [],
+  "vet": "ramen bowls, no clear wakame-egg soup"
  },
  {
   "key": "dishes-consomme-soup",
@@ -1494,7 +3807,9 @@
   "desc": "consommé soup with small cubes of carrot, cabbage, onion and bacon in clear golden broth",
   "items": [
    "dishes:consomme-soup"
-  ]
+  ],
+  "refs": [],
+  "vet": "cup of broth only, text, cabbages"
  },
  {
   "key": "dishes-minestrone",
@@ -1504,7 +3819,24 @@
    "dishes:minestrone",
    "toyonaka:118871",
    "kumagaya:2651"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Minestrone_soup.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Minestrone_soup.jpg",
+    "ok": true
+   },
+   {
+    "n": 7,
+    "origin": "commons-cat",
+    "file": "File:HK_TKO_Spot_mall_將軍澳_Tseung_Kwan_O_尚德廣場_Sheung_Tak_Estate_Shopping_Centre_shop_Saizeriya_Restaurant_food_tomato_soup_February_2022_Px3_01.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:HK_TKO_Spot_mall_%E5%B0%87%E8%BB%8D%E6%BE%B3_Tseung_Kwan_O_%E5%B0%9A%E5%BE%B7%E5%BB%A3%E5%A0%B4_Sheung_Tak_Estate_Shopping_Centre_shop_Saizeriya_Restaurant_food_tomato_soup_February_2022_Px3_01.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "tomato vegetable soups; c3/c4 lentil-like"
  },
  {
   "key": "dishes-clam-chowder",
@@ -1513,7 +3845,24 @@
   "items": [
    "dishes:clam-chowder",
    "kumagaya:3551"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Quail_07_bg_041506.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Quail_07_bg_041506.jpg",
+    "ok": true
+   },
+   {
+    "n": 5,
+    "origin": "enwiki-page",
+    "file": "File:Sourdough_Bread_Bowl_+_Clam_Chowder_Soup_(5838235665).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Sourdough_Bread_Bowl_%2B_Clam_Chowder_Soup_(5838235665).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "white chowder, bread bowl; c1 borscht"
  },
  {
   "key": "dishes-zoni-kanto",
@@ -1521,7 +3870,31 @@
   "desc": "Kanto-style ozoni, a clear soup in a lacquer bowl with a grilled square mochi, chicken, komatsuna and kamaboko",
   "items": [
    "dishes:zoni-kanto"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "jawiki",
+    "file": "File:Japanese_zoni_and_osechi.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Japanese_zoni_and_osechi.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "jawiki-page",
+    "file": "File:Buri_zoni_nagano_matsumoto.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Buri_zoni_nagano_matsumoto.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "jawiki-page",
+    "file": "File:Hakata_zoni.jpeg",
+    "page": "https://commons.wikimedia.org/wiki/File:Hakata_zoni.jpeg",
+    "ok": true
+   }
+  ],
+  "vet": "clear lacquer-bowl zoni"
  },
  {
   "key": "dishes-zoni-kansai",
@@ -1529,7 +3902,17 @@
   "desc": "Kansai-style ozoni, a creamy pale white miso soup with a round mochi, taro, daikon and carrot rounds",
   "items": [
    "dishes:zoni-kansai"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 5,
+    "origin": "jawiki-page",
+    "file": "File:Shiromiso_zouni.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Shiromiso_zouni.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "white miso zoni"
  },
  {
   "key": "dishes-imoni",
@@ -1537,7 +3920,24 @@
   "desc": "Yamagata imoni, a pot of soy broth with taro, thin beef slices, konjac and green onion",
   "items": [
    "dishes:imoni"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Imoni.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Imoni.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "jawiki-page",
+    "file": "File:Imoni_Sendai_Miyagi_Style.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Imoni_Sendai_Miyagi_Style.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "imoni pots outdoors; festival crowd"
  },
  {
   "key": "dishes-teriyaki-chicken",
@@ -1546,7 +3946,9 @@
   "items": [
    "dishes:teriyaki-chicken",
    "kumagaya:2309"
-  ]
+  ],
+  "refs": [],
+  "vet": "bento/donburi, no clear teriyaki thigh"
  },
  {
   "key": "dishes-chicken-nanban",
@@ -1555,7 +3957,24 @@
   "items": [
    "dishes:chicken-nanban",
    "maff_kyodo:chikin_nanban_miyazaki"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Chicken_nanban_jetalone_in_Tsukishima,_Tokyo.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Chicken_nanban_jetalone_in_Tsukishima,_Tokyo.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "jawiki-page",
+    "file": "File:Chicken_with_tartar_sauce.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Chicken_with_tartar_sauce.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "fried chicken with tartar; c1 katsu"
  },
  {
   "key": "dishes-yakitori-tare",
@@ -1564,7 +3983,31 @@
   "items": [
    "dishes:yakitori-tare",
    "eatout:yakitori_momo_tare"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:Typical_yakitori_001.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Typical_yakitori_001.jpg",
+    "ok": true
+   },
+   {
+    "n": 6,
+    "origin": "jawiki-page",
+    "file": "File:Yakitori_001.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Yakitori_001.jpg",
+    "ok": true
+   },
+   {
+    "n": 7,
+    "origin": "jawiki-page",
+    "file": "File:Yakitori_002.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Yakitori_002.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "glazed skewers; c0 grill"
  },
  {
   "key": "dishes-yakitori-shio",
@@ -1573,7 +4016,17 @@
   "items": [
    "dishes:yakitori-shio",
    "eatout:yakitori_momo_shio"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 3,
+    "origin": "jawiki-page",
+    "file": "File:Pork_Belly_Skewers.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Pork_Belly_Skewers.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "pale salt skewers; others glazed"
  },
  {
   "key": "dishes-tebamoto-sappari",
@@ -1589,7 +4042,17 @@
   "desc": "bang bang chicken, sliced poached chicken over julienned cucumber and tomato slices, topped with creamy sesame sauce",
   "items": [
    "dishes:bunbunji"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "jawiki-page",
+    "file": "File:Bon_bon_chicken_1.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Bon_bon_chicken_1.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "chicken over cucumber/tomato; others braised"
  },
  {
   "key": "dishes-mushidori",
@@ -1597,7 +4060,9 @@
   "desc": "sliced steamed chicken breast with a chopped green onion sauce",
   "items": [
    "dishes:mushidori"
-  ]
+  ],
+  "refs": [],
+  "vet": "salads, unclear sauces"
  },
  {
   "key": "dishes-beef-steak",
@@ -1606,7 +4071,31 @@
   "items": [
    "dishes:beef-steak",
    "eatout:steak200"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Beef_steak_(11888070325).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Beef_steak_(11888070325).jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "wikidata",
+    "file": "File:Beef_steak_(6814865687).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Beef_steak_(6814865687).jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "jawiki-page",
+    "file": "File:Steak_03_bg_040306.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Steak_03_bg_040306.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "steaks; c5 raw, c6 roast beef"
  },
  {
   "key": "dishes-kakuni",
@@ -1614,7 +4103,38 @@
   "desc": "buta no kakuni, braised pork belly cubes with layers of fat, glossy dark brown, with a halved boiled egg and greens",
   "items": [
    "dishes:kakuni"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 2,
+    "origin": "jawiki-page",
+    "file": "File:Dongpo_pork_by_c424.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Dongpo_pork_by_c424.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "jawiki-page",
+    "file": "File:Nagasaki_Shippoku_Hamakatsu07s.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Nagasaki_Shippoku_Hamakatsu07s.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "jawiki-page",
+    "file": "File:Rafti,_Okinawan_stewed_pork_belly_by_ayustety_in_Tokyo.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Rafti,_Okinawan_stewed_pork_belly_by_ayustety_in_Tokyo.jpg",
+    "ok": true
+   },
+   {
+    "n": 5,
+    "origin": "jawiki-page",
+    "file": "File:東坡煮.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:%E6%9D%B1%E5%9D%A1%E7%85%AE.JPG",
+    "ok": true
+   }
+  ],
+  "vet": "braised pork belly cubes"
  },
  {
   "key": "dishes-nikujaga-pork",
@@ -1622,7 +4142,31 @@
   "desc": "pork nikujaga in a bowl, soft potato chunks, carrot, onion, thin pork slices and shirataki in light-brown broth, green snow peas",
   "items": [
    "dishes:nikujaga-pork"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Braised_pork_and_potatoes_(3089327692).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Braised_pork_and_potatoes_(3089327692).jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "enwiki-page",
+    "file": "File:Food_(3361970493).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Food_(3361970493).jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "enwiki-page",
+    "file": "File:Nikujaga_by_donaldglen.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Nikujaga_by_donaldglen.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "nikujaga bowls"
  },
  {
   "key": "dishes-nikudofu",
@@ -1632,7 +4176,24 @@
    "dishes:nikudofu",
    "maff_kyodo:nikudofu_kyoto",
    "kumagaya:2684"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "commons-cat",
+    "file": "File:Niku_dofu_lunch_set_at_sinatra,_yaesu_(46378484934).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Niku_dofu_lunch_set_at_sinatra,_yaesu_(46378484934).jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "commons-cat",
+    "file": "File:Niku_Tofu_at_Tachinomi_Kidufuji_2_(32153270523).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Niku_Tofu_at_Tachinomi_Kidufuji_2_(32153270523).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "tofu simmered with beef"
  },
  {
   "key": "dishes-shigureni",
@@ -1640,7 +4201,9 @@
   "desc": "beef shigureni, thin beef slices simmered dark glossy brown with slivers of ginger, in a small bowl",
   "items": [
    "dishes:shigureni"
-  ]
+  ],
+  "refs": [],
+  "vet": "stir-fry and curry"
  },
  {
   "key": "dishes-hoikoro",
@@ -1649,7 +4212,31 @@
   "items": [
    "dishes:hoikoro",
    "eatout:hoikoro"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:Twice_cooked_pork,_Jia_Yan,_5_rue_Humblot,_Paris_002.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Twice_cooked_pork,_Jia_Yan,_5_rue_Humblot,_Paris_002.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "enwiki",
+    "file": "File:Twice_cooked_pork,_Jia_Yan,_5_rue_Humblot,_Paris_003.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Twice_cooked_pork,_Jia_Yan,_5_rue_Humblot,_Paris_003.jpg",
+    "ok": true
+   },
+   {
+    "n": 6,
+    "origin": "enwiki-page",
+    "file": "File:Twice-cooked_Pork_回锅肉_(1648213963).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Twice-cooked_Pork_%E5%9B%9E%E9%94%85%E8%82%89_(1648213963).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "pork and cabbage stir-fry; c7 buns"
  },
  {
   "key": "dishes-chinjao",
@@ -1658,7 +4245,31 @@
   "items": [
    "dishes:chinjao",
    "eatout:chinjao"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Pepper_steak.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Pepper_steak.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "commons-cat",
+    "file": "File:Chin-jao_Rosu,_in_Chinese_restaurant_in_Roppongi.jpeg",
+    "page": "https://commons.wikimedia.org/wiki/File:Chin-jao_Rosu,_in_Chinese_restaurant_in_Roppongi.jpeg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "commons-cat",
+    "file": "File:Chinjao_Rosu_(青椒肉絲)_(6805698268).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Chinjao_Rosu_(%E9%9D%92%E6%A4%92%E8%82%89%E7%B5%B2)_(6805698268).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "pepper-beef strips; c5/c6 rice dishes"
  },
  {
   "key": "dishes-mabo-nasu",
@@ -1666,7 +4277,9 @@
   "desc": "mapo eggplant, soft purple eggplant pieces in a glossy red-brown spicy minced pork sauce",
   "items": [
    "dishes:mabo-nasu"
-  ]
+  ],
+  "refs": [],
+  "vet": "only a rice/curry dish"
  },
  {
   "key": "dishes-ebichili",
@@ -1675,7 +4288,31 @@
   "items": [
    "dishes:ebichili",
    "eatout:ebichili"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Ebi_chili.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Ebi_chili.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:Ebichiri.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Ebichiri.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "commons-cat",
+    "file": "File:Kkansyo-saeu_DSC00978.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Kkansyo-saeu_DSC00978.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "ebi chili; c2 noodles"
  },
  {
   "key": "dishes-ebimayo",
@@ -1684,7 +4321,17 @@
   "items": [
    "dishes:ebimayo",
    "eatout:ebimayo"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "jawiki",
+    "file": "File:エビマヨ.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E3%82%A8%E3%83%93%E3%83%9E%E3%83%A8.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "shrimp mayo; signs/rolls"
  },
  {
   "key": "dishes-sui-gyoza",
@@ -1693,7 +4340,31 @@
   "items": [
    "dishes:sui-gyoza",
    "eatout:suigyoza"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Jiaozi_at_Xialinyuan_Dumplings_Restaurant,_Beijing_(20190528113622).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Jiaozi_at_Xialinyuan_Dumplings_Restaurant,_Beijing_(20190528113622).jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "jawiki-page",
+    "file": "File:BoiledDumplings.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:BoiledDumplings.jpg",
+    "ok": true
+   },
+   {
+    "n": 7,
+    "origin": "enwiki",
+    "file": "File:台灣南投草屯水餃Nantou,_Taiwan_Caotun_dumplings.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E5%8F%B0%E7%81%A3%E5%8D%97%E6%8A%95%E8%8D%89%E5%B1%AF%E6%B0%B4%E9%A4%83Nantou,_Taiwan_Caotun_dumplings.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "boiled dumplings; c3 fried, c4 soup bun"
  },
  {
   "key": "dishes-yasai-itame",
@@ -1703,7 +4374,24 @@
    "dishes:yasai-itame",
    "toyonaka:118633",
    "kumagaya:00505"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:肉野菜炒め.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:%E8%82%89%E9%87%8E%E8%8F%9C%E7%82%92%E3%82%81.JPG",
+    "ok": true
+   },
+   {
+    "n": 5,
+    "origin": "commons-search",
+    "file": "File:ラーメン大将肉野菜炒め.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E3%83%A9%E3%83%BC%E3%83%A1%E3%83%B3%E5%A4%A7%E5%B0%86%E8%82%89%E9%87%8E%E8%8F%9C%E7%82%92%E3%82%81.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vegetable stir-fry plates"
  },
  {
   "key": "dishes-butakimuchi",
@@ -1712,7 +4400,9 @@
   "items": [
    "dishes:butakimuchi",
    "toyonaka:267978"
-  ]
+  ],
+  "refs": [],
+  "vet": "ramen and unclear plates"
  },
  {
   "key": "dishes-goya-champuru",
@@ -1723,7 +4413,31 @@
    "maff_kyodo:47_11_okinawa",
    "takatsuki:r29",
    "toyonaka:122276"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 2,
+    "origin": "jawiki-page",
+    "file": "File:2015-12-16_Goya_champru_in_Ishigakijima_ゴーヤチャンプルー（石垣島）DSCF2191.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:2015-12-16_Goya_champru_in_Ishigakijima_%E3%82%B4%E3%83%BC%E3%83%A4%E3%83%81%E3%83%A3%E3%83%B3%E3%83%97%E3%83%AB%E3%83%BC%EF%BC%88%E7%9F%B3%E5%9E%A3%E5%B3%B6%EF%BC%89DSCF2191.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "jawiki-page",
+    "file": "File:Tofu_Champuru_by_ayustety_in_Monzennakacho,_Tokyo.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Tofu_Champuru_by_ayustety_in_Monzennakacho,_Tokyo.jpg",
+    "ok": true
+   },
+   {
+    "n": 6,
+    "origin": "enwiki-page",
+    "file": "File:Goya_champuru_(bitter_gourd_stir-flies)_(868640691).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Goya_champuru_(bitter_gourd_stir-flies)_(868640691).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "goya champuru; c1 tomato"
  },
  {
   "key": "dishes-nira-tama",
@@ -1731,7 +4445,31 @@
   "desc": "nira tama, fluffy yellow scrambled egg with dark green garlic chives",
   "items": [
    "dishes:nira-tama"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:ラーメン大将肉ニラ玉定食3.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E3%83%A9%E3%83%BC%E3%83%A1%E3%83%B3%E5%A4%A7%E5%B0%86%E8%82%89%E3%83%8B%E3%83%A9%E7%8E%89%E5%AE%9A%E9%A3%9F3.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "commons-search",
+    "file": "File:ラーメン大将肉ニラ玉定食2.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E3%83%A9%E3%83%BC%E3%83%A1%E3%83%B3%E5%A4%A7%E5%B0%86%E8%82%89%E3%83%8B%E3%83%A9%E7%8E%89%E5%AE%9A%E9%A3%9F2.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "commons-search",
+    "file": "File:Niratama.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Niratama.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "nira and egg; c5 menu"
  },
  {
   "key": "dishes-tomato-tamago",
@@ -1739,7 +4477,31 @@
   "desc": "tomato and egg stir-fry, soft yellow scrambled egg with red tomato wedges, glossy",
   "items": [
    "dishes:tomato-tamago"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Hunan_cuisine,_stir-fried_tomato_with_eggs.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Hunan_cuisine,_stir-fried_tomato_with_eggs.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:Tomato_and_eggs.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Tomato_and_eggs.JPG",
+    "ok": true
+   },
+   {
+    "n": 5,
+    "origin": "commons-search",
+    "file": "File:Telur_goreng_tomato_kacau_dengan_nasi.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Telur_goreng_tomato_kacau_dengan_nasi.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "tomato egg stir-fry"
  },
  {
   "key": "dishes-bacon-egg",
@@ -1747,7 +4509,24 @@
   "desc": "bacon and eggs, a sunny-side-up egg on crisp strips of bacon, on a plate",
   "items": [
    "dishes:bacon-egg"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Eggs_and_bacon.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Eggs_and_bacon.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:Bacon_and_eggs_plate_4.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Bacon_and_eggs_plate_4.JPG",
+    "ok": true
+   }
+  ],
+  "vet": "bacon and fried eggs; full breakfasts"
  },
  {
   "key": "dishes-ham-egg",
@@ -1756,7 +4535,24 @@
   "items": [
    "dishes:ham-egg",
    "kurume:113"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 3,
+    "origin": "enwiki",
+    "file": "File:Ham_and_eggs_over_easy.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Ham_and_eggs_over_easy.jpg",
+    "ok": true
+   },
+   {
+    "n": 6,
+    "origin": "enwiki-page",
+    "file": "File:Ham_and_eggs_over_rice.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Ham_and_eggs_over_rice.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "ham with fried eggs"
  },
  {
   "key": "dishes-omelette",
@@ -1765,7 +4561,9 @@
   "items": [
    "dishes:omelette",
    "kumagaya:382"
-  ]
+  ],
+  "refs": [],
+  "vet": "menus and a tray meal"
  },
  {
   "key": "dishes-chawanmushi",
@@ -1775,7 +4573,52 @@
    "dishes:chawanmushi",
    "eatout:chawanmushi",
    "kurume:110"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Chawan-mushi.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Chawan-mushi.JPG",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "jawiki-page",
+    "file": "File:Chawan_Mushi_in_Honolulu,_Hawaii.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Chawan_Mushi_in_Honolulu,_Hawaii.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "enwiki-page",
+    "file": "File:Chawan_Mushi_by_bvalium.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Chawan_Mushi_by_bvalium.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "enwiki-page",
+    "file": "File:Chawan-mushi_001.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Chawan-mushi_001.jpg",
+    "ok": true
+   },
+   {
+    "n": 5,
+    "origin": "enwiki-page",
+    "file": "File:Chawanmushi_-_Traditional_winter_warmer_-_a_small_bowl_of_steamed_egg_custard_with_ingredients_of_the_season_(12274312843).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Chawanmushi_-_Traditional_winter_warmer_-_a_small_bowl_of_steamed_egg_custard_with_ingredients_of_the_season_(12274312843).jpg",
+    "ok": true
+   },
+   {
+    "n": 6,
+    "origin": "enwiki-page",
+    "file": "File:Chawanmushi_by_nyaa_birdies_perch_in_Yugashima,_Shizuoka.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Chawanmushi_by_nyaa_birdies_perch_in_Yugashima,_Shizuoka.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "chawanmushi cups; c2 nabe"
  },
  {
   "key": "dishes-buri-teriyaki",
@@ -1784,7 +4627,52 @@
   "items": [
    "dishes:buri-teriyaki",
    "kurume:078"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Japanese_yellowtail_teriyaki_by_dishhh.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Japanese_yellowtail_teriyaki_by_dishhh.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "commons-search",
+    "file": "File:Teriyaki_yellowtail_(4124948778).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Teriyaki_yellowtail_(4124948778).jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "commons-search",
+    "file": "File:Teriyaki_roast_of_yellowtail_snapper_(3494142862).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Teriyaki_roast_of_yellowtail_snapper_(3494142862).jpg",
+    "ok": true
+   },
+   {
+    "n": 5,
+    "origin": "commons-search",
+    "file": "File:Yellowtail_snapper_sautéed_with_teriyaki_sauce_(13511146223).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Yellowtail_snapper_saut%C3%A9ed_with_teriyaki_sauce_(13511146223).jpg",
+    "ok": true
+   },
+   {
+    "n": 6,
+    "origin": "commons-search",
+    "file": "File:Yellowtail_teriyaki_with_komatsuna_greens_ブリ照り焼きと小松菜.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Yellowtail_teriyaki_with_komatsuna_greens_%E3%83%96%E3%83%AA%E7%85%A7%E3%82%8A%E7%84%BC%E3%81%8D%E3%81%A8%E5%B0%8F%E6%9D%BE%E8%8F%9C.jpg",
+    "ok": true
+   },
+   {
+    "n": 7,
+    "origin": "commons-search",
+    "file": "File:Yellowtail_broiled_with_say_sauce_(5273661822).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Yellowtail_broiled_with_say_sauce_(5273661822).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "glazed yellowtail fillets; c0 bento"
  },
  {
   "key": "dishes-buri-daikon",
@@ -1795,6 +4683,23 @@
    "maff_kyodo:37_4_toyama",
    "maff_kyodo:buridaikon_kagoshima",
    "kurume:098"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "jawiki-page",
+    "file": "File:Buri_Daikon.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Buri_Daikon.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "commons-cat",
+    "file": "File:Deep_cooked_yellow_tail_and_raddish_in_Japanese_style_(6272259366).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Deep_cooked_yellow_tail_and_raddish_in_Japanese_style_(6272259366).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "buri with daikon; c2 drying daikon"
  }
 ]

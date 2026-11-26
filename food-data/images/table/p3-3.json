@@ -5,7 +5,17 @@
   "desc": "Canned escargot: shell-less boiled snail meats, small dark grey-brown curled coils, soft and glistening, piled in a small dish with a little clear brine",
   "items": [
    "mext:10291"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Canned_snails_for_sale_in_Barcelona.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Canned_snails_for_sale_in_Barcelona.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c0 jars of escargot on shelf; c1/c4 cooked dishes (other state)"
  },
  {
   "key": "mext-10293",
@@ -13,7 +23,9 @@
   "desc": "Boiled farmed oysters: plump shucked oysters, shrunken and opaque cream-grey with ruffled dark frilly edges, a few in a small bowl, no shells",
   "items": [
    "mext:10293"
-  ]
+  ],
+  "refs": [],
+  "vet": "lace, portrait, persimmons, places"
  },
  {
   "key": "mext-10294",
@@ -21,7 +33,9 @@
   "desc": "Smoked oysters in oil: small shucked oysters smoked to a deep amber-brown, wrinkled and glossy, packed in golden oil in a small shallow dish",
   "items": [
    "mext:10294"
-  ]
+  ],
+  "refs": [],
+  "vet": "paella-type dishes, no canned smoked oysters"
  },
  {
   "key": "mext-10296",
@@ -29,7 +43,31 @@
   "desc": "Grilled sazae turban shell: a heavy knobbly spiked grey-green spiral shell sitting upright, its opening bubbling with broth, a curled dark green-grey meat peeking out",
   "items": [
    "mext:10296"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Grilled_Turban_Shells_001.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Grilled_Turban_Shells_001.jpg",
+    "ok": true
+   },
+   {
+    "n": 6,
+    "origin": "commons-search",
+    "file": "File:Sazae_tzuboyaki.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Sazae_tzuboyaki.jpg",
+    "ok": true
+   },
+   {
+    "n": 7,
+    "origin": "commons-search",
+    "file": "File:Sazae_on_Grill.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Sazae_on_Grill.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "turban shells grilling on grills; c5 unclear; c2-c4 shells/live"
  },
  {
   "key": "mext-10318",
@@ -45,7 +83,9 @@
   "desc": "Boiled shijimi clams: tiny glossy black-brown clams with shells open showing small cream meats, a heap of them in a small bowl",
   "items": [
    "mext:10413"
-  ]
+  ],
+  "refs": [],
+  "vet": "people, shells, ramen"
  },
  {
   "key": "mext-10298",
@@ -61,7 +101,9 @@
   "desc": "Raw tanishi: small freshwater mud snails with dark olive-brown conical spiral shells, smooth and wet, a handful in a small dish",
   "items": [
    "mext:10299"
-  ]
+  ],
+  "refs": [],
+  "vet": "ikebana, buildings, leaves, baby"
  },
  {
   "key": "mext-10300",
@@ -69,7 +111,9 @@
   "desc": "Raw tsubu whelk: firm cream-white sliced whelk meat with a yellowish rim, crunchy-looking, laid beside a brown spiral whelk shell",
   "items": [
    "mext:10300"
-  ]
+  ],
+  "refs": [],
+  "vet": "jar, sweets, landscapes"
  },
  {
   "key": "mext-10301",
@@ -77,7 +121,9 @@
   "desc": "Raw tokobushi: small abalone with a flat oval brown-green shell showing a row of small holes, tan muscular meat underneath",
   "items": [
    "mext:10301"
-  ]
+  ],
+  "refs": [],
+  "vet": "landscapes, train"
  },
  {
   "key": "mext-10303",
@@ -85,7 +131,9 @@
   "desc": "Raw torigai cockle foot: opened flat curved triangles, glossy purple-black on the outer face and creamy white beneath, laid in a small dish",
   "items": [
    "mext:10303"
-  ]
+  ],
+  "refs": [],
+  "vet": "live/empty cockle shells, no foot meat"
  },
  {
   "key": "mext-10304",
@@ -93,7 +141,9 @@
   "desc": "Raw bai whelk: small smooth spiral shells, creamy white with neat brown spots, pointed tips, a few on a plate",
   "items": [
    "mext:10304"
-  ]
+  ],
+  "refs": [],
+  "vet": "prints, leaves, cat"
  },
  {
   "key": "mext-10305",
@@ -109,7 +159,9 @@
   "desc": "Boiled hamaguri clams: plump cream and pale orange cooked clam meats sitting in their opened smooth glossy patterned shells in a small bowl",
   "items": [
    "mext:10307"
-  ]
+  ],
+  "refs": [],
+  "vet": "clam ramen, empty shells"
  },
  {
   "key": "mext-10308",
@@ -117,7 +169,17 @@
   "desc": "Grilled hamaguri clams: large smooth glossy clams with brown-grey patterned shells, popped open on a grill, juicy plump meats bubbling inside",
   "items": [
    "mext:10308"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Kuwana_no_Yakihamaguri2.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Kuwana_no_Yakihamaguri2.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c1 grilled clam open in shell; c0 unclear"
  },
  {
   "key": "mext-10309",
@@ -125,7 +187,17 @@
   "desc": "Hamaguri tsukudani: small clam meats simmered down in sweet soy, dark brown, glossy and sticky, piled in a small dish",
   "items": [
    "mext:10309"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Shigure_hamaguri.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Shigure_hamaguri.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c0 dark clam tsukudani in bowl; rest shells/ramen"
  },
  {
   "key": "mext-10310",
@@ -141,7 +213,9 @@
   "desc": "Boiled scallop: a whole shell-less cooked scallop, white round adductor with the orange crescent roe and grey frilly mantle attached, in a small dish",
   "items": [
    "mext:10312"
-  ]
+  ],
+  "refs": [],
+  "vet": "geyser pools"
  },
  {
   "key": "mext-10414",
@@ -149,7 +223,9 @@
   "desc": "Grilled scallop adductors: thick round white cylinders seared golden-brown on top and bottom, glistening, on a small plate",
   "items": [
    "mext:10414"
-  ]
+  ],
+  "refs": [],
+  "vet": "night lanterns"
  },
  {
   "key": "mext-10314",
@@ -157,7 +233,9 @@
   "desc": "Dried scallop adductors (hoshi kaibashira): small hard round discs, translucent amber-gold and fibrous, a few in a small dish",
   "items": [
    "mext:10314"
-  ]
+  ],
+  "refs": [],
+  "vet": "c0 small white granules, not clearly dried scallop"
  },
  {
   "key": "mext-10316",
@@ -237,7 +315,17 @@
   "desc": "Boiled sakura shrimp: a heap of tiny opaque bright pink-orange shrimp, curled, in a small dish",
   "items": [
    "mext:10324"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Boiled_Sakura_Shrimp.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Boiled_Sakura_Shrimp.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c0 small pink boiled shrimp in bowl"
  },
  {
   "key": "mext-10326",
@@ -245,7 +333,17 @@
   "desc": "Dried sakura shrimp: tiny crisp papery pink-orange dried shrimp with long whiskers, light and loose, in a small dish",
   "items": [
    "mext:10326"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Sakura_ebi.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Sakura_ebi.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c1 dried small shrimp; c0 drying field scene (food not close-up)"
  },
  {
   "key": "mext-10327",
@@ -261,7 +359,9 @@
   "desc": "Raw shiba shrimp: small whole greyish translucent shrimp with faint speckles, a handful on a small plate",
   "items": [
    "mext:10328"
-  ]
+  ],
+  "refs": [],
+  "vet": "piers, seascapes"
  },
  {
   "key": "mext-10331",
@@ -269,7 +369,17 @@
   "desc": "Shrimp tsukudani: small whole shrimp simmered in sweet soy, glossy dark reddish-brown and sticky, piled in a small dish",
   "items": [
    "mext:10331"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Shrimp_or_prawn_dishes-1.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Shrimp_or_prawn_dishes-1.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c0 shrimp tsukudani in bowl; rest burgers, art"
  },
  {
   "key": "mext-10332",
@@ -285,7 +395,9 @@
   "desc": "Raw kegani hairy crab: small round crab with a dull brownish-purple shell covered in fine short bristles, short legs",
   "items": [
    "mext:10333"
-  ]
+  ],
+  "refs": [],
+  "vet": "buildings, cars"
  },
  {
   "key": "mext-10334",
@@ -293,7 +405,9 @@
   "desc": "Boiled kegani hairy crab: small round crab turned bright red-orange, shell covered in fine short bristles, short legs",
   "items": [
    "mext:10334"
-  ]
+  ],
+  "refs": [],
+  "vet": "art, animals"
  },
  {
   "key": "mext-10335",
@@ -301,7 +415,9 @@
   "desc": "Raw zuwaigani snow crab: a crab with a small round brownish-orange shell and long slender legs, raw and dull",
   "items": [
    "mext:10335"
-  ]
+  ],
+  "refs": [],
+  "vet": "live snow crabs in tanks, not food presentation"
  },
  {
   "key": "mext-10338",
@@ -309,7 +425,9 @@
   "desc": "Raw taraba king crab: thick spiny legs with a dark red-purple shell, one leg cut showing white raw meat",
   "items": [
    "mext:10338"
-  ]
+  ],
+  "refs": [],
+  "vet": "mushrooms, people, ramen"
  },
  {
   "key": "mext-10340",
@@ -317,7 +435,9 @@
   "desc": "Canned king crab meat: chunks and shreds of white crab leg meat tinged red on the edges, in a small dish",
   "items": [
    "mext:10340"
-  ]
+  ],
+  "refs": [],
+  "vet": "live/specimen crabs; no canned crab"
  },
  {
   "key": "mext-10341",
@@ -325,7 +445,17 @@
   "desc": "Gan-zuke: salted fermented crushed crab paste from Saga, a chunky reddish-brown paste with shell bits and red chilli flecks, in a small dish",
   "items": [
    "mext:10341"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Ganduke.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Ganduke.JPG",
+    "ok": true
+   }
+  ],
+  "vet": "c0 dark crab paste in dish; rest signs, art"
  },
  {
   "key": "mext-10342",
@@ -349,7 +479,9 @@
   "desc": "Raw kouika cuttlefish: a broad oval cuttlefish with brown striped skin, the cut body showing thick pure white flesh",
   "items": [
    "mext:10344"
-  ]
+  ],
+  "refs": [],
+  "vet": "buildings, landscape"
  },
  {
   "key": "mext-10346",
@@ -357,7 +489,9 @@
   "desc": "Boiled surume squid: opaque white squid rings and curled tentacles, a small pile in a small bowl",
   "items": [
    "mext:10346"
-  ]
+  ],
+  "refs": [],
+  "vet": "shrines, kimono"
  },
  {
   "key": "mext-10347",
@@ -365,7 +499,9 @@
   "desc": "Grilled surume squid: a whole squid body grilled glossy golden-brown with scored lines, tentacles alongside, on a plate",
   "items": [
    "mext:10347"
-  ]
+  ],
+  "refs": [],
+  "vet": "fire, shrines, kimono"
  },
  {
   "key": "mext-10417",
@@ -373,7 +509,9 @@
   "desc": "Raw surume squid body, skin on: a squid tube with reddish-brown speckled translucent skin, a cut ring showing white flesh",
   "items": [
    "mext:10417"
-  ]
+  ],
+  "refs": [],
+  "vet": "shrines, kimono"
  },
  {
   "key": "mext-10418",
@@ -389,7 +527,9 @@
   "desc": "Squid tempura: strips of squid in a light crisp pale golden lacy batter, on a plate",
   "items": [
    "mext:10419"
-  ]
+  ],
+  "refs": [],
+  "vet": "tempura candidates, can't confirm squid"
  },
  {
   "key": "mext-10470",
@@ -397,7 +537,17 @@
   "desc": "Squid fry: squid rings coated in coarse golden-brown breadcrumbs, deep-fried, on a plate",
   "items": [
    "mext:10470"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 5,
+    "origin": "commons-search",
+    "file": "File:Deep-fried_squid_with_garlic.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Deep-fried_squid_with_garlic.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c5 fried squid rings; c0 breaded strips could be fish"
  },
  {
   "key": "mext-10420",
@@ -405,7 +555,9 @@
   "desc": "Raw squid fins and tentacles: triangle fins and long tentacles with small suckers, reddish-speckled skin, on a small plate",
   "items": [
    "mext:10420"
-  ]
+  ],
+  "refs": [],
+  "vet": "shrines, kimono"
  },
  {
   "key": "mext-10350",
@@ -413,7 +565,9 @@
   "desc": "Smoked firefly squid: tiny whole squids smoked dark reddish-brown and semi-dry, a few in a small dish",
   "items": [
    "mext:10350"
-  ]
+  ],
+  "refs": [],
+  "vet": "c3/c4 boiled firefly squid (not smoked); buildings, soba"
  },
  {
   "key": "mext-10351",
@@ -421,7 +575,9 @@
   "desc": "Firefly squid tsukudani: tiny whole squids simmered in sweet soy, glossy dark brown and sticky, in a small dish",
   "items": [
    "mext:10351"
-  ]
+  ],
+  "refs": [],
+  "vet": "boiled firefly squid, not tsukudani; buildings"
  },
  {
   "key": "mext-10355",
@@ -429,7 +585,9 @@
   "desc": "Smoked squid snack (ika kunsei): chewy shredded strips, white inside with a reddish-brown edge, a loose pile in a small dish",
   "items": [
    "mext:10355"
-  ]
+  ],
+  "refs": [],
+  "vet": "c1 saki-ika (shredded dried, lookalike); rest places/signs"
  },
  {
   "key": "mext-10356",
@@ -445,7 +603,9 @@
   "desc": "Ika arare: bite-size cubes of seasoned dried squid, light golden-brown and slightly puffed, a pile in a small dish",
   "items": [
    "mext:10357"
-  ]
+  ],
+  "refs": [],
+  "vet": "print"
  },
  {
   "key": "mext-10359",
@@ -461,7 +621,9 @@
   "desc": "Raw iidako baby octopus: small whole octopus, grey-brown, with a round head full of rice-like eggs and short curled arms",
   "items": [
    "mext:10360"
-  ]
+  ],
+  "refs": [],
+  "vet": "people, places, prints"
  },
  {
   "key": "mext-10471",
@@ -469,7 +631,9 @@
   "desc": "Raw skinned madako octopus: pale cream translucent octopus flesh with the skin and suckers removed, sliced, on a small plate",
   "items": [
    "mext:10471"
-  ]
+  ],
+  "refs": [],
+  "vet": "legs, dessert, signs, night sky"
  },
  {
   "key": "mext-10472",
@@ -477,7 +641,9 @@
   "desc": "Steamed octopus (mushi dako): a curled tentacle with deep red-maroon skin and pale suckers, cut slices showing white flesh",
   "items": [
    "mext:10472"
-  ]
+  ],
+  "refs": [],
+  "vet": "dishes unclear, no clear steamed octopus"
  },
  {
   "key": "mext-10473",
@@ -493,7 +659,9 @@
   "desc": "Plain deep-fried octopus (su-age): chunks of red octopus fried without batter, shiny, darkened and blistered, on a plate",
   "items": [
    "mext:10474"
-  ]
+  ],
+  "refs": [],
+  "vet": "forest, legs, signs"
  },
  {
   "key": "mext-10432",
@@ -501,7 +669,9 @@
   "desc": "Raw mizudako giant octopus: a thick tentacle slice with pale flesh, mottled reddish-brown skin and large round suckers",
   "items": [
    "mext:10432"
-  ]
+  ],
+  "refs": [],
+  "vet": "chicken, crest, people, prints"
  },
  {
   "key": "mext-10363",
@@ -509,7 +679,9 @@
   "desc": "Ami tsukudani: tiny mysid shrimp simmered in sweet soy, a sticky dark brown cluster in a small dish",
   "items": [
    "mext:10363"
-  ]
+  ],
+  "refs": [],
+  "vet": "weather, boats, art"
  },
  {
   "key": "mext-10364",
@@ -517,7 +689,9 @@
   "desc": "Ami shiokara: salted fermented tiny shrimp, a wet pinkish-grey paste with whole tiny shrimp visible, in a small dish",
   "items": [
    "mext:10364"
-  ]
+  ],
+  "refs": [],
+  "vet": "weather, boats, art"
  },
  {
   "key": "mext-10366",
@@ -533,7 +707,9 @@
   "desc": "Neri uni: smooth sea urchin paste, thick glossy ochre-orange, in a small dish",
   "items": [
    "mext:10367"
-  ]
+  ],
+  "refs": [],
+  "vet": "text, people, cities"
  },
  {
   "key": "mext-10368",
@@ -541,7 +717,9 @@
   "desc": "Raw krill (okiami): a heap of tiny translucent pinkish krill with black eyes, in a small dish",
   "items": [
    "mext:10368"
-  ]
+  ],
+  "refs": [],
+  "vet": "live fish, boats"
  },
  {
   "key": "mext-10369",
@@ -549,7 +727,9 @@
   "desc": "Boiled krill: a heap of tiny bright pink-orange cooked krill, in a small dish",
   "items": [
    "mext:10369"
-  ]
+  ],
+  "refs": [],
+  "vet": "c0 shop shelf, no krill visible"
  },
  {
   "key": "mext-10370",
@@ -557,7 +737,9 @@
   "desc": "Salted jellyfish, desalted: thin crunchy translucent amber-cream shreds like glassy noodles, piled in a small dish",
   "items": [
    "mext:10370"
-  ]
+  ],
+  "refs": [],
+  "vet": "c2 shredded salad unclear; rest live jellyfish/art"
  },
  {
   "key": "mext-10371",
@@ -573,7 +755,9 @@
   "desc": "Raw sea cucumber (namako): a cucumber-shaped creature with dark green-brown bumpy skin, sliced showing firm cream-coloured flesh",
   "items": [
    "mext:10372"
-  ]
+  ],
+  "refs": [],
+  "vet": "live sea cucumbers"
  },
  {
   "key": "mext-10373",
@@ -581,7 +765,9 @@
   "desc": "Konowata: salted sea cucumber entrails, long slimy amber-orange strands in a small dish",
   "items": [
    "mext:10373"
-  ]
+  ],
+  "refs": [],
+  "vet": "orange/amber pastes, can't tell konowata from ika shiokara"
  },
  {
   "key": "mext-10374",
@@ -589,7 +775,9 @@
   "desc": "Raw hoya sea squirt: a knobbly bright orange-red bumpy shell like a small pineapple, cut open showing bright orange flesh",
   "items": [
    "mext:10374"
-  ]
+  ],
+  "refs": [],
+  "vet": "sea squirt dishes too unclear; shops"
  },
  {
   "key": "mext-10375",
@@ -597,7 +785,9 @@
   "desc": "Hoya shiokara: chunks of salted fermented sea squirt, glistening orange, in a small dish",
   "items": [
    "mext:10375"
-  ]
+  ],
+  "refs": [],
+  "vet": "c0 package unclear; shops"
  },
  {
   "key": "mext-10423",
@@ -605,7 +795,31 @@
   "desc": "Kuro hanpen: Shizuoka dark fish cake made from whole sardines, flat half-moon patties, grey with darker speckles, not white",
   "items": [
    "mext:10423"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Kuro_Hanpen.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Kuro_Hanpen.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "wikidata",
+    "file": "File:Kuro_Hanpen_001.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Kuro_Hanpen_001.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "commons-search",
+    "file": "File:Kuro_Hanpen_002.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Kuro_Hanpen_002.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "grey sardine fishcake patties; c2 fried, c6 oden (other dishes)"
  },
  {
   "key": "mext-10377",
@@ -613,7 +827,17 @@
   "desc": "Kombu-maki kamaboko: fish cake rolled around kelp, round slices showing a spiral of dark green kombu in white fish paste",
   "items": [
    "mext:10377"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:昆布巻きかまぼこ.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E6%98%86%E5%B8%83%E5%B7%BB%E3%81%8D%E3%81%8B%E3%81%BE%E3%81%BC%E3%81%93.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c0 kombu-rolled kamaboko slices"
  },
  {
   "key": "mext-10378",
@@ -637,7 +861,9 @@
   "desc": "Fish ham: round smooth pink slices like ham made from fish, with tiny white fat dots, fanned on a plate",
   "items": [
    "mext:10387"
-  ]
+  ],
+  "refs": [],
+  "vet": "fish hooks, lure; no fish ham"
  },
  {
   "key": "mext-11002",
@@ -653,7 +879,17 @@
   "desc": "Raw rabbit meat: pale pink lean meat pieces, fine-grained with no fat, on a plate",
   "items": [
    "mext:11003"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Jumbo_rabbit_meat.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Jumbo_rabbit_meat.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c0 raw rabbit meat packs labelled; c1 cooked plate"
  },
  {
   "key": "mext-11006",
@@ -663,7 +899,9 @@
    "mext:11006",
    "mext:11032",
    "mext:11062"
-  ]
+  ],
+  "refs": [],
+  "vet": "live cattle"
  },
  {
   "key": "mext-11007",
@@ -681,7 +919,17 @@
    "mext:11078",
    "mext:11259",
    "mext:11266"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Wagyu_beef_marbling_detail.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Wagyu_beef_marbling_detail.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c0 raw beef fat slices; c2 raw beef but lean; c1 roast dinner"
  },
  {
   "key": "mext-11010",
@@ -725,7 +973,31 @@
    "mext:11041",
    "mext:11069",
    "mext:11258"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Raw_Texas_Roadhouse_ribeye_steaks.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Raw_Texas_Roadhouse_ribeye_steaks.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Raw_Beef_Ribeye_Slices_for_Hot_Pot.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Raw_Beef_Ribeye_Slices_for_Hot_Pot.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:Liat_Portal_for_Foodie_Disorder_-_Ribeye_steak_preparation_with_garlic_and_fresh_herbs_before_cooking.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Liat_Portal_for_Foodie_Disorder_-_Ribeye_steak_preparation_with_garlic_and_fresh_herbs_before_cooking.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "raw ribeye steaks / slices"
  },
  {
   "key": "mext-11017",
@@ -735,7 +1007,17 @@
    "mext:11017",
    "mext:11045",
    "mext:11073"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:대통령상에_빛나는_행주한우.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%EB%8C%80%ED%86%B5%EB%A0%B9%EC%83%81%EC%97%90_%EB%B9%9B%EB%82%98%EB%8A%94_%ED%96%89%EC%A3%BC%ED%95%9C%EC%9A%B0.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c2 raw beef cuts in box; c4 cooked; rest prints/text"
  },
  {
   "key": "mext-11020",
@@ -754,7 +1036,17 @@
    "mext:11058",
    "mext:11084",
    "mext:11265"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Beef_round_top_round_steak_in_pan,_raw.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Beef_round_top_round_steak_in_pan,_raw.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c0 raw lean beef slab; rest roast dinners (cooked)"
  },
  {
   "key": "mext-11251",
@@ -766,7 +1058,9 @@
    "mext:11271",
    "mext:11301",
    "mext:11264"
-  ]
+  ],
+  "refs": [],
+  "vet": "meat sauce dish, prints; no boiled lean beef"
  },
  {
   "key": "mext-11250",
@@ -778,7 +1072,9 @@
    "mext:11270",
    "mext:11302",
    "mext:11263"
-  ]
+  ],
+  "refs": [],
+  "vet": "burger, not grilled lean beef"
  },
  {
   "key": "mext-11023",
@@ -793,7 +1089,9 @@
    "mext:11080",
    "mext:11261",
    "mext:11262"
-  ]
+  ],
+  "refs": [],
+  "vet": "roast dinners (cooked), prints"
  },
  {
   "key": "mext-11026",
@@ -806,7 +1104,9 @@
    "mext:11057",
    "mext:11082",
    "mext:11083"
-  ]
+  ],
+  "refs": [],
+  "vet": "drawing"
  },
  {
   "key": "mext-11029",
@@ -815,7 +1115,9 @@
   "items": [
    "mext:11029",
    "mext:11267"
-  ]
+  ],
+  "refs": [],
+  "vet": "c0 cooked/seared lump unclear; others dishes, buildings"
  },
  {
   "key": "mext-11310",
@@ -831,7 +1133,17 @@
   "desc": "Grilled beef belly (karubi): thin short rib slices streaked with fat, browned and glossy with grill marks, on a plate",
   "items": [
    "mext:11252"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Kulbasti_Char-grilled_Veal_with_Mustard_Sauce_-_degustation_-_Ottoman_Cuisine.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Kulbasti_Char-grilled_Veal_with_Mustard_Sauce_-_degustation_-_Ottoman_Cuisine.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c0 grilled beef slices on plate; c1 grill scene unclear"
  },
  {
   "key": "mext-11253",
@@ -839,7 +1151,9 @@
   "desc": "Grilled beef fillet: a thick round fillet steak with a browned crust, cut to show a pink centre, on a plate",
   "items": [
    "mext:11253"
-  ]
+  ],
+  "refs": [],
+  "vet": "salads, plates unclear; no clear grilled fillet"
  },
  {
   "key": "mext-11254",
@@ -856,7 +1170,9 @@
   "desc": "Raw beef belly: slices of short rib in alternating layers of red meat and white fat, on a plate",
   "items": [
    "mext:11260"
-  ]
+  ],
+  "refs": [],
+  "vet": "sushi, prints"
  },
  {
   "key": "mext-11086",
@@ -888,7 +1204,9 @@
   "desc": "Raw beef heart (hatsu): dense dark red muscle slices with a white fat edge, on a plate",
   "items": [
    "mext:11091"
-  ]
+  ],
+  "refs": [],
+  "vet": "c1 plate unclear; prints, people"
  },
  {
   "key": "mext-11093",
@@ -896,7 +1214,9 @@
   "desc": "Raw beef kidney: a dark red-brown kidney made of many small lobes like a cluster, on a plate",
   "items": [
    "mext:11093"
-  ]
+  ],
+  "refs": [],
+  "vet": "c0/c2 look like fat/suet (lookalike), not kidney; c3/c4 cooking"
  },
  {
   "key": "mext-11095",
@@ -912,7 +1232,9 @@
   "desc": "Raw beef omasum (senmai): thin dark grey-black leaf-like pleats covered in tiny bumps, sliced, on a small plate",
   "items": [
    "mext:11096"
-  ]
+  ],
+  "refs": [],
+  "vet": "shell, prints, buildings"
  },
  {
   "key": "mext-11097",
@@ -920,7 +1242,9 @@
   "desc": "Boiled beef abomasum (giara): thick folded chewy strips, brownish-grey with pinkish fatty patches, on a small plate",
   "items": [
    "mext:11097"
-  ]
+  ],
+  "refs": [],
+  "vet": "shell, coral, raw organs; not boiled abomasum"
  },
  {
   "key": "mext-11100",
@@ -944,7 +1268,9 @@
   "desc": "Boiled beef skirt (harami): fibrous strips of diaphragm meat cooked to grey-brown, coarse grain visible, in a small dish",
   "items": [
    "mext:11296"
-  ]
+  ],
+  "refs": [],
+  "vet": "yakiniku/gyudon (other states)"
  },
  {
   "key": "mext-11106",
@@ -952,7 +1278,9 @@
   "desc": "Canned seasoned beef (yamato-ni): shreds and chunks of beef simmered dark brown in sweet soy, glossy, in a small dish",
   "items": [
    "mext:11106"
-  ]
+  ],
+  "refs": [],
+  "vet": "vintage ads, sailboat"
  },
  {
   "key": "mext-11108",
@@ -960,7 +1288,9 @@
   "desc": "Smoked beef tongue: oval slices, dark pink inside with a darker brown smoked rim, fine grain, fanned on a plate",
   "items": [
    "mext:11108"
-  ]
+  ],
+  "refs": [],
+  "vet": "menus, ads"
  },
  {
   "key": "mext-11110",
@@ -968,7 +1298,9 @@
   "desc": "Raw whale meat: very dark crimson, almost black-red lean meat cut into sashimi slices, on a plate",
   "items": [
    "mext:11110"
-  ]
+  ],
+  "refs": [],
+  "vet": "c1 red meat unclear; c0 grilled skewers"
  },
  {
   "key": "mext-11111",
@@ -976,7 +1308,9 @@
   "desc": "Raw whale unesu: ventral groove blubber, thick white fat with striped pinkish ridged layers, sliced, on a plate",
   "items": [
    "mext:11111"
-  ]
+  ],
+  "refs": [],
+  "vet": "constellation art"
  },
  {
   "key": "mext-11112",
@@ -984,7 +1318,9 @@
   "desc": "Raw whale skin (honkawa): black skin over a thick layer of white blubber, cut blocks, on a plate",
   "items": [
    "mext:11112"
-  ]
+  ],
+  "refs": [],
+  "vet": "c2-c5 whale sculpture/skin texture, not food"
  },
  {
   "key": "mext-11113",
@@ -1003,7 +1339,24 @@
    "mext:11294",
    "mext:11295",
    "mext:11311"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Raw_venison_shoulder_meat,_2012.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Raw_venison_shoulder_meat,_2012.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Venison_escalope_raw.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Venison_escalope_raw.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "raw venison cuts"
  },
  {
   "key": "mext-11117",
@@ -1012,7 +1365,9 @@
   "items": [
    "mext:11117",
    "mext:11143"
-  ]
+  ],
+  "refs": [],
+  "vet": "prints"
  },
  {
   "key": "mext-11118",
@@ -1029,7 +1384,9 @@
    "mext:11152",
    "mext:11157",
    "mext:11161"
-  ]
+  ],
+  "refs": [],
+  "vet": "roast dinner, sausages (lookalike), text"
  },
  {
   "key": "mext-11121",
@@ -1038,7 +1395,9 @@
   "items": [
    "mext:11121",
    "mext:11147"
-  ]
+  ],
+  "refs": [],
+  "vet": "c0 cooked ginger pork set, not raw"
  },
  {
   "key": "mext-11125",
@@ -1046,7 +1405,9 @@
   "desc": "Boiled pork loin with fat: thin shabu-shabu pork slices cooked pale greyish-white with a white fat edge, in a small bowl",
   "items": [
    "mext:11125"
-  ]
+  ],
+  "refs": [],
+  "vet": "c2 ham-like roast (lookalike); other dishes"
  },
  {
   "key": "mext-11127",
@@ -1059,7 +1420,9 @@
    "mext:11151",
    "mext:11156",
    "mext:11160"
-  ]
+  ],
+  "refs": [],
+  "vet": "cooked pork plates, not raw"
  },
  {
   "key": "mext-11133",
@@ -1067,7 +1430,9 @@
   "desc": "Boiled lean pork: pale greyish-white cooked lean pork slices, no fat, in a small bowl",
   "items": [
    "mext:11133"
-  ]
+  ],
+  "refs": [],
+  "vet": "c0 bacon-like slices; bento, charts"
  },
  {
   "key": "mext-11132",
@@ -1075,7 +1440,9 @@
   "desc": "Grilled lean pork: lean pork slices browned on the surface and white inside, on a plate",
   "items": [
    "mext:11132"
-  ]
+  ],
+  "refs": [],
+  "vet": "dishes unclear"
  },
  {
   "key": "mext-11136",
@@ -1090,7 +1457,9 @@
    "mext:11155",
    "mext:11158",
    "mext:11159"
-  ]
+  ],
+  "refs": [],
+  "vet": "roast dinner, sausages, prints"
  },
  {
   "key": "mext-11278",
@@ -1098,7 +1467,9 @@
   "desc": "Grilled pork fillet: round tenderloin medallions browned outside, pale white inside, on a plate",
   "items": [
    "mext:11278"
-  ]
+  ],
+  "refs": [],
+  "vet": "plates unclear, can't confirm grilled pork fillet"
  },
  {
   "key": "mext-11145",
@@ -1107,7 +1478,9 @@
   "items": [
    "mext:11145",
    "mext:11146"
-  ]
+  ],
+  "refs": [],
+  "vet": "cooked ginger pork set, not raw"
  },
  {
   "key": "mext-11149",
@@ -1116,7 +1489,9 @@
   "items": [
    "mext:11149",
    "mext:11150"
-  ]
+  ],
+  "refs": [],
+  "vet": "c1 ham roast (lookalike); cooked dishes"
  },
  {
   "key": "mext-11153",
@@ -1124,7 +1499,9 @@
   "desc": "Raw pork belly: a slab showing alternating stripes of pink meat and white fat, on a plate",
   "items": [
    "mext:11153"
-  ]
+  ],
+  "refs": [],
+  "vet": "ribs grilled, other dishes; no raw pork belly"
  },
  {
   "key": "mext-11162",
@@ -1132,7 +1509,9 @@
   "desc": "Raw pork tenderloin: a long slender cylinder of pale pink lean pork, cut end showing fine grain, on a plate",
   "items": [
    "mext:11162"
-  ]
+  ],
+  "refs": [],
+  "vet": "c4 raw pork belly slab (wrong cut); cooked dishes"
  },
  {
   "key": "mext-11312",
@@ -1148,7 +1527,9 @@
   "desc": "Grilled pork jowl (tontoro): fatty marbled slices grilled golden-brown with crisp edges, on a plate",
   "items": [
    "mext:11313"
-  ]
+  ],
+  "refs": [],
+  "vet": "grill fire, fish; unclear"
  },
  {
   "key": "mext-11164",
@@ -1156,7 +1537,17 @@
   "desc": "Raw pork tongue: a whole pink tongue with a rough textured surface, some slices cut, on a plate",
   "items": [
    "mext:11164"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 5,
+    "origin": "commons-search",
+    "file": "File:Chilled_Pork_Tongue.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Chilled_Pork_Tongue.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c5 raw pork tongues; c4 state unclear; grilled/ramen others"
  },
  {
   "key": "mext-11165",
@@ -1164,7 +1555,17 @@
   "desc": "Raw pork heart: small dark red dense heart sliced open, on a plate",
   "items": [
    "mext:11165"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Raw_pork_heart_for_sale_-_Kanagawa_Japan_-_2024_May_2.jpeg",
+    "page": "https://commons.wikimedia.org/wiki/File:Raw_pork_heart_for_sale_-_Kanagawa_Japan_-_2024_May_2.jpeg",
+    "ok": true
+   }
+  ],
+  "vet": "c0 raw pork heart slices packed; c3 grilled skewer"
  },
  {
   "key": "mext-11167",
@@ -1180,7 +1581,9 @@
   "desc": "Boiled pork small intestine (motsu): pale greyish-white chewy curled tube pieces, in a small bowl",
   "items": [
    "mext:11169"
-  ]
+  ],
+  "refs": [],
+  "vet": "diagram, cooked dish unclear"
  },
  {
   "key": "mext-11171",
@@ -1196,7 +1599,9 @@
   "desc": "Boiled pork cartilage (nankotsu): white translucent cartilage chunks with bits of meat attached, in a small dish",
   "items": [
    "mext:11173"
-  ]
+  ],
+  "refs": [],
+  "vet": "text, braised dish unclear"
  },
  {
   "key": "mext-11174",
@@ -1204,7 +1609,9 @@
   "desc": "Bone-in ham: a large leg ham with the bone, a browned smoked rind, and a pink cut face, a slice beside it",
   "items": [
    "mext:11174"
-  ]
+  ],
+  "refs": [],
+  "vet": "c0/c1 bologna-type sausage, c2/c3 sliced packs; no bone-in ham"
  },
  {
   "key": "mext-11303",
@@ -1212,7 +1619,9 @@
   "desc": "Boiled loin ham: round pink ham slices with a thin fat rim, pale and moist from boiling, on a plate",
   "items": [
    "mext:11303"
-  ]
+  ],
+  "refs": [],
+  "vet": "c0 sliced loin ham is unheated (state in name: boiled)"
  },
  {
   "key": "mext-11304",
@@ -1220,7 +1629,9 @@
   "desc": "Grilled loin ham: round pink ham slices browned and slightly curled at the edges, on a plate",
   "items": [
    "mext:11304"
-  ]
+  ],
+  "refs": [],
+  "vet": "ham unheated, not grilled; buildings"
  },
  {
   "key": "mext-11305",
@@ -1228,7 +1639,9 @@
   "desc": "Ham fry (ham katsu): a thin breaded cutlet with a golden crumb coat, cut to show a pink ham layer inside",
   "items": [
    "mext:11305"
-  ]
+  ],
+  "refs": [],
+  "vet": "unbreaded ham, other dishes; no ham cutlet"
  },
  {
   "key": "mext-11180",
@@ -1237,7 +1650,9 @@
   "items": [
    "mext:11180",
    "mext:11179"
-  ]
+  ],
+  "refs": [],
+  "vet": "illustration"
  },
  {
   "key": "mext-11314",
@@ -1245,7 +1660,9 @@
   "desc": "Boiled bacon: slices of pork belly bacon, pale pink with white fat stripes, soft and limp, on a plate",
   "items": [
    "mext:11314"
-  ]
+  ],
+  "refs": [],
+  "vet": "stews, packaging; no plain boiled bacon"
  },
  {
   "key": "mext-11316",
@@ -1253,7 +1670,9 @@
   "desc": "Stir-fried bacon: crisp browned curled strips of bacon glistening with fat, on a plate",
   "items": [
    "mext:11316"
-  ]
+  ],
+  "refs": [],
+  "vet": "c4 breakfast plate with bacon (not main subject); other dishes"
  },
  {
   "key": "mext-11308",
@@ -1261,7 +1680,9 @@
   "desc": "Wiener sausage fry: small sausages coated in golden breadcrumbs and deep-fried, one cut showing pink inside",
   "items": [
    "mext:11308"
-  ]
+  ],
+  "refs": [],
+  "vet": "sausages raw/pan-fried, not deep-fried"
  },
  {
   "key": "mext-11187",
@@ -1269,7 +1690,9 @@
   "desc": "Semi-dry sausage: a firm dark red salami-like sausage, sliced into rounds with white fat specks",
   "items": [
    "mext:11187"
-  ]
+  ],
+  "refs": [],
+  "vet": "drawing"
  },
  {
   "key": "mext-11190",
@@ -1277,7 +1700,24 @@
   "desc": "Bologna sausage: large round slices, smooth pale pink, even texture, fanned on a plate",
   "items": [
    "mext:11190"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Lyoner-1.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Lyoner-1.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "commons-search",
+    "file": "File:Bologna_lunch_meat_style_sausage.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Bologna_lunch_meat_style_sausage.JPG",
+    "ok": true
+   }
+  ],
+  "vet": "c0 cut bologna sausage; c3 bologna slices; c2 ring sausage unclear"
  },
  {
   "key": "mext-11191",
@@ -1285,7 +1725,24 @@
   "desc": "Lyoner sausage: round pale pink slices studded with small red and green diced pepper pieces, on a plate",
   "items": [
    "mext:11191"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Lyoner-1.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Lyoner-1.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:Bologna_lunch_meat_style_sausage.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Bologna_lunch_meat_style_sausage.JPG",
+    "ok": true
+   }
+  ],
+  "vet": "c0 Lyoner-type sausage cut; c2 slices"
  },
  {
   "key": "mext-11192",
@@ -1293,7 +1750,24 @@
   "desc": "Liver sausage: soft greyish-brown spreadable slices, fine and smooth, on a plate",
   "items": [
    "mext:11192"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "jawiki-page",
+    "file": "File:Leberwurst_gekocht.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Leberwurst_gekocht.jpg",
+    "ok": true
+   },
+   {
+    "n": 6,
+    "origin": "commons-cat",
+    "file": "File:Liverwurst_01.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Liverwurst_01.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c1 cut liverwurst; c6 pale liver sausage; c7 pate; c4/c5 other sausages"
  },
  {
   "key": "mext-11193",
@@ -1309,7 +1783,9 @@
   "desc": "Smoked pork liver: dense dark brown smoked liver slices, smooth and firm, on a plate",
   "items": [
    "mext:11197"
-  ]
+  ],
+  "refs": [],
+  "vet": "dish unclear, prints"
  },
  {
   "key": "mext-11281",
@@ -1325,7 +1801,9 @@
   "desc": "Raw mutton leg with fat: dark red meat with a white fat layer, on a plate",
   "items": [
    "mext:11200"
-  ]
+  ],
+  "refs": [],
+  "vet": "prints"
  },
  {
   "key": "mext-11201",
@@ -1349,7 +1827,9 @@
   "desc": "Raw goat meat, lean: a block of dark red lean goat meat with no fat, on a plate",
   "items": [
    "mext:11204"
-  ]
+  ],
+  "refs": [],
+  "vet": "c2 sliced raw meat unclear species; others unclear/prints"
  },
  {
   "key": "mext-11207",
@@ -1357,7 +1837,38 @@
   "desc": "Raw quail meat with skin: small pinkish-red quail pieces with thin pale skin, a tiny dressed bird shape, on a plate",
   "items": [
    "mext:11207"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Wachtel-aufgeklappt.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Wachtel-aufgeklappt.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Quail_meat_01.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Quail_meat_01.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:Quail_meat_02.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Quail_meat_02.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "commons-search",
+    "file": "File:Quail,_six,_frozen_and_packaged_for_sale.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Quail,_six,_frozen_and_packaged_for_sale.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "raw dressed quail; c5 cooked"
  },
  {
   "key": "mext-11239",
@@ -1365,7 +1876,9 @@
   "desc": "Boiled goose foie gras: a smooth plump lobe of liver, pale beige-yellow, creamy and glossy, sliced, on a plate",
   "items": [
    "mext:11239"
-  ]
+  ],
+  "refs": [],
+  "vet": "live geese, art; no foie gras"
  },
  {
   "key": "mext-11208",
@@ -1374,7 +1887,9 @@
   "items": [
    "mext:11208",
    "mext:11247"
-  ]
+  ],
+  "refs": [],
+  "vet": "egg plates, duck paintings"
  },
  {
   "key": "mext-11206",
@@ -1382,7 +1897,9 @@
   "desc": "Raw duck with skin: a red duck breast with a thick white fatty skin layer on top, on a plate",
   "items": [
    "mext:11206"
-  ]
+  ],
+  "refs": [],
+  "vet": "people, x-ray, text"
  },
  {
   "key": "mext-11284",
@@ -1390,7 +1907,9 @@
   "desc": "Raw duck skin: thick creamy white fatty skin pieces with a pimpled surface, on a plate",
   "items": [
    "mext:11284"
-  ]
+  ],
+  "refs": [],
+  "vet": "people, x-ray, text"
  },
  {
   "key": "mext-11209",
@@ -1398,7 +1917,9 @@
   "desc": "Raw pheasant, skinless: pinkish-red lean bird meat, fine grain, on a plate",
   "items": [
    "mext:11209"
-  ]
+  ],
+  "refs": [],
+  "vet": "ships, people"
  },
  {
   "key": "mext-11210",
@@ -1406,7 +1927,17 @@
   "desc": "Raw turkey, skinless: a pale pink lean breast fillet, on a plate",
   "items": [
    "mext:11210"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 4,
+    "origin": "commons-search",
+    "file": "File:Krůtí_prsa.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Kr%C5%AFt%C3%AD_prsa.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c4 raw skinless turkey breast; c3/c7 cooked shredded; c5 pack unclear"
  },
  {
   "key": "mext-11211",
@@ -1430,7 +1961,9 @@
   "desc": "Raw hen breast, skinless: a pale pink chicken breast fillet with no skin, on a plate",
   "items": [
    "mext:11214"
-  ]
+  ],
+  "refs": [],
+  "vet": "prints"
  },
  {
   "key": "mext-11215",
@@ -1446,7 +1979,9 @@
   "desc": "Raw hen thigh, skinless: darker pink chicken thigh meat with no skin, on a plate",
   "items": [
    "mext:11216"
-  ]
+  ],
+  "refs": [],
+  "vet": "prints, text"
  },
  {
   "key": "mext-11217",
@@ -1462,7 +1997,9 @@
   "desc": "Boiled chicken thigh, skinless: chunks of cooked chicken thigh, opaque white-grey, moist, in a small bowl",
   "items": [
    "mext:11226"
-  ]
+  ],
+  "refs": [],
+  "vet": "dishes unclear, no plain boiled thigh"
  },
  {
   "key": "mext-11298",
@@ -1470,7 +2007,9 @@
   "desc": "Sauteed chicken sasami: tender chicken strips pan-fried light golden brown, on a plate",
   "items": [
    "mext:11298"
-  ]
+  ],
+  "refs": [],
+  "vet": "set meal, chicken, flowers"
  },
  {
   "key": "mext-11299",
@@ -1478,7 +2017,9 @@
   "desc": "Chicken sasami tempura: strips of chicken in a crisp pale golden lacy batter, on a plate",
   "items": [
    "mext:11299"
-  ]
+  ],
+  "refs": [],
+  "vet": "set meal, chicken, flowers"
  },
  {
   "key": "mext-11238",
@@ -1486,7 +2027,9 @@
   "desc": "Raw pigeon, skinless: small dark red breast meat, on a plate",
   "items": [
    "mext:11238"
-  ]
+  ],
+  "refs": [],
+  "vet": "live pigeons, old photo"
  },
  {
   "key": "mext-11240",
@@ -1494,7 +2037,9 @@
   "desc": "Raw guinea fowl, skinless: pinkish lean bird meat, slightly darker than chicken, on a plate",
   "items": [
    "mext:11240"
-  ]
+  ],
+  "refs": [],
+  "vet": "bird paintings, prints"
  },
  {
   "key": "mext-11241",
@@ -1502,7 +2047,31 @@
   "desc": "Inago tsukudani: whole rice locusts simmered in sweet soy, glossy brown grasshoppers with legs, piled in a small dish",
   "items": [
    "mext:11241"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Inago_no_tsukudani_02.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Inago_no_tsukudani_02.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Inago_No_Tsukudani_(Sweet_and_sour_grasshoppers).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Inago_No_Tsukudani_(Sweet_and_sour_grasshoppers).jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:Inago_no_tsukudani.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Inago_no_tsukudani.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "glazed locust tsukudani; c5 plain dried insects; c3/c4 unclear"
  },
  {
   "key": "mext-11242",
@@ -1510,7 +2079,9 @@
   "desc": "Raw frog meat: a pair of pale pink skinned frog legs joined at the hips, on a plate",
   "items": [
    "mext:11242"
-  ]
+  ],
+  "refs": [],
+  "vet": "live frog, prints"
  },
  {
   "key": "mext-11243",
@@ -1518,7 +2089,9 @@
   "desc": "Raw soft-shelled turtle (suppon): pinkish meat pieces with dark grey skin and translucent gelatinous edges, on a plate",
   "items": [
    "mext:11243"
-  ]
+  ],
+  "refs": [],
+  "vet": "drawings, turtle model, statue"
  },
  {
   "key": "mext-11244",
@@ -1526,7 +2099,17 @@
   "desc": "Canned wasp larvae (hachinoko): small plump cream-brown grubs simmered in sweet soy, glossy, in a small dish",
   "items": [
    "mext:11244"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Hachinoko_(wasp_larvae_and_pupae)_for_sale_at_a_grocery_store_in_Japan.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Hachinoko_(wasp_larvae_and_pupae)_for_sale_at_a_grocery_store_in_Japan.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c0 cans of hachinoko on shelf"
  },
  {
   "key": "mext-12001",
@@ -1542,7 +2125,31 @@
   "desc": "Canned boiled eggs: whole peeled hard-boiled eggs, smooth white, in a small dish with a little water",
   "items": [
    "mext:12007"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:09042jfCuisine_Foods_Philippines_Baliuag_Bulacanfvf_11.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:09042jfCuisine_Foods_Philippines_Baliuag_Bulacanfvf_11.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:09042jfCuisine_Foods_Philippines_Baliuag_Bulacanfvf_19.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:09042jfCuisine_Foods_Philippines_Baliuag_Bulacanfvf_19.jpg",
+    "ok": true
+   },
+   {
+    "n": 5,
+    "origin": "commons-search",
+    "file": "File:09042jfCuisine_Foods_Philippines_Baliuag_Bulacanfvf_17.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:09042jfCuisine_Foods_Philippines_Baliuag_Bulacanfvf_17.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "peeled hard-boiled eggs (halved); no can shown"
  },
  {
   "key": "mext-12008",
@@ -1550,7 +2157,9 @@
   "desc": "Sugared liquid whole egg: a glass of smooth beaten egg, syrupy bright yellow liquid",
   "items": [
    "mext:12008"
-  ]
+  ],
+  "refs": [],
+  "vet": "raw eggs, prints; no sugared liquid egg"
  },
  {
   "key": "mext-12009",
@@ -1558,7 +2167,9 @@
   "desc": "Dried whole egg powder: fine pale yellow powder in a small dish",
   "items": [
    "mext:12009"
-  ]
+  ],
+  "refs": [],
+  "vet": "raw eggs, prints; no egg powder"
  },
  {
   "key": "mext-12011",
@@ -1566,7 +2177,31 @@
   "desc": "Boiled egg yolk: crumbly bright yellow hard-cooked yolks, round and halved, in a small dish",
   "items": [
    "mext:12011"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Hard_boiled_egg.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Hard_boiled_egg.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Boiled_Egg_-_Crossection.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Boiled_Egg_-_Crossection.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "commons-search",
+    "file": "File:Boiled_egg_-_Two_pieces.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Boiled_egg_-_Two_pieces.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c0 crumbled boiled yolk; c1/c4 halved boiled eggs showing yolk"
  },
  {
   "key": "mext-12012",
@@ -1574,7 +2209,9 @@
   "desc": "Sugared egg yolk: thick glossy orange-yellow syrupy liquid in a small glass",
   "items": [
    "mext:12012"
-  ]
+  ],
+  "refs": [],
+  "vet": "sweets, packages; no sugared yolk liquid"
  },
  {
   "key": "mext-12013",
@@ -1582,7 +2219,9 @@
   "desc": "Dried egg yolk powder: fine deep yellow powder in a small dish",
   "items": [
    "mext:12013"
-  ]
+  ],
+  "refs": [],
+  "vet": "waffle iron, ads; no yolk powder"
  },
  {
   "key": "mext-12015",
@@ -1590,7 +2229,24 @@
   "desc": "Boiled egg white: firm white cooked egg whites, hollow halves with no yolk, in a small dish",
   "items": [
    "mext:12015"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Perfectly_cooked_hard-boiled_egg_cross-section_showing_latebra_structure.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Perfectly_cooked_hard-boiled_egg_cross-section_showing_latebra_structure.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:Boiled_Egg_-_Crossection.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Boiled_Egg_-_Crossection.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "halved hard-boiled eggs show cooked white; c5 ramen"
  },
  {
   "key": "mext-12016",
@@ -1598,7 +2254,9 @@
   "desc": "Dried egg white powder: fine pure white powder in a small dish",
   "items": [
    "mext:12016"
-  ]
+  ],
+  "refs": [],
+  "vet": "cocoa, dishes; no dried egg white"
  },
  {
   "key": "mext-13001",
@@ -1606,7 +2264,9 @@
   "desc": "Raw Jersey milk: a glass of rich creamy ivory-yellow milk",
   "items": [
    "mext:13001"
-  ]
+  ],
+  "refs": [],
+  "vet": "blue cheese, girl with bottle; no raw milk"
  },
  {
   "key": "mext-13002",
@@ -1615,7 +2275,9 @@
   "items": [
    "mext:13002",
    "mext:13052"
-  ]
+  ],
+  "refs": [],
+  "vet": "cows being milked (not the food)"
  },
  {
   "key": "mext-13059",
@@ -1623,7 +2285,17 @@
   "desc": "Infant liquid milk: a small baby bottle filled with off-white milk",
   "items": [
    "mext:13059"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:米国内で販売されている乳児用液体ミルク.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E7%B1%B3%E5%9B%BD%E5%86%85%E3%81%A7%E8%B2%A9%E5%A3%B2%E3%81%95%E3%82%8C%E3%81%A6%E3%81%84%E3%82%8B%E4%B9%B3%E5%85%90%E7%94%A8%E6%B6%B2%E4%BD%93%E3%83%9F%E3%83%AB%E3%82%AF.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c0 liquid formula bottles; rest ads/charts"
  },
  {
   "key": "mext-13009",
@@ -1631,7 +2303,31 @@
   "desc": "Whole milk powder: fine cream-coloured powder in a small dish",
   "items": [
    "mext:13009"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:PowderedMilk.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:PowderedMilk.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "commons-search",
+    "file": "File:Powdered_whole_milk,_Heino,_1940s.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Powdered_whole_milk,_Heino,_1940s.JPG",
+    "ok": true
+   },
+   {
+    "n": 5,
+    "origin": "commons-search",
+    "file": "File:Powdered_egg_and_milk,_United_States,_1939-1945_Wellcome_L0059407.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Powdered_egg_and_milk,_United_States,_1939-1945_Wellcome_L0059407.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c1 white milk powder; c4/c5 powdered-milk tins"
  },
  {
   "key": "mext-13011",
@@ -1639,7 +2335,24 @@
   "desc": "Infant formula powder: fine pale cream powder in a small dish with a measuring scoop",
   "items": [
    "mext:13011"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Baby_Formula_Powder_(50841930296).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Baby_Formula_Powder_(50841930296).jpg",
+    "ok": true
+   },
+   {
+    "n": 5,
+    "origin": "commons-search",
+    "file": "File:HK_TKO_將軍澳廣場_Tseung_Kwan_O_Plaza_mall_September_2021_SS2_70.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:HK_TKO_%E5%B0%87%E8%BB%8D%E6%BE%B3%E5%BB%A3%E5%A0%B4_Tseung_Kwan_O_Plaza_mall_September_2021_SS2_70.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c0 formula powder in scoop; c5 formula cans on shelf"
  },
  {
   "key": "mext-13012",
@@ -1647,7 +2360,24 @@
   "desc": "Evaporated milk: thick pale tan-cream liquid in a small jug",
   "items": [
    "mext:13012"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Dosenmilch.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Dosenmilch.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:MODOBordens.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:MODOBordens.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c1 Borden evaporated unsweetened can; c0 cans with poured milk; c2 glass of milk unclear"
  },
  {
   "key": "mext-13015",
@@ -1655,7 +2385,9 @@
   "desc": "Fresh cream: thick white liquid cream in a small jug",
   "items": [
    "mext:13015"
-  ]
+  ],
+  "refs": [],
+  "vet": "milk-like liquids and desserts; can't confirm cream"
  },
  {
   "key": "mext-13018",
@@ -1664,7 +2396,24 @@
   "items": [
    "mext:13018",
    "mext:13019"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "wikidata",
+    "file": "File:And_some_whipped_cream_(4315201282).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:And_some_whipped_cream_(4315201282).jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "jawiki-page",
+    "file": "File:Crème_Chantilly.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Cr%C3%A8me_Chantilly.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c3 piped whipped cream in bowl; c1 whipped cream on brownie; others garnish"
  },
  {
   "key": "mext-13021",
@@ -1689,7 +2438,9 @@
   "desc": "Non-dairy lactic acid drink: a glass of thin cloudy translucent white drink",
   "items": [
    "mext:13030"
-  ]
+  ],
+  "refs": [],
+  "vet": "Yakult bottles (dairy type, lookalike for non-dairy)"
  },
  {
   "key": "mext-13031",
@@ -1697,7 +2448,24 @@
   "desc": "Edam cheese: a round ball of cheese with red wax rind, a wedge cut showing pale yellow paste",
   "items": [
    "mext:13031"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:SmallEdamCheese.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:SmallEdamCheese.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "commons-cat",
+    "file": "File:006_Cheese_store_in_Amsterdam,_Netherlands_-_kaaswinkel.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:006_Cheese_store_in_Amsterdam,_Netherlands_-_kaaswinkel.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c0 Edam with red rind; c3 shelves of red-wax Edam balls"
  },
  {
   "key": "mext-13032",
@@ -1705,7 +2473,38 @@
   "desc": "Emmental cheese: a pale yellow wedge with large round holes",
   "items": [
    "mext:13032"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Emmental_(fromage)_01.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Emmental_(fromage)_01.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "jawiki-page",
+    "file": "File:Emmentaler.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Emmentaler.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "enwiki",
+    "file": "File:Emmentaler_Premier_Cru.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Emmentaler_Premier_Cru.jpg",
+    "ok": true
+   },
+   {
+    "n": 7,
+    "origin": "enwiki-page",
+    "file": "File:Selection_Rolf_Beeler_Emmental.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Selection_Rolf_Beeler_Emmental.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "Emmental with holes; c3 cows, c4/c6 dairy"
  },
  {
   "key": "mext-13039",
@@ -1713,7 +2512,45 @@
   "desc": "Blue cheese: a crumbly white wedge streaked with blue-green veins",
   "items": [
    "mext:13039"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Danish_Blue_cheese.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Danish_Blue_cheese.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:Blue_Stilton_Quarter_Front.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Blue_Stilton_Quarter_Front.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "jawiki-page",
+    "file": "File:Bleu_de_Gex.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Bleu_de_Gex.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "enwiki",
+    "file": "File:Bleu_au_lait_de_chèvre.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Bleu_au_lait_de_ch%C3%A8vre.jpg",
+    "ok": true
+   },
+   {
+    "n": 5,
+    "origin": "enwiki-page",
+    "file": "File:2015-01-25_Jersey_Blue_-_Städtchäsi_Lichtensteig_-_der_Schweizer_-_hu_-_8005.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:2015-01-25_Jersey_Blue_-_St%C3%A4dtch%C3%A4si_Lichtensteig_-_der_Schweizer_-_hu_-_8005.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "blue-veined cheeses; c4 orange blue unclear"
  },
  {
   "key": "mext-13057",
@@ -1721,7 +2558,24 @@
   "desc": "Goat cheese: a small white log with a soft bloomy rind, a round slice cut",
   "items": [
    "mext:13057"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Goat_cheese_with_thymus.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Goat_cheese_with_thymus.JPG",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "commons-search",
+    "file": "File:Crottin_02.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Crottin_02.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "goat cheese log and rounds; c4/c5 dishes"
  },
  {
   "key": "mext-13058",
@@ -1729,7 +2583,24 @@
   "desc": "Ricotta: soft moist white grainy curds in a small bowl",
   "items": [
    "mext:13058"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Ricotta.jpeg",
+    "page": "https://commons.wikimedia.org/wiki/File:Ricotta.jpeg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:Ricotta_salata_e_zucchina.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Ricotta_salata_e_zucchina.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "fresh ricotta; c4 unclear; c6 aged cheese"
  },
  {
   "key": "mext-13041",
@@ -1737,7 +2608,24 @@
   "desc": "Cheese spread: smooth creamy pale yellow spread in a small dish",
   "items": [
    "mext:13041"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 4,
+    "origin": "commons-search",
+    "file": "File:Hall's_Beer_Cheese_-_The_Original_Snappy_Beer_Cheese.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Hall%27s_Beer_Cheese_-_The_Original_Snappy_Beer_Cheese.jpg",
+    "ok": true
+   },
+   {
+    "n": 5,
+    "origin": "commons-search",
+    "file": "File:Beer_Cheese_Picture_Wiki.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Beer_Cheese_Picture_Wiki.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "tubs of cheese spread; c2 unclear"
  },
  {
   "key": "mext-13046",
@@ -1745,7 +2633,38 @@
   "desc": "Low-fat lacto ice: a scoop of white vanilla ice in a small cup",
   "items": [
    "mext:13046"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Meiji_Essel_super_cup_(Super_vanilla).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Meiji_Essel_super_cup_(Super_vanilla).jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Meiji_Essel_Super_Cup_001.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Meiji_Essel_Super_Cup_001.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "commons-search",
+    "file": "File:MEIJI_ESSEL_SUPER_CUP_CHO-VANILLA_ICE_CREAM.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:MEIJI_ESSEL_SUPER_CUP_CHO-VANILLA_ICE_CREAM.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "commons-search",
+    "file": "File:MEIJI_ESSEL_SUPER_CUP_CHO-VANILLA_ICE_CREAM_(14).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:MEIJI_ESSEL_SUPER_CUP_CHO-VANILLA_ICE_CREAM_(14).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "ice cream cups (lacto-ice indistinguishable); c2 matcha flavour"
  },
  {
   "key": "mext-13048",
@@ -1753,7 +2672,24 @@
   "desc": "Casein: fine white powder in a small dish",
   "items": [
    "mext:13048"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 3,
+    "origin": "commons-search",
+    "file": "File:Organiccaseinproteinbag.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Organiccaseinproteinbag.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "commons-search",
+    "file": "File:Caseinesamplejar.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Caseinesamplejar.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c3 casein bag, c4 jar labelled caseine"
  },
  {
   "key": "mext-13050",
@@ -1761,7 +2697,9 @@
   "desc": "Cheese whey powder: fine pale cream-yellow powder in a small dish",
   "items": [
    "mext:13050"
-  ]
+  ],
+  "refs": [],
+  "vet": "old photo, chart"
  },
  {
   "key": "mext-13051",
@@ -1769,7 +2707,17 @@
   "desc": "Human breast milk: thin bluish-white milk in a small baby bottle",
   "items": [
    "mext:13051"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Bottles_of_Donated_Human_Milk_in_a_Fridge.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Bottles_of_Donated_Human_Milk_in_a_Fridge.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c1 bottles of expressed milk; others art/signs"
  },
  {
   "key": "mext-14003",
@@ -1778,7 +2726,17 @@
   "items": [
    "mext:14003",
    "mext:14014"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 2,
+    "origin": "commons-cat",
+    "file": "File:Dune_Aura_Rice_Bran_oil_bottle.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Dune_Aura_Rice_Bran_oil_bottle.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c2 rice bran oil bottles; c0 label unreadable"
  },
  {
   "key": "mext-14004",
@@ -1792,7 +2750,17 @@
    "mext:14026",
    "mext:14027",
    "mext:14012"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Bequer-B100-SOJA-SOYBEAM.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Bequer-B100-SOJA-SOYBEAM.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c0 plain vegetable oil in beaker; c1 branded unclear"
  },
  {
   "key": "mext-14007",
@@ -1800,7 +2768,9 @@
   "desc": "Corn oil: clear golden yellow oil in a small glass dish",
   "items": [
    "mext:14007"
-  ]
+  ],
+  "refs": [],
+  "vet": "c0 oil jug type unclear; corn cobs"
  },
  {
   "key": "mext-14009",
@@ -1808,7 +2778,17 @@
   "desc": "Palm oil: a semi-solid creamy pale orange-yellow fat in a small dish",
   "items": [
    "mext:14009"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 6,
+    "origin": "enwiki",
+    "file": "File:Palm_oil.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Palm_oil.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c6 semi-solid orange palm oil in dish; c2/c0 liquid red oil with fruit unclear; plantations rejected"
  },
  {
   "key": "mext-14010",
@@ -1816,7 +2796,9 @@
   "desc": "Palm kernel oil: a solid white fat in a small dish",
   "items": [
    "mext:14010"
-  ]
+  ],
+  "refs": [],
+  "vet": "coconuts, palm fruit; no clear solid white palm kernel oil"
  },
  {
   "key": "mext-14028",
@@ -1824,7 +2806,38 @@
   "desc": "Grapeseed oil: clear pale greenish-yellow oil in a small glass dish",
   "items": [
    "mext:14028"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Grapeseed-oil.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Grapeseed-oil.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:11_-_IMG_20170402_194004.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:11_-_IMG_20170402_194004.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:Huile_de_pépins_de_raisins.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Huile_de_p%C3%A9pins_de_raisins.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "commons-search",
+    "file": "File:HK_SYP_Sai_Ying_Pun_Queen's_Road_West_shop_759_store_food_goods_食油_eating_oil_April_2020_SS2_01.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:HK_SYP_Sai_Ying_Pun_Queen%27s_Road_West_shop_759_store_food_goods_%E9%A3%9F%E6%B2%B9_eating_oil_April_2020_SS2_01.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "grapeseed oil bottles"
  },
  {
   "key": "mext-14015",
@@ -1832,7 +2845,17 @@
   "desc": "Beef tallow: a solid creamy white block of fat in a small dish",
   "items": [
    "mext:14015"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Tallow-beef_suet_after_rendering.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Tallow-beef_suet_after_rendering.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c0 white tallow in jar; c1 marbled beef (not tallow)"
  },
  {
   "key": "mext-14032",
@@ -1840,7 +2863,17 @@
   "desc": "Cod liver oil: clear amber-golden oil in a small glass dish",
   "items": [
    "mext:14032"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Möller's_cod_liver_oil.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:M%C3%B6ller%27s_cod_liver_oil.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c1 cod liver oil bottle; c4 old emulsion bottles; c5 generic oil"
  },
  {
   "key": "mext-14033",
@@ -1850,7 +2883,17 @@
    "mext:14033",
    "mext:14029",
    "mext:14034"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:Margarine.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Margarine.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c1 tub of soft margarine; c0/c7 could be butter (lookalike)"
  },
  {
   "key": "mext-14022",
@@ -1860,7 +2903,9 @@
    "mext:14022",
    "mext:14030",
    "mext:14031"
-  ]
+  ],
+  "refs": [],
+  "vet": "white fats unclear (lard lookalike); ads"
  },
  {
   "key": "mext-15001",
@@ -1868,7 +2913,9 @@
   "desc": "Amanatto azuki: small whole red beans candied and coated in sugar, glistening, in a small dish",
   "items": [
    "mext:15001"
-  ]
+  ],
+  "refs": [],
+  "vet": "mixed or other amanatto; no clear azuki amanatto"
  },
  {
   "key": "mext-15002",
@@ -1876,7 +2923,9 @@
   "desc": "Amanatto kidney beans: large whole kidney beans, pale and purple-mottled, candied and sugar-coated, in a small dish",
   "items": [
    "mext:15002"
-  ]
+  ],
+  "refs": [],
+  "vet": "c0 large sugared pieces species unclear; mixes"
  },
  {
   "key": "mext-15003",
@@ -1884,7 +2933,9 @@
   "desc": "Amanatto peas: whole green peas candied and sugar-glazed, in a small dish",
   "items": [
    "mext:15003"
-  ]
+  ],
+  "refs": [],
+  "vet": "mixed amanatto plates; no clear pea amanatto"
  },
  {
   "key": "mext-15146",
@@ -1892,7 +2943,17 @@
   "desc": "Imagawayaki with custard: a thick round griddle cake, golden brown with pale sides, cut open showing yellow custard",
   "items": [
    "mext:15146"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 4,
+    "origin": "enwiki-page",
+    "file": "File:Chichibu_(4488803367).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Chichibu_(4488803367).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c4 imagawayaki bitten showing custard; c0 has red bean filling; stalls"
  },
  {
   "key": "mext-15006",
@@ -1900,7 +2961,17 @@
   "desc": "White uiro: smooth dense steamed rice-flour cake, semi-translucent white, cut into rectangular slices",
   "items": [
    "mext:15006"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:Aoyagiuirou_ac_(1).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Aoyagiuirou_ac_(1).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c1 white uiro slices; c0 tri-colour mix; others other colours/packaged"
  },
  {
   "key": "mext-15147",
@@ -1908,7 +2979,17 @@
   "desc": "Black uiro: smooth dense steamed cake, dark brown from brown sugar, semi-translucent, cut into rectangular slices",
   "items": [
    "mext:15147"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 3,
+    "origin": "jawiki-page",
+    "file": "File:CodazziNairo1.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:CodazziNairo1.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c3 brown uiro slices; c4/c7 dark sweets unclear (yokan lookalike); c0 tri-colour"
  },
  {
   "key": "mext-15007",
@@ -1925,7 +3006,31 @@
   "desc": "Kashiwa mochi: white mochi folded into a half-moon, wrapped in a large green oak leaf, red bean paste inside",
   "items": [
    "mext:15149"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Kashiwa-mochi.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Kashiwa-mochi.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "wikidata",
+    "file": "File:Kashiwa_mochi_on_a_leave.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Kashiwa_mochi_on_a_leave.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "jawiki",
+    "file": "File:Kashiwa-mochi_001.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Kashiwa-mochi_001.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "kashiwa-mochi on oak leaf; c5/c7 unclear; prints"
  },
  {
   "key": "mext-15010",
@@ -1933,7 +3038,9 @@
   "desc": "Kanoko: a ball of bean paste covered with glossy whole candied red beans, in a small dish",
   "items": [
    "mext:15010"
-  ]
+  ],
+  "refs": [],
+  "vet": "prints, people, horse"
  },
  {
   "key": "mext-15011",
@@ -1941,7 +3048,17 @@
   "desc": "Karukan: white spongy steamed yam cake with fine pores, cut into rectangles",
   "items": [
    "mext:15011"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Karukan_01.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Karukan_01.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c0 karukan slices; c1-c4 karukan manju (filled variant)"
  },
  {
   "key": "mext-15012",
@@ -1949,7 +3066,17 @@
   "desc": "Kibi dango: small soft chewy pale yellow flattened round dumplings dusted with starch, in a small dish",
   "items": [
    "mext:15012"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "jawiki",
+    "file": "File:Kibidango01.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Kibidango01.JPG",
+    "ok": true
+   }
+  ],
+  "vet": "c0 pale kibi dango on plate; c1 print"
  },
  {
   "key": "mext-15013",
@@ -1957,7 +3084,9 @@
   "desc": "Gyuhi: soft chewy translucent white rice-flour sweet, dusted with starch, cut into blocks",
   "items": [
    "mext:15013"
-  ]
+  ],
+  "refs": [],
+  "vet": "c0 package, food not visible; c1 nerikiri-like"
  },
  {
   "key": "mext-15014",
@@ -1965,7 +3094,17 @@
   "desc": "Kirizansho: chewy mochi sticks in white, pale pink and light brown, flat and rectangular, in a small dish",
   "items": [
    "mext:15014"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Kirizansho.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Kirizansho.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c0 kirizansho sticks with package"
  },
  {
   "key": "mext-15015",
@@ -1981,7 +3120,45 @@
   "desc": "Kintsuba: a square block of chunky red bean paste with a thin pale griddled batter coat, beans visible on the sides",
   "items": [
    "mext:15016"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "wikidata",
+    "file": "File:Kintsuba_of_Shibafune_Koide_(2).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Kintsuba_of_Shibafune_Koide_(2).jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "jawiki-page",
+    "file": "File:Potato-kintsuba,katori-city,japan.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Potato-kintsuba,katori-city,japan.JPG",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "commons-cat",
+    "file": "File:Kintsuba_001.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Kintsuba_001.jpg",
+    "ok": true
+   },
+   {
+    "n": 5,
+    "origin": "commons-cat",
+    "file": "File:Kintsuba_002.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Kintsuba_002.jpg",
+    "ok": true
+   },
+   {
+    "n": 7,
+    "origin": "commons-cat",
+    "file": "File:Kintsuba.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Kintsuba.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "kintsuba squares; c0/c2/c6 unclear"
  },
  {
   "key": "mext-15150",
@@ -1989,7 +3166,24 @@
   "desc": "Kusa mochi: green mugwort rice cake, round and soft, with chunky red bean paste inside, in a small dish",
   "items": [
    "mext:15150"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "wikidata",
+    "file": "File:Yomogi-dango_001.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Yomogi-dango_001.jpg",
+    "ok": true
+   },
+   {
+    "n": 5,
+    "origin": "enwiki-page",
+    "file": "File:Kusa_mochi_-_2.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Kusa_mochi_-_2.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "green kusa-mochi; c0 slab unclear; plants"
  },
  {
   "key": "mext-15151",
@@ -2005,7 +3199,24 @@
   "desc": "Kansai kuzumochi: glassy clear translucent jelly cubes dusted with kinako and drizzled with black sugar syrup",
   "items": [
    "mext:15121"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:140614_Yagyu_Iris_Garden_Nara_Japan07s.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:140614_Yagyu_Iris_Garden_Nara_Japan07s.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "enwiki-page",
+    "file": "File:2010_Kuzumochi(Kudzu_starch_cake)_by_Sanda-Minoya.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:2010_Kuzumochi(Kudzu_starch_cake)_by_Sanda-Minoya.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "translucent Kansai-style kuzumochi; opaque pieces are Kanto style"
  },
  {
   "key": "mext-15122",
@@ -2013,7 +3224,31 @@
   "desc": "Kanto kuzumochi: opaque milky white triangle wedges topped with kinako and dark black syrup",
   "items": [
    "mext:15122"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 2,
+    "origin": "jawiki-page",
+    "file": "File:Kudzu_starch_cake,katori-city,japan.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Kudzu_starch_cake,katori-city,japan.JPG",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "enwiki-page",
+    "file": "File:Funabashiya5.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Funabashiya5.JPG",
+    "ok": true
+   },
+   {
+    "n": 7,
+    "origin": "commons-cat",
+    "file": "File:Funabashiya_Kuzumochi.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Funabashiya_Kuzumochi.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "opaque Kanto-style kuzumochi with kinako; translucent ones are Kansai"
  },
  {
   "key": "mext-15020",
@@ -2021,7 +3256,38 @@
   "desc": "Geppei mooncake: a round baked cake with a golden brown crust and stamped pattern, cut showing bean paste filling",
   "items": [
    "mext:15020"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Mooncake.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Mooncake.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:Mooncake1.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Mooncake1.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "jawiki-page",
+    "file": "File:Lotus_seed_paste.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Lotus_seed_paste.jpg",
+    "ok": true
+   },
+   {
+    "n": 5,
+    "origin": "enwiki",
+    "file": "File:Mooncake_3-4,_lotus_seed_paste.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Mooncake_3-4,_lotus_seed_paste.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "mooncakes; c6/c7 other sweets"
  },
  {
   "key": "mext-15123",
@@ -2029,7 +3295,24 @@
   "desc": "Gohei mochi: a flattened oval rice cake on a wooden skewer, grilled and glazed with sweet brown miso sauce",
   "items": [
    "mext:15123"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:CodazziGoheimochi1.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:CodazziGoheimochi1.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:Gohei_mochi.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Gohei_mochi.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "flat grilled gohei-mochi with sauce; c0/c3/c4 dango-style unclear"
  },
  {
   "key": "mext-15153",
@@ -2037,7 +3320,24 @@
   "desc": "Kansai sakura mochi (domyoji): a pink ball of coarse grainy steamed rice wrapped in a salted cherry leaf, red bean inside",
   "items": [
    "mext:15153"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "wikidata",
+    "file": "File:Sakuramochi.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Sakuramochi.jpg",
+    "ok": true
+   },
+   {
+    "n": 5,
+    "origin": "jawiki-page",
+    "file": "File:Sakura-mochi_001.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Sakura-mochi_001.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "granular pink Domyoji (Kansai) sakuramochi; c0/c2 crepe Kanto style"
  },
  {
   "key": "mext-15152",
@@ -2045,6 +3345,23 @@
   "desc": "Kanto sakura mochi (chomeiji): a thin pink crepe rolled around red bean paste and wrapped in a salted cherry leaf",
   "items": [
    "mext:15152"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:A_rice_cake_filled_with_sweet_bean_paste_and_wrapped_in_a_pickled_cherry_leaf,katori-city,japan.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:A_rice_cake_filled_with_sweet_bean_paste_and_wrapped_in_a_pickled_cherry_leaf,katori-city,japan.JPG",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "jawiki",
+    "file": "File:Sakura-mochi_003.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Sakura-mochi_003.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "crepe-rolled Chomeiji (Kanto) sakuramochi; c1/c5 Kansai style"
  }
 ]

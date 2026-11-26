@@ -737,7 +737,24 @@
   "desc": "raw fresh sausages, pale pink links in natural casing",
   "items": [
    "mext:11194"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Raw_sausages.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Raw_sausages.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "commons-search",
+    "file": "File:Surowa_kiełbasa.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Surowa_kie%C5%82basa.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "raw sausage links/coil; c2,c3 cooked; c1 skewers unclear"
  },
  {
   "key": "mext-11317",
@@ -745,7 +762,17 @@
   "desc": "a block of luncheon meat (spam style), pink smooth block with slices, a pan-fried slice browned",
   "items": [
    "mext:11317"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:Spam_2.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Spam_2.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "SPAM can; c5,c6 spam musubi (a dish); c7 ham slices unclear"
  },
  {
   "key": "mext-11195",
@@ -753,7 +780,31 @@
   "desc": "slices of chashu roast pork, glossy red-brown edges and pale pink centres",
   "items": [
    "mext:11195"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Charsiu.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Charsiu.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "jawiki-page",
+    "file": "File:Cha-syu.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Cha-syu.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "jawiki-page",
+    "file": "File:HK_Mongkok_Maxims_BBQ_Meat_Rice_Lunch_with_Green_vegetable.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:HK_Mongkok_Maxims_BBQ_Meat_Rice_Lunch_with_Green_vegetable.JPG",
+    "ok": true
+   }
+  ],
+  "vet": "char siu strips, rolled chashu roast, sliced char siu; others noodle/bun dishes"
  },
  {
   "key": "mext-11196",
@@ -761,7 +812,24 @@
   "desc": "a small dish of liver pate, smooth brown spread with crackers",
   "items": [
    "mext:11196"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Liver_pate_on_bread.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Liver_pate_on_bread.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "commons-search",
+    "file": "File:Company_Liver_Paste_and_Toast_from_The_Haven_YMCA.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Company_Liver_Paste_and_Toast_from_The_Haven_YMCA.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "pate on bread, pate pots; c2,c4 terrines unclear if liver"
  },
  {
   "key": "mext-11198",
@@ -769,7 +837,9 @@
   "desc": "gelatin powder and a few clear gelatin sheets, pale translucent",
   "items": [
    "mext:11198"
-  ]
+  ],
+  "refs": [],
+  "vet": "all show jellies/desserts or drawing, not gelatin powder/sheets"
  },
  {
   "key": "mext-11199",
@@ -781,7 +851,31 @@
    "mext:11203",
    "mext:11245",
    "mext:11246"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Lamb_meat.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Lamb_meat.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "commons-cat",
+    "file": "File:2017-04-15_Lamb_meat_for_sale_at_Australian_supermarket.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:2017-04-15_Lamb_meat_for_sale_at_Australian_supermarket.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "commons-cat",
+    "file": "File:A_plate_with_lamb_meats.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:A_plate_with_lamb_meats.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "raw lamb cut, packaged raw lamb, raw slices"
  },
  {
   "key": "mext-11282",
@@ -789,7 +883,9 @@
   "desc": "grilled lamb chops, browned with grill marks, small bones",
   "items": [
    "mext:11282"
-  ]
+  ],
+  "refs": [],
+  "vet": "all raw lamb or unrelated; c1 whole carcasses on asado fire, not grilled chops"
  },
  {
   "key": "mext-11205",
@@ -797,7 +893,9 @@
   "desc": "raw duck breast, deep red meat with a thick creamy-white skin and fat layer, sliced",
   "items": [
    "mext:11205"
-  ]
+  ],
+  "refs": [],
+  "vet": "live duck, trucks, buildings, people"
  },
  {
   "key": "mext-11213",
@@ -806,7 +904,9 @@
   "items": [
    "mext:11213",
    "mext:11219"
-  ]
+  ],
+  "refs": [],
+  "vet": "live birds only"
  },
  {
   "key": "mext-11218",
@@ -815,7 +915,9 @@
   "items": [
    "mext:11218",
    "mext:11285"
-  ]
+  ],
+  "refs": [],
+  "vet": "c0/c1/c4/c5 cooked wings; c2/c3 raw chicken but not wing tips"
  },
  {
   "key": "mext-11286",
@@ -823,7 +925,9 @@
   "desc": "raw chicken drumettes (tebamoto), plump pale pink pieces with skin and a bone end",
   "items": [
    "mext:11286"
-  ]
+  ],
+  "refs": [],
+  "vet": "slaughter scenes, painting, curry, none raw drumettes"
  },
  {
   "key": "mext-11287",
@@ -831,7 +935,9 @@
   "desc": "grilled chicken breast with skin, golden-brown crisp skin, sliced showing white meat",
   "items": [
    "mext:11287"
-  ]
+  ],
+  "refs": [],
+  "vet": "curry, illustrations of chickens, text page; c1 roast unclear"
  },
  {
   "key": "mext-11220",
@@ -839,7 +945,9 @@
   "desc": "a raw skinless chicken breast, smooth pale pink lean meat",
   "items": [
    "mext:11220"
-  ]
+  ],
+  "refs": [],
+  "vet": "soups/noodles/stews, no raw breast"
  },
  {
   "key": "mext-11288",
@@ -847,7 +955,9 @@
   "desc": "grilled skinless chicken breast, white meat with light brown sear, sliced",
   "items": [
    "mext:11288"
-  ]
+  ],
+  "refs": [],
+  "vet": "soups/noodles/stews, no grilled breast"
  },
  {
   "key": "mext-11221",
@@ -855,7 +965,9 @@
   "desc": "a raw boneless chicken thigh fillet as sold in Japan, one flat irregular piece of pink meat laid out on a tray, with pale yellowish-white bumpy skin covering one side, no bone, not a drumstick",
   "items": [
    "mext:11221"
-  ]
+  ],
+  "refs": [],
+  "vet": "terrine, stir fry, diagram, unrelated plates"
  },
  {
   "key": "mext-11223",
@@ -863,7 +975,9 @@
   "desc": "boiled chicken thigh, pale white meat with soft skin, sliced",
   "items": [
    "mext:11223"
-  ]
+  ],
+  "refs": [],
+  "vet": "terrine, stir fry, diagram, unrelated plates"
  },
  {
   "key": "mext-11222",
@@ -872,7 +986,9 @@
   "items": [
    "mext:11222",
    "dishes:chicken-saute"
-  ]
+  ],
+  "refs": [],
+  "vet": "terrine, stir fry, diagram, unrelated plates"
  },
  {
   "key": "mext-11289",
@@ -883,7 +999,17 @@
    "mext:11290",
    "eatout:karaage_izk",
    "eatout:karaage_hot"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Chicken_karaage_003.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Chicken_karaage_003.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "karaage pile; c2 unclear; c3 nanban-like, c5 fries, c7 fried fish"
  },
  {
   "key": "mext-11224",
@@ -891,7 +1017,9 @@
   "desc": "a raw boneless skinless chicken thigh fillet as sold in Japan, one flat irregular piece of deep pink meat with no skin and no bone, laid out on a tray, not a drumstick",
   "items": [
    "mext:11224"
-  ]
+  ],
+  "refs": [],
+  "vet": "no raw thigh; people, stews"
  },
  {
   "key": "mext-11225",
@@ -899,7 +1027,9 @@
   "desc": "grilled skinless chicken thigh, browned meat pieces",
   "items": [
    "mext:11225"
-  ]
+  ],
+  "refs": [],
+  "vet": "no grilled thigh; people, stews"
  },
  {
   "key": "mext-11227",
@@ -907,7 +1037,9 @@
   "desc": "raw chicken tenderloins (sasami), slim pale pink pointed strips with a white tendon",
   "items": [
    "mext:11227"
-  ]
+  ],
+  "refs": [],
+  "vet": "all beef/horse red meat, not chicken sasami"
  },
  {
   "key": "mext-11229",
@@ -915,7 +1047,9 @@
   "desc": "boiled chicken tenderloins, white shredded strips",
   "items": [
    "mext:11229"
-  ]
+  ],
+  "refs": [],
+  "vet": "all beef/horse red meat"
  },
  {
   "key": "mext-11228",
@@ -923,7 +1057,9 @@
   "desc": "grilled chicken tenderloins, white meat with light grill marks",
   "items": [
    "mext:11228"
-  ]
+  ],
+  "refs": [],
+  "vet": "all beef/horse red meat"
  },
  {
   "key": "mext-11300",
@@ -931,7 +1067,9 @@
   "desc": "breaded fried chicken tenderloins, long strips in crisp golden panko",
   "items": [
    "mext:11300"
-  ]
+  ],
+  "refs": [],
+  "vet": "all beef/horse red meat, no fried strips"
  },
  {
   "key": "mext-11230",
@@ -939,7 +1077,9 @@
   "desc": "a mound of raw ground chicken, pale pink minced meat",
   "items": [
    "mext:11230"
-  ]
+  ],
+  "refs": [],
+  "vet": "curry, flatbread, live chickens"
  },
  {
   "key": "mext-11291",
@@ -947,7 +1087,9 @@
   "desc": "cooked crumbled ground chicken, pale beige crumbles (soboro) in a small dish",
   "items": [
    "mext:11291"
-  ]
+  ],
+  "refs": [],
+  "vet": "curry, flatbread, live chickens"
  },
  {
   "key": "mext-11231",
@@ -955,7 +1097,9 @@
   "desc": "raw chicken hearts, small dark red cone-shaped hearts with a white fat cap",
   "items": [
    "mext:11231"
-  ]
+  ],
+  "refs": [],
+  "vet": "raw offal heaps not clearly hearts; c1 looks cooked"
  },
  {
   "key": "mext-11232",
@@ -963,7 +1107,9 @@
   "desc": "raw chicken livers, glossy smooth dark red-brown lobes",
   "items": [
    "mext:11232"
-  ]
+  ],
+  "refs": [],
+  "vet": "carcasses, painting, curry, slaughter"
  },
  {
   "key": "mext-11233",
@@ -971,7 +1117,9 @@
   "desc": "raw chicken gizzards (sunagimo), firm dark red rounded lobes with silver-white skin",
   "items": [
    "mext:11233"
-  ]
+  ],
+  "refs": [],
+  "vet": "c0 dark pieces possibly cooked; c1/c2 opened gizzard lining; diagram, specimens"
  },
  {
   "key": "mext-11234",
@@ -980,7 +1128,9 @@
   "items": [
    "mext:11234",
    "mext:11235"
-  ]
+  ],
+  "refs": [],
+  "vet": "curry, illustrations, text page"
  },
  {
   "key": "mext-11236",
@@ -988,7 +1138,9 @@
   "desc": "raw chicken cartilage (nankotsu), small white translucent pieces with a little meat",
   "items": [
    "mext:11236"
-  ]
+  ],
+  "refs": [],
+  "vet": "marinated meat, red meat, dried fish, diagram"
  },
  {
   "key": "mext-11237",
@@ -1007,7 +1159,24 @@
    "eatout:nuggets",
    "toyonaka:120427",
    "kumagaya:3033"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Burger-King-Chicken-Tenders.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Burger-King-Chicken-Tenders.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "jawiki-page",
+    "file": "File:McDonald's_Products_in_China(19).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:McDonald%27s_Products_in_China(19).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "nuggets; c5 sticks, c4/c6 burgers, c7 buns"
  },
  {
   "key": "mext-11293",
@@ -1017,7 +1186,9 @@
    "mext:11293",
    "eatout:yakitori_tsukune",
    "kurume:062"
-  ]
+  ],
+  "refs": [],
+  "vet": "yakitori skewers, none clearly glazed tsukune meatballs"
  },
  {
   "key": "mext-12020",
@@ -1025,7 +1196,38 @@
   "desc": "a century egg (pitan), cut into wedges, translucent dark amber-brown jelly white and grey-green yolk",
   "items": [
    "mext:12020"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Arranged_century_egg_on_a_plate.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Arranged_century_egg_on_a_plate.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "wikidata",
+    "file": "File:Century_egg_sliced_open.jpeg",
+    "page": "https://commons.wikimedia.org/wiki/File:Century_egg_sliced_open.jpeg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "jawiki-page",
+    "file": "File:Century_egg2.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Century_egg2.jpg",
+    "ok": true
+   },
+   {
+    "n": 6,
+    "origin": "jawiki-page",
+    "file": "File:Centuryeggwithpickledginger.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Centuryeggwithpickledginger.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "wedges/halves/whole peeled; c3 mud-coated, c2/c7 pitan tofu dish"
  },
  {
   "key": "mext-12002",
@@ -1033,7 +1235,38 @@
   "desc": "a few raw quail eggs, small eggs speckled with brown spots, one cracked into a dish",
   "items": [
    "mext:12002"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Wachteleier_im_Karton-20231205-RM-151854.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Wachteleier_im_Karton-20231205-RM-151854.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:Quail_eggs_(Перепелиные_яйца).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Quail_eggs_(%D0%9F%D0%B5%D1%80%D0%B5%D0%BF%D0%B5%D0%BB%D0%B8%D0%BD%D1%8B%D0%B5_%D1%8F%D0%B9%D1%86%D0%B0).jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "commons-search",
+    "file": "File:Braised_quail_eggs.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Braised_quail_eggs.jpg",
+    "ok": true
+   },
+   {
+    "n": 5,
+    "origin": "commons-search",
+    "file": "File:Quail_eggs,_Rostov-on-Don,_Russia.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Quail_eggs,_Rostov-on-Don,_Russia.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "speckled quail eggs, cracked one; c0 basket mixed eggs"
  },
  {
   "key": "mext-12003",
@@ -1041,7 +1274,17 @@
   "desc": "boiled peeled quail eggs, small smooth white eggs in a small dish",
   "items": [
    "mext:12003"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 4,
+    "origin": "commons-search",
+    "file": "File:Hard-boiled_quail_eggs.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Hard-boiled_quail_eggs.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "peeled white boiled quail eggs; rest raw in shell"
  },
  {
   "key": "mext-12004",
@@ -1049,7 +1292,31 @@
   "desc": "two raw chicken eggs, light brown shells, one cracked into a small bowl showing an orange yolk in clear white",
   "items": [
    "mext:12004"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Eierdoos.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Eierdoos.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "jawiki-page",
+    "file": "File:Egg_and_maxi_egg_1.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Egg_and_maxi_egg_1.jpg",
+    "ok": true
+   },
+   {
+    "n": 5,
+    "origin": "jawiki-page",
+    "file": "File:Egg_and_maxi_egg_2.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Egg_and_maxi_egg_2.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "carton, whole eggs, cracked raw; c1 fried, c2 dark eggs, c3 pitan"
  },
  {
   "key": "eatout-yudetamago",
@@ -1057,7 +1324,24 @@
   "desc": "two hard-boiled eggs, one whole peeled smooth white egg and one cut in half lengthwise showing a firm bright yellow yolk inside the white",
   "items": [
    "eatout:yudetamago"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Boiled_Egg_-_Crossection.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Boiled_Egg_-_Crossection.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "jawiki-page",
+    "file": "File:Boiled_eggs_in_saucepan_by_Sarah_McCulloch.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Boiled_eggs_in_saucepan_by_Sarah_McCulloch.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "halved boiled egg, boiled eggs in pot; c1 soft-boiled in cups, others dishes"
  },
  {
   "key": "mext-12006",
@@ -1065,7 +1349,38 @@
   "desc": "a poached egg, a soft white oval with a runny yolk visible, on a slice of toast",
   "items": [
    "mext:12006"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:02016_0756_Pochierte_Eier,_Ostergerichte,_Schlesische_Beskiden.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:02016_0756_Pochierte_Eier,_Ostergerichte,_Schlesische_Beskiden.JPG",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "enwiki",
+    "file": "File:Fog_Eater_Cafe_-_April_2023_-_Sarah_Stierch_04.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Fog_Eater_Cafe_-_April_2023_-_Sarah_Stierch_04.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "enwiki-page",
+    "file": "File:Poached_egg_on_toast.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Poached_egg_on_toast.jpg",
+    "ok": true
+   },
+   {
+    "n": 7,
+    "origin": "commons-cat",
+    "file": "File:-2019-07-11_Poached_egg_with_watercress_on_toast,_Cromer.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:-2019-07-11_Poached_egg_with_watercress_on_toast,_Cromer.JPG",
+    "ok": true
+   }
+  ],
+  "vet": "poached eggs; c1 benedict unclear, c5 cooking"
  },
  {
   "key": "mext-12022",
@@ -1074,7 +1389,31 @@
   "items": [
    "mext:12022",
    "dishes:scrambled-egg"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Scrambed_eggs.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Scrambed_eggs.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:Iri-tamago_001.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Iri-tamago_001.jpg",
+    "ok": true
+   },
+   {
+    "n": 7,
+    "origin": "commons-cat",
+    "file": "File:2023-01-28_08_31_22_Scrambled_eggs,_pork_sausage_links_and_blueberry_muffin_at_Capital_Health_Medical_Center_-_Hopewell_in_Hopewell_Township,_Mercer_County,_New_Jersey.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:2023-01-28_08_31_22_Scrambled_eggs,_pork_sausage_links_and_blueberry_muffin_at_Capital_Health_Medical_Center_-_Hopewell_in_Hopewell_Township,_Mercer_County,_New_Jersey.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "scrambled egg plates; others dishes"
  },
  {
   "key": "mext-12023",
@@ -1082,7 +1421,9 @@
   "desc": "a deep-fried egg, crisp bubbly golden-white edges and a soft yolk",
   "items": [
    "mext:12023"
-  ]
+  ],
+  "refs": [],
+  "vet": "raw/fried-sunny eggs only, no deep-fried egg"
  },
  {
   "key": "mext-12010",
@@ -1090,7 +1431,24 @@
   "desc": "a raw egg yolk, a round glossy bright orange yolk in a small dish",
   "items": [
    "mext:12010"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Raw_egg.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Raw_egg.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "wikidata",
+    "file": "File:Yolks.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Yolks.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "yolk(s) on own; c3/c5 with whites, c7 diagram"
  },
  {
   "key": "mext-12014",
@@ -1098,7 +1456,9 @@
   "desc": "raw egg white, a clear glossy viscous liquid in a small glass bowl",
   "items": [
    "mext:12014"
-  ]
+  ],
+  "refs": [],
+  "vet": "no clear raw egg white"
  },
  {
   "key": "mext-12017",
@@ -1106,7 +1466,17 @@
   "desc": "a square block of tamago-dofu egg custard tofu, smooth pale yellow, in a small dish with a little clear broth",
   "items": [
    "mext:12017"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:手作りの豆腐や,_天日干しの網代干物,_定番の温泉卵,_朝食,_リーズナブル_舟盛プラン,_磯の宿_まきた,_磯の宿,_熱海温泉,_熱海,_日本,_Breakfast,_Atami,_Japan_(13748626713).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E6%89%8B%E4%BD%9C%E3%82%8A%E3%81%AE%E8%B1%86%E8%85%90%E3%82%84,_%E5%A4%A9%E6%97%A5%E5%B9%B2%E3%81%97%E3%81%AE%E7%B6%B2%E4%BB%A3%E5%B9%B2%E7%89%A9,_%E5%AE%9A%E7%95%AA%E3%81%AE%E6%B8%A9%E6%B3%89%E5%8D%B5,_%E6%9C%9D%E9%A3%9F,_%E3%83%AA%E3%83%BC%E3%82%BA%E3%83%8A%E3%83%96%E3%83%AB_%E8%88%9F%E7%9B%9B%E3%83%97%E3%83%A9%E3%83%B3,_%E7%A3%AF%E3%81%AE%E5%AE%BF_%E3%81%BE%E3%81%8D%E3%81%9F,_%E7%A3%AF%E3%81%AE%E5%AE%BF,_%E7%86%B1%E6%B5%B7%E6%B8%A9%E6%B3%89,_%E7%86%B1%E6%B5%B7,_%E6%97%A5%E6%9C%AC,_Breakfast,_Atami,_Japan_(13748626713).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "tamago-dofu in broth; others set meals"
  },
  {
   "key": "mext-12018",
@@ -1114,7 +1484,24 @@
   "desc": "Japanese tamagoyaki rolled omelette cut into four thick rectangular slices, pale golden-yellow, the cut faces show thin rolled layers, on a small plate",
   "items": [
    "mext:12018"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:鳥焼き居酒屋_(39394233682).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E9%B3%A5%E7%84%BC%E3%81%8D%E5%B1%85%E9%85%92%E5%B1%8B_(39394233682).jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "enwiki-page",
+    "file": "File:Making_heart-shaped_tamagoyaki_-_16451764301.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Making_heart-shaped_tamagoyaki_-_16451764301.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "tamagoyaki slices; c5 omelette in pan, c3 datemaki-like"
  },
  {
   "key": "mext-12019",
@@ -1124,7 +1511,31 @@
    "mext:12019",
    "dishes:dashimaki",
    "eatout:dashimaki"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 3,
+    "origin": "commons-cat",
+    "file": "File:Dashimaki_tamago_by_jetalone_in_Kyobashi,_Tokyo.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Dashimaki_tamago_by_jetalone_in_Kyobashi,_Tokyo.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "commons-cat",
+    "file": "File:Dashimaki_tamago_by_june29.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Dashimaki_tamago_by_june29.jpg",
+    "ok": true
+   },
+   {
+    "n": 7,
+    "origin": "commons-search",
+    "file": "File:Dashimaki_tamago_by_yajico_in_Ebisu,_Tokyo.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Dashimaki_tamago_by_yajico_in_Ebisu,_Tokyo.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "dashimaki slices; c5 has fillings, c0 unclear"
  },
  {
   "key": "mext-13006",
@@ -1133,7 +1544,17 @@
   "items": [
    "mext:13006",
    "mext:13005"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "jawiki-page",
+    "file": "File:Milk_001.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Milk_001.JPG",
+    "ok": true
+   }
+  ],
+  "vet": "glass of milk; cartons/trays not clear"
  },
  {
   "key": "mext-13004",
@@ -1141,7 +1562,9 @@
   "desc": "a glass of rich whole milk, thick creamy white",
   "items": [
    "mext:13004"
-  ]
+  ],
+  "refs": [],
+  "vet": "cows, insect ad, people"
  },
  {
   "key": "mext-13007",
@@ -1149,7 +1572,24 @@
   "desc": "a glass of coffee milk, light milky tan-brown",
   "items": [
    "mext:13007"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:Autocrat3.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Autocrat3.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "jawiki-page",
+    "file": "File:Coffee_milk_in_a_supermarket_dairy_case.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Coffee_milk_in_a_supermarket_dairy_case.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "tan coffee milk cup, coffee milk bottles; c0 mug unclear, c3 plain milk"
  },
  {
   "key": "mext-13008",
@@ -1157,7 +1597,17 @@
   "desc": "a glass of fruit milk, pale creamy peach-yellow milk drink",
   "items": [
    "mext:13008"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Fruit_Milk.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Fruit_Milk.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "glass + fruit-au-lait bottle; c1/c4 banana milk lookalike"
  },
  {
   "key": "mext-13010",
@@ -1165,7 +1615,17 @@
   "desc": "a small heap of skim milk powder, fine white-cream powder with a spoon",
   "items": [
    "mext:13010"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "enwiki",
+    "file": "File:Milk_powder_cropped.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Milk_powder_cropped.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "white powder with scoop; c4 full-cream powder tin, c0 milk glass"
  },
  {
   "key": "mext-13013",
@@ -1173,7 +1633,31 @@
   "desc": "a small dish of sweetened condensed milk, thick glossy cream-white syrup drizzling from a spoon",
   "items": [
    "mext:13013"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Сгущёнка_Верховского_МКЗ_-_Донор.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:%D0%A1%D0%B3%D1%83%D1%89%D1%91%D0%BD%D0%BA%D0%B0_%D0%92%D0%B5%D1%80%D1%85%D0%BE%D0%B2%D1%81%D0%BA%D0%BE%D0%B3%D0%BE_%D0%9C%D0%9A%D0%97_-_%D0%94%D0%BE%D0%BD%D0%BE%D1%80.JPG",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "wikidata",
+    "file": "File:Tin_of_condensed_milk.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Tin_of_condensed_milk.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "jawiki",
+    "file": "File:2016-03-26-Gezuckerte_Kondensmilch-4699.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:2016-03-26-Gezuckerte_Kondensmilch-4699.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "condensed milk can, open can, drizzle; c6 dulce de leche"
  },
  {
   "key": "mext-13014",
@@ -1182,7 +1666,9 @@
   "items": [
    "mext:13014",
    "mext:13016"
-  ]
+  ],
+  "refs": [],
+  "vet": "milk splash/bottle not clearly cream; desserts"
  },
  {
   "key": "mext-13017",
@@ -1190,7 +1676,38 @@
   "desc": "a bowl of whipped cream, fluffy white soft peaks",
   "items": [
    "mext:13017"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "wikidata",
+    "file": "File:And_some_whipped_cream_(4315201282).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:And_some_whipped_cream_(4315201282).jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "jawiki",
+    "file": "File:Pumpkin_Pie.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Pumpkin_Pie.JPG",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "jawiki-page",
+    "file": "File:Crème_Chantilly.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Cr%C3%A8me_Chantilly.jpg",
+    "ok": true
+   },
+   {
+    "n": 7,
+    "origin": "jawiki-page",
+    "file": "File:Waffle_with_whipped_cream.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Waffle_with_whipped_cream.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "whipped cream piped/dolloped; c0/c4 drinks topped"
  },
  {
   "key": "mext-13020",
@@ -1200,7 +1717,45 @@
    "mext:13020",
    "mext:13022",
    "eatout:creamer"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "jawiki",
+    "file": "File:Coffee_fresh_(2012.08.04).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Coffee_fresh_(2012.08.04).jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Coffee_Buddy_Non-Dairy_Coffee_Creamer.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Coffee_Buddy_Non-Dairy_Coffee_Creamer.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:Anderson_Non-Dairy_Coffee_Creamer.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Anderson_Non-Dairy_Coffee_Creamer.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "commons-search",
+    "file": "File:Coffee_Creamer_(3218389153).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Coffee_Creamer_(3218389153).jpg",
+    "ok": true
+   },
+   {
+    "n": 6,
+    "origin": "commons-search",
+    "file": "File:Coffee_creamer_in_milkette_containers.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Coffee_creamer_in_milkette_containers.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "portion creamer cups; c3 bottled creamer"
  },
  {
   "key": "mext-13025",
@@ -1211,7 +1766,24 @@
    "mext:13053",
    "mext:13054",
    "mext:13026"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Joghurt.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Joghurt.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "jawiki-page",
+    "file": "File:Cacik-1.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Cacik-1.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "plain yogurt bowls; c3 milk glass, c4 carton"
  },
  {
   "key": "mext-13027",
@@ -1222,7 +1794,9 @@
    "eatout:drink_yogurt",
    "toyonaka:121810",
    "kumagaya:02874"
-  ]
+  ],
+  "refs": [],
+  "vet": "plain milk glass, frappes, bottles not identifiable"
  },
  {
   "key": "mext-13028",
@@ -1231,7 +1805,38 @@
   "items": [
    "mext:13028",
    "eatout:yakult"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Yakult_drink.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Yakult_drink.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "commons-search",
+    "file": "File:Yakult_in_Scotland_05.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Yakult_in_Scotland_05.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "commons-search",
+    "file": "File:Yakult_in_Scotland_02.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Yakult_in_Scotland_02.jpg",
+    "ok": true
+   },
+   {
+    "n": 5,
+    "origin": "commons-search",
+    "file": "File:Yakult_in_Scotland_01.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Yakult_in_Scotland_01.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "Yakult bottles; c0 logo"
  },
  {
   "key": "mext-13029",
@@ -1239,7 +1844,9 @@
   "desc": "a glass of Calpis-style milky white soft drink with ice cubes",
   "items": [
    "mext:13029"
-  ]
+  ],
+  "refs": [],
+  "vet": "Yakult (not Calpis-style) and logo only"
  },
  {
   "key": "mext-13033",
@@ -1247,7 +1854,17 @@
   "desc": "a small bowl of cottage cheese, white lumpy soft curds",
   "items": [
    "mext:13033"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:Cottagecheese200px.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Cottagecheese200px.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "cottage cheese bowl; c0 tub unclear"
  },
  {
   "key": "mext-13034",
@@ -1255,7 +1872,38 @@
   "desc": "a round Camembert cheese with a white bloomy rind, a wedge cut showing soft creamy pale yellow inside",
   "items": [
    "mext:13034"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Camembert.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Camembert.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:Camembert_de_Normandie_(AOP)_11.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Camembert_de_Normandie_(AOP)_11.jpg",
+    "ok": true
+   },
+   {
+    "n": 6,
+    "origin": "commons-cat",
+    "file": "File:(20251230)_Camembert_cheese_01.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:(20251230)_Camembert_cheese_01.jpg",
+    "ok": true
+   },
+   {
+    "n": 7,
+    "origin": "commons-cat",
+    "file": "File:(20251230)_Camembert_cheese_02.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:(20251230)_Camembert_cheese_02.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "camembert rounds/wedges; c3 brie-like, c5 boxes"
  },
  {
   "key": "mext-13035",
@@ -1263,7 +1911,24 @@
   "desc": "a block of cream cheese, smooth soft white, a slice spread",
   "items": [
    "mext:13035"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 4,
+    "origin": "commons-search",
+    "file": "File:Сыр_Филадельфия.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:%D0%A1%D1%8B%D1%80_%D0%A4%D0%B8%D0%BB%D0%B0%D0%B4%D0%B5%D0%BB%D1%8C%D1%84%D0%B8%D1%8F.JPG",
+    "ok": true
+   },
+   {
+    "n": 5,
+    "origin": "commons-search",
+    "file": "File:2021-02-15_12_48_33_A_box_of_Philadelphia_Cream_Cheese_in_the_Franklin_Farm_section_of_Oak_Hill,_Fairfax_County,_Virginia.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:2021-02-15_12_48_33_A_box_of_Philadelphia_Cream_Cheese_in_the_Franklin_Farm_section_of_Oak_Hill,_Fairfax_County,_Virginia.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "Philadelphia tub/block; others ice cream"
  },
  {
   "key": "mext-13036",
@@ -1271,7 +1936,31 @@
   "desc": "a wedge of Gouda cheese with a yellow-orange waxed rind and pale yellow inside",
   "items": [
    "mext:13036"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Chesses_gouda_affinage.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Chesses_gouda_affinage.JPG",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Gouda_siers.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Gouda_siers.JPG",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:Gouda_Frico.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Gouda_Frico.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "gouda wheels, block, Frico pack; c4 green pesto, c5 holey"
  },
  {
   "key": "mext-13037",
@@ -1279,7 +1968,24 @@
   "desc": "a block of orange cheddar cheese, a few slices cut",
   "items": [
    "mext:13037"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Somerset-Cheddar.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Somerset-Cheddar.jpg",
+    "ok": true
+   },
+   {
+    "n": 7,
+    "origin": "enwiki-page",
+    "file": "File:Montgomerys_cheddar_cheese.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Montgomerys_cheddar_cheese.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "cheddar blocks; c3 orange cubes unclear"
  },
  {
   "key": "mext-13038",
@@ -1287,7 +1993,38 @@
   "desc": "a wedge of Parmesan cheese, hard grainy pale yellow, with a small heap of grated cheese",
   "items": [
    "mext:13038"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Parmigiano_Reggiano_meules_MIN_Rungis.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Parmigiano_Reggiano_meules_MIN_Rungis.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Parmigiano_reggiano_piece.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Parmigiano_reggiano_piece.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "commons-search",
+    "file": "File:Parmesan_cheese_20.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Parmesan_cheese_20.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "commons-search",
+    "file": "File:Parmigiano-Reggiano_in_hk.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Parmigiano-Reggiano_in_hk.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "parmesan wheels/wedge/block; c2 frico crisps"
  },
  {
   "key": "mext-13055",
@@ -1295,7 +2032,9 @@
   "desc": "a small bowl of mascarpone, smooth thick ivory cream cheese",
   "items": [
    "mext:13055"
-  ]
+  ],
+  "refs": [],
+  "vet": "cupcakes, desserts, none plain mascarpone"
  },
  {
   "key": "mext-13056",
@@ -1303,7 +2042,9 @@
   "desc": "a ball of fresh mozzarella, smooth glossy white, a few slices",
   "items": [
    "mext:13056"
-  ]
+  ],
+  "refs": [],
+  "vet": "burger, pastas; c1 white cubes unclear"
  },
  {
   "key": "mext-13040",
@@ -1311,7 +2052,24 @@
   "desc": "processed cheese, a few slices of smooth pale yellow cheese and a wedge",
   "items": [
    "mext:13040"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Schmelzkäse-1.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Schmelzk%C3%A4se-1.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "jawiki-page",
+    "file": "File:Single_wrapped_slice_of_processed_cheese.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Single_wrapped_slice_of_processed_cheese.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "processed cheese slices; c6 Cheez Whiz, c3 burger"
  },
  {
   "key": "mext-13042",
@@ -1323,7 +2081,17 @@
    "mext:13044",
    "mext:13045",
    "eatout:icecream_cup"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:A_cup_of_three_ice_cream_in_Victoria_Peak_Hong_Kong.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:A_cup_of_three_ice_cream_in_Victoria_Peak_Hong_Kong.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "scoops in cup; sundaes/cones/people"
  },
  {
   "key": "mext-13047",
@@ -1332,7 +2100,45 @@
   "items": [
    "mext:13047",
    "eatout:softcream"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Black_sesame_soft_ice_cream.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Black_sesame_soft_ice_cream.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:Soft_Ice_cream.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Soft_Ice_cream.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "jawiki-page",
+    "file": "File:2019-05-03_22_07_55_Two_large_servings_of_chocolate_soft-serve_ice_cream_from_Carvel_in_Arlington_County,_Virginia.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:2019-05-03_22_07_55_Two_large_servings_of_chocolate_soft-serve_ice_cream_from_Carvel_in_Arlington_County,_Virginia.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "jawiki-page",
+    "file": "File:Bremen_Airport_Flugtag_2009_20090510_042.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Bremen_Airport_Flugtag_2009_20090510_042.JPG",
+    "ok": true
+   },
+   {
+    "n": 6,
+    "origin": "jawiki-page",
+    "file": "File:Food_爆米香荔枝紅茶,_海鹽鹹花生脆脆巧克力,_蜷尾家甘味处,_蜷尾家,_台北_(21661449604).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Food_%E7%88%86%E7%B1%B3%E9%A6%99%E8%8D%94%E6%9E%9D%E7%B4%85%E8%8C%B6,_%E6%B5%B7%E9%B9%BD%E9%B9%B9%E8%8A%B1%E7%94%9F%E8%84%86%E8%84%86%E5%B7%A7%E5%85%8B%E5%8A%9B,_%E8%9C%B7%E5%B0%BE%E5%AE%B6%E7%94%98%E5%91%B3%E5%A4%84,_%E8%9C%B7%E5%B0%BE%E5%AE%B6,_%E5%8F%B0%E5%8C%97_(21661449604).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "soft-serve swirls; c7 gold leaf, c5 machine"
  },
  {
   "key": "mext-13049",
@@ -1340,7 +2146,24 @@
   "desc": "a scoop of orange sherbet in a glass dish, icy pale orange",
   "items": [
    "mext:13049"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:Sorbet.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Sorbet.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "commons-search",
+    "file": "File:RaspberrySherbet.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:RaspberrySherbet.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "sorbet scoops; c2 flower"
  },
  {
   "key": "mext-14023",
@@ -1349,7 +2172,31 @@
   "items": [
    "mext:14023",
    "mext:14024"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:2023_Olej_lniany_LenVitol.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:2023_Olej_lniany_LenVitol.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Leinöl-01.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Lein%C3%B6l-01.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:!Ільняны_алей_(Беларусь,_2021_г.).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:!%D0%86%D0%BB%D1%8C%D0%BD%D1%8F%D0%BD%D1%8B_%D0%B0%D0%BB%D0%B5%D0%B9_(%D0%91%D0%B5%D0%BB%D0%B0%D1%80%D1%83%D1%81%D1%8C,_2021_%D0%B3.).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "flax oil bottles with dish; c3-5 shelves of unclear bottles"
  },
  {
   "key": "mext-14001",
@@ -1357,7 +2204,38 @@
   "desc": "a glass bottle of greenish-gold olive oil and a small dish of oil, with an olive branch",
   "items": [
    "mext:14001"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Italian_olive_oil_2007.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Italian_olive_oil_2007.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "wikidata",
+    "file": "File:2023_Oliwa_z_oliwek_Garda_DOP_(1).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:2023_Oliwa_z_oliwek_Garda_DOP_(1).jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "jawiki",
+    "file": "File:Oliven_V1.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Oliven_V1.jpg",
+    "ok": true
+   },
+   {
+    "n": 5,
+    "origin": "enwiki-page",
+    "file": "File:Artisan_bread_with_olive_oil_and_salt.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Artisan_bread_with_olive_oil_and_salt.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "olive oil bottles/cruet/dish; c4 cosmetics, c6 building"
  },
  {
   "key": "mext-14002",
@@ -1365,7 +2243,17 @@
   "desc": "a small glass bottle of dark amber sesame oil",
   "items": [
    "mext:14002"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:Sesame_oil.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Sesame_oil.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "amber oil drizzled into dish; c2 seeds, c6 package unclear"
  },
  {
   "key": "mext-14006",
@@ -1374,7 +2262,31 @@
   "items": [
    "mext:14006",
    "mext:14008"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:CanolaOil_bottle.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:CanolaOil_bottle.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "wikidata",
+    "file": "File:Canola_Oil_(4107885913).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Canola_Oil_(4107885913).jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "jawiki-page",
+    "file": "File:Sunflowerseed_oil.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Sunflowerseed_oil.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "canola/sunflower bottles, dish of oil; c4-7 oil-filled lamp bottles odd"
  },
  {
   "key": "mext-14013",
@@ -1382,7 +2294,24 @@
   "desc": "a small jar of solid white coconut oil beside half a coconut",
   "items": [
    "mext:14013"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Coconut_oil_2.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Coconut_oil_2.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "commons-search",
+    "file": "File:Coconut_and_oil.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Coconut_and_oil.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "solid coconut oil jar, coconut with oil bottle; c1/c2 bottles among coconuts"
  },
  {
   "key": "mext-14016",
@@ -1390,7 +2319,17 @@
   "desc": "a block of lard, soft opaque white fat in a small dish",
   "items": [
    "mext:14016"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Homelard.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Homelard.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "lard in dish; c3-7 spoons of mixed fats unclear, c1 bacon"
  },
  {
   "key": "mext-14017",
@@ -1400,7 +2339,31 @@
    "mext:14017",
    "mext:14018",
    "mext:14019"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Butter_at_the_Borough_Market.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Butter_at_the_Borough_Market.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "jawiki",
+    "file": "File:NCI_butter.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:NCI_butter.jpg",
+    "ok": true
+   },
+   {
+    "n": 6,
+    "origin": "jawiki-page",
+    "file": "File:Hand-made_butter.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Hand-made_butter.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "butter blocks/stick/dish; c1 painting"
  },
  {
   "key": "mext-14020",
@@ -1409,7 +2372,17 @@
   "items": [
    "mext:14020",
    "mext:14021"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:Margarine.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Margarine.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "tub of spread; c0 foil-wrapped butter-like, ads/portraits"
  },
  {
   "key": "mext-15005",
@@ -1418,7 +2391,24 @@
   "items": [
    "mext:15005",
    "mext:15145"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Imagawayaki_001.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Imagawayaki_001.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "enwiki-page",
+    "file": "File:Chichibu_(4488803367).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Chichibu_(4488803367).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "imagawayaki cut with anko; c1 packaged, stalls"
  },
  {
   "key": "mext-15008",
@@ -1427,7 +2417,45 @@
   "items": [
    "mext:15008",
    "toyonaka:120168"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Kashiwa-mochi.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Kashiwa-mochi.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "wikidata",
+    "file": "File:Kashiwa_mochi_on_a_leave.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Kashiwa_mochi_on_a_leave.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "jawiki",
+    "file": "File:Kashiwa-mochi_001.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Kashiwa-mochi_001.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "jawiki-page",
+    "file": "File:Kashiwamochi,Katori-city,Japan.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Kashiwamochi,Katori-city,Japan.jpg",
+    "ok": true
+   },
+   {
+    "n": 7,
+    "origin": "commons-cat",
+    "file": "File:Kashiwa_mochi.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Kashiwa_mochi.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "kashiwa mochi; c3/c6 prints"
  },
  {
   "key": "mext-15009",
@@ -1435,7 +2463,45 @@
   "desc": "slices of castella sponge cake, golden yellow crumb with a dark brown top and bottom",
   "items": [
    "mext:15009"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Castella_001.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Castella_001.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "wikidata",
+    "file": "File:Castella,made_in_nagasaki-city,japan.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Castella,made_in_nagasaki-city,japan.JPG",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "jawiki",
+    "file": "File:Castella_002.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Castella_002.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "jawiki-page",
+    "file": "File:Fukusaya_Castella.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Fukusaya_Castella.JPG",
+    "ok": true
+   },
+   {
+    "n": 5,
+    "origin": "enwiki-page",
+    "file": "File:Bunmeido_Oyatsu-Castella.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Bunmeido_Oyatsu-Castella.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "castella slices/loaf; c7 shop"
  },
  {
   "key": "mext-15017",
@@ -1443,7 +2509,24 @@
   "desc": "kusa mochi, round soft green mugwort rice cakes, one cut showing red bean paste",
   "items": [
    "mext:15017"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "wikidata",
+    "file": "File:Yomogi-dango_001.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Yomogi-dango_001.jpg",
+    "ok": true
+   },
+   {
+    "n": 5,
+    "origin": "enwiki-page",
+    "file": "File:Kusa_mochi_-_2.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Kusa_mochi_-_2.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "green mugwort mochi; c0 slab, c4/c7 plants"
  },
  {
   "key": "mext-15018",
@@ -1451,7 +2534,24 @@
   "desc": "anko dango, skewers of three white rice dumplings covered with smooth dark red bean paste",
   "items": [
    "mext:15018"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:Bean-jam-dumpling,dango,katori-city,japan.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Bean-jam-dumpling,dango,katori-city,japan.JPG",
+    "ok": true
+   },
+   {
+    "n": 7,
+    "origin": "commons-search",
+    "file": "File:An_dango.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:An_dango.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "anko-covered dango; c3/c4 green dango, c5 mixed, c6 pink topping"
  },
  {
   "key": "mext-15019",
@@ -1460,7 +2560,52 @@
   "items": [
    "mext:15019",
    "eatout:mitarashi"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Mitarashi_dango_by_denver935.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Mitarashi_dango_by_denver935.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:Mitarashi_dango_001.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Mitarashi_dango_001.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "enwiki-page",
+    "file": "File:Japanese_dango.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Japanese_dango.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "enwiki-page",
+    "file": "File:Jindaiji_and_sando_(27647017539).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Jindaiji_and_sando_(27647017539).jpg",
+    "ok": true
+   },
+   {
+    "n": 5,
+    "origin": "enwiki-page",
+    "file": "File:Mitarashi_dango_002.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Mitarashi_dango_002.jpg",
+    "ok": true
+   },
+   {
+    "n": 7,
+    "origin": "commons-cat",
+    "file": "File:Dango_(27167238879).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Dango_(27167238879).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "mitarashi dango; c2 grilling plain"
  },
  {
   "key": "mext-15022",
@@ -1468,7 +2613,31 @@
   "desc": "Kansai-style sakura mochi, a pink domyoji glutinous rice ball wrapped in a salted cherry leaf",
   "items": [
    "mext:15022"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:A_rice_cake_filled_with_sweet_bean_paste_and_wrapped_in_a_pickled_cherry_leaf,katori-city,japan.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:A_rice_cake_filled_with_sweet_bean_paste_and_wrapped_in_a_pickled_cherry_leaf,katori-city,japan.JPG",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "wikidata",
+    "file": "File:Sakuramochi.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Sakuramochi.jpg",
+    "ok": true
+   },
+   {
+    "n": 5,
+    "origin": "jawiki-page",
+    "file": "File:Sakura-mochi_001.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Sakura-mochi_001.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "domyoji-style; c2 Kanto crepe, c6 leaves"
  },
  {
   "key": "mext-15021",
@@ -1476,7 +2645,17 @@
   "desc": "Kanto-style sakura mochi, a thin pink crepe rolled around red bean paste, wrapped in a cherry leaf",
   "items": [
    "mext:15021"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 2,
+    "origin": "jawiki",
+    "file": "File:Sakura-mochi_003.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Sakura-mochi_003.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "thin pink crepe roll; rest Kansai domyoji or temples"
  },
  {
   "key": "mext-15023",
@@ -1486,7 +2665,38 @@
    "mext:15023",
    "mext:15155",
    "eatout:daifuku"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Daifuku_1.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Daifuku_1.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:Daifuku_001.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Daifuku_001.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "jawiki-page",
+    "file": "File:Daifuku_002.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Daifuku_002.jpg",
+    "ok": true
+   },
+   {
+    "n": 5,
+    "origin": "enwiki-page",
+    "file": "File:Daifuku.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Daifuku.JPG",
+    "ok": true
+   }
+  ],
+  "vet": "daifuku; c4 yomogi, c6 orange filling"
  },
  {
   "key": "mext-15156",
@@ -1497,7 +2707,24 @@
    "mext:15027",
    "eatout:dorayaki",
    "kurume:244"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Dorayaki_001_(3).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Dorayaki_001_(3).jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "wikidata",
+    "file": "File:Dorayaki_003.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Dorayaki_003.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "dorayaki; shops/packs/scroll"
  },
  {
   "key": "mext-15033",
@@ -1505,7 +2732,9 @@
   "desc": "steamed manju, small round soft brown buns, one cut showing red bean paste",
   "items": [
    "mext:15033"
-  ]
+  ],
+  "refs": [],
+  "vet": "only white buns/packs, no brown manju"
  },
  {
   "key": "mext-15034",
@@ -1514,7 +2743,17 @@
   "items": [
    "mext:15034",
    "eatout:anman"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "jawiki-page",
+    "file": "File:Anman_shinjuku_nakamuraya_2014-2.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Anman_shinjuku_nakamuraya_2014-2.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "white bun cut showing dark bean paste; c2 yellow curry bun"
  },
  {
   "key": "mext-15035",
@@ -1524,7 +2763,17 @@
    "mext:15035",
    "eatout:nikuman",
    "kumagaya:967"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 5,
+    "origin": "enwiki-page",
+    "file": "File:Broodje_Bapao_Driekwart.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Broodje_Bapao_Driekwart.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "cut bun with meat filling; others ambiguous buns"
  },
  {
   "key": "mext-15036",
@@ -1532,7 +2781,31 @@
   "desc": "monaka, crisp golden wafer shells shaped like a flower sandwiching red bean paste",
   "items": [
    "mext:15036"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Kimonaka.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Kimonaka.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:Tawara-monaka_001.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Tawara-monaka_001.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "jawiki-page",
+    "file": "File:Kuya_monaka_(3).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Kuya_monaka_(3).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "monaka; c4/c6 packaged, c7 other sweet"
  },
  {
   "key": "mext-15038",
@@ -1540,7 +2813,31 @@
   "desc": "a block of neri yokan, dense glossy dark red-purple bean jelly, a few slices cut",
   "items": [
    "mext:15038"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Imo-yōkan_001.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Imo-y%C5%8Dkan_001.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:Youkan_002.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Youkan_002.jpg",
+    "ok": true
+   },
+   {
+    "n": 6,
+    "origin": "enwiki-page",
+    "file": "File:Minochu_Agari-Yokan_2020-11_ac.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Minochu_Agari-Yokan_2020-11_ac.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "neri yokan blocks; c2 green, c7 layered cake"
  },
  {
   "key": "mext-15039",
@@ -1549,7 +2846,9 @@
   "items": [
    "mext:15039",
    "kurume:249"
-  ]
+  ],
+  "refs": [],
+  "vet": "no soft mizu yokan clearly; c0 looks neri"
  },
  {
   "key": "mext-15041",
@@ -1558,7 +2857,17 @@
   "items": [
    "mext:15041",
    "kurume:231"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 3,
+    "origin": "commons-search",
+    "file": "File:HardCandy.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:HardCandy.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "hard candies; cotton candy, people, rock candy jar"
  },
  {
   "key": "mext-15045",
@@ -1566,7 +2875,38 @@
   "desc": "karinto, crunchy deep-fried dough sticks coated in glossy dark brown sugar",
   "items": [
    "mext:15045"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Karintos2.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Karintos2.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:Karintō_002.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Karint%C5%8D_002.jpg",
+    "ok": true
+   },
+   {
+    "n": 6,
+    "origin": "commons-cat",
+    "file": "File:DCM_黒糖かりんとう_20250506a.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:DCM_%E9%BB%92%E7%B3%96%E3%81%8B%E3%82%8A%E3%82%93%E3%81%A8%E3%81%86_20250506a.jpg",
+    "ok": true
+   },
+   {
+    "n": 7,
+    "origin": "commons-cat",
+    "file": "File:DCM_黒糖かりんとう_20250506b.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:DCM_%E9%BB%92%E7%B3%96%E3%81%8B%E3%82%8A%E3%82%93%E3%81%A8%E3%81%86_20250506b.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "dark sugar karinto; c3 white karinto, c2 manju"
  },
  {
   "key": "mext-15057",
@@ -1575,7 +2915,9 @@
   "items": [
    "mext:15057",
    "mext:15059"
-  ]
+  ],
+  "refs": [],
+  "vet": "big round senbei, not bite-size fried arare/okaki"
  },
  {
   "key": "mext-15058",
@@ -1593,7 +2935,17 @@
   "items": [
    "mext:15125",
    "eatout:agepan"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Agepan.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Agepan.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "sugar-coated fried rolls; churros, others"
  },
  {
   "key": "mext-15069",
@@ -1604,7 +2956,31 @@
    "mext:15168",
    "eatout:anpan",
    "kurume:030"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Anpan_001.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Anpan_001.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "jawiki-page",
+    "file": "File:Anpan_002.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Anpan_002.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "jawiki-page",
+    "file": "File:Bean-jam-bun,anpan,katori-city,japan.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Bean-jam-bun,anpan,katori-city,japan.JPG",
+    "ok": true
+   }
+  ],
+  "vet": "anpan cut showing anko"
  },
  {
   "key": "mext-15127",
@@ -1613,7 +2989,24 @@
   "items": [
    "mext:15127",
    "eatout:currypan"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Curry-bun,curry-pan,katori-city,japan.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Curry-bun,curry-pan,katori-city,japan.JPG",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:Deep_fried_curry_bread.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Deep_fried_curry_bread.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "curry bread cut; c2 tiger bread, c7 rye loaf"
  },
  {
   "key": "mext-15070",
@@ -1623,7 +3016,31 @@
    "mext:15070",
    "eatout:creampan",
    "kurume:029"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 2,
+    "origin": "jawiki-page",
+    "file": "File:Cream_pan_001.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Cream_pan_001.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "jawiki-page",
+    "file": "File:Cream_pan_002.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Cream_pan_002.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "jawiki-page",
+    "file": "File:薄皮_クリームパン.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:%E8%96%84%E7%9A%AE_%E3%82%AF%E3%83%AA%E3%83%BC%E3%83%A0%E3%83%91%E3%83%B3.JPG",
+    "ok": true
+   }
+  ],
+  "vet": "glove-shaped / custard-filled cream bun"
  },
  {
   "key": "mext-15071",
@@ -1633,7 +3050,24 @@
    "mext:15071",
    "eatout:jampan",
    "kurume:031"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:Jam_pan_004.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Jam_pan_004.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "commons-cat",
+    "file": "File:Jam_pan_003.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Jam_pan_003.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "bun cut with red jam; c2 filling looks like bean"
  },
  {
   "key": "mext-15072",
@@ -1643,7 +3077,31 @@
    "mext:15072",
    "eatout:chococornet",
    "kurume:032"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "jawiki",
+    "file": "File:Corone_001.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Corone_001.jpg",
+    "ok": true
+   },
+   {
+    "n": 5,
+    "origin": "commons-search",
+    "file": "File:チョココロネ.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E3%83%81%E3%83%A7%E3%82%B3%E3%82%B3%E3%83%AD%E3%83%8D.jpg",
+    "ok": true
+   },
+   {
+    "n": 6,
+    "origin": "commons-search",
+    "file": "File:Corone_002.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Corone_002.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "choco cornets; c2 chocolate bars, c3 cacao pods"
  },
  {
   "key": "mext-15132",
@@ -1652,7 +3110,24 @@
   "items": [
    "mext:15132",
    "eatout:melonpan"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Melonpan.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Melonpan.jpg",
+    "ok": true
+   },
+   {
+    "n": 6,
+    "origin": "enwiki",
+    "file": "File:Melonpan_on_the_plastic_bag.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Melonpan_on_the_plastic_bag.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "melon pan; c3 packaged, c7 choco-chip"
  },
  {
   "key": "mext-15181",
@@ -1660,7 +3135,9 @@
   "desc": "a sweet bun, soft glossy golden round bun with a sugar topping",
   "items": [
    "mext:15181"
-  ]
+  ],
+  "refs": [],
+  "vet": "anpan, cornet, melonpan, none plain sugar-topped bun"
  },
  {
   "key": "mext-15073",
@@ -1670,7 +3147,31 @@
    "mext:15073",
    "eatout:cream_puff",
    "kurume:238"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Cream_puff_(cropped_and_edited).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Cream_puff_(cropped_and_edited).jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:Shu-cream.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Shu-cream.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "jawiki-page",
+    "file": "File:French_chouxparigot_hk.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:French_chouxparigot_hk.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "cream puffs; c4-7 chocolate-covered variants"
  },
  {
   "key": "mext-15074",
@@ -1678,7 +3179,17 @@
   "desc": "a round plain sponge cake, light golden crumb, a wedge cut",
   "items": [
    "mext:15074"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 2,
+    "origin": "enwiki",
+    "file": "File:Victoria_Sponges.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Victoria_Sponges.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "plain round sponge; c6 castella, c4 battenberg, c5 chocolate"
  },
  {
   "key": "mext-15170",
@@ -1687,7 +3198,24 @@
   "items": [
    "mext:15170",
    "eatout:shortcake"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 3,
+    "origin": "jawiki-page",
+    "file": "File:Japanese-style_Strawberry_Shortcake_-_01.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Japanese-style_Strawberry_Shortcake_-_01.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "jawiki-page",
+    "file": "File:Laika_strawberry_cake_(cropped).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Laika_strawberry_cake_(cropped).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "strawberry shortcake slices; c0 whole berry cake, c5 pancake stack"
  },
  {
   "key": "mext-15134",
@@ -1696,7 +3224,31 @@
   "items": [
    "mext:15134",
    "eatout:baked_cheesecake"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "jawiki",
+    "file": "File:Käsekuchen.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:K%C3%A4sekuchen.JPG",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "jawiki-page",
+    "file": "File:Yamazaki_Cheese_souffle_001.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Yamazaki_Cheese_souffle_001.jpg",
+    "ok": true
+   },
+   {
+    "n": 5,
+    "origin": "commons-search",
+    "file": "File:INODA_COFFEE_Baked_cheese_cake.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:INODA_COFFEE_Baked_cheese_cake.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "baked cheesecake; c2 looks no-bake"
  },
  {
   "key": "mext-15135",
@@ -1705,7 +3257,17 @@
   "items": [
    "mext:15135",
    "eatout:rare_cheesecake"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 2,
+    "origin": "jawiki-page",
+    "file": "File:Japanese_no-bake_cheesecake.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Japanese_no-bake_cheesecake.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "smooth white rare cheesecake slice; others baked"
  },
  {
   "key": "mext-15077",
@@ -1714,7 +3276,24 @@
   "items": [
    "mext:15077",
    "eatout:donut"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Doughnut.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Doughnut.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "jawiki",
+    "file": "File:Glazed-Donut.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Glazed-Donut.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "glazed yeast rings; mixed boxes"
  },
  {
   "key": "mext-15078",
@@ -1723,7 +3302,9 @@
   "items": [
    "mext:15078",
    "eatout:old_fashioned"
-  ]
+  ],
+  "refs": [],
+  "vet": "no old-fashioned cake doughnut visible"
  },
  {
   "key": "mext-15080",
@@ -1732,7 +3313,38 @@
   "items": [
    "mext:15080",
    "kurume:237"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Apple_pie.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Apple_pie.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "jawiki-page",
+    "file": "File:MeshApplePie.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:MeshApplePie.jpg",
+    "ok": true
+   },
+   {
+    "n": 5,
+    "origin": "enwiki",
+    "file": "File:Apple_pie_14.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Apple_pie_14.jpg",
+    "ok": true
+   },
+   {
+    "n": 7,
+    "origin": "enwiki-page",
+    "file": "File:Apple_cake_with_vanilla_ice_cream_2.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Apple_cake_with_vanilla_ice_cream_2.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "apple pie lattice/slices; c2 people"
  },
  {
   "key": "mext-15082",
@@ -1740,7 +3352,38 @@
   "desc": "a pound cake loaf, golden-brown top with a crack, slices showing dense yellow crumb",
   "items": [
    "mext:15082"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Almond_pound_cake,_angled_profile.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Almond_pound_cake,_angled_profile.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Pound_cake_2.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Pound_cake_2.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "commons-search",
+    "file": "File:Pound_cake_3.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Pound_cake_3.jpg",
+    "ok": true
+   },
+   {
+    "n": 5,
+    "origin": "commons-search",
+    "file": "File:Pound_cake_1.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Pound_cake_1.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "pound cake loaves"
  },
  {
   "key": "mext-15083",
@@ -1749,7 +3392,24 @@
   "items": [
    "mext:15083",
    "dishes:hotcake"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Banana_on_pancake.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Banana_on_pancake.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "jawiki",
+    "file": "File:ホットケーキ.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E3%83%9B%E3%83%83%E3%83%88%E3%82%B1%E3%83%BC%E3%82%AD.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "hotcake stacks; crepes, matcha items"
  },
  {
   "key": "mext-15084",
@@ -1758,7 +3418,9 @@
   "items": [
    "mext:15084",
    "eatout:waffle"
-  ]
+  ],
+  "refs": [],
+  "vet": "belgian/grid waffles, cone; no Japanese custard waffle"
  },
  {
   "key": "mext-15086",
@@ -1767,7 +3429,52 @@
   "items": [
    "mext:15086",
    "kurume:241"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Crème_caramel_2.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Cr%C3%A8me_caramel_2.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "enwiki",
+    "file": "File:Cremecaramel.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Cremecaramel.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "enwiki-page",
+    "file": "File:Abade_de_Priscos.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Abade_de_Priscos.JPG",
+    "ok": true
+   },
+   {
+    "n": 5,
+    "origin": "enwiki-page",
+    "file": "File:Creme_Caramel_India.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Creme_Caramel_India.JPG",
+    "ok": true
+   },
+   {
+    "n": 6,
+    "origin": "enwiki-page",
+    "file": "File:CremeCaramelPrd.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:CremeCaramelPrd.jpg",
+    "ok": true
+   },
+   {
+    "n": 7,
+    "origin": "enwiki-page",
+    "file": "File:Crème_Caramel_(Caramel_Custard).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Cr%C3%A8me_Caramel_(Caramel_Custard).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "purin with caramel; c2 creme brulee"
  },
  {
   "key": "mext-15142",
@@ -1775,7 +3482,17 @@
   "desc": "a few konjac jellies in small cups, translucent fruit-coloured jelly",
   "items": [
    "mext:15142"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "jawiki",
+    "file": "File:KonnyakuBatake_(MannanLife).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:KonnyakuBatake_(MannanLife).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "konjac jelly pouch cups"
  },
  {
   "key": "mext-15087",
@@ -1783,6 +3500,8 @@
   "desc": "an orange jelly in a glass, clear bright orange gelatin with orange pieces",
   "items": [
    "mext:15087"
-  ]
+  ],
+  "refs": [],
+  "vet": "rainbow/mixed jellies, none clearly an orange jelly"
  }
 ]

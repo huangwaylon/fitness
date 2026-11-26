@@ -5,7 +5,9 @@
   "desc": "Dried iwanori rock laver: a thick, rough, blackish-green sheet of coarse wild seaweed with irregular torn edges and a crinkly, matted texture, on a small plate, not smooth nori",
   "items": [
    "mext:09007"
-  ]
+  ],
+  "refs": [],
+  "vet": "buildings, people, print"
  },
  {
   "key": "mext-09008",
@@ -21,7 +23,9 @@
   "desc": "Okyuto: thin flat sheets of firm seaweed jelly, translucent dark olive-brown, rolled up and cut into short strips on a small dish, topped with grated ginger and soy sauce",
   "items": [
    "mext:09009"
-  ]
+  ],
+  "refs": [],
+  "vet": "c0 noodle-like dish with bonito flakes unclear"
  },
  {
   "key": "mext-09010",
@@ -29,7 +33,9 @@
   "desc": "Ogonori seaweed, desalted: bright green thin round strands like tangled glossy noodles, crisp and springy, heaped in a small dish",
   "items": [
    "mext:09010"
-  ]
+  ],
+  "refs": [],
+  "vet": "c0 purple strands unclear (desalted ogonori usually green)"
  },
  {
   "key": "mext-09011",
@@ -37,7 +43,9 @@
   "desc": "Dried kawanori river laver: paper-thin, slightly translucent sheets of vivid deep green, folded and stacked on a small plate",
   "items": [
    "mext:09011"
-  ]
+  ],
+  "refs": [],
+  "vet": "text pages, forest, person"
  },
  {
   "key": "mext-09013",
@@ -77,7 +85,9 @@
   "desc": "Boiled kombu: soft, glossy, dark olive-green rehydrated kelp cut into flat squares, slick and supple, in a small bowl",
   "items": [
    "mext:09056"
-  ]
+  ],
+  "refs": [],
+  "vet": "oden dish, old map"
  },
  {
   "key": "mext-09018",
@@ -85,7 +95,9 @@
   "desc": "Dried hidaka (mitsuishi) kombu: flat, medium-width, dark greenish-black kelp strips, stiff, with faint white bloom, folded on a plate",
   "items": [
    "mext:09018"
-  ]
+  ],
+  "refs": [],
+  "vet": "kelp drying on shore/scenery, not clear"
  },
  {
   "key": "mext-09019",
@@ -93,7 +105,9 @@
   "desc": "Dried rishiri kombu: a thick, broad, flat rectangle of dark brown kelp with a white powdery surface bloom, stiff and leathery",
   "items": [
    "mext:09019"
-  ]
+  ],
+  "refs": [],
+  "vet": "drying yard, kelp not clear"
  },
  {
   "key": "mext-09020",
@@ -101,7 +115,9 @@
   "desc": "Kizami kombu, shredded kelp: a loose heap of very thin dark green-black dried kelp threads, like fine tangled noodles, on a small plate",
   "items": [
    "mext:09020"
-  ]
+  ],
+  "refs": [],
+  "vet": "dish with strands unclear"
  },
  {
   "key": "mext-09021",
@@ -109,7 +125,9 @@
   "desc": "Tororo kombu, shaved kelp: a fluffy, airy pile of very fine, wispy, pale greenish-brown kelp shavings, soft like cotton, in a small dish",
   "items": [
    "mext:09021"
-  ]
+  ],
+  "refs": [],
+  "vet": "c2 shredded item in tub unclear, dishes, illustration"
  },
  {
   "key": "mext-09024",
@@ -117,7 +135,9 @@
   "desc": "Suizenjinori, rehydrated: thick, soft, gelatinous irregular pieces of freshwater algae, translucent dark green jelly, in a small dish of water",
   "items": [
    "mext:09024"
-  ]
+  ],
+  "refs": [],
+  "vet": "signboard, wetland"
  },
  {
   "key": "mext-09025",
@@ -125,7 +145,9 @@
   "desc": "Dried tengusa seaweed: a tangled bunch of fine, branching, wiry strands, pale reddish-purple fading to bleached yellowish-white, dry and crisp",
   "items": [
    "mext:09025"
-  ]
+  ],
+  "refs": [],
+  "vet": "people drying on beach far away, shrines, trains"
  },
  {
   "key": "mext-09027",
@@ -133,7 +155,9 @@
   "desc": "Kaku-kanten agar bars: long square sticks of dried agar, white, light and porous, with a crinkled spongy honeycomb texture, not bread or tofu",
   "items": [
    "mext:09027"
-  ]
+  ],
+  "refs": [],
+  "vet": "shrines, people, trains"
  },
  {
   "key": "mext-09049",
@@ -141,7 +165,9 @@
   "desc": "Powdered agar (kona-kanten): a fine, dry, off-white powder in a small dish, matte like flour",
   "items": [
    "mext:09049"
-  ]
+  ],
+  "refs": [],
+  "vet": "shrines, people, trains"
  },
  {
   "key": "mext-09052",
@@ -158,7 +184,9 @@
   "desc": "Dried hijiki: a small heap of short, thin, dry black seaweed twigs, matte, brittle and wrinkled, on a small plate",
   "items": [
    "mext:09053"
-  ]
+  ],
+  "refs": [],
+  "vet": "too dark, illegible"
  },
  {
   "key": "mext-09054",
@@ -1061,7 +1089,9 @@
   "desc": "Raw carp: a whole bronze-gold large-scaled carp beside thin raw slices of pinkish-white flesh on ice",
   "items": [
    "mext:10119"
-  ]
+  ],
+  "refs": [],
+  "vet": "live koi in ponds, murals; no raw carp meat"
  },
  {
   "key": "mext-10120",
@@ -1069,7 +1099,9 @@
   "desc": "Boiled carp: round cross-cut slices of carp through the bone, plain cooked white flesh with large-scaled skin, in a shallow bowl",
   "items": [
    "mext:10120"
-  ]
+  ],
+  "refs": [],
+  "vet": "c2 possibly cooked fish but unclear; rest illustrations/tables"
  },
  {
   "key": "mext-10121",
@@ -1077,7 +1109,9 @@
   "desc": "Raw carp innards: a small pile of soft dark reddish-brown raw entrails in a small dish",
   "items": [
    "mext:10121"
-  ]
+  ],
+  "refs": [],
+  "vet": "live koi only"
  },
  {
   "key": "mext-10122",
@@ -1085,7 +1119,9 @@
   "desc": "Raw flathead (magochi): a whole elongated brown fish with a broad flat head, beside a white fillet",
   "items": [
    "mext:10122"
-  ]
+  ],
+  "refs": [],
+  "vet": "crest, stereo cards"
  },
  {
   "key": "mext-10123",
@@ -1093,7 +1129,9 @@
   "desc": "Raw small flathead (megochi): small slender brown fish with flat heads, on a plate",
   "items": [
    "mext:10123"
-  ]
+  ],
+  "refs": [],
+  "vet": "crest, stereo cards, art"
  },
  {
   "key": "mext-10124",
@@ -1101,7 +1139,9 @@
   "desc": "Raw gizzard shad (konoshiro): a whole deep-bodied silvery fish with a dark spot behind the gills and fine dark lines",
   "items": [
    "mext:10124"
-  ]
+  ],
+  "refs": [],
+  "vet": "c0 whole fish on plate but state (raw?) unclear; c1 text"
  },
  {
   "key": "mext-10125",
@@ -1109,7 +1149,9 @@
   "desc": "Vinegar-marinated shad: cured fillets with shiny silver skin speckled with dark dots and pale flesh, on a small plate",
   "items": [
    "mext:10125"
-  ]
+  ],
+  "refs": [],
+  "vet": "no vinegared fish; c0 plain whole fish"
  },
  {
   "key": "mext-10126",
@@ -1117,7 +1159,9 @@
   "desc": "Raw pink salmon: a pale orange-pink raw fillet with silver skin, on a plate",
   "items": [
    "mext:10126"
-  ]
+  ],
+  "refs": [],
+  "vet": "seed catalog pages"
  },
  {
   "key": "mext-10127",
@@ -1125,7 +1169,17 @@
   "desc": "Grilled pink salmon: a fillet of light orange flaky flesh with browned skin, on a plate",
   "items": [
    "mext:10127"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:DFC_5074_Pan-seared_salmon_with_crinkle-cut_fries_and_a_crisp_green_salad_-_a_simple_satisfying_plate.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:DFC_5074_Pan-seared_salmon_with_crinkle-cut_fries_and_a_crisp_green_salad_-_a_simple_satisfying_plate.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c0 grilled salmon fillet; rest catalog art"
  },
  {
   "key": "mext-10128",
@@ -1133,7 +1187,9 @@
   "desc": "Salted pink salmon: a firm pinkish-orange fillet coated with salt, silver skin, on a plate",
   "items": [
    "mext:10128"
-  ]
+  ],
+  "refs": [],
+  "vet": "live spawning salmon, not salted fish"
  },
  {
   "key": "mext-10129",
@@ -1142,7 +1198,9 @@
   "items": [
    "mext:10129",
    "mext:10143"
-  ]
+  ],
+  "refs": [],
+  "vet": "ships, people, no canned fish"
  },
  {
   "key": "mext-10131",
@@ -1150,7 +1208,17 @@
   "desc": "Grilled coho salmon: a fillet of deep orange-red flesh with crisp browned silver skin, on a plate",
   "items": [
    "mext:10131"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Milestone's_at_Market_Mall_-_Wild_Pacific_Coho_Salmon_(5717935686).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Milestone%27s_at_Market_Mall_-_Wild_Pacific_Coho_Salmon_(5717935686).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c0 grilled salmon fillet; portraits rejected"
  },
  {
   "key": "mext-10132",
@@ -1158,7 +1226,9 @@
   "desc": "Raw cherry salmon (sakuramasu): a bright pink-orange raw fillet with silver skin, on a plate",
   "items": [
    "mext:10132"
-  ]
+  ],
+  "refs": [],
+  "vet": "c0 cooked salmon with sauce, not raw; rest catalog pages"
  },
  {
   "key": "mext-10133",
@@ -1166,7 +1236,17 @@
   "desc": "Grilled cherry salmon: a fillet of pink-orange flaky flesh with browned silver skin, on a plate",
   "items": [
    "mext:10133"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Liat_Portal_for_Foodie_Disorder_-_Grilled_salmon_with_tahini_salad_and_cherry_tomatoes.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Liat_Portal_for_Foodie_Disorder_-_Grilled_salmon_with_tahini_salad_and_cherry_tomatoes.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c0 cooked salmon fillet plate; c2 sauced, unsure"
  },
  {
   "key": "mext-10135",
@@ -1174,7 +1254,9 @@
   "desc": "Boiled chum salmon: a plain cooked fillet, opaque pale pink-orange and flaky, on a small plate, no sauce",
   "items": [
    "mext:10135"
-  ]
+  ],
+  "refs": [],
+  "vet": "bento with salmon roe, art; no boiled salmon"
  },
  {
   "key": "mext-10137",
@@ -1182,7 +1264,17 @@
   "desc": "Aramaki salted salmon, raw: a thick bone-in cross-cut salmon steak, bright orange flesh with silver skin",
   "items": [
    "mext:10137"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Aramaki-zake_displayed_for_sale_at_Seapal-Pier_Onagawa.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Aramaki-zake_displayed_for_sale_at_Seapal-Pier_Onagawa.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c0 hanging aramaki salted salmon; c2 unclear"
  },
  {
   "key": "mext-10138",
@@ -1190,7 +1282,17 @@
   "desc": "Grilled salted salmon (shiozake): an orange flaky salmon steak with browned crisp skin, on a plate with grated daikon",
   "items": [
    "mext:10138"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Salt_grilled_salmon_teishoku_-_August_2014.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Salt_grilled_salmon_teishoku_-_August_2014.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c0 grilled salted salmon slice in set meal"
  },
  {
   "key": "mext-10142",
@@ -1198,7 +1300,9 @@
   "desc": "Mefun: salted salmon kidney, a glossy dark reddish-black paste in a tiny dish",
   "items": [
    "mext:10142"
-  ]
+  ],
+  "refs": [],
+  "vet": "no salted salmon kidney (mefun)"
  },
  {
   "key": "mext-10447",
@@ -1206,7 +1310,9 @@
   "desc": "Salmon flakes (sake-bushi): thin curly shavings of dried salmon, pinkish-beige and fluffy, in a small dish",
   "items": [
    "mext:10447"
-  ]
+  ],
+  "refs": [],
+  "vet": "no salmon flakes clearly shown"
  },
  {
   "key": "mext-10433",
@@ -1216,7 +1322,9 @@
    "mext:10433",
    "mext:10434",
    "mext:10435"
-  ]
+  ],
+  "refs": [],
+  "vet": "landscape, text pages"
  },
  {
   "key": "mext-10436",
@@ -1224,7 +1332,17 @@
   "desc": "Sauteed salmon, skin on: a pan-fried fillet with golden-brown seared crisp skin and orange flesh, glossy with oil",
   "items": [
    "mext:10436"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 4,
+    "origin": "commons-search",
+    "file": "File:Liat_Portal_for_Foodie_Disorder_-_Salmon_with_garlic_and_herbs,_crushed_potatoes_and_peas.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Liat_Portal_for_Foodie_Disorder_-_Salmon_with_garlic_and_herbs,_crushed_potatoes_and_peas.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c4 sauteed salmon fillet; c5 mixed with scallops, others unclear"
  },
  {
   "key": "mext-10437",
@@ -1233,7 +1351,9 @@
   "items": [
    "mext:10437",
    "mext:10444"
-  ]
+  ],
+  "refs": [],
+  "vet": "sushi rolls, not tempura"
  },
  {
   "key": "mext-10439",
@@ -1243,7 +1363,9 @@
    "mext:10439",
    "mext:10440",
    "mext:10441"
-  ]
+  ],
+  "refs": [],
+  "vet": "landscape, text pages"
  },
  {
   "key": "mext-10442",
@@ -1267,7 +1389,9 @@
   "desc": "Raw sea-farmed rainbow trout, skinless: a bright orange fillet with white fat lines, glossy, cut into slices",
   "items": [
    "mext:10402"
-  ]
+  ],
+  "refs": [],
+  "vet": "whole live/caught trout, not skinless raw fillet"
  },
  {
   "key": "mext-10147",
@@ -1275,7 +1399,9 @@
   "desc": "Grilled rainbow trout fillet, skin on: orange flaky flesh with browned spotted skin, on a plate",
   "items": [
    "mext:10147"
-  ]
+  ],
+  "refs": [],
+  "vet": "live trout, landscapes"
  },
  {
   "key": "mext-10148",
@@ -1283,7 +1409,9 @@
   "desc": "Raw rainbow trout: a whole fish with a spotted olive back and a pink-red stripe along its side",
   "items": [
    "mext:10148"
-  ]
+  ],
+  "refs": [],
+  "vet": "illustrations, text; no raw trout"
  },
  {
   "key": "mext-10150",
@@ -1291,7 +1419,9 @@
   "desc": "Grilled sockeye salmon: a fillet of deep red-orange flaky flesh with browned skin, on a plate",
   "items": [
    "mext:10150"
-  ]
+  ],
+  "refs": [],
+  "vet": "c0 salmon mixed with scallops, unclear; rest old photos"
  },
  {
   "key": "mext-10152",
@@ -1299,7 +1429,9 @@
   "desc": "Raw king salmon: a rich orange raw fillet marbled with thick white fat lines, silver skin",
   "items": [
    "mext:10152"
-  ]
+  ],
+  "refs": [],
+  "vet": "c2 salmon tartare unclear; rest portraits/diagrams"
  },
  {
   "key": "mext-10153",
@@ -1307,7 +1439,9 @@
   "desc": "Grilled king salmon: a thick orange fillet with browned crisp skin and glistening fat, on a plate",
   "items": [
    "mext:10153"
-  ]
+  ],
+  "refs": [],
+  "vet": "c0/c1 unclear cooked fish; can't confirm grilled king salmon"
  },
  {
   "key": "mext-10155",
@@ -1317,7 +1451,9 @@
    "mext:10155",
    "mext:10405",
    "mext:10159"
-  ]
+  ],
+  "refs": [],
+  "vet": "salads, set meals; no boiled mackerel clearly"
  },
  {
   "key": "mext-10403",
@@ -1325,7 +1461,9 @@
   "desc": "Mackerel fry: breaded deep-fried mackerel pieces in crisp golden panko, on a plate with shredded cabbage",
   "items": [
    "mext:10403"
-  ]
+  ],
+  "refs": [],
+  "vet": "c1/c2/c0 look like aji fry (lookalike); c3 unclear pack"
  },
  {
   "key": "mext-10404",
@@ -1333,7 +1471,9 @@
   "desc": "Raw spotted mackerel (gomasaba): a whole fish with wavy dark stripes on a blue-green back and small black dots on a silver belly",
   "items": [
    "mext:10404"
-  ]
+  ],
+  "refs": [],
+  "vet": "c0 is the goma-saba dish (different dish); rest portraits"
  },
  {
   "key": "mext-10406",
@@ -1342,7 +1482,9 @@
   "items": [
    "mext:10406",
    "mext:10160"
-  ]
+  ],
+  "refs": [],
+  "vet": "grilled fish candidates too small to confirm mackerel"
  },
  {
   "key": "mext-10157",
@@ -1350,7 +1492,9 @@
   "desc": "Saba-bushi: a hard, dark brown smoked dried mackerel block beside thin pale brown shavings",
   "items": [
    "mext:10157"
-  ]
+  ],
+  "refs": [],
+  "vet": "goma-saba dish, portraits"
  },
  {
   "key": "mext-10162",
@@ -1358,7 +1502,9 @@
   "desc": "Butterflied dried mackerel (saba no hiraki): a whole fish split open flat, glossy pale flesh and blue-striped skin edge",
   "items": [
    "mext:10162"
-  ]
+  ],
+  "refs": [],
+  "vet": "c0 raw mackerel; c1 hanging dried fish species unclear; c7 grilled whole"
  },
  {
   "key": "mext-10167",
@@ -1366,7 +1512,9 @@
   "desc": "Raw spiny dogfish: boneless chunks of pinkish-white shark meat, on a plate",
   "items": [
    "mext:10167"
-  ]
+  ],
+  "refs": [],
+  "vet": "illustrations, old photos"
  },
  {
   "key": "mext-10168",
@@ -1374,7 +1522,9 @@
   "desc": "Raw blue shark: a pale pink-white chunk of firm shark meat, on a plate",
   "items": [
    "mext:10168"
-  ]
+  ],
+  "refs": [],
+  "vet": "live sharks underwater, not the meat"
  },
  {
   "key": "mext-10169",
@@ -1382,7 +1532,17 @@
   "desc": "Dried shark fin: a whole fan-shaped fin, pale golden and translucent, showing fine needle-like fibres",
   "items": [
    "mext:10169"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:SharkFinTin9.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:SharkFinTin9.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c0 whole dried fin on display; c6 strands unclear; soups rejected (dish not ingredient)"
  },
  {
   "key": "mext-10170",
@@ -1390,7 +1550,9 @@
   "desc": "Raw halfbeak (sayori): a very slender silvery fish with a long needle-like lower jaw tipped red",
   "items": [
    "mext:10170"
-  ]
+  ],
+  "refs": [],
+  "vet": "temple photos"
  },
  {
   "key": "mext-10172",
@@ -1398,7 +1560,9 @@
   "desc": "Grilled Spanish mackerel (sawara): a fillet of white flaky flesh with browned silver-grey skin, on a plate",
   "items": [
    "mext:10172"
-  ]
+  ],
+  "refs": [],
+  "vet": "c1/c2 grilled fish but species unconfirmable; c0 chicken"
  },
  {
   "key": "mext-10407",
@@ -1406,7 +1570,9 @@
   "desc": "Raw saury, skinless: pinkish-beige raw fillets cut into sashimi slices, on a plate",
   "items": [
    "mext:10407"
-  ]
+  ],
+  "refs": [],
+  "vet": "whole raw sanma with skin, grilled sets; no skinless raw"
  },
  {
   "key": "mext-10175",
@@ -1414,7 +1580,9 @@
   "desc": "Butterflied dried saury: a long, slender fish split open flat, glossy pale flesh, on a long plate",
   "items": [
    "mext:10175"
-  ]
+  ],
+  "refs": [],
+  "vet": "raw/grilled whole sanma, not opened dried"
  },
  {
   "key": "mext-10176",
@@ -1422,7 +1590,9 @@
   "desc": "Saury mirin-boshi: a long butterflied saury with a sweet, glossy amber-brown glaze and sesame seeds",
   "items": [
    "mext:10176"
-  ]
+  ],
+  "refs": [],
+  "vet": "no mirin-dried sanma"
  },
  {
   "key": "mext-10177",
@@ -1430,7 +1600,9 @@
   "desc": "Canned seasoned saury: chunks of saury in brown sweet soy sauce, in an open can",
   "items": [
    "mext:10177"
-  ]
+  ],
+  "refs": [],
+  "vet": "no canned sanma"
  },
  {
   "key": "mext-10179",
@@ -1438,7 +1610,9 @@
   "desc": "Raw mahi-mahi (shiira): a pale pink raw fillet, on a plate",
   "items": [
    "mext:10179"
-  ]
+  ],
+  "refs": [],
+  "vet": "buildings, drawing"
  },
  {
   "key": "mext-10180",
@@ -1446,7 +1620,17 @@
   "desc": "Shishamo, raw: whole small lightly dried smelt with roe-swollen bellies, silvery-grey, lined up on a plate",
   "items": [
    "mext:10180"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 5,
+    "origin": "commons-search",
+    "file": "File:Shishamo_by_rhosoi_in_Hokkaido.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Shishamo_by_rhosoi_in_Hokkaido.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c5 raw semi-dried shishamo display; c0/c4 grilled (wrong state); c1/c2 live"
  },
  {
   "key": "mext-10181",
@@ -1454,7 +1638,38 @@
   "desc": "Grilled shishamo: whole small smelt, browned skin and plump roe-filled bellies, lined up on a plate",
   "items": [
    "mext:10181"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Grilled_shishamo_(6085591598).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Grilled_shishamo_(6085591598).jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Shishamo_by_ayustety_in_Tsukiji.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Shishamo_by_ayustety_in_Tsukiji.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:Grilled_shishamo.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Grilled_shishamo.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "commons-search",
+    "file": "File:Shishamo_smelt_(18356022450).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Shishamo_smelt_(18356022450).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "grilled shishamo plates"
  },
  {
   "key": "mext-10184",
@@ -1462,7 +1677,9 @@
   "desc": "Raw sole: a whole elongated tongue-shaped brown flatfish, beside a white fillet",
   "items": [
    "mext:10184"
-  ]
+  ],
+  "refs": [],
+  "vet": "illustrations only"
  },
  {
   "key": "mext-10185",
@@ -1470,7 +1687,9 @@
   "desc": "Raw striped jack (shimaaji): pale pink-white sashimi slices with silver skin showing a yellow stripe",
   "items": [
    "mext:10185"
-  ]
+  ],
+  "refs": [],
+  "vet": "engravings of people"
  },
  {
   "key": "mext-10186",
@@ -1478,7 +1697,24 @@
   "desc": "Raw icefish (shirauo): small slender clear translucent fish with black eyes, heaped in a small dish",
   "items": [
    "mext:10186"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Taihu_silverbait.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Taihu_silverbait.jpg",
+    "ok": true
+   },
+   {
+    "n": 5,
+    "origin": "commons-search",
+    "file": "File:Frozen_Taihu_silverbait.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Frozen_Taihu_silverbait.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c1/c5 translucent raw icefish; c0/c3 could be boiled shirasu (lookalike); c4 sushi"
  },
  {
   "key": "mext-10187",
@@ -1486,7 +1722,9 @@
   "desc": "Raw silver warehou: a white raw fillet with grey skin, on a plate",
   "items": [
    "mext:10187"
-  ]
+  ],
+  "refs": [],
+  "vet": "buildings, people, art"
  },
  {
   "key": "mext-10189",
@@ -1494,7 +1732,9 @@
   "desc": "Raw yellowback seabream (kidai): a whole pink-red sea bream with a yellow patch on its back",
   "items": [
    "mext:10189"
-  ]
+  ],
+  "refs": [],
+  "vet": "plants, chicken, cars, road"
  },
  {
   "key": "mext-10190",
@@ -1502,7 +1742,9 @@
   "desc": "Raw black seabream (kurodai): a whole dark grey-black sea bream, beside a white fillet",
   "items": [
    "mext:10190"
-  ]
+  ],
+  "refs": [],
+  "vet": "live fish underwater"
  },
  {
   "key": "mext-10191",
@@ -1510,7 +1752,9 @@
   "desc": "Raw crimson seabream (chidai): a whole pink sea bream with a red edge on its tail fin",
   "items": [
    "mext:10191"
-  ]
+  ],
+  "refs": [],
+  "vet": "movie posters, people"
  },
  {
   "key": "mext-10194",
@@ -1518,7 +1762,9 @@
   "desc": "Boiled sea bream, skin on: a plain cooked fillet, white flaky flesh with pink-red skin, no sauce",
   "items": [
    "mext:10194"
-  ]
+  ],
+  "refs": [],
+  "vet": "fish woodblock prints, cherry trees"
  },
  {
   "key": "mext-10195",
@@ -1526,7 +1772,9 @@
   "desc": "Salt-grilled sea bream fillet: white flesh with browned pink-red skin, on a plate",
   "items": [
    "mext:10195"
-  ]
+  ],
+  "refs": [],
+  "vet": "fish woodblock prints, cherry trees"
  },
  {
   "key": "mext-10408",
@@ -1534,7 +1782,9 @@
   "desc": "Raw sea bream, skinless: translucent white sashimi slices with a pink tinge, on a plate",
   "items": [
    "mext:10408"
-  ]
+  ],
+  "refs": [],
+  "vet": "live fish, text page"
  },
  {
   "key": "mext-10196",
@@ -1542,7 +1792,9 @@
   "desc": "Raw fusilier (takasago): a slender fish, blue-green back, pink belly and a yellow line along its side",
   "items": [
    "mext:10196"
-  ]
+  ],
+  "refs": [],
+  "vet": "lure, ship, soldiers"
  },
  {
   "key": "mext-10197",
@@ -1550,7 +1802,9 @@
   "desc": "Raw takabe: small whole fish, olive-coloured with a yellow stripe along the body",
   "items": [
    "mext:10197"
-  ]
+  ],
+  "refs": [],
+  "vet": "people, landscape, chicken"
  },
  {
   "key": "mext-10199",
@@ -1558,7 +1812,24 @@
   "desc": "Raw Alaska pollock: a white raw fillet with grey-brown skin, on a plate",
   "items": [
    "mext:10199"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Walleye_pollock.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Walleye_pollock.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "commons-search",
+    "file": "File:Polaca-do-Alasca_vendida_em_São_Paulo.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Polaca-do-Alasca_vendida_em_S%C3%A3o_Paulo.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c0 whole raw pollock; c3 frozen pollock fillet pack; c1 drawing, c2 chart"
  },
  {
   "key": "mext-10409",
@@ -1566,7 +1837,17 @@
   "desc": "Pollock fry: a breaded deep-fried white fish fillet in golden crust, on a plate",
   "items": [
    "mext:10409"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:2020-03-06_23_18_03_A_fillet_of_Alaska_pollock_served_as_part_of_a_Stouffer's_Fish_Filet_Meal_after_heating_in_the_Dulles_section_of_Sterling,_Loudoun_County,_Virginia.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:2020-03-06_23_18_03_A_fillet_of_Alaska_pollock_served_as_part_of_a_Stouffer%27s_Fish_Filet_Meal_after_heating_in_the_Dulles_section_of_Sterling,_Loudoun_County,_Virginia.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c1 breaded fried white fish fillet; others unclear/other dishes"
  },
  {
   "key": "mext-10201",
@@ -1574,7 +1855,9 @@
   "desc": "Sukimidara: thin, flat, stiff salted dried pollock fillets, pale ivory, in strips on a plate",
   "items": [
    "mext:10201"
-  ]
+  ],
+  "refs": [],
+  "vet": "no salted pollock strips; whole fish, chart, frozen fillet"
  },
  {
   "key": "mext-10206",
@@ -1582,7 +1865,24 @@
   "desc": "Grilled cod: a fillet of white flaky flesh with browned surface and grey skin, on a plate",
   "items": [
    "mext:10206"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 4,
+    "origin": "commons-search",
+    "file": "File:Thanksgiving_grilled_cod_fig_taupenade.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Thanksgiving_grilled_cod_fig_taupenade.jpg",
+    "ok": true
+   },
+   {
+    "n": 6,
+    "origin": "commons-search",
+    "file": "File:Grilled_Ling_Cod_(15873332281).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Grilled_Ling_Cod_(15873332281).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c4/c6 grilled white fish fillets; others other dishes, chicken"
  },
  {
   "key": "mext-10209",
@@ -1590,7 +1890,24 @@
   "desc": "Dried cod (hoshidara): a stiff, flat, pale greyish split cod, hard as wood, on a plate",
   "items": [
    "mext:10209"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Stockfisch.wmt.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Stockfisch.wmt.jpg",
+    "ok": true
+   },
+   {
+    "n": 5,
+    "origin": "commons-search",
+    "file": "File:Seasoned_dried_cod_slices.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Seasoned_dried_cod_slices.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c0/c5 dried salted cod; c2/c3 fish heads, c1/c4 unclear"
  },
  {
   "key": "mext-10210",
@@ -1598,7 +1915,9 @@
   "desc": "Fish denbu: a fluffy heap of fine, pale beige-brown fish floss in a small dish",
   "items": [
    "mext:10210"
-  ]
+  ],
+  "refs": [],
+  "vet": "c1 orange flakes unclear; rest whole fish, drawings, seafood platter"
  },
  {
   "key": "mext-10448",
@@ -1606,7 +1925,9 @@
   "desc": "Sakura denbu: a fluffy heap of fine bright pink sweet fish floss in a small dish",
   "items": [
    "mext:10448"
-  ]
+  ],
+  "refs": [],
+  "vet": "no pink sakura denbu visible"
  },
  {
   "key": "mext-10211",
@@ -1614,7 +1935,9 @@
   "desc": "Raw chika smelt: small slender silver fish with translucent bodies, on a plate",
   "items": [
    "mext:10211"
-  ]
+  ],
+  "refs": [],
+  "vet": "people"
  },
  {
   "key": "mext-10213",
@@ -1622,7 +1945,9 @@
   "desc": "Raw loach (dojo): small slender eel-like brown fish with whiskers, heaped in a small bowl",
   "items": [
    "mext:10213"
-  ]
+  ],
+  "refs": [],
+  "vet": "illustrations, text pages"
  },
  {
   "key": "mext-10214",
@@ -1630,7 +1955,9 @@
   "desc": "Boiled loach: whole small eel-like fish, plain cooked, soft and brown, in a small bowl",
   "items": [
    "mext:10214"
-  ]
+  ],
+  "refs": [],
+  "vet": "raw/live loaches, drawings; not boiled"
  },
  {
   "key": "mext-10215",
@@ -1638,7 +1965,9 @@
   "desc": "Raw flying fish: a whole fish with a blue back and large wing-like pectoral fins spread out",
   "items": [
    "mext:10215"
-  ]
+  ],
+  "refs": [],
+  "vet": "drawings, crafts, ships"
  },
  {
   "key": "mext-10421",
@@ -1646,7 +1975,9 @@
   "desc": "Dried flying fish (niboshi): whole boiled and dried flying fish, stiff and dull grey, on a plate",
   "items": [
    "mext:10421"
-  ]
+  ],
+  "refs": [],
+  "vet": "no clear boiled-dried flying fish"
  },
  {
   "key": "mext-10422",
@@ -1654,7 +1985,9 @@
   "desc": "Yaki-ago: grilled then dried flying fish, smoky brown and stiff, on bamboo skewers",
   "items": [
    "mext:10422"
-  ]
+  ],
+  "refs": [],
+  "vet": "text, portraits"
  },
  {
   "key": "mext-10212",
@@ -1662,7 +1995,24 @@
   "desc": "Raw tilapia: a whole grey fish with faint dark vertical bars, beside a white raw fillet",
   "items": [
    "mext:10212"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Liat_Portal_for_Foodie_Disorder_-_Whole_raw_tilapia_fish.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Liat_Portal_for_Foodie_Disorder_-_Whole_raw_tilapia_fish.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Raw_Tilapia_at_Davao_City.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Raw_Tilapia_at_Davao_City.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c0/c1 raw whole tilapia; c2 fillets unclear; c3/c5 live, c4 drawing"
  },
  {
   "key": "mext-10216",
@@ -1670,7 +2020,9 @@
   "desc": "Raw catfish (namazu): a whole dark fish with a broad head and long whiskers, beside a white fillet",
   "items": [
    "mext:10216"
-  ]
+  ],
+  "refs": [],
+  "vet": "packaging/office photos, buildings"
  },
  {
   "key": "mext-10217",
@@ -1678,7 +2030,9 @@
   "desc": "Raw nigisu (deep-sea smelt): slender silver fish with very large eyes, on a plate",
   "items": [
    "mext:10217"
-  ]
+  ],
+  "refs": [],
+  "vet": "shrines"
  },
  {
   "key": "mext-10218",
@@ -1686,7 +2040,17 @@
   "desc": "Raw herring: a whole bluish-silver fish with a slim body, on a plate",
   "items": [
    "mext:10218"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 4,
+    "origin": "commons-search",
+    "file": "File:Haring_04.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Haring_04.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c4 raw herrings on plate; c1/c2/c5 Dutch cured herring (other state); c3 other dish"
  },
  {
   "key": "mext-10219",
@@ -1694,7 +2058,17 @@
   "desc": "Migaki nishin: dried split herring fillets, hard, stiff and dark golden-brown, on a plate",
   "items": [
    "mext:10219"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "jawiki",
+    "file": "File:Yaotoku_Honten_2021-12_ac_(4).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Yaotoku_Honten_2021-12_ac_(4).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c0 dried herring strips packed; c2/c3 bento dishes"
  },
  {
   "key": "mext-10220",
@@ -1702,7 +2076,9 @@
   "desc": "Butterflied dried herring: a whole fish split open flat, glossy pale flesh, on a plate",
   "items": [
    "mext:10220"
-  ]
+  ],
+  "refs": [],
+  "vet": "no opened dried herring"
  },
  {
   "key": "mext-10221",
@@ -1710,7 +2086,9 @@
   "desc": "Smoked herring: golden-brown smoked fillets with glossy skin, on a plate",
   "items": [
    "mext:10221"
-  ]
+  ],
+  "refs": [],
+  "vet": "c3 whole cured fish unclear; rest buildings/dishes"
  },
  {
   "key": "mext-10223",
@@ -1718,7 +2096,9 @@
   "desc": "Dried kazunoko: hard, pale yellowish-beige herring roe skeins with a dense grainy texture, on a plate",
   "items": [
    "mext:10223"
-  ]
+  ],
+  "refs": [],
+  "vet": "no dried herring roe"
  },
  {
   "key": "mext-10225",
@@ -1726,7 +2106,9 @@
   "desc": "Raw goby (haze): small whole brown mottled fish with big heads, on a plate",
   "items": [
    "mext:10225"
-  ]
+  ],
+  "refs": [],
+  "vet": "nature, prints"
  },
  {
   "key": "mext-10227",
@@ -1734,7 +2116,9 @@
   "desc": "Goby kanroni: whole small fish simmered in syrupy sweet soy, glossy dark amber, in a small dish",
   "items": [
    "mext:10227"
-  ]
+  ],
+  "refs": [],
+  "vet": "woodblock prints"
  },
  {
   "key": "mext-10228",
@@ -1742,7 +2126,24 @@
   "desc": "Raw sandfish (hatahata): whole scaleless pale brown mottled fish with large mouths and big pectoral fins",
   "items": [
    "mext:10228"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Arctoscopus_japonicus,_-Japan,_Dec._2009_a.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Arctoscopus_japonicus,_-Japan,_Dec._2009_a.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "commons-search",
+    "file": "File:Arctoscopus_japonicus_(FDA_197).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Arctoscopus_japonicus_(FDA_197).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c1 fresh hatahata close-up; c3 raw specimen on colour card; c2 live, c0/c4 drawings"
  },
  {
   "key": "mext-10229",
@@ -1750,7 +2151,9 @@
   "desc": "Semi-dried sandfish: whole scaleless fish lightly dried, glossy pale brown, on a plate",
   "items": [
    "mext:10229"
-  ]
+  ],
+  "refs": [],
+  "vet": "only raw/live fish and drawings; not semi-dried"
  },
  {
   "key": "mext-10230",
@@ -1758,7 +2161,9 @@
   "desc": "Raw spangled emperor: a whole silver fish with blue lines on its face, beside a white fillet",
   "items": [
    "mext:10230"
-  ]
+  ],
+  "refs": [],
+  "vet": "live fish underwater"
  },
  {
   "key": "mext-10231",
@@ -1766,7 +2171,9 @@
   "desc": "Raw pike conger (hamo): a long silvery eel beside white fillet pieces finely scored so they bloom open like flowers",
   "items": [
    "mext:10231"
-  ]
+  ],
+  "refs": [],
+  "vet": "gardens"
  },
  {
   "key": "mext-10233",
@@ -1774,7 +2181,9 @@
   "desc": "Raw yellowtail amberjack (hiramasa): pale pinkish-white glossy sashimi slices, on a plate",
   "items": [
    "mext:10233"
-  ]
+  ],
+  "refs": [],
+  "vet": "portraits, monuments"
  },
  {
   "key": "mext-10235",
@@ -1782,7 +2191,9 @@
   "desc": "Raw flounder (hirame), skin on: a white fillet with dark brown skin on one side, on a plate",
   "items": [
    "mext:10235"
-  ]
+  ],
+  "refs": [],
+  "vet": "c0 skinless sashimi (wrong cut); rest live flounder in tanks"
  },
  {
   "key": "mext-10410",
@@ -1790,7 +2201,17 @@
   "desc": "Raw flounder, skinless: thin translucent white sashimi slices fanned out on a plate",
   "items": [
    "mext:10410"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Korean_cuisine_olive_flounder_hoe_Seoul.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Korean_cuisine_olive_flounder_hoe_Seoul.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c0 hirame usuzukuri sashimi; rest live flounder"
  },
  {
   "key": "mext-10236",
@@ -1799,7 +2220,9 @@
   "items": [
    "mext:10236",
    "mext:10237"
-  ]
+  ],
+  "refs": [],
+  "vet": "buildings, art, people"
  },
  {
   "key": "mext-10238",
@@ -1807,7 +2230,9 @@
   "desc": "Raw crucian carp (funa): a whole golden-silver deep-bodied fish, on a plate",
   "items": [
    "mext:10238"
-  ]
+  ],
+  "refs": [],
+  "vet": "towns, buildings"
  },
  {
   "key": "mext-10239",
@@ -1815,7 +2240,9 @@
   "desc": "Boiled crucian carp: a whole plain cooked fish, opaque grey-white with scales, in a shallow dish",
   "items": [
    "mext:10239"
-  ]
+  ],
+  "refs": [],
+  "vet": "buildings, mascots, market stall unclear"
  },
  {
   "key": "mext-10240",
@@ -1823,7 +2250,9 @@
   "desc": "Crucian carp kanroni: a whole small carp simmered in sweet soy, glossy dark brown, on a small plate",
   "items": [
    "mext:10240"
-  ]
+  ],
+  "refs": [],
+  "vet": "buildings, mascots"
  },
  {
   "key": "mext-10449",
@@ -1831,7 +2260,17 @@
   "desc": "Funazushi: fermented crucian carp cut in slices, translucent amber flesh with bright orange roe and pasty white rice, on a small plate",
   "items": [
    "mext:10449"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:Funazushi_鮒寿司_Maibara_City_Shiga_Japan_2022-10-06.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Funazushi_%E9%AE%92%E5%AF%BF%E5%8F%B8_Maibara_City_Shiga_Japan_2022-10-06.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c1 funazushi slices with roe; c0/c5 unclear; c3 live fish"
  },
  {
   "key": "mext-10411",
@@ -1839,7 +2278,9 @@
   "desc": "Raw young yellowtail (hamachi), skinless: glossy pinkish-cream sashimi slices with a darker red edge",
   "items": [
    "mext:10411"
-  ]
+  ],
+  "refs": [],
+  "vet": "c1 sashimi set too small to confirm hamachi; c2 whole fish; prints"
  },
  {
   "key": "mext-10244",
@@ -1847,7 +2288,9 @@
   "desc": "Raw red gurnard (houbou): a whole red fish with large blue-green wing-like pectoral fins",
   "items": [
    "mext:10244"
-  ]
+  ],
+  "refs": [],
+  "vet": "live fish underwater"
  },
  {
   "key": "mext-10245",
@@ -1855,7 +2298,9 @@
   "desc": "Raw hoki: a white raw fillet, on a plate",
   "items": [
    "mext:10245"
-  ]
+  ],
+  "refs": [],
+  "vet": "poke bowls (name lookalike), no hoki"
  },
  {
   "key": "mext-10246",
@@ -1863,7 +2308,9 @@
   "desc": "Raw atka mackerel (hokke): a whole yellowish-brown fish with dark bands, on a plate",
   "items": [
    "mext:10246"
-  ]
+  ],
+  "refs": [],
+  "vet": "c1 grilled hokke (wrong state); buildings"
  },
  {
   "key": "mext-10247",
@@ -1879,7 +2326,9 @@
   "desc": "Raw grey mullet (bora): a whole silver-grey fish with dark lengthwise lines, on a plate",
   "items": [
    "mext:10249"
-  ]
+  ],
+  "refs": [],
+  "vet": "eggs, people, text"
  },
  {
   "key": "mext-10250",
@@ -1887,7 +2336,24 @@
   "desc": "Karasumi: dried mullet roe, a flat translucent amber-orange slab, cut into thin slices on a plate",
   "items": [
    "mext:10250"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Karasumi.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Karasumi.jpg",
+    "ok": true
+   },
+   {
+    "n": 5,
+    "origin": "commons-search",
+    "file": "File:Fish_liver_or_something,_drying_in_the_street_outside_restaurant_in_Azabujuban,_close-up.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Fish_liver_or_something,_drying_in_the_street_outside_restaurant_in_Azabujuban,_close-up.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c0/c5 whole karasumi; c3 slices with daikon unclear"
  },
  {
   "key": "mext-10251",
@@ -1929,7 +2395,9 @@
   "desc": "Tuna tempura: pieces of tuna in light, crisp, pale golden lacy batter, on a plate",
   "items": [
    "mext:10456"
-  ]
+  ],
+  "refs": [],
+  "vet": "sushi rolls, sashimi, seared tuna; no tuna tempura"
  },
  {
   "key": "mext-10460",
@@ -1947,7 +2415,9 @@
   "desc": "Grilled fatty tuna: a piece with browned, glistening surface and pale fat-layered flesh, on a plate",
   "items": [
    "mext:10463"
-  ]
+  ],
+  "refs": [],
+  "vet": "sushi plates; no grilled toro"
  },
  {
   "key": "mext-10464",
@@ -1963,7 +2433,9 @@
   "desc": "Fatty tuna tempura: pieces in light, crisp, pale golden batter, on a plate",
   "items": [
    "mext:10465"
-  ]
+  ],
+  "refs": [],
+  "vet": "nigiri, not tempura"
  },
  {
   "key": "mext-10256",
@@ -1980,7 +2452,9 @@
   "items": [
    "mext:10257",
    "mext:10426"
-  ]
+  ],
+  "refs": [],
+  "vet": "mixed nigiri plate; can't confirm southern bluefin toro"
  },
  {
   "key": "mext-10258",
@@ -1988,7 +2462,9 @@
   "desc": "Raw young bluefin tuna (meji): a deep red block of raw flesh, cut into sashimi slices",
   "items": [
    "mext:10258"
-  ]
+  ],
+  "refs": [],
+  "vet": "mixed sashimi plate, unclear"
  },
  {
   "key": "mext-10261",
@@ -1996,7 +2472,9 @@
   "desc": "Canned white tuna flakes in water: pale cream-white flaked fish in clear liquid, in an open can",
   "items": [
    "mext:10261"
-  ]
+  ],
+  "refs": [],
+  "vet": "sushi, restaurants; no canned tuna"
  },
  {
   "key": "mext-10265",
@@ -2012,7 +2490,17 @@
   "desc": "Raw silver pomfret (managatsuo): a whole flat diamond-shaped silver fish, on a plate",
   "items": [
    "mext:10266"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Raw_Silver_pomfret_fish.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Raw_Silver_pomfret_fish.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c0 raw whole silver pomfret; rest unrelated"
  },
  {
   "key": "mext-10232",
@@ -2020,7 +2508,9 @@
   "desc": "Raw snoek: a long, slender silver fish beside a white fillet",
   "items": [
    "mext:10232"
-  ]
+  ],
+  "refs": [],
+  "vet": "cars"
  },
  {
   "key": "mext-10267",
@@ -2028,7 +2518,9 @@
   "desc": "Raw southern blue whiting: a white raw fillet, on a plate",
   "items": [
    "mext:10267"
-  ]
+  ],
+  "refs": [],
+  "vet": "buildings, sign"
  },
  {
   "key": "mext-10268",
@@ -2036,7 +2528,9 @@
   "desc": "Raw gnomefish (mutsu): a whole dark purplish-black fish with very large eyes, beside a white fillet",
   "items": [
    "mext:10268"
-  ]
+  ],
+  "refs": [],
+  "vet": "battleship photos"
  },
  {
   "key": "mext-10269",
@@ -2044,7 +2538,9 @@
   "desc": "Boiled gnomefish: a plain cooked fillet, soft white flesh with dark skin, no sauce, on a plate",
   "items": [
    "mext:10269"
-  ]
+  ],
+  "refs": [],
+  "vet": "battleship photos"
  },
  {
   "key": "mext-10270",
@@ -2052,7 +2548,9 @@
   "desc": "Raw opaleye (mejina): a whole dark blue-black fish, beside a white fillet",
   "items": [
    "mext:10270"
-  ]
+  ],
+  "refs": [],
+  "vet": "shrines"
  },
  {
   "key": "mext-10271",
@@ -2060,7 +2558,9 @@
   "desc": "Raw rockfish (mebaru): a whole dark brown fish with very large eyes, on a plate",
   "items": [
    "mext:10271"
-  ]
+  ],
+  "refs": [],
+  "vet": "thin sashimi platters, likely fugu usuzukuri (lookalike)"
  },
  {
   "key": "mext-10272",
@@ -2068,7 +2568,9 @@
   "desc": "Raw hake (merluza): a white raw fillet, on a plate",
   "items": [
    "mext:10272"
-  ]
+  ],
+  "refs": [],
+  "vet": "text pages, people"
  },
  {
   "key": "mext-10273",
@@ -2076,7 +2578,9 @@
   "desc": "Raw lamprey: a long eel-like dark fish with a round sucker mouth and a row of small gill holes behind the eye",
   "items": [
    "mext:10273"
-  ]
+  ],
+  "refs": [],
+  "vet": "live lamprey, prints, fossil; c5 cooked"
  },
  {
   "key": "mext-10274",
@@ -2084,7 +2588,9 @@
   "desc": "Dried lamprey: long stiff dark brown dried eel-like strips, on a plate",
   "items": [
    "mext:10274"
-  ]
+  ],
+  "refs": [],
+  "vet": "c0 lamprey unclear state; drawings, maps"
  },
  {
   "key": "mext-10275",
@@ -2100,7 +2606,9 @@
   "desc": "Wakasagi tsukudani: small whole pond smelt simmered in soy and sugar, dark brown and glossy, in a small dish",
   "items": [
    "mext:10277"
-  ]
+  ],
+  "refs": [],
+  "vet": "raw/grilled/fried smelt, not tsukudani"
  },
  {
   "key": "mext-10279",
@@ -2108,7 +2616,9 @@
   "desc": "Raw ark shell (akagai): bright orange-red raw clam flesh cut open, beside a thick ribbed white-brown shell",
   "items": [
    "mext:10279"
-  ]
+  ],
+  "refs": [],
+  "vet": "shell chart, factories"
  },
  {
   "key": "mext-10280",
@@ -2116,7 +2626,9 @@
   "desc": "Raw agemaki clam: long rectangular thin shells, with plump pale cream raw meat, on a plate",
   "items": [
    "mext:10280"
-  ]
+  ],
+  "refs": [],
+  "vet": "woodblock prints"
  },
  {
   "key": "mext-10466",
@@ -2124,7 +2636,17 @@
   "desc": "Steamed asari clams: small clams with patterned shells opened to show plump cream-orange meat, in a shallow bowl",
   "items": [
    "mext:10466"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 3,
+    "origin": "commons-search",
+    "file": "File:丸亀製麺_あさりうどん.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E4%B8%B8%E4%BA%80%E8%A3%BD%E9%BA%BA_%E3%81%82%E3%81%95%E3%82%8A%E3%81%86%E3%81%A9%E3%82%93.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c3 steamed clams in broth; c5 shellfish species unclear; others other dishes"
  },
  {
   "key": "mext-10282",
@@ -2140,7 +2662,9 @@
   "desc": "Canned seasoned asari: small brown clam meats in a sweet soy sauce, in an open can",
   "items": [
    "mext:10284"
-  ]
+  ],
+  "refs": [],
+  "vet": "clam dishes, no canned seasoned clams"
  },
  {
   "key": "mext-10427",
@@ -2149,7 +2673,9 @@
   "items": [
    "mext:10427",
    "mext:10428"
-  ]
+  ],
+  "refs": [],
+  "vet": "c1 abalone on plate state unclear; rest dishes, prints"
  },
  {
   "key": "mext-10429",
@@ -2165,7 +2691,9 @@
   "desc": "Dried abalone: hard, oval, translucent amber-brown dried abalone, on a plate",
   "items": [
    "mext:10286"
-  ]
+  ],
+  "refs": [],
+  "vet": "no dried abalone (c0 looks like dried small fish/shrimp)"
  },
  {
   "key": "mext-10287",
@@ -2173,7 +2701,9 @@
   "desc": "Abalone shiokara: chopped salted abalone flesh and innards, a chunky greenish-brown paste in a tiny dish",
   "items": [
    "mext:10287"
-  ]
+  ],
+  "refs": [],
+  "vet": "shells, prints; no salted abalone guts"
  },
  {
   "key": "mext-10288",
@@ -2181,7 +2711,9 @@
   "desc": "Canned abalone: a whole cream-coloured cooked abalone in clear liquid, in an open can",
   "items": [
    "mext:10288"
-  ]
+  ],
+  "refs": [],
+  "vet": "shells, prints; no canned abalone"
  },
  {
   "key": "mext-10289",
@@ -2189,7 +2721,9 @@
   "desc": "Raw mussel (igai): blue-black shells opened to show bright orange meat, on a plate",
   "items": [
    "mext:10289"
-  ]
+  ],
+  "refs": [],
+  "vet": "labs, portrait, buildings"
  },
  {
   "key": "mext-10290",
@@ -2197,6 +2731,8 @@
   "desc": "Raw Japanese baking scallop (itayagai): a ribbed fan-shaped shell holding a white adductor muscle and orange roe",
   "items": [
    "mext:10290"
-  ]
+  ],
+  "refs": [],
+  "vet": "station, railway, pot"
  }
 ]

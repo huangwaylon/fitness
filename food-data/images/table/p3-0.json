@@ -836,7 +836,9 @@
   "desc": "yellow corn grits: a small dish of gritty yellow granules, coarser than cornmeal",
   "items": [
    "mext:01133"
-  ]
+  ],
+  "refs": [],
+  "vet": "only whole cobs/plants/art, no grits"
  },
  {
   "key": "mext-01164",
@@ -844,7 +846,9 @@
   "desc": "white corn grits: a small dish of gritty white granules, coarser than cornmeal",
   "items": [
    "mext:01164"
-  ]
+  ],
+  "refs": [],
+  "vet": "only whole cobs/plants/art, no grits"
  },
  {
   "key": "mext-01134",
@@ -852,7 +856,9 @@
   "desc": "yellow corn flour: a small dish of very fine soft pale yellow powder",
   "items": [
    "mext:01134"
-  ]
+  ],
+  "refs": [],
+  "vet": "only cobs, no corn flour"
  },
  {
   "key": "mext-01165",
@@ -860,7 +866,9 @@
   "desc": "white corn flour: a small dish of very fine soft white powder",
   "items": [
    "mext:01165"
-  ]
+  ],
+  "refs": [],
+  "vet": "only cobs, no corn flour"
  },
  {
   "key": "mext-01135",
@@ -868,7 +876,9 @@
   "desc": "fried giant corn: a small dish of large puffy golden-brown roasted corn kernels, crunchy and salted",
   "items": [
    "mext:01135"
-  ]
+  ],
+  "refs": [],
+  "vet": "no fried giant corn snack; cobs only"
  },
  {
   "key": "mext-01138",
@@ -876,7 +886,9 @@
   "desc": "hatomugi, polished Job's tears: a small dish of plump round whitish grains, each with a brown groove",
   "items": [
    "mext:01138"
-  ]
+  ],
+  "refs": [],
+  "vet": "plants and dried spikes, no polished grains"
  },
  {
   "key": "mext-01139",
@@ -884,7 +896,9 @@
   "desc": "hie, polished barnyard millet: a small dish of tiny round pale cream-beige grains",
   "items": [
    "mext:01139"
-  ]
+  ],
+  "refs": [],
+  "vet": "buildings/streets"
  },
  {
   "key": "mext-01140",
@@ -892,7 +906,9 @@
   "desc": "whole sorghum: a small dish of small round reddish-brown grains",
   "items": [
    "mext:01140"
-  ]
+  ],
+  "refs": [],
+  "vet": "map, text, plants in field; c5 heads on stalk"
  },
  {
   "key": "mext-01141",
@@ -900,7 +916,9 @@
   "desc": "polished sorghum: a small dish of small round off-white grains",
   "items": [
    "mext:01141"
-  ]
+  ],
+  "refs": [],
+  "vet": "mixed multicolour grains, not clearly polished sorghum"
  },
  {
   "key": "mext-01142",
@@ -908,7 +926,9 @@
   "desc": "whole rye flour: a small dish of coarse grey-brown flour speckled with bran",
   "items": [
    "mext:01142"
-  ]
+  ],
+  "refs": [],
+  "vet": "text page, rye bread loaves (not flour)"
  },
  {
   "key": "mext-01143",
@@ -916,7 +936,24 @@
   "desc": "rye flour: a small dish of fine light greyish-beige flour",
   "items": [
    "mext:01143"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Rye_Flour_(5811761026).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Rye_Flour_(5811761026).jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "commons-search",
+    "file": "File:Flours.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Flours.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "flour; c1-c3 fields/paintings"
  },
  {
   "key": "mext-02068",
@@ -924,7 +961,9 @@
   "desc": "raw apios, American groundnut: small knobbly brown tubers strung together like beads, one cut showing white flesh",
   "items": [
    "mext:02068"
-  ]
+  ],
+  "refs": [],
+  "vet": "botanical illustrations only"
  },
  {
   "key": "mext-02069",
@@ -940,7 +979,9 @@
   "desc": "konjac powder: a small dish of fine off-white powder",
   "items": [
    "mext:02002"
-  ]
+  ],
+  "refs": [],
+  "vet": "c0 konjac block not flour; dishes"
  },
  {
   "key": "mext-02004",
@@ -948,7 +989,9 @@
   "desc": "ita konnyaku: a rectangular grey jelly block speckled with dark flecks, firm and rubbery, partly sliced",
   "items": [
    "mext:02004"
-  ]
+  ],
+  "refs": [],
+  "vet": "bento box"
  },
  {
   "key": "mext-02043",
@@ -972,7 +1015,9 @@
   "desc": "steamed sweet potato, skin on: thick round slices with purple-red skin and soft golden-yellow flesh",
   "items": [
    "mext:02046"
-  ]
+  ],
+  "refs": [],
+  "vet": "raw sweet potatoes, baked plate unclear; none steamed with skin"
  },
  {
   "key": "mext-02047",
@@ -980,7 +1025,17 @@
   "desc": "sweet potato tempura: round slices in crisp pale golden batter, purple skin at the rim and yellow inside",
   "items": [
    "mext:02047"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Sweet_potato_tempura_(39014621204).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Sweet_potato_tempura_(39014621204).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c0 sweet potato tempura slices; others udon sets"
  },
  {
   "key": "mext-02012",
@@ -988,7 +1043,9 @@
   "desc": "frozen taro: peeled small oval white taro pieces coated in frost",
   "items": [
    "mext:02012"
-  ]
+  ],
+  "refs": [],
+  "vet": "plants/illustrations, no frozen taro"
  },
  {
   "key": "mext-02013",
@@ -1004,7 +1061,9 @@
   "desc": "boiled mizuimo: peeled soft greyish-white chunks of taro in a small dish",
   "items": [
    "mext:02014"
-  ]
+  ],
+  "refs": [],
+  "vet": "ukiyo-e art, text"
  },
  {
   "key": "mext-02063",
@@ -1012,7 +1071,9 @@
   "desc": "raw potato, skin on: a whole brown-skinned potato and a cut half showing pale yellow flesh",
   "items": [
    "mext:02063"
-  ]
+  ],
+  "refs": [],
+  "vet": "c0/c4 knobbly tubers unclear (sunchoke?), c5 sweet potato"
  },
  {
   "key": "mext-02064",
@@ -1020,7 +1081,9 @@
   "desc": "microwaved potato, skin on: a whole potato with wrinkled skin split open, fluffy pale yellow flesh",
   "items": [
    "mext:02064"
-  ]
+  ],
+  "refs": [],
+  "vet": "no microwaved potato; roasted sweet potato cubes"
  },
  {
   "key": "mext-02065",
@@ -1028,7 +1091,9 @@
   "desc": "skin-on french fries: thick-cut fries with brown skin edges, golden and crisp, on a plate",
   "items": [
    "mext:02065"
-  ]
+  ],
+  "refs": [],
+  "vet": "painting, illustration; c1 unclear fries"
  },
  {
   "key": "mext-02066",
@@ -1044,7 +1109,9 @@
   "desc": "dried mashed potato flakes: a small dish of thin pale cream flakes",
   "items": [
    "mext:02021"
-  ]
+  ],
+  "refs": [],
+  "vet": "whole potatoes, no dried flakes"
  },
  {
   "key": "mext-02022",
@@ -1052,7 +1119,9 @@
   "desc": "raw ichoimo yam: a flat fan-shaped tuber with tan skin and fine root hairs, cut showing sticky white flesh",
   "items": [
    "mext:02022"
-  ]
+  ],
+  "refs": [],
+  "vet": "packaged/unclear"
  },
  {
   "key": "mext-02024",
@@ -1068,7 +1137,9 @@
   "desc": "raw daijo, purple yam: a large irregular tuber with rough dark brown skin, cut showing purple flesh",
   "items": [
    "mext:02027"
-  ]
+  ],
+  "refs": [],
+  "vet": "people, stones, buildings"
  },
  {
   "key": "mext-02070",
@@ -1081,7 +1152,17 @@
    "mext:02031",
    "mext:02032",
    "mext:02033"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:Cornstarch_mixed_with_water.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Cornstarch_mixed_with_water.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c2 white starch powder; microscope/diagram/lab rejected"
  },
  {
   "key": "mext-02029",
@@ -1089,7 +1170,9 @@
   "desc": "kuzu starch: a small dish of small irregular chalky white lumps",
   "items": [
    "mext:02029"
-  ]
+  ],
+  "refs": [],
+  "vet": "ukiyo-e art"
  },
  {
   "key": "mext-02036",
@@ -1097,7 +1180,9 @@
   "desc": "dried kuzukiri: flat straight translucent white strips, brittle and glassy",
   "items": [
    "mext:02036"
-  ]
+  ],
+  "refs": [],
+  "vet": "all served wet kuzukiri, not dried"
  },
  {
   "key": "mext-02038",
@@ -1105,7 +1190,9 @@
   "desc": "dried tapioca pearls: a small dish of small hard round opaque white pearls",
   "items": [
    "mext:02038"
-  ]
+  ],
+  "refs": [],
+  "vet": "market scenes/dishes, no dry pearls"
  },
  {
   "key": "mext-02058",
@@ -1113,7 +1200,9 @@
   "desc": "fresh starch noodles: soft clear glassy noodles in a loose heap",
   "items": [
    "mext:02058"
-  ]
+  ],
+  "refs": [],
+  "vet": "unrelated dish"
  },
  {
   "key": "mext-02059",
@@ -1121,7 +1210,9 @@
   "desc": "dried starch noodles: a bundle of brittle wiry white dried glass noodles",
   "items": [
    "mext:02059"
-  ]
+  ],
+  "refs": [],
+  "vet": "curry/dishes, no dry starch noodles"
  },
  {
   "key": "mext-02060",
@@ -1129,7 +1220,9 @@
   "desc": "boiled starch noodles: clear glassy slippery noodles in a bowl",
   "items": [
    "mext:02060"
-  ]
+  ],
+  "refs": [],
+  "vet": "c3/c4 Korean naengmyeon (buckwheat-type, unsure); rest curry"
  },
  {
   "key": "mext-03030",
@@ -1137,7 +1230,9 @@
   "desc": "beet brown sugar: a small dish of moist light brown crystalline sugar",
   "items": [
    "mext:03030"
-  ]
+  ],
+  "refs": [],
+  "vet": "c0/c4 brown pellets unclear (seeds?); field, stamp"
  },
  {
   "key": "mext-03002",
@@ -1145,7 +1240,17 @@
   "desc": "wasanbon sugar: a small dish of very fine soft pale ivory powdered sugar with a few small pressed sugar shapes",
   "items": [
    "mext:03002"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:Wasanbon.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Wasanbon.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c2 fine sugar powder; c0/c1 wasanbon confections (different product)"
  },
  {
   "key": "mext-03006",
@@ -1169,7 +1274,24 @@
   "desc": "rock sugar: a small dish of chunky clear irregular crystal lumps",
   "items": [
    "mext:03009"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Kandiszucker_--_2018_--_3588.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Kandiszucker_--_2018_--_3588.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "commons-search",
+    "file": "File:Guangxi_old_rock_candy.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Guangxi_old_rock_candy.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "rock sugar; c1 brown unsure; c2/c4/c5 crystal lollipops"
  },
  {
   "key": "mext-03010",
@@ -1177,7 +1299,9 @@
   "desc": "coffee sugar: a small dish of large brown caramel-coloured sugar crystals",
   "items": [
    "mext:03010"
-  ]
+  ],
+  "refs": [],
+  "vet": "sugar cubes, coffee cups; no coffee sugar crystals"
  },
  {
   "key": "mext-03011",
@@ -1188,7 +1312,17 @@
    "mext:03031",
    "mext:03015",
    "mext:03017"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 4,
+    "origin": "commons-search",
+    "file": "File:Picswiss_BL-57-09.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Picswiss_BL-57-09.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "powdered sugar in sieve; c3 dessert dusting, c1 packages"
  },
  {
   "key": "mext-03012",
@@ -1201,7 +1335,9 @@
    "mext:03026",
    "mext:03027",
    "mext:03028"
-  ]
+  ],
+  "refs": [],
+  "vet": "patents, diagrams, scenery"
  },
  {
   "key": "mext-03032",
@@ -1211,7 +1347,9 @@
    "mext:03032",
    "mext:03024",
    "mext:03025"
-  ]
+  ],
+  "refs": [],
+  "vet": "ship, recipe pages"
  },
  {
   "key": "mext-03018",
@@ -1221,7 +1359,9 @@
    "mext:03018",
    "mext:03019",
    "mext:03020"
-  ]
+  ],
+  "refs": [],
+  "vet": "crystal micrograph, products/unrelated"
  },
  {
   "key": "mext-03033",
@@ -1229,7 +1369,38 @@
   "desc": "honey: a small glass dish of golden amber honey, glossy and thick",
   "items": [
    "mext:03033"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "jawiki",
+    "file": "File:Runny_hunny.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Runny_hunny.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "jawiki-page",
+    "file": "File:Creamed_honey_Maillard_reaction_after_aging.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Creamed_honey_Maillard_reaction_after_aging.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "jawiki-page",
+    "file": "File:Cristallizzazione_del_miele_IMG_0371.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Cristallizzazione_del_miele_IMG_0371.JPG",
+    "ok": true
+   },
+   {
+    "n": 6,
+    "origin": "jawiki-page",
+    "file": "File:Filtering_of_honey.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Filtering_of_honey.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "honey in jars/pot (origin not judgeable); beekeeper, diagram rejected"
  },
  {
   "key": "mext-04002",
@@ -1237,7 +1408,9 @@
   "desc": "boiled azuki beans: a small bowl of soft whole dark red beans, glossy",
   "items": [
    "mext:04002"
-  ]
+  ],
+  "refs": [],
+  "vet": "c0 unclear red fruit (cherries?) not clearly boiled azuki"
  },
  {
   "key": "mext-04004",
@@ -1245,7 +1418,9 @@
   "desc": "koshi nama-an: a small dish of smooth unsweetened red bean paste, moist and pale reddish-brown",
   "items": [
    "mext:04004"
-  ]
+  ],
+  "refs": [],
+  "vet": "dry azuki beans and plants, no bean paste"
  },
  {
   "key": "mext-04005",
@@ -1253,7 +1428,9 @@
   "desc": "sarashi-an: a small dish of dry powdery reddish-brown bean paste powder",
   "items": [
    "mext:04005"
-  ]
+  ],
+  "refs": [],
+  "vet": "buildings, art"
  },
  {
   "key": "mext-04102",
@@ -1270,7 +1447,9 @@
   "desc": "tsubushi nama-an: a small dish of coarse mashed red bean paste with bean skins visible, dull reddish-brown",
   "items": [
    "mext:04111"
-  ]
+  ],
+  "refs": [],
+  "vet": "dry azuki beans and plants, no bean paste"
  },
  {
   "key": "mext-04007",
@@ -1278,7 +1457,24 @@
   "desc": "dried kidney beans: a small dish of glossy deep red kidney-shaped kintoki beans",
   "items": [
    "mext:04007"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Kidney_beans_(Phaseolus_vulgaris)_marketed_Baubau.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Kidney_beans_(Phaseolus_vulgaris)_marketed_Baubau.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:Dried_sorana_beans.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Dried_sorana_beans.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "dried kidney/white beans; c5 mixed unclear, c4 packaging"
  },
  {
   "key": "mext-04008",
@@ -1286,7 +1482,9 @@
   "desc": "boiled kidney beans: a small bowl of plump soft deep red kidney beans",
   "items": [
    "mext:04008"
-  ]
+  ],
+  "refs": [],
+  "vet": "stews with meat; c7 dry beans"
  },
  {
   "key": "mext-04009",
@@ -1302,7 +1500,9 @@
   "desc": "white bean nama-an: a small dish of smooth pale ivory bean paste",
   "items": [
    "mext:04010"
-  ]
+  ],
+  "refs": [],
+  "vet": "unrelated pastry"
  },
  {
   "key": "mext-04011",
@@ -1310,7 +1510,9 @@
   "desc": "mame-kinton: sweet mashed white bean paste with whole white beans mixed in, pale cream and glossy, in a small dish",
   "items": [
    "mext:04011"
-  ]
+  ],
+  "refs": [],
+  "vet": "pods, dry beans, plants, diagram; no kintoki-mame"
  },
  {
   "key": "mext-04012",
@@ -1318,7 +1520,17 @@
   "desc": "dried green peas: a small dish of hard round dull green dried peas",
   "items": [
    "mext:04012"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Dried_Green_Peas.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Dried_Green_Peas.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c0 whole dried peas; c2 split-pea bag, c3 packaging, c4 cooked dish"
  },
  {
   "key": "mext-04013",
@@ -1326,7 +1538,9 @@
   "desc": "boiled green peas, from dried: a small bowl of soft olive-green round peas",
   "items": [
    "mext:04013"
-  ]
+  ],
+  "refs": [],
+  "vet": "c0 cooked peas unclear; dishes with other foods"
  },
  {
   "key": "mext-04074",
@@ -1334,7 +1548,9 @@
   "desc": "dried red peas: a small dish of hard round reddish-brown speckled peas",
   "items": [
    "mext:04074"
-  ]
+  ],
+  "refs": [],
+  "vet": "mixed bean assortments, packaging; no red peas specifically"
  },
  {
   "key": "mext-04075",
@@ -1342,7 +1558,9 @@
   "desc": "boiled red peas: a small dish of soft brownish-red round peas, as in mitsumame",
   "items": [
    "mext:04075"
-  ]
+  ],
+  "refs": [],
+  "vet": "unrelated dishes"
  },
  {
   "key": "mext-04014",
@@ -1350,7 +1568,9 @@
   "desc": "fried green peas: a small dish of crunchy deep green fried peas, some skins split, salted",
   "items": [
    "mext:04014"
-  ]
+  ],
+  "refs": [],
+  "vet": "fresh/dish peas, chickpeas, pods; no fried peas"
  },
  {
   "key": "mext-04015",
@@ -1366,7 +1586,17 @@
   "desc": "uguisu-an: a small dish of smooth sweet pale olive-green pea paste",
   "items": [
    "mext:04112"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Uguisuan.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Uguisuan.JPG",
+    "ok": true
+   }
+  ],
+  "vet": "green bean paste; buildings/art rejected"
  },
  {
   "key": "mext-04017",
@@ -1382,7 +1612,9 @@
   "desc": "boiled sasage: a small bowl of soft dark red beans with white eyes",
   "items": [
    "mext:04018"
-  ]
+  ],
+  "refs": [],
+  "vet": "c1 dry black-eyed peas (not boiled), plants, illustrations"
  },
  {
   "key": "mext-04019",
@@ -1390,7 +1622,17 @@
   "desc": "dried broad beans: a small dish of large flat brown dried fava beans",
   "items": [
    "mext:04019"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Dried_broad_beans.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Dried_broad_beans.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "dried fava beans; c1 fresh in bag, fields"
  },
  {
   "key": "mext-04020",
@@ -1398,7 +1640,17 @@
   "desc": "fried broad beans: fava beans fried until they split open, golden-brown and crunchy, salted, in a small dish",
   "items": [
    "mext:04020"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Fried_broad_beans_(china).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Fried_broad_beans_(china).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c0 packaged fried broad beans; c1 unclear, c2/c3 fries"
  },
  {
   "key": "mext-04021",
@@ -1406,7 +1658,9 @@
   "desc": "otafuku-mame: large glossy dark brown simmered sweet fava beans with wrinkled skins, in a small dish",
   "items": [
    "mext:04021"
-  ]
+  ],
+  "refs": [],
+  "vet": "plants, dry beans; no otafuku-mame"
  },
  {
   "key": "mext-04022",
@@ -1422,7 +1676,9 @@
   "desc": "shoyu-mame: roasted fava beans soaked in sweet soy sauce, glossy dark brown with wrinkled skins, in a small dish",
   "items": [
    "mext:04076"
-  ]
+  ],
+  "refs": [],
+  "vet": "plants, dry beans; no shoyu-mame"
  },
  {
   "key": "mext-04104",
@@ -1430,7 +1686,31 @@
   "desc": "dried green soybeans: a small dish of round pale green dried soybeans",
   "items": [
    "mext:04104"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:Pepaut-se-hlo.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Pepaut-se-hlo.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "commons-search",
+    "file": "File:ပဲပုတ်စေ့.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E1%80%95%E1%80%B2%E1%80%95%E1%80%AF%E1%80%90%E1%80%BA%E1%80%85%E1%80%B1%E1%80%B7.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "commons-search",
+    "file": "File:ပဲပုတ်စေ့လှော်.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E1%80%95%E1%80%B2%E1%80%95%E1%80%AF%E1%80%90%E1%80%BA%E1%80%85%E1%80%B1%E1%80%B7%E1%80%9C%E1%80%BE%E1%80%B1%E1%80%AC%E1%80%BA.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "pale green dried soybeans in bowl; c0/c1 soil in hand, c5 granola"
  },
  {
   "key": "mext-04105",
@@ -1438,7 +1718,9 @@
   "desc": "boiled green soybeans: a small bowl of plump soft pale green soybeans",
   "items": [
    "mext:04105"
-  ]
+  ],
+  "refs": [],
+  "vet": "edamame in pods (immature, not boiled mature beans), dishes"
  },
  {
   "key": "mext-04025",
@@ -1448,7 +1730,9 @@
    "mext:04025",
    "mext:04026",
    "mext:04027"
-  ]
+  ],
+  "refs": [],
+  "vet": "orange crumbs/topping, not dry soybeans"
  },
  {
   "key": "mext-04077",
@@ -1456,7 +1740,9 @@
   "desc": "dried black soybeans: a small dish of round glossy black soybeans with a faint dusty bloom",
   "items": [
    "mext:04077"
-  ]
+  ],
+  "refs": [],
+  "vet": "granola, packets, b/w plant photos"
  },
  {
   "key": "mext-04106",
@@ -1464,7 +1750,9 @@
   "desc": "boiled black soybeans: a small bowl of plump glossy black soybeans, soft",
   "items": [
    "mext:04106"
-  ]
+  ],
+  "refs": [],
+  "vet": "woodblock prints"
  },
  {
   "key": "mext-04080",
@@ -1472,7 +1760,9 @@
   "desc": "roasted green soybeans: a small dish of crunchy soybeans with cracked pale green-tan skins and browned spots",
   "items": [
    "mext:04080"
-  ]
+  ],
+  "refs": [],
+  "vet": "c0-c2 same photo as 青大豆 乾 c2-c4; roasted vs dried not distinguishable"
  },
  {
   "key": "mext-04079",
@@ -1480,7 +1770,9 @@
   "desc": "roasted black soybeans: a small dish of crunchy soybeans with cracked black skins showing pale yellow-green insides",
   "items": [
    "mext:04079"
-  ]
+  ],
+  "refs": [],
+  "vet": "kaiseki dish"
  },
  {
   "key": "mext-04082",
@@ -1490,7 +1782,9 @@
    "mext:04082",
    "mext:04096",
    "mext:04109"
-  ]
+  ],
+  "refs": [],
+  "vet": "c0 beige kinako (not green); rest dishes topped with kinako"
  },
  {
   "key": "mext-04030",
@@ -1499,7 +1793,17 @@
   "items": [
    "mext:04030",
    "mext:04110"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Soy_powder.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Soy_powder.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "kinako powder; dishes topped with kinako rejected"
  },
  {
   "key": "mext-04083",
@@ -1507,7 +1811,9 @@
   "desc": "soybean germ: a small dish of small pale yellow granules",
   "items": [
    "mext:04083"
-  ]
+  ],
+  "refs": [],
+  "vet": "unrelated"
  },
  {
   "key": "mext-04097",
@@ -1525,7 +1831,24 @@
   "items": [
    "mext:04099",
    "mext:04100"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Japanese_SilkyTofu_(Kinugoshi_Tofu).JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Japanese_SilkyTofu_(Kinugoshi_Tofu).JPG",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Somenoya_Nigari-Kinugoshi.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Somenoya_Nigari-Kinugoshi.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "silken tofu block, packaged tofu"
  },
  {
   "key": "mext-04113",
@@ -1533,7 +1856,24 @@
   "desc": "kinu namaage: a deep-fried silken tofu block with a thin golden-brown skin, cut to show smooth white inside",
   "items": [
    "mext:04113"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Fuchu200921.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Fuchu200921.JPG",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Fuchu200922.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Fuchu200922.JPG",
+    "ok": true
+   }
+  ],
+  "vet": "packaged namaage in store display"
  },
  {
   "key": "mext-04084",
@@ -1541,7 +1881,24 @@
   "desc": "aburaage, oil drained: thin flat golden-brown fried tofu sheets, spongy and damp",
   "items": [
    "mext:04084"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:油揚げ.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E6%B2%B9%E6%8F%9A%E3%81%92.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "wikidata",
+    "file": "File:Aburaage_1.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Aburaage_1.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "aburaage pieces; c2-c7 dishes/packaging"
  },
  {
   "key": "mext-04086",
@@ -1549,7 +1906,9 @@
   "desc": "boiled aburaage: soft limp pale beige strips of fried tofu in a small dish",
   "items": [
    "mext:04086"
-  ]
+  ],
+  "refs": [],
+  "vet": "plain aburaage/dishes; boiled state not shown"
  },
  {
   "key": "mext-04085",
@@ -1557,7 +1916,9 @@
   "desc": "grilled aburaage: crisp toasted fried tofu sheet with darker brown grill marks, cut into strips",
   "items": [
    "mext:04085"
-  ]
+  ],
+  "refs": [],
+  "vet": "plain aburaage/dishes; grilled state not shown"
  },
  {
   "key": "mext-04044",
@@ -1581,7 +1942,9 @@
   "desc": "dried okara: a small dish of crumbly pale cream dry soy pulp flakes",
   "items": [
    "mext:04089"
-  ]
+  ],
+  "refs": [],
+  "vet": "moist okara and dishes, not dried; map"
  },
  {
   "key": "mext-04056",
@@ -1590,7 +1953,9 @@
   "items": [
    "mext:04056",
    "mext:04090"
-  ]
+  ],
+  "refs": [],
+  "vet": "chart, packaging"
  },
  {
   "key": "mext-04058",
@@ -1598,7 +1963,17 @@
   "desc": "textured soy protein: beige-tan fibrous chunks resembling shredded meat, in a small dish",
   "items": [
    "mext:04058"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Textured-Soy-Protein-(2006-02-16).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Textured-Soy-Protein-(2006-02-16).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "soy chunks; c0 orange flakes, dishes"
  },
  {
   "key": "mext-04091",
@@ -1606,7 +1981,9 @@
   "desc": "rehydrated dried yuba: soft thin wrinkled layered sheets of soy milk skin, translucent pale yellow, in a small dish",
   "items": [
    "mext:04091"
-  ]
+  ],
+  "refs": [],
+  "vet": "dried yuba (c0/c6) not rehydrated; fresh yuba dishes; production"
  },
  {
   "key": "mext-04061",
@@ -1614,7 +1991,17 @@
   "desc": "kinzanji miso: chunky brown lick-miso with visible koji grains and diced eggplant, cucumber and ginger, in a small dish",
   "items": [
    "mext:04061"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Kinzanjimiso.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Kinzanjimiso.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "chunky kinzanji miso; c1 building"
  },
  {
   "key": "mext-04062",
@@ -1630,7 +2017,9 @@
   "desc": "dried rice beans: a small dish of small slender reddish-brown beans",
   "items": [
    "mext:04064"
-  ]
+  ],
+  "refs": [],
+  "vet": "curry plates; c5 red beans unclear species"
  },
  {
   "key": "mext-04092",
@@ -1638,7 +2027,9 @@
   "desc": "boiled rice beans: a small bowl of soft slender reddish-brown beans",
   "items": [
    "mext:04092"
-  ]
+  ],
+  "refs": [],
+  "vet": "curry/thali plates"
  },
  {
   "key": "mext-04065",
@@ -1646,7 +2037,17 @@
   "desc": "dried chickpeas: a small dish of round beige chickpeas with little beaked tips",
   "items": [
    "mext:04065"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:Soaked_and_dried_chickpeas.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Soaked_and_dried_chickpeas.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "dried chickpeas; c3 split dal, c0 sack unclear, fields"
  },
  {
   "key": "mext-04067",
@@ -1654,7 +2055,9 @@
   "desc": "fried seasoned chickpeas: a small dish of crunchy golden-brown fried chickpeas, salted",
   "items": [
    "mext:04067"
-  ]
+  ],
+  "refs": [],
+  "vet": "Indian snack mix, not fried chickpeas alone"
  },
  {
   "key": "mext-04069",
@@ -1662,7 +2065,9 @@
   "desc": "boiled runner beans: a small dish of large plump purple-black beans with mottled speckles, glossy",
   "items": [
    "mext:04069"
-  ]
+  ],
+  "refs": [],
+  "vet": "stuffed pepper, illustrations/text"
  },
  {
   "key": "mext-04108",
@@ -1678,7 +2083,17 @@
   "desc": "dried lima beans: a small dish of large flat white kidney-shaped beans",
   "items": [
    "mext:04070"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 3,
+    "origin": "commons-search",
+    "file": "File:Phaseolus_lunatus_MHNT.BOT.2008.1.40.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Phaseolus_lunatus_MHNT.BOT.2008.1.40.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "speckled dried lima beans; c2 mixed beans, packaging, b/w, people"
  },
  {
   "key": "mext-04093",
@@ -1686,7 +2101,9 @@
   "desc": "boiled lima beans: a small bowl of large soft creamy white flat beans",
   "items": [
    "mext:04093"
-  ]
+  ],
+  "refs": [],
+  "vet": "menu, illustrations, flower"
  },
  {
   "key": "mext-04072",
@@ -1694,7 +2111,9 @@
   "desc": "boiled mung beans: a small bowl of small soft olive-green beans, some skins split",
   "items": [
    "mext:04072"
-  ]
+  ],
+  "refs": [],
+  "vet": "dishes, not plain boiled mung beans"
  },
  {
   "key": "mext-04073",
@@ -1702,7 +2121,17 @@
   "desc": "dried lentils: a small dish of small flat lens-shaped greenish-brown discs",
   "items": [
    "mext:04073"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Dried_red_lentil.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Dried_red_lentil.JPG",
+    "ok": true
+   }
+  ],
+  "vet": "dry red lentils; c3/c4 mixed beans, c1 cooked"
  },
  {
   "key": "mext-05003",
@@ -1710,7 +2139,9 @@
   "desc": "dried hemp seeds: a small dish of small round grey-green speckled seeds with shiny shells",
   "items": [
    "mext:05003"
-  ]
+  ],
+  "refs": [],
+  "vet": "scenery, buildings, b/w"
  },
  {
   "key": "mext-05006",
@@ -1718,7 +2149,9 @@
   "desc": "roasted seasoned pumpkin seeds: a small dish of flat oval white-shelled seeds, toasted and salted",
   "items": [
    "mext:05006"
-  ]
+  ],
+  "refs": [],
+  "vet": "pumpkins and dishes, no roasted seeds"
  },
  {
   "key": "mext-05007",
@@ -1726,7 +2159,9 @@
   "desc": "roasted kaya nuts: elongated oval nuts with brown shells, one cracked showing a pale yellow kernel",
   "items": [
    "mext:05007"
-  ]
+  ],
+  "refs": [],
+  "vet": "fried rice dishes, people"
  },
  {
   "key": "mext-05010",
@@ -1734,7 +2169,9 @@
   "desc": "raw Japanese chestnuts: glossy dark brown chestnuts, one peeled showing pale yellow flesh",
   "items": [
    "mext:05010"
-  ]
+  ],
+  "refs": [],
+  "vet": "b/w scenery, people"
  },
  {
   "key": "mext-05015",
@@ -1742,7 +2179,9 @@
   "desc": "poppy seeds: a small dish of tiny round pale ivory seeds",
   "items": [
    "mext:05015"
-  ]
+  ],
+  "refs": [],
+  "vet": "dish, b/w buildings"
  },
  {
   "key": "mext-05016",
@@ -1750,7 +2189,24 @@
   "desc": "coconut powder: a small dish of fine soft white dried coconut powder",
   "items": [
    "mext:05016"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 4,
+    "origin": "commons-search",
+    "file": "File:Coconut_flour_textureB.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Coconut_flour_textureB.jpg",
+    "ok": true
+   },
+   {
+    "n": 5,
+    "origin": "commons-search",
+    "file": "File:Coconut_Flour_-_Pre_Toasted_(8681634357).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Coconut_Flour_-_Pre_Toasted_(8681634357).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "desiccated coconut powder; c0 coconut cream, c2 toasted, c3 unclear"
  },
  {
   "key": "mext-05017",
@@ -1758,7 +2214,9 @@
   "desc": "sesame seeds: a small dish of tiny flat teardrop-shaped pale beige seeds, unhulled",
   "items": [
    "mext:05017"
-  ]
+  ],
+  "refs": [],
+  "vet": "flower, sesame-coated sweets, burger, building"
  },
  {
   "key": "mext-05019",
@@ -1766,7 +2224,9 @@
   "desc": "hulled sesame seeds: a small dish of tiny flat teardrop-shaped pure white seeds",
   "items": [
    "mext:05019"
-  ]
+  ],
+  "refs": [],
+  "vet": "flower, sesame-coated sweets, burger, scenery"
  },
  {
   "key": "mext-05020",
@@ -1774,7 +2234,9 @@
   "desc": "raw shii nuts: small pointed acorn-like nuts with dark brown shells, one cracked showing a cream kernel",
   "items": [
    "mext:05020"
-  ]
+  ],
+  "refs": [],
+  "vet": "cosplayer, prints"
  },
  {
   "key": "mext-05021",
@@ -1782,7 +2244,9 @@
   "desc": "roasted seasoned watermelon seeds: a small dish of flat glossy black seeds, salted",
   "items": [
    "mext:05021"
-  ]
+  ],
+  "refs": [],
+  "vet": "watermelon fruit, no seeds"
  },
  {
   "key": "mext-05024",
@@ -1790,7 +2254,24 @@
   "desc": "dried lotus seeds: a small dish of hard round ivory seeds, some split showing a groove",
   "items": [
    "mext:05024"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 3,
+    "origin": "commons-search",
+    "file": "File:Dried_red_lotus_seeds_(20240910).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Dried_red_lotus_seeds_(20240910).jpg",
+    "ok": true
+   },
+   {
+    "n": 5,
+    "origin": "commons-search",
+    "file": "File:Dried_red_lotus_seeds.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Dried_red_lotus_seeds.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "dried lotus seeds; c4 fresh-looking peeled, c0/c2 seed pods, c1 jars unclear"
  },
  {
   "key": "mext-05043",
@@ -1798,7 +2279,9 @@
   "desc": "boiled lotus seeds: a small dish of soft round creamy white seeds",
   "items": [
    "mext:05043"
-  ]
+  ],
+  "refs": [],
+  "vet": "unrelated scenes/art"
  },
  {
   "key": "mext-05047",
@@ -1806,7 +2289,9 @@
   "desc": "raw water caltrop: dark nuts shaped like a bull's head with two curved horns, one cut showing white starchy flesh",
   "items": [
    "mext:05047"
-  ]
+  ],
+  "refs": [],
+  "vet": "posters, building, prints"
  },
  {
   "key": "mext-05048",
@@ -1814,7 +2299,9 @@
   "desc": "boiled water caltrop: black two-horned shells, one split open showing soft white starchy flesh like chestnut",
   "items": [
    "mext:05048"
-  ]
+  ],
+  "refs": [],
+  "vet": "prints, building"
  },
  {
   "key": "mext-05034",
@@ -1822,7 +2309,9 @@
   "desc": "dried large peanuts: a small dish of large raw peanut kernels with pinkish-red papery skins",
   "items": [
    "mext:05034"
-  ]
+  ],
+  "refs": [],
+  "vet": "dishes, b/w, market unclear, text"
  },
  {
   "key": "mext-05044",
@@ -1830,7 +2319,9 @@
   "desc": "dried small peanuts: a small dish of small raw peanut kernels with pinkish-red papery skins",
   "items": [
    "mext:05044"
-  ]
+  ],
+  "refs": [],
+  "vet": "unrelated, market unclear, b/w"
  },
  {
   "key": "mext-05045",
@@ -1838,7 +2329,24 @@
   "desc": "roasted peanuts in the shell: beige ridged peanut shells, one cracked open showing reddish-skinned kernels",
   "items": [
    "mext:05045"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Roasted_Peanuts_with_shell.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Roasted_Peanuts_with_shell.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "commons-search",
+    "file": "File:Salt_Roasted_Peanut.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Salt_Roasted_Peanut.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "in-shell peanuts (roast not visible); c4/c5 labels"
  },
  {
   "key": "mext-06327",
@@ -1846,7 +2354,17 @@
   "desc": "stir-fried asparagus: green asparagus spears glossy with oil and lightly browned, on a plate",
   "items": [
    "mext:06327"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Asparagus_Stir_Fry_(49765791966).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Asparagus_Stir_Fry_(49765791966).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "stir-fried asparagus; others mixed stir-fries with shrimp/corn"
  },
  {
   "key": "mext-06009",
@@ -1854,7 +2372,17 @@
   "desc": "canned white asparagus: soft pale ivory asparagus spears in liquid, in a small dish",
   "items": [
    "mext:06009"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Herrera_de_Pisuerga_003_Conservas_002_Espárragos.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Herrera_de_Pisuerga_003_Conservas_002_Esp%C3%A1rragos.JPG",
+    "ok": true
+   }
+  ],
+  "vet": "jars of white asparagus; b/w/illustrations"
  },
  {
   "key": "mext-06328",
@@ -1862,7 +2390,9 @@
   "desc": "raw aloe: a thick spiky green leaf cut open showing clear jelly flesh, with cubes of translucent gel",
   "items": [
    "mext:06328"
-  ]
+  ],
+  "refs": [],
+  "vet": "aloe plants growing (species unclear), no leaf flesh"
  },
  {
   "key": "mext-06011",
@@ -1870,7 +2400,9 @@
   "desc": "boiled green beans: slender bright green pods cut into lengths, tender, in a small dish",
   "items": [
    "mext:06011"
-  ]
+  ],
+  "refs": [],
+  "vet": "plates with fries/meat; c0 beans side not main, pods, dry beans"
  },
  {
   "key": "mext-06015",
@@ -1878,7 +2410,17 @@
   "desc": "raw edamame: fuzzy plump green pods, one opened showing bright green beans",
   "items": [
    "mext:06015"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 5,
+    "origin": "enwiki-page",
+    "file": "File:Edamame_(37039111054).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Edamame_(37039111054).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c5 market display of fresh edamame on stalks; c0-c2/c6 likely boiled/served, plant, dried pods"
  },
  {
   "key": "mext-06021",
@@ -1886,7 +2428,9 @@
   "desc": "boiled snow peas: flat bright green pods with small bumps of peas inside, in a small dish",
   "items": [
    "mext:06021"
-  ]
+  ],
+  "refs": [],
+  "vet": "raw snow peas c4, illustrations, unrelated; none boiled"
  },
  {
   "key": "mext-06023",
@@ -1894,7 +2438,9 @@
   "desc": "raw green peas: bright green round peas spilling from a split pod",
   "items": [
    "mext:06023"
-  ]
+  ],
+  "refs": [],
+  "vet": "seed catalogs, split-pea bag"
  },
  {
   "key": "mext-06024",
@@ -1903,7 +2449,9 @@
   "items": [
    "mext:06024",
    "mext:06374"
-  ]
+  ],
+  "refs": [],
+  "vet": "c0/c4 unclear, mixed dishes, chickpeas"
  },
  {
   "key": "mext-06375",
@@ -1911,7 +2459,9 @@
   "desc": "stir-fried green peas: glossy oily bright green peas, slightly wrinkled, in a small dish",
   "items": [
    "mext:06375"
-  ]
+  ],
+  "refs": [],
+  "vet": "stir-fries without peas, stuffed pepper, drawings"
  },
  {
   "key": "mext-06026",
@@ -1919,7 +2469,9 @@
   "desc": "canned green peas: soft dull olive-green round peas in liquid, in a small dish",
   "items": [
    "mext:06026"
-  ]
+  ],
+  "refs": [],
+  "vet": "ads/illustrations, fields, unclear can"
  },
  {
   "key": "mext-06027",
@@ -1927,7 +2479,9 @@
   "desc": "raw osaka shirona: a leafy green with flat white stems and round smooth bright green leaves, like small bok choy",
   "items": [
    "mext:06027"
-  ]
+  ],
+  "refs": [],
+  "vet": "train"
  },
  {
   "key": "mext-06028",
@@ -1951,7 +2505,9 @@
   "desc": "raw turnip greens: long bright green leafy tops with slender pale stems",
   "items": [
    "mext:06034"
-  ]
+  ],
+  "refs": [],
+  "vet": "seed catalogue pages"
  },
  {
   "key": "mext-06035",
@@ -1959,7 +2515,9 @@
   "desc": "boiled turnip greens: chopped soft dark green leaves, squeezed, in a small dish",
   "items": [
    "mext:06035"
-  ]
+  ],
+  "refs": [],
+  "vet": "seed catalogue pages, b/w"
  },
  {
   "key": "mext-06036",
@@ -1967,7 +2525,9 @@
   "desc": "raw turnip, skin on: a round smooth white turnip root, one cut half showing crisp white flesh",
   "items": [
    "mext:06036"
-  ]
+  ],
+  "refs": [],
+  "vet": "catalogues, art, dishes, shopfront"
  },
  {
   "key": "mext-06037",
@@ -1976,7 +2536,9 @@
   "items": [
    "mext:06037",
    "mext:06039"
-  ]
+  ],
+  "refs": [],
+  "vet": "c3 raw turnips (not boiled), dishes, b/w"
  },
  {
   "key": "mext-06040",
@@ -1984,7 +2546,9 @@
   "desc": "salted turnip greens pickle: chopped wilted dark green leaves and stems, in a small dish",
   "items": [
    "mext:06040"
-  ]
+  ],
+  "refs": [],
+  "vet": "c2 green pickle unclear type; prints, shops, street"
  },
  {
   "key": "mext-06041",
@@ -1993,7 +2557,9 @@
   "items": [
    "mext:06041",
    "mext:06042"
-  ]
+  ],
+  "refs": [],
+  "vet": "c3 green pickle unclear; prints, shops"
  },
  {
   "key": "mext-06043",
@@ -2001,7 +2567,9 @@
   "desc": "nukazuke turnip greens: wilted olive-green leaves with traces of tan rice bran, chopped, in a small dish",
   "items": [
    "mext:06043"
-  ]
+  ],
+  "refs": [],
+  "vet": "c2 green pickle unclear; prints, shops"
  },
  {
   "key": "mext-06044",
@@ -2010,7 +2578,9 @@
   "items": [
    "mext:06044",
    "mext:06045"
-  ]
+  ],
+  "refs": [],
+  "vet": "c2 green pickle unclear; prints, shops"
  },
  {
   "key": "mext-06046",
@@ -2018,7 +2588,9 @@
   "desc": "raw Japanese pumpkin: a deeply ribbed bumpy dark green squash, a cut wedge showing pale yellow-orange flesh and seeds",
   "items": [
    "mext:06046"
-  ]
+  ],
+  "refs": [],
+  "vet": "garden scenes, no pumpkin"
  },
  {
   "key": "mext-06047",
@@ -2026,7 +2598,9 @@
   "desc": "boiled Japanese pumpkin: soft wedges with dull dark green skin and yellow flesh, in a small dish",
   "items": [
    "mext:06047"
-  ]
+  ],
+  "refs": [],
+  "vet": "mixed dishes, drawing"
  },
  {
   "key": "mext-06332",
@@ -2050,7 +2624,9 @@
   "desc": "salted mustard greens pickle: wilted dark green jagged-edged leaves, chopped, in a small dish",
   "items": [
    "mext:06053"
-  ]
+  ],
+  "refs": [],
+  "vet": "c0 jar of pickled greens unclear type; dishes, building"
  },
  {
   "key": "mext-06055",
@@ -2058,7 +2634,17 @@
   "desc": "boiled cauliflower: soft white florets in a small dish",
   "items": [
    "mext:06055"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 4,
+    "origin": "commons-search",
+    "file": "File:Jajko_sadzone_z_ziemniakami_i_kalafiorem_-_27.05.2023.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Jajko_sadzone_z_ziemniakami_i_kalafiorem_-_27.05.2023.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "boiled cauliflower florets (with potato); c0-c2 unrelated"
  },
  {
   "key": "mext-06056",
@@ -2066,7 +2652,17 @@
   "desc": "dried kanpyo: long flat ribbons of dried gourd, creamy beige, coiled into a loose bundle",
   "items": [
    "mext:06056"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Kampyo.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Kampyo.JPG",
+    "ok": true
+   }
+  ],
+  "vet": "bundles of dried kanpyo; sushi rolls, prints, gourd plant"
  },
  {
   "key": "mext-06057",
@@ -2074,7 +2670,9 @@
   "desc": "boiled kanpyo: soft pale translucent flat gourd ribbons in a small dish",
   "items": [
    "mext:06057"
-  ]
+  ],
+  "refs": [],
+  "vet": "only dried kanpyo and maki rolls; no boiled strips"
  },
  {
   "key": "mext-06364",
@@ -2082,6 +2680,8 @@
   "desc": "sweet-simmered kanpyo: glossy caramel-brown flat gourd ribbons simmered in soy sauce and sugar, in a small dish",
   "items": [
    "mext:06364"
-  ]
+  ],
+  "refs": [],
+  "vet": "only dried kanpyo and maki rolls; no simmered strips alone"
  }
 ]

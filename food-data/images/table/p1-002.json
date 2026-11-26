@@ -5,7 +5,24 @@
   "desc": "a small bowl heaped with dry rolled oats: many thin flat irregular pale beige oat flakes, matte and papery, a few loose flakes beside the bowl, with a wooden spoon",
   "items": [
    "mext:01004"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Oatmeal.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Oatmeal.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "jawiki-page",
+    "file": "File:Haferflocken.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Haferflocken.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c2 cookies, c4/c5 porridge, c7 pizza"
  },
  {
   "key": "mext-01170",
@@ -13,7 +30,17 @@
   "desc": "a rice bowl of cooked white rice mixed with plump pressed barley grains, each barley grain with a thin dark line down its middle",
   "items": [
    "mext:01170"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "jawiki",
+    "file": "File:Mugimeshi.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Mugimeshi.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c3 plain rice, drawings"
  },
  {
   "key": "mext-01015",
@@ -22,7 +49,24 @@
   "items": [
    "mext:01015",
    "mext:01020"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Wheat-flour.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Wheat-flour.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:All-Purpose_Flour_(4107895947).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:All-Purpose_Flour_(4107895947).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c0 pizza, c3/c4 bags"
  },
  {
   "key": "mext-01024",
@@ -30,7 +74,9 @@
   "desc": "a small bowl of pale cream pancake mix powder beside two small fluffy golden pancakes",
   "items": [
    "mext:01024"
-  ]
+  ],
+  "refs": [],
+  "vet": "only vintage US cake-mix boxes/ads, no hotcake mix"
  },
  {
   "key": "mext-01174",
@@ -38,7 +84,24 @@
   "desc": "a thick square slice of toasted white bread, golden-brown toasted surface with pale crust edges, on a small plate",
   "items": [
    "mext:01174"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Toast-2.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Toast-2.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:Toast-3.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Toast-3.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c2/c6 topped toast, c7 toaster"
  },
  {
   "key": "mext-01205",
@@ -46,7 +109,9 @@
   "desc": "a tall Japanese loaf of white bread with a rounded double-domed top, golden-brown crust, one slice cut showing white crumb",
   "items": [
    "mext:01205"
-  ]
+  ],
+  "refs": [],
+  "vet": "all buildings/diagram"
  },
  {
   "key": "mext-01028",
@@ -54,7 +119,17 @@
   "desc": "two soft oblong Japanese koppepan bread rolls with smooth glossy golden-brown tops",
   "items": [
    "mext:01028"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 4,
+    "origin": "commons-search",
+    "file": "File:Koppe_sandwiches_001.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Koppe_sandwiches_001.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c5/c6 filled sandwiches, c7 packed, c0/c1 other buns"
  },
  {
   "key": "mext-01213",
@@ -62,7 +137,9 @@
   "desc": "two round hamburger buns with glossy golden-brown tops sprinkled with sesame seeds, one cut in half showing white crumb",
   "items": [
    "mext:01213"
-  ]
+  ],
+  "refs": [],
+  "vet": "no burger buns: sweet buns/pastries"
  },
  {
   "key": "mext-01031",
@@ -70,7 +147,38 @@
   "desc": "a long French baguette with a crisp golden-brown crust and diagonal slashes, two round slices cut off showing an airy cream crumb",
   "items": [
    "mext:01031"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "jawiki",
+    "file": "File:Morning_baguettes.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Morning_baguettes.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "jawiki-page",
+    "file": "File:Baguettes_-_stonesoup.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Baguettes_-_stonesoup.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "jawiki-page",
+    "file": "File:Boulangerie_HK.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Boulangerie_HK.jpg",
+    "ok": true
+   },
+   {
+    "n": 7,
+    "origin": "commons-search",
+    "file": "File:Nl-baguettes2.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Nl-baguettes2.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c4 boule, c6 platter"
  },
  {
   "key": "mext-01032",
@@ -78,7 +186,31 @@
   "desc": "a round loaf of dark brown rye bread with a floured cracked crust, two slices cut showing a dense grey-brown crumb",
   "items": [
    "mext:01032"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 2,
+    "origin": "jawiki",
+    "file": "File:Mischbrot-1.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Mischbrot-1.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "jawiki-page",
+    "file": "File:フォルコルンブロート.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E3%83%95%E3%82%A9%E3%83%AB%E3%82%B3%E3%83%AB%E3%83%B3%E3%83%96%E3%83%AD%E3%83%BC%E3%83%88.jpg",
+    "ok": true
+   },
+   {
+    "n": 7,
+    "origin": "enwiki-page",
+    "file": "File:Pumpernickel.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Pumpernickel.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c6 crispbread, c5 dup whole-wheat image"
  },
  {
   "key": "mext-01208",
@@ -86,7 +218,24 @@
   "desc": "a loaf of whole wheat bread with a light brown crust, two slices showing a brown speckled crumb with flecks of bran",
   "items": [
    "mext:01208"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Vegan_no-knead_whole_wheat_bread_loaf,_September_2010.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Vegan_no-knead_whole_wheat_bread_loaf,_September_2010.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "enwiki-page",
+    "file": "File:Fresh_made_bread_05.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Fresh_made_bread_05.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c3-c7 dishes on toast"
  },
  {
   "key": "mext-01033",
@@ -94,7 +243,24 @@
   "desc": "a loaf of raisin bread, two thick slices cut showing soft white crumb dotted with dark raisins",
   "items": [
    "mext:01033"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:ぶどうパン_05.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E3%81%B6%E3%81%A9%E3%81%86%E3%83%91%E3%83%B3_05.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "commons-search",
+    "file": "File:ぶどうパン_04.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E3%81%B6%E3%81%A9%E3%81%86%E3%83%91%E3%83%B3_04.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c0/c2/c4 bag, c5 unclear"
  },
  {
   "key": "mext-01034",
@@ -102,7 +268,17 @@
   "desc": "three small soft Japanese butter rolls, smooth glossy golden-brown with gentle spiral rolled ridges",
   "items": [
    "mext:01034"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:Japanese_bread_rolls_Rollpan.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Japanese_bread_rolls_Rollpan.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c6/c7 bagels, c5 croissant"
  },
  {
   "key": "mext-01209",
@@ -113,7 +289,45 @@
    "eatout:croissant",
    "mext:01035",
    "toyonaka:285526"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:Croissant.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Croissant.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "jawiki-page",
+    "file": "File:Croissant,_cross_section.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Croissant,_cross_section.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "jawiki-page",
+    "file": "File:Croissant-Petr_Kratochvil.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Croissant-Petr_Kratochvil.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "jawiki-page",
+    "file": "File:Croissant-newspaper-and-tea.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Croissant-newspaper-and-tea.jpg",
+    "ok": true
+   },
+   {
+    "n": 6,
+    "origin": "enwiki-page",
+    "file": "File:APileOfCroissants.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:APileOfCroissants.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c5 dough, c7 building"
  },
  {
   "key": "mext-01036",
@@ -121,7 +335,17 @@
   "desc": "two English muffins, round flat rolls dusted with cornmeal, one split open showing a holey cream interior",
   "items": [
    "mext:01036"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 6,
+    "origin": "enwiki-page",
+    "file": "File:Flickr_jspatchwork_146937175--Making_English_muffins_05.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Flickr_jspatchwork_146937175--Making_English_muffins_05.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c3/c4 batter, c0 unclear"
  },
  {
   "key": "mext-01037",
@@ -129,7 +353,31 @@
   "desc": "a large teardrop-shaped Indian naan flatbread, soft and puffy with dark brown charred blisters, glossy with butter",
   "items": [
    "mext:01037"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "jawiki",
+    "file": "File:Naan_shiva.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Naan_shiva.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "jawiki-page",
+    "file": "File:Indian_naan_bread.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Indian_naan_bread.jpg",
+    "ok": true
+   },
+   {
+    "n": 7,
+    "origin": "jawiki-page",
+    "file": "File:Naan-and-Curry-1.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Naan-and-Curry-1.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c1 tomato, c5 baker"
  },
  {
   "key": "mext-01148",
@@ -137,7 +385,38 @@
   "desc": "two round bagels with a hole in the middle, shiny dense golden-brown crust, one cut in half",
   "items": [
    "mext:01148"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Bagel-Plain-Alt.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Bagel-Plain-Alt.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:Bagel.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Bagel.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "jawiki-page",
+    "file": "File:Bagels-Montreal-REAL.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Bagels-Montreal-REAL.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "jawiki-page",
+    "file": "File:Bublik_in_Kiev.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Bublik_in_Kiev.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c2/c6 topped, c5 truck, c7 simit-like"
  },
  {
   "key": "mext-01039",
@@ -146,7 +425,17 @@
   "items": [
    "mext:01039",
    "mext:01042"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Udon_by_udono.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Udon_by_udono.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "others are udon dishes/other noodles"
  },
  {
   "key": "mext-01038",
@@ -154,7 +443,9 @@
   "desc": "a coil of fresh raw udon noodles, thick square-cut white strands dusted with white flour, on a tray",
   "items": [
    "mext:01038"
-  ]
+  ],
+  "refs": [],
+  "vet": "no raw udon: c0 looks boiled, rest dishes"
  },
  {
   "key": "mext-01041",
@@ -162,7 +453,17 @@
   "desc": "a bundle of dried udon noodles, long straight flat pale cream sticks tied with a paper band",
   "items": [
    "mext:01041"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Dry_udon_noodles.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Dry_udon_noodles.JPG",
+    "ok": true
+   }
+  ],
+  "vet": "c1 thin bundle maybe somen, rest streets/sushi"
  },
  {
   "key": "mext-01043",
@@ -170,7 +471,17 @@
   "desc": "a bundle of dry somen noodles, very thin straight white sticks tied with a paper band",
   "items": [
    "mext:01043"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 3,
+    "origin": "commons-search",
+    "file": "File:Somen_001.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Somen_001.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "rest boiled dishes"
  },
  {
   "key": "mext-01044",
@@ -178,7 +489,17 @@
   "desc": "boiled somen noodles, very thin white noodles gathered in neat bundles in a glass bowl of cold water with ice",
   "items": [
    "mext:01044"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:Somen_is_wonderfully_refreshing_summer_noodle_in_Japan.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Somen_is_wonderfully_refreshing_summer_noodle_in_Japan.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c3 dry bundle, c5 topped"
  },
  {
   "key": "mext-01047",
@@ -186,7 +507,17 @@
   "desc": "a nest of fresh raw Chinese ramen noodles, thin wavy pale yellow strands dusted with flour",
   "items": [
    "mext:01047"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 3,
+    "origin": "commons-search",
+    "file": "File:A_Box_of_Egg_Instant_Noodle_at_Chinese_Noodle_Shop_in_Shenzhen.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:A_Box_of_Egg_Instant_Noodle_at_Chinese_Noodle_Shop_in_Shenzhen.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c0/c1 unclear white noodles, c2 cooked"
  },
  {
   "key": "mext-01048",
@@ -194,7 +525,9 @@
   "desc": "a heap of boiled ramen noodles, thin wavy glossy pale yellow strands, plain without soup, on a plate",
   "items": [
    "mext:01048"
-  ]
+  ],
+  "refs": [],
+  "vet": "only ramen bowls/shops, no plain boiled noodles"
  },
  {
   "key": "mext-01049",
@@ -202,7 +535,9 @@
   "desc": "a block of steamed yakisoba noodles, tangled wavy pale yellow-brown noodles in a flat rectangular pack shape",
   "items": [
    "mext:01049"
-  ]
+  ],
+  "refs": [],
+  "vet": "scallop dishes, wrong food"
  },
  {
   "key": "mext-01053",
@@ -210,7 +545,45 @@
   "desc": "a bowl of Okinawa soba, thick flat wheat noodles in clear broth topped with large slices of braised pork belly, fish cake and green onion, red pickled ginger",
   "items": [
    "mext:01053"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:ソーキそば（沖縄そば専門やんばる・有楽町交通会館）20240608-P1043176.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E3%82%BD%E3%83%BC%E3%82%AD%E3%81%9D%E3%81%B0%EF%BC%88%E6%B2%96%E7%B8%84%E3%81%9D%E3%81%B0%E5%B0%82%E9%96%80%E3%82%84%E3%82%93%E3%81%B0%E3%82%8B%E3%83%BB%E6%9C%89%E6%A5%BD%E7%94%BA%E4%BA%A4%E9%80%9A%E4%BC%9A%E9%A4%A8%EF%BC%8920240608-P1043176.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "jawiki-page",
+    "file": "File:2015-12-16_Yaeyama_soba_八重山そば（石垣島）DSCF2045.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:2015-12-16_Yaeyama_soba_%E5%85%AB%E9%87%8D%E5%B1%B1%E3%81%9D%E3%81%B0%EF%BC%88%E7%9F%B3%E5%9E%A3%E5%B3%B6%EF%BC%89DSCF2045.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "jawiki-page",
+    "file": "File:Miyako_soba.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Miyako_soba.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "jawiki-page",
+    "file": "File:Mokuhai_suba_at_Ten_to_Ten_in_Naha,_Okinawa.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Mokuhai_suba_at_Ten_to_Ten_in_Naha,_Okinawa.jpg",
+    "ok": true
+   },
+   {
+    "n": 5,
+    "origin": "jawiki-page",
+    "file": "File:Okinawa_Soba_Yanbaru.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Okinawa_Soba_Yanbaru.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c6 stir-fried, c7 set"
  },
  {
   "key": "mext-01057",
@@ -218,7 +591,24 @@
   "desc": "a square block of dried instant fried ramen noodles, tightly packed wavy golden noodles, beside a small soup sachet",
   "items": [
    "mext:01057"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Instantnoodles.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Instantnoodles.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "jawiki",
+    "file": "File:Mama_instant_noodle_block.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Mama_instant_noodle_block.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c1/c4/c5 cups, c7 prepared"
  },
  {
   "key": "mext-01198",
@@ -227,7 +617,9 @@
   "items": [
    "mext:01198",
    "dishes:instant-ramen"
-  ]
+  ],
+  "refs": [],
+  "vet": "no clearly prepared instant ramen; dry blocks/cups"
  },
  {
   "key": "mext-01191",
@@ -242,7 +634,17 @@
    "eatout:cup_noodle_shio",
    "eatout:cup_nonfry",
    "dishes:cup-noodle"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "jawiki",
+    "file": "File:Nissin_Cup_Noodles_shrimp_flavor_cooked.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Nissin_Cup_Noodles_shrimp_flavor_cooked.JPG",
+    "ok": true
+   }
+  ],
+  "vet": "c1 cup yakisoba, rest other"
  },
  {
   "key": "mext-01060",
@@ -251,7 +653,31 @@
   "items": [
    "mext:01060",
    "eatout:cup_yakisoba"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Instant_yakisoba_by_shrk.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Instant_yakisoba_by_shrk.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "jawiki-page",
+    "file": "File:ぺヤング-s3p11134.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E3%81%BA%E3%83%A4%E3%83%B3%E3%82%B0-s3p11134.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:Instant_yakisoba_003.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Instant_yakisoba_003.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c4 unclear, c5/c6 plated yakisoba"
  },
  {
   "key": "mext-01062",
@@ -260,7 +686,17 @@
   "items": [
    "mext:01062",
    "eatout:cup_udon"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Nongshim_udon_uncooked.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Nongshim_udon_uncooked.JPG",
+    "ok": true
+   }
+  ],
+  "vet": "c1 prepared, c5 shelf"
  },
  {
   "key": "mext-01063",
@@ -268,7 +704,24 @@
   "desc": "a bundle of dry spaghetti, long straight thin golden-yellow sticks",
   "items": [
    "mext:01063"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Pasta_(23727887804).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Pasta_(23727887804).jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:Flickr_-_cyclonebill_-_Bacon_og_spaghetti.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Flickr_-_cyclonebill_-_Bacon_og_spaghetti.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "rest cooked/tomato"
  },
  {
   "key": "mext-01064",
@@ -276,7 +729,9 @@
   "desc": "a twirled nest of plain boiled spaghetti on a white plate, glossy pale yellow strands",
   "items": [
    "mext:01064"
-  ]
+  ],
+  "refs": [],
+  "vet": "only dry spaghetti or sauced dishes"
  },
  {
   "key": "mext-01149",
@@ -284,7 +739,17 @@
   "desc": "nests of fresh egg tagliatelle, flat ribbon pasta dusted with flour, rich yellow",
   "items": [
    "mext:01149"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 3,
+    "origin": "commons-search",
+    "file": "File:(Pasta)_by_David_Adam_Kess_(pic.2).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:(Pasta)_by_David_Adam_Kess_(pic.2).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c0/c2/c5 cooked dishes"
  },
  {
   "key": "mext-01066",
@@ -292,7 +757,9 @@
   "desc": "Japanese yaki-fu, a few dry baked wheat gluten rounds and small rings, very light and airy like puffed bread crust, pale golden-cream with a lightly toasted top, matte and dry, not fried, not nuggets",
   "items": [
    "mext:01066"
-  ]
+  ],
+  "refs": [],
+  "vet": "c0 maybe fu but unsure; rest bread/cookies"
  },
  {
   "key": "mext-01074",
@@ -300,7 +767,9 @@
   "desc": "a stack of round thin white gyoza wrappers dusted with flour, one on top slightly lifted",
   "items": [
    "mext:01074"
-  ]
+  ],
+  "refs": [],
+  "vet": "wrapping/cooked gyoza only"
  },
  {
   "key": "mext-01180",
@@ -308,7 +777,9 @@
   "desc": "crisp golden fried spring roll wrapper sheets, thin bubbly square sheets",
   "items": [
    "mext:01180"
-  ]
+  ],
+  "refs": [],
+  "vet": "wrappers being made, none fried"
  },
  {
   "key": "mext-01076",
@@ -316,7 +787,24 @@
   "desc": "a round flat raw pizza dough base, pale cream, with a thick rim",
   "items": [
    "mext:01076"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:Pizza_night-_dough_is_ready_(33502053445).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Pizza_night-_dough_is_ready_(33502053445).jpg",
+    "ok": true
+   },
+   {
+    "n": 5,
+    "origin": "commons-search",
+    "file": "File:Making_pizza_dough_in_kitchen.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Making_pizza_dough_in_kitchen.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "rest finished pizzas"
  },
  {
   "key": "mext-01069",
@@ -324,7 +812,17 @@
   "desc": "pieces of chikuwabu, thick white wheat-dough tubes with star-shaped ridged outsides and a hole through the middle, some cut in diagonal slices",
   "items": [
    "mext:01069"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Chikuwabu.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Chikuwabu.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "oden mixes unclear"
  },
  {
   "key": "mext-01079",
@@ -332,7 +830,31 @@
   "desc": "a small bowl of dry Japanese panko breadcrumbs, coarse light golden-white flakes",
   "items": [
    "mext:01079"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Breadcrumb.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Breadcrumb.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:Semmelmehl.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Semmelmehl.jpg",
+    "ok": true
+   },
+   {
+    "n": 5,
+    "origin": "jawiki-page",
+    "file": "File:Panko_-_White_-_2.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Panko_-_White_-_2.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c7 coloured crumbs, rest fried dishes"
  },
  {
   "key": "mext-01150",
@@ -340,7 +862,24 @@
   "desc": "fresh raw reimen noodles, a loose coil of chewy translucent grey-beige noodles dusted with starch on a plate",
   "items": [
    "mext:01150"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 3,
+    "origin": "commons-search",
+    "file": "File:Doongji_Cold_Noodles_20210817_001.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Doongji_Cold_Noodles_20210817_001.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "commons-search",
+    "file": "File:Doongji_Bibim_Cold_Noodles_20210817_001.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Doongji_Bibim_Cold_Noodles_20210817_001.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c0-c2/c5 served soup dishes"
  },
  {
   "key": "mext-01080",
@@ -348,7 +887,17 @@
   "desc": "a small heap of uncooked brown rice grains, light tan oval grains, in a wooden measuring box",
   "items": [
    "mext:01080"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Brownrice.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Brownrice.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c2 red rice, c5 seeds, c7 mixed"
  },
  {
   "key": "mext-01083",
@@ -356,7 +905,24 @@
   "desc": "a small heap of uncooked polished white rice grains, translucent short pearly grains, in a wooden measuring box",
   "items": [
    "mext:01083"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Raw_rice_(white).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Raw_rice_(white).jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Raw_rice.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Raw_rice.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "rest cooked plates"
  },
  {
   "key": "mext-01085",
@@ -365,7 +931,24 @@
   "items": [
    "mext:01085",
    "mext:01155"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Par_cooked_brown_rice_-_stonesoup_cropped.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Par_cooked_brown_rice_-_stonesoup_cropped.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:Par_cooked_brown_rice_-_stonesoup.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Par_cooked_brown_rice_-_stonesoup.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c1 with beans, c5 red rice"
  },
  {
   "key": "mext-01086",
@@ -375,7 +958,9 @@
    "mext:01086",
    "mext:01087",
    "mext:01089"
-  ]
+  ],
+  "refs": [],
+  "vet": "potatoes drawing, curry, map"
  },
  {
   "key": "mext-01168",
@@ -383,7 +968,9 @@
   "desc": "a plate of cooked long-grain indica rice, long slender separate white grains",
   "items": [
    "mext:01168"
-  ]
+  ],
+  "refs": [],
+  "vet": "seafood bowl, old photo"
  },
  {
   "key": "mext-01154",
@@ -391,7 +978,9 @@
   "desc": "a bowl of cooked sticky glutinous rice, glossy translucent white grains clumped together",
   "items": [
    "mext:01154"
-  ]
+  ],
+  "refs": [],
+  "vet": "c2 plain rice pot can't confirm glutinous; c3 sekihan-like"
  },
  {
   "key": "mext-01093",
@@ -401,7 +990,24 @@
    "mext:01093",
    "mext:01097",
    "mext:01215"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "wikidata",
+    "file": "File:Cantonese_rice_porridge.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Cantonese_rice_porridge.JPG",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "jawiki",
+    "file": "File:Nanakusa_gayu_on_Nanakusa_no_sekku.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Nanakusa_gayu_on_Nanakusa_no_sekku.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c0/c6/c7 topped, c5 other dish"
  },
  {
   "key": "mext-01110",
@@ -409,7 +1015,9 @@
   "desc": "a pile of dry instant rice (alpha rice), hard dry white grains slightly matte and cracked",
   "items": [
    "mext:01110"
-  ]
+  ],
+  "refs": [],
+  "vet": "cup/retort products prepared, unclear"
  },
  {
   "key": "mext-01111",
@@ -419,7 +1027,31 @@
    "mext:01111",
    "dishes:onigiri-shio",
    "eatout:onigiri_shio"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Japanese_rice_balls_(onigiri).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Japanese_rice_balls_(onigiri).jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:Onigiri_002.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Onigiri_002.jpg",
+    "ok": true
+   },
+   {
+    "n": 7,
+    "origin": "enwiki",
+    "file": "File:小料理バルさくら_特製おにぎり.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E5%B0%8F%E6%96%99%E7%90%86%E3%83%90%E3%83%AB%E3%81%95%E3%81%8F%E3%82%89_%E7%89%B9%E8%A3%BD%E3%81%8A%E3%81%AB%E3%81%8E%E3%82%8A.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c4 onigirazu, packaged"
  },
  {
   "key": "mext-01112",
@@ -429,7 +1061,17 @@
    "mext:01112",
    "dishes:yaki-onigiri",
    "eatout:onigiri_yaki"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 7,
+    "origin": "commons-search",
+    "file": "File:Yaki-Onigiri_002.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Yaki-Onigiri_002.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "rest plain onigiri"
  },
  {
   "key": "mext-01113",
@@ -437,7 +1079,31 @@
   "desc": "kiritanpo, mashed rice packed around cedar sticks as long cylinders and toasted golden-brown, two sticks, one cut into diagonal pieces",
   "items": [
    "mext:01113"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 4,
+    "origin": "commons-cat",
+    "file": "File:Grilled_kiritanpo_1.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Grilled_kiritanpo_1.jpg",
+    "ok": true
+   },
+   {
+    "n": 5,
+    "origin": "commons-cat",
+    "file": "File:Grilled_kiritanpo_2.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Grilled_kiritanpo_2.jpg",
+    "ok": true
+   },
+   {
+    "n": 6,
+    "origin": "commons-cat",
+    "file": "File:Grilling_kiritanpo.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Grilling_kiritanpo.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c3 noodles, c7 other"
  },
  {
   "key": "mext-01158",
@@ -445,7 +1111,17 @@
   "desc": "a small mound of very fine white rice flour on a dish with a wooden scoop",
   "items": [
    "mext:01158"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 2,
+    "origin": "jawiki-page",
+    "file": "File:HK_Pancake_cooking_Sept-2010_Ingredient_粘米粉_Rice_Flour.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:HK_Pancake_cooking_Sept-2010_Ingredient_%E7%B2%98%E7%B1%B3%E7%B2%89_Rice_Flour.JPG",
+    "ok": true
+   }
+  ],
+  "vet": "c0/c1 generic white powder, c3 glutinous label"
  },
  {
   "key": "mext-01160",
@@ -454,7 +1130,17 @@
   "items": [
    "mext:01160",
    "mext:01115"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Rice_vermicelli.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Rice_vermicelli.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "rest cooked noodle dishes"
  },
  {
   "key": "mext-01169",
@@ -462,7 +1148,17 @@
   "desc": "a stack of round translucent dry rice paper sheets with a fine woven crosshatch pattern",
   "items": [
    "mext:01169"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Rice_paper.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Rice_paper.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "butterflies/prints"
  },
  {
   "key": "mext-01117",
@@ -470,7 +1166,9 @@
   "desc": "three rectangular blocks of Japanese kirimochi rice cake, smooth matte white, one grilled and puffed golden",
   "items": [
    "mext:01117"
-  ]
+  ],
+  "refs": [],
+  "vet": "c0 filled leaf mochi?, rest zongzi/other sweets"
  },
  {
   "key": "mext-01118",
@@ -482,7 +1180,24 @@
    "maff_kyodo:sekihan_hokkaido",
    "kurume:005",
    "kumagaya:00126"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:140111_Azuki_Museum_Himeji_Hyogo_pref_Japan11bs.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:140111_Azuki_Museum_Himeji_Hyogo_pref_Japan11bs.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "jawiki-page",
+    "file": "File:Sekihan_onigiri,_at_Lawson.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Sekihan_onigiri,_at_Lawson.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c3 tray unclear, rest shops/sets"
  },
  {
   "key": "mext-01120",
@@ -490,7 +1205,17 @@
   "desc": "a small mound of white shiratamako flour in coarse irregular lumps, beside three small white shiratama dumplings",
   "items": [
    "mext:01120"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 4,
+    "origin": "commons-search",
+    "file": "File:HK_Pancake_cooking_Sept-2010_Ingredient_糯米粉_Glutinous_Rice_Flour.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:HK_Pancake_cooking_Sept-2010_Ingredient_%E7%B3%AF%E7%B1%B3%E7%B2%89_Glutinous_Rice_Flour.JPG",
+    "ok": true
+   }
+  ],
+  "vet": "c1 dumplings, c0/c2/c3 generic powder, c6 grain"
  },
  {
   "key": "mext-01128",
@@ -499,7 +1224,31 @@
   "items": [
    "mext:01128",
    "mext:01130"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:Mori-soba_002.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Mori-soba_002.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "jawiki-page",
+    "file": "File:160430_Togakushi_soba_Nagano_Japan02s.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:160430_Togakushi_soba_Nagano_Japan02s.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "jawiki-page",
+    "file": "File:7-Eleven_meal_(2884927884).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:7-Eleven_meal_(2884927884).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c0/c7 dry, c5/c6 other dishes"
  },
  {
   "key": "mext-01127",
@@ -507,7 +1256,9 @@
   "desc": "a folded bundle of fresh raw soba noodles, thin square-cut grey-brown strands dusted with flour",
   "items": [
    "mext:01127"
-  ]
+  ],
+  "refs": [],
+  "vet": "no raw soba: dry or boiled only"
  },
  {
   "key": "mext-01129",
@@ -515,7 +1266,24 @@
   "desc": "a bundle of dried soba noodles, long straight thin grey-brown sticks tied with a paper band",
   "items": [
    "mext:01129"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Dried_soba_noodles_by_FotoosVanRobin.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Dried_soba_noodles_by_FotoosVanRobin.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:Dried_soba_noodles_and_package_by_FotoosVanRobin.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Dried_soba_noodles_and_package_by_FotoosVanRobin.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c0/c3 ramen bowls, buildings"
  },
  {
   "key": "mext-01136",
@@ -523,7 +1291,24 @@
   "desc": "a bowl of fluffy white and pale yellow popcorn",
   "items": [
    "mext:01136"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Popcorn_9.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Popcorn_9.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:Popcorn02.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Popcorn02.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c6 kernels, c2 corn"
  },
  {
   "key": "mext-01137",
@@ -531,7 +1316,31 @@
   "desc": "a bowl of crisp golden-orange corn flakes",
   "items": [
    "mext:01137"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Spoonful_of_cereal.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Spoonful_of_cereal.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "wikidata",
+    "file": "File:Cornflakes_in_bowl.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Cornflakes_in_bowl.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "enwiki",
+    "file": "File:Kellogg's_Corn_Flakes,_with_milk.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Kellogg%27s_Corn_Flakes,_with_milk.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "ads, corn"
  },
  {
   "key": "mext-02003",
@@ -539,7 +1348,17 @@
   "desc": "a rectangular slab of grey konjac (konnyaku) with tiny dark specks, glossy and firm, a few triangle pieces cut beside it",
   "items": [
    "mext:02003"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Konnyaku.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Konnyaku.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c1 candied, c5 nimono mix"
  },
  {
   "key": "mext-02005",
@@ -547,7 +1366,17 @@
   "desc": "a tangled bundle of thin translucent shirataki konjac noodles, glossy white strands",
   "items": [
    "mext:02005"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:13_-_IMG_20150901_131413.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:13_-_IMG_20150901_131413.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "rest dishes/plant"
  },
  {
   "key": "mext-02045",
@@ -555,7 +1384,17 @@
   "desc": "two whole raw sweet potatoes with deep reddish-purple skin, one cut to show pale yellow flesh",
   "items": [
    "mext:02045"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 4,
+    "origin": "commons-search",
+    "file": "File:Sweet_Potato.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Sweet_Potato.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "flower, field, fries"
  },
  {
   "key": "mext-02006",
@@ -563,7 +1402,9 @@
   "desc": "peeled raw sweet potato chunks with pale yellow flesh, a bit of purple skin on one end",
   "items": [
    "mext:02006"
-  ]
+  ],
+  "refs": [],
+  "vet": "no peeled raw sweet potato"
  },
  {
   "key": "mext-02007",
@@ -571,7 +1412,9 @@
   "desc": "steamed sweet potato chunks with soft bright golden-yellow flesh",
   "items": [
    "mext:02007"
-  ]
+  ],
+  "refs": [],
+  "vet": "no steamed sweet potato (cake, plant, raw)"
  },
  {
   "key": "mext-02008",
@@ -579,7 +1422,31 @@
   "desc": "a Japanese roasted sweet potato (yaki-imo) broken in half, purple skin slightly charred, steaming soft golden flesh",
   "items": [
    "mext:02008"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Gungoguma_(roasted_sweet_potatoes)_2.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Gungoguma_(roasted_sweet_potatoes)_2.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:Gun-goguma_2.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Gun-goguma_2.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "jawiki-page",
+    "file": "File:Annouimo.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Annouimo.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "carts/ovens/shops"
  },
  {
   "key": "mext-02009",
@@ -587,7 +1454,24 @@
   "desc": "flat strips of Japanese dried sweet potato (hoshi-imo), chewy translucent amber-orange slices",
   "items": [
    "mext:02009"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:Hoshi-imo2.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Hoshi-imo2.jpg",
+    "ok": true
+   },
+   {
+    "n": 5,
+    "origin": "jawiki-page",
+    "file": "File:Hoshi-imo_001.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Hoshi-imo_001.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c6 unclear, maps/castle"
  },
  {
   "key": "mext-02010",
@@ -595,7 +1479,9 @@
   "desc": "whole raw taro corms (satoimo), small round roots with hairy brown ringed skin, one peeled showing white slippery flesh",
   "items": [
    "mext:02010"
-  ]
+  ],
+  "refs": [],
+  "vet": "plants/drawings only, no corms"
  },
  {
   "key": "mext-02011",
@@ -603,7 +1489,9 @@
   "desc": "peeled boiled taro pieces, smooth hexagonal-cut white-grey chunks, glossy",
   "items": [
    "mext:02011"
-  ]
+  ],
+  "refs": [],
+  "vet": "plants/drawings only, no boiled taro"
  },
  {
   "key": "mext-02017",
@@ -611,7 +1499,9 @@
   "desc": "peeled raw potatoes, smooth pale yellow-white, one cut in half, beside one unpeeled brown potato",
   "items": [
    "mext:02017"
-  ]
+  ],
+  "refs": [],
+  "vet": "flowers/plants, skin-on potatoes only"
  },
  {
   "key": "mext-02019",
@@ -620,7 +1510,9 @@
   "items": [
    "mext:02019",
    "mext:02018"
-  ]
+  ],
+  "refs": [],
+  "vet": "flowers/plants, raw potatoes only"
  },
  {
   "key": "mext-02067",
@@ -630,7 +1522,38 @@
    "mext:02067",
    "mext:02020",
    "eatout:french_fries"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Papas_fritas_(plato).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Papas_fritas_(plato).jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "wikidata",
+    "file": "File:French_Fries.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:French_Fries.JPG",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "jawiki",
+    "file": "File:Fries_2.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Fries_2.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "jawiki-page",
+    "file": "File:Belgian_frites_with_andalouse_sauce.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Belgian_frites_with_andalouse_sauce.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c3 mash, c6 sauced, c7 sandwich"
  },
  {
   "key": "mext-02023",
@@ -638,7 +1561,9 @@
   "desc": "a raw nagaimo yam, a long thick root with light tan hairy skin, a section cut showing crisp white flesh",
   "items": [
    "mext:02023"
-  ]
+  ],
+  "refs": [],
+  "vet": "vines/sign; c0 package unclear"
  },
  {
   "key": "mext-02025",
@@ -646,7 +1571,17 @@
   "desc": "a raw yamatoimo yam, a lumpy fist-shaped root with brown skin, a cut showing dense white flesh, beside a little grated white sticky tororo",
   "items": [
    "mext:02025"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 3,
+    "origin": "commons-search",
+    "file": "File:Kujira-imo.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Kujira-imo.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "drawings, ships"
  },
  {
   "key": "mext-02034",
@@ -654,7 +1589,17 @@
   "desc": "a small mound of potato starch, pure bright white fine powder that looks squeaky, in a little dish",
   "items": [
    "mext:02034"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 2,
+    "origin": "enwiki",
+    "file": "File:Potato_flour2.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Potato_flour2.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c0 paste in jar unclear, microscopy, plant, buildings"
  },
  {
   "key": "mext-02035",
@@ -662,7 +1607,17 @@
   "desc": "a small mound of cornstarch, pure white fine powder in a little dish",
   "items": [
    "mext:02035"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 2,
+    "origin": "jawiki",
+    "file": "File:Cornstarch_mixed_with_water.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Cornstarch_mixed_with_water.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "ads/cans, corn, c4 slurry"
  },
  {
   "key": "mext-02037",
@@ -670,7 +1625,31 @@
   "desc": "kuzukiri, flat translucent clear noodles in ice water in a glass bowl, with a little cup of dark kuromitsu syrup",
   "items": [
    "mext:02037"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 2,
+    "origin": "commons-cat",
+    "file": "File:Kudzu-kiri_by_yajico_in_Kyoto.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Kudzu-kiri_by_yajico_in_Kyoto.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "commons-cat",
+    "file": "File:Kuzukiri_1_by_macglee_in_Higashiyama,_Kyoto.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Kuzukiri_1_by_macglee_in_Higashiyama,_Kyoto.jpg",
+    "ok": true
+   },
+   {
+    "n": 5,
+    "origin": "commons-cat",
+    "file": "File:Kuzukiri_by_macglee_in_Higashiyama,_Kyoto.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Kuzukiri_by_macglee_in_Higashiyama,_Kyoto.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c0/c1/c3 sets, noodles small"
  },
  {
   "key": "mext-02056",
@@ -679,7 +1658,31 @@
   "items": [
    "mext:02056",
    "maff_kyodo:goma_toufu_wakayama"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Goma_tofu_by_eiko_eiko.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Goma_tofu_by_eiko_eiko.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "jawiki-page",
+    "file": "File:Goma_tofu_by_sunday_driver_in_Kyoto.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Goma_tofu_by_sunday_driver_in_Kyoto.jpg",
+    "ok": true
+   },
+   {
+    "n": 6,
+    "origin": "commons-search",
+    "file": "File:Goma_tofu_by_rhosoi_in_San_Francisco.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Goma_tofu_by_rhosoi_in_San_Francisco.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c4 fried, c5 street"
  },
  {
   "key": "mext-02057",
@@ -687,7 +1690,24 @@
   "desc": "cooked black tapioca pearls, glossy dark brown-black chewy balls, in a small glass",
   "items": [
    "mext:02057"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Tapioca_balls_(4507369304).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Tapioca_balls_(4507369304).jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "commons-search",
+    "file": "File:大粒粉圓.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:%E5%A4%A7%E7%B2%92%E7%B2%89%E5%9C%93.JPG",
+    "ok": true
+   }
+  ],
+  "vet": "c0 raw, c3 coloured jelly, c5 drink"
  },
  {
   "key": "mext-02039",
@@ -696,7 +1716,38 @@
   "items": [
    "mext:02039",
    "mext:02040"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Mung_bean_vermicelli_slices.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Mung_bean_vermicelli_slices.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Dongfen.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Dongfen.JPG",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "commons-search",
+    "file": "File:Sweet_potato_wide_noodles.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Sweet_potato_wide_noodles.jpg",
+    "ok": true
+   },
+   {
+    "n": 5,
+    "origin": "commons-search",
+    "file": "File:Sweet_potato_vermicelli_(1).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Sweet_potato_vermicelli_(1).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c4 drying outdoors"
  },
  {
   "key": "mext-02061",
@@ -705,7 +1756,9 @@
   "items": [
    "mext:02061",
    "mext:02062"
-  ]
+  ],
+  "refs": [],
+  "vet": "all dry noodles, none boiled"
  },
  {
   "key": "mext-03001",
@@ -713,7 +1766,9 @@
   "desc": "lumps of Okinawan kokuto brown sugar, irregular dark brown chunks",
   "items": [
    "mext:03001"
-  ]
+  ],
+  "refs": [],
+  "vet": "ants, desserts, cafe sign"
  },
  {
   "key": "mext-03003",
@@ -721,7 +1776,9 @@
   "desc": "a small dish of soft white Japanese sugar (johakuto), fine moist white crystals, with a spoon",
   "items": [
    "mext:03003"
-  ]
+  ],
+  "refs": [],
+  "vet": "rock sugar, cane, brown sugars; white only background"
  },
  {
   "key": "mext-03004",
@@ -729,7 +1786,24 @@
   "desc": "a small dish of sanontou sugar, fine moist light-brown sugar",
   "items": [
    "mext:03004"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:スプーン印_三温糖_(4234094424).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E3%82%B9%E3%83%97%E3%83%BC%E3%83%B3%E5%8D%B0_%E4%B8%89%E6%B8%A9%E7%B3%96_(4234094424).jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "commons-search",
+    "file": "File:Brown_sugar.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Brown_sugar.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c6 rock sugar, c4 people"
  },
  {
   "key": "mext-03005",
@@ -737,7 +1811,31 @@
   "desc": "a small dish of granulated sugar, sparkling dry white crystals, with a spoon",
   "items": [
    "mext:03005"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:A_Bowl_of_Sugar_2.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:A_Bowl_of_Sugar_2.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "enwiki-page",
+    "file": "File:Raw_sugar_closeup.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Raw_sugar_closeup.jpg",
+    "ok": true
+   },
+   {
+    "n": 7,
+    "origin": "commons-search",
+    "file": "File:Sugar_on_a_blue_plate_(close_up).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Sugar_on_a_blue_plate_(close_up).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c1/c4 rock sugar, c5 mixed"
  },
  {
   "key": "mext-03008",
@@ -745,7 +1843,31 @@
   "desc": "a small pile of white sugar cubes",
   "items": [
    "mext:03008"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Würfelzucker_--_2018_--_3582.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:W%C3%BCrfelzucker_--_2018_--_3582.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:Sugar_Cubes_(7164573186)_(cropped).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Sugar_Cubes_(7164573186)_(cropped).jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "jawiki-page",
+    "file": "File:Zuckerwuerfel_-_Kreuz-Pik-Herz-Karo.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Zuckerwuerfel_-_Kreuz-Pik-Herz-Karo.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "monument, people, town"
  },
  {
   "key": "mext-03029",
@@ -753,7 +1875,9 @@
   "desc": "a small glass pitcher of kuromitsu, thick glossy very dark brown sugar syrup",
   "items": [
    "mext:03029"
-  ]
+  ],
+  "refs": [],
+  "vet": "desserts with kinako/syrup, syrup itself not a clear subject"
  },
  {
   "key": "mext-03022",
@@ -761,7 +1885,31 @@
   "desc": "a glass jar of golden honey with a wooden honey dipper dripping honey",
   "items": [
    "mext:03022"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "jawiki",
+    "file": "File:Runny_hunny.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Runny_hunny.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "jawiki-page",
+    "file": "File:Creamed_honey_Maillard_reaction_after_aging.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Creamed_honey_Maillard_reaction_after_aging.jpg",
+    "ok": true
+   },
+   {
+    "n": 6,
+    "origin": "jawiki-page",
+    "file": "File:Filtering_of_honey.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Filtering_of_honey.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "beekeeper, diagram, donut"
  },
  {
   "key": "mext-03023",
@@ -769,7 +1917,24 @@
   "desc": "a glass bottle of amber maple syrup and a small pool of syrup",
   "items": [
    "mext:03023"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Maple_syrup.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Maple_syrup.jpg",
+    "ok": true
+   },
+   {
+    "n": 5,
+    "origin": "commons-cat",
+    "file": "File:2020-10-24_14_12_21_A_sample_of_Bobo's_Mountain_Sugar_Wood-fired_Vermont_Maple_Syrup_in_the_Franklin_Farm_section_of_Oak_Hill,_Fairfax_County,_Virginia.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:2020-10-24_14_12_21_A_sample_of_Bobo%27s_Mountain_Sugar_Wood-fired_Vermont_Maple_Syrup_in_the_Franklin_Farm_section_of_Oak_Hill,_Fairfax_County,_Virginia.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "trees, people, tins"
  },
  {
   "key": "mext-04001",
@@ -777,7 +1942,38 @@
   "desc": "a small heap of dry azuki beans, small glossy dark red beans with a white line",
   "items": [
    "mext:04001"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Adzuki_beans_01.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Adzuki_beans_01.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:Adzuki_beans_02.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Adzuki_beans_02.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "commons-search",
+    "file": "File:Adzuki_beans_1.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Adzuki_beans_1.jpg",
+    "ok": true
+   },
+   {
+    "n": 5,
+    "origin": "commons-search",
+    "file": "File:1912Germination_of_Adzuki_bean_04.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:1912Germination_of_Adzuki_bean_04.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c0 other bean, c4 unclear"
  },
  {
   "key": "mext-04003",
@@ -786,7 +1982,9 @@
   "items": [
    "mext:04003",
    "mext:04006"
-  ]
+  ],
+  "refs": [],
+  "vet": "sweets with bean paste; c5 looks like kidney beans"
  },
  {
   "key": "mext-04101",
@@ -794,7 +1992,9 @@
   "desc": "a small bowl of koshian smooth sweet red bean paste, very smooth dense dark purple-brown paste",
   "items": [
    "mext:04101"
-  ]
+  ],
+  "refs": [],
+  "vet": "sweets; no koshian on its own"
  },
  {
   "key": "mext-04016",
@@ -802,7 +2002,9 @@
   "desc": "a small dish of uguisu-mame, sweet simmered green peas, glossy olive-green beans",
   "items": [
    "mext:04016"
-  ]
+  ],
+  "refs": [],
+  "vet": "old prints/ads"
  },
  {
   "key": "mext-04023",
@@ -810,7 +2012,9 @@
   "desc": "a small heap of dry soybeans, round pale yellow-beige beans",
   "items": [
    "mext:04023"
-  ]
+  ],
+  "refs": [],
+  "vet": "pods on plant, tofu, dishes"
  },
  {
   "key": "mext-04024",
@@ -820,7 +2024,9 @@
    "mext:04024",
    "mext:04028",
    "mext:04081"
-  ]
+  ],
+  "refs": [],
+  "vet": "plants only"
  },
  {
   "key": "mext-04078",
@@ -828,7 +2034,17 @@
   "desc": "roasted soybeans, round beans with cracked toasty brown skins, in a small wooden masu box",
   "items": [
    "mext:04078"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:Soybeans,_dry_roasted_-_Massachusetts.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Soybeans,_dry_roasted_-_Massachusetts.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "old photos, desserts"
  },
  {
   "key": "mext-04029",
@@ -836,7 +2052,17 @@
   "desc": "a small dish of kinako roasted soybean flour, fine light tan-yellow powder",
   "items": [
    "mext:04029"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Soy_powder.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Soy_powder.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "rest sweets coated in kinako"
  },
  {
   "key": "mext-04031",
@@ -845,7 +2071,31 @@
   "items": [
    "mext:04031",
    "dishes:kuromame"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:丹波黒豆_コーヒー＆煮豆.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E4%B8%B9%E6%B3%A2%E9%BB%92%E8%B1%86_%E3%82%B3%E3%83%BC%E3%83%92%E3%83%BC%EF%BC%86%E7%85%AE%E8%B1%86.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "jawiki-page",
+    "file": "File:Kuromame.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Kuromame.JPG",
+    "ok": true
+   },
+   {
+    "n": 5,
+    "origin": "jawiki-page",
+    "file": "File:Stachys_affinis_dyed_red.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Stachys_affinis_dyed_red.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "fields/plants, c7 maybe dry beans"
  },
  {
   "key": "mext-04033",
@@ -855,7 +2105,17 @@
    "mext:04033",
    "mext:04034",
    "mext:04035"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 5,
+    "origin": "commons-search",
+    "file": "File:Japanese_SilkyTofu_(Kinugoshi_Tofu).JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Japanese_SilkyTofu_(Kinugoshi_Tofu).JPG",
+    "ok": true
+   }
+  ],
+  "vet": "c0-c4 dishes"
  },
  {
   "key": "mext-04038",
@@ -863,7 +2123,17 @@
   "desc": "a block of yaki-dofu grilled tofu, firm white tofu with dark brown grill-seared top",
   "items": [
    "mext:04038"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Japanese_Yaki_Tofu.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Japanese_Yaki_Tofu.JPG",
+    "ok": true
+   }
+  ],
+  "vet": "nimono/sukiyaki/sets"
  },
  {
   "key": "mext-04039",
@@ -871,7 +2141,24 @@
   "desc": "atsuage thick deep-fried tofu, rectangular blocks with golden-brown fried skin, one cut showing white tofu inside",
   "items": [
    "mext:04039"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Atsuage.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Atsuage.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "commons-cat",
+    "file": "File:Atsuage_on_shichirin_by_Joi.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Atsuage_on_shichirin_by_Joi.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c7 inari age, c3/c5 dishes"
  },
  {
   "key": "mext-04040",
@@ -879,7 +2166,17 @@
   "desc": "two thin rectangular sheets of aburaage deep-fried tofu, puffy golden-yellow with a spongy surface",
   "items": [
    "mext:04040"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "wikidata",
+    "file": "File:Aburaage_1.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Aburaage_1.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c0 seasoned inari age, c5/c6 dishes"
  },
  {
   "key": "mext-04095",
@@ -887,7 +2184,17 @@
   "desc": "sweet simmered aburaage pouches for inari, soft glossy brown rectangular tofu sheets soaked in sweet soy syrup",
   "items": [
    "mext:04095"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:油揚げ.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E6%B2%B9%E6%8F%9A%E3%81%92.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c1 plain age, rest dishes"
  },
  {
   "key": "mext-04041",
@@ -895,7 +2202,24 @@
   "desc": "round ganmodoki fried tofu fritters, golden-brown patties with flecks of carrot, hijiki and vegetables",
   "items": [
    "mext:04041"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Ganmodoki.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Ganmodoki.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "jawiki-page",
+    "file": "File:Neighborhood_of_Ishikiritsurugiya-jinja_Higashiosaka_Osaka_pref_Japan08s3.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Neighborhood_of_Ishikiritsurugiya-jinja_Higashiosaka_Osaka_pref_Japan08s3.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c1/c3-c5 dishes"
  },
  {
   "key": "mext-04042",
@@ -903,7 +2227,17 @@
   "desc": "dry koya-dofu freeze-dried tofu, light beige spongy rectangular blocks",
   "items": [
    "mext:04042"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Koya-dofu_(2012.07.31).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Koya-dofu_(2012.07.31).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c1 sushi roll, c2 donburi"
  },
  {
   "key": "mext-04087",
@@ -913,7 +2247,9 @@
    "mext:04087",
    "dishes:koya-dofu",
    "kurume:121"
-  ]
+  ],
+  "refs": [],
+  "vet": "only dry block; no simmered"
  },
  {
   "key": "mext-04047",
@@ -921,7 +2257,24 @@
   "desc": "hikiwari natto, chopped fermented soybean bits, brown and sticky with white threads, in a small bowl",
   "items": [
    "mext:04047"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Hikiwari_natto_001.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Hikiwari_natto_001.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Hikiwari_natto_002.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Hikiwari_natto_002.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c2-c7 whole-bean natto"
  },
  {
   "key": "mext-04051",
@@ -929,7 +2282,17 @@
   "desc": "a small mound of okara soybean pulp, moist crumbly pale cream-white",
   "items": [
    "mext:04051"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Okara_(soybean_pulp).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Okara_(soybean_pulp).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c1 cooked dish, c7 map"
  },
  {
   "key": "mext-04052",
@@ -939,7 +2302,24 @@
    "mext:04052",
    "mext:04053",
    "eatout:tounyu"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:004-soymilk.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:004-soymilk.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:Soy_milk_(2).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Soy_milk_(2).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c2 glass ambiguous, c4 soup, c6 youtiao"
  },
  {
   "key": "mext-04054",
@@ -947,7 +2327,9 @@
   "desc": "a glass of coffee-flavoured soy milk drink, light milky caramel-brown",
   "items": [
    "mext:04054"
-  ]
+  ],
+  "refs": [],
+  "vet": "generic drinks/cartons, nothing identifiable"
  },
  {
   "key": "mext-04055",
@@ -955,7 +2337,9 @@
   "desc": "dry granular soy meat (textured soy protein), small irregular light brown crumbly chunks in a bowl",
   "items": [
    "mext:04055"
-  ]
+  ],
+  "refs": [],
+  "vet": "unclear granules/dishes"
  },
  {
   "key": "mext-04057",
@@ -963,7 +2347,9 @@
   "desc": "a scoop of soy protein powder, fine pale beige powder, on a little heap",
   "items": [
    "mext:04057"
-  ]
+  ],
+  "refs": [],
+  "vet": "no clear protein powder"
  },
  {
   "key": "mext-04059",
@@ -971,7 +2357,17 @@
   "desc": "fresh yuba tofu skin, soft thin wrinkled pale yellow sheets folded and layered, glistening, in a small dish",
   "items": [
    "mext:04059"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 4,
+    "origin": "jawiki-page",
+    "file": "File:Yuba002.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Yuba002.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c0/c6 dried, c1/c2 production"
  },
  {
   "key": "mext-04060",
@@ -979,7 +2375,24 @@
   "desc": "dried yuba, brittle thin pale yellow-tan rolled and flat sheets",
   "items": [
    "mext:04060"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Fucuk.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Fucuk.JPG",
+    "ok": true
+   },
+   {
+    "n": 6,
+    "origin": "enwiki-page",
+    "file": "File:Beancurd_sheet_rolls_(3).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Beancurd_sheet_rolls_(3).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c1-c4 fresh/production"
  },
  {
   "key": "mext-04063",
@@ -987,7 +2400,24 @@
   "desc": "a block of tempeh, compact pale beige fermented soybeans bound by white mould, sliced to show whole beans",
   "items": [
    "mext:04063"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "jawiki-page",
+    "file": "File:Tempeh_uncooked.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Tempeh_uncooked.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "jawiki-page",
+    "file": "File:テンペ.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E3%83%86%E3%83%B3%E3%83%9A.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c0 leaf-wrapped unclear, coconut"
  },
  {
   "key": "mext-04066",
@@ -995,7 +2425,9 @@
   "desc": "a small bowl of boiled chickpeas, round knobbly beige beans",
   "items": [
    "mext:04066"
-  ]
+  ],
+  "refs": [],
+  "vet": "dry chickpeas/other pulses only"
  },
  {
   "key": "mext-04094",
@@ -1003,7 +2435,9 @@
   "desc": "a small bowl of cooked lentils, small flat round brown-green lentils",
   "items": [
    "mext:04094"
-  ]
+  ],
+  "refs": [],
+  "vet": "plants, dry lentils"
  },
  {
   "key": "mext-05001",
@@ -1012,7 +2446,24 @@
   "items": [
    "mext:05001",
    "mext:05040"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Almonds_-_in_shell,_shell_cracked_open,_shelled,_blanched.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Almonds_-_in_shell,_shell_cracked_open,_shelled,_blanched.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "wikidata",
+    "file": "File:Mandorle_sgusciate.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Mandorle_sgusciate.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c2/c4 in hull, trees"
  },
  {
   "key": "mext-05002",
@@ -1020,7 +2471,9 @@
   "desc": "a small pile of roasted salted almonds, glossy golden-brown with salt grains",
   "items": [
    "mext:05002"
-  ]
+  ],
+  "refs": [],
+  "vet": "raw almonds only, none fried/seasoned"
  },
  {
   "key": "mext-05041",
@@ -1028,7 +2481,9 @@
   "desc": "a small dish of roasted flaxseeds, tiny glossy flat brown seeds",
   "items": [
    "mext:05041"
-  ]
+  ],
+  "refs": [],
+  "vet": "buildings/ships"
  },
  {
   "key": "mext-05005",
@@ -1036,7 +2491,17 @@
   "desc": "a small pile of roasted cashew nuts, curved kidney-shaped pale golden nuts",
   "items": [
    "mext:05005"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Cashew_nut_indust.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Cashew_nut_indust.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "cashew fruit/trees"
  },
  {
   "key": "mext-05011",
@@ -1044,7 +2509,9 @@
   "desc": "boiled Japanese chestnuts, glossy dark brown shells, one cut in half showing pale yellow flesh",
   "items": [
    "mext:05011"
-  ]
+  ],
+  "refs": [],
+  "vet": "raw chestnuts in shell/burr, none clearly boiled"
  },
  {
   "key": "mext-05012",
@@ -1052,7 +2519,9 @@
   "desc": "kanroni candied chestnuts, whole bright golden-yellow peeled chestnuts glossy in syrup, in a small dish",
   "items": [
    "mext:05012"
-  ]
+  ],
+  "refs": [],
+  "vet": "zenzai with mochi, wrong food"
  },
  {
   "key": "mext-05013",
@@ -1060,7 +2529,17 @@
   "desc": "roasted Tianjin sweet chestnuts, small round glossy dark brown chestnuts, one peeled showing golden nut",
   "items": [
    "mext:05013"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Chestnuts_at_home.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Chestnuts_at_home.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c3 raw?, trees, shop"
  },
  {
   "key": "mext-05014",
@@ -1068,7 +2547,9 @@
   "desc": "walnut halves, wrinkled brain-like light brown kernels, beside one whole walnut in its shell",
   "items": [
    "mext:05014"
-  ]
+  ],
+  "refs": [],
+  "vet": "all people"
  },
  {
   "key": "mext-05018",
@@ -1076,7 +2557,9 @@
   "desc": "a small dish of toasted white sesame seeds, small flat oval golden-cream seeds",
   "items": [
    "mext:05018"
-  ]
+  ],
+  "refs": [],
+  "vet": "people/prints"
  },
  {
   "key": "mext-05042",
@@ -1084,7 +2567,9 @@
   "desc": "a small jar of nerigoma sesame paste, smooth thick glossy tan paste with a spoon",
   "items": [
    "mext:05042"
-  ]
+  ],
+  "refs": [],
+  "vet": "c0/c4 paste ambiguous (hummus/sauce), factory"
  },
  {
   "key": "mext-05046",
@@ -1092,7 +2577,17 @@
   "desc": "a small dish of chia seeds, tiny oval seeds speckled grey, black and white",
   "items": [
    "mext:05046"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Chiasamen_02_(fcm).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Chiasamen_02_(fcm).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c4 drink, c1/c6 other seeds, plant"
  },
  {
   "key": "mext-05026",
@@ -1100,7 +2595,31 @@
   "desc": "a small pile of roasted pistachios in split beige shells showing green nuts",
   "items": [
    "mext:05026"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Close_up_of_Pistachio_Nuts_(16656177641).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Close_up_of_Pistachio_Nuts_(16656177641).jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "enwiki",
+    "file": "File:Pistachio_vera.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Pistachio_vera.jpg",
+    "ok": true
+   },
+   {
+    "n": 7,
+    "origin": "commons-cat",
+    "file": "File:123_365_Pistachios_(51156298304).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:123_365_Pistachios_(51156298304).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c2 fruit, c4/c6 sweets, trees"
  },
  {
   "key": "mext-05031",
@@ -1108,7 +2627,17 @@
   "desc": "a small pile of round creamy-white macadamia nuts",
   "items": [
    "mext:05031"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 3,
+    "origin": "jawiki-page",
+    "file": "File:MacNut2.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:MacNut2.JPG",
+    "ok": true
+   }
+  ],
+  "vet": "c0 in-shell unclear, plants"
  },
  {
   "key": "mext-05035",
@@ -1116,7 +2645,31 @@
   "desc": "roasted peanuts in their shells, beige wrinkled pods, a few shelled red-skinned peanuts",
   "items": [
    "mext:05035"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Peanuts_(Arachis_hypogaea)_-_in_shell,_shell_cracked_open,_shelled,_peeled.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Peanuts_(Arachis_hypogaea)_-_in_shell,_shell_cracked_open,_shelled,_peeled.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "jawiki-page",
+    "file": "File:Arachis_hypogaea_004.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Arachis_hypogaea_004.JPG",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "jawiki-page",
+    "file": "File:Boiled_big_peanuts_&_normal_peanuts,_Katori_City,_Japan.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Boiled_big_peanuts_%26_normal_peanuts,_Katori_City,_Japan.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c1 drawing, c7 coated"
  },
  {
   "key": "mext-05036",
@@ -1124,7 +2677,9 @@
   "desc": "a small pile of butter peanuts, skinless glossy golden peanuts",
   "items": [
    "mext:05036"
-  ]
+  ],
+  "refs": [],
+  "vet": "peanut butter shown, not butter peanuts"
  },
  {
   "key": "mext-05037",
@@ -1132,7 +2687,38 @@
   "desc": "a small open jar of smooth peanut butter, thick tan spread with a knife",
   "items": [
    "mext:05037"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Peanut_butter_glass.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Peanut_butter_glass.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:Peanut_butter_glass_3.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Peanut_butter_glass_3.jpg",
+    "ok": true
+   },
+   {
+    "n": 3,
+    "origin": "commons-search",
+    "file": "File:Squirrel_Peanut_Butter_tin.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Squirrel_Peanut_Butter_tin.jpg",
+    "ok": true
+   },
+   {
+    "n": 5,
+    "origin": "commons-search",
+    "file": "File:Peanut_butter_glass_4.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Peanut_butter_glass_4.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c0 sandwich, c4 near-empty jar"
  },
  {
   "key": "mext-06007",
@@ -1140,7 +2726,24 @@
   "desc": "a bundle of fresh green asparagus spears with tight pointed tips",
   "items": [
    "mext:06007"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Asparagus_soup_(spargelsuppe).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Asparagus_soup_(spargelsuppe).jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:Asparagus-Bundle.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Asparagus-Bundle.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c3 boiling, fields"
  },
  {
   "key": "mext-06008",
@@ -1148,7 +2751,17 @@
   "desc": "boiled green asparagus spears, bright green and tender, on a plate",
   "items": [
    "mext:06008"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:Steam-boiling_green_asparagus.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Steam-boiling_green_asparagus.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c2 boiling in pot; c0/c1 raw, fields"
  },
  {
   "key": "mext-06010",
@@ -1156,7 +2769,31 @@
   "desc": "a small heap of fresh green beans, long slender pods",
   "items": [
    "mext:06010"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Four_Different_Varieties_of_Green_Beans_(Phaseolus_vulgaris).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Four_Different_Varieties_of_Green_Beans_(Phaseolus_vulgaris).jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:Green_Beans_1.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Green_Beans_1.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "commons-search",
+    "file": "File:Macro_of_Fresh_Green_Beans_Buncis.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Macro_of_Fresh_Green_Beans_Buncis.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c2 cooked, c5 long beans"
  },
  {
   "key": "mext-06016",
@@ -1169,7 +2806,38 @@
    "eatout:edamame",
    "kurume:117",
    "toyonaka:112200"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Edamame_on_a_bamboo_bowl_by_yomi955.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Edamame_on_a_bamboo_bowl_by_yomi955.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "wikidata",
+    "file": "File:Edamame_by_Zesmerelda_in_Chicago.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Edamame_by_Zesmerelda_in_Chicago.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "jawiki-page",
+    "file": "File:Beer_and_edamame_(boild_green_soybeans).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Beer_and_edamame_(boild_green_soybeans).jpg",
+    "ok": true
+   },
+   {
+    "n": 6,
+    "origin": "enwiki-page",
+    "file": "File:Lunch_at_Kaze_Sushi.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Lunch_at_Kaze_Sushi.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "plants, bento"
  },
  {
   "key": "mext-06020",
@@ -1177,7 +2845,17 @@
   "desc": "a small heap of snow peas, flat bright green pods with tiny peas inside",
   "items": [
    "mext:06020"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 5,
+    "origin": "commons-search",
+    "file": "File:Starr-070730-7867-Pisum_sativum_var_macrocarpum-snow_peas-Foodland_Pukalani-Maui_(24522893769).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Starr-070730-7867-Pisum_sativum_var_macrocarpum-snow_peas-Foodland_Pukalani-Maui_(24522893769).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "seedlings"
  },
  {
   "key": "mext-06022",
@@ -1185,7 +2863,31 @@
   "desc": "a small heap of sugar snap peas, plump round crisp green pods",
   "items": [
    "mext:06022"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 3,
+    "origin": "commons-search",
+    "file": "File:Sugar_snap_pea_\"Cascadia\".jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Sugar_snap_pea_%22Cascadia%22.jpg",
+    "ok": true
+   },
+   {
+    "n": 4,
+    "origin": "commons-search",
+    "file": "File:Gary's_Sugar_Snap_Peas_in_the_Vintage_Yellow_Tupperware_CollanderStrainer.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Gary%27s_Sugar_Snap_Peas_in_the_Vintage_Yellow_Tupperware_CollanderStrainer.jpg",
+    "ok": true
+   },
+   {
+    "n": 5,
+    "origin": "commons-search",
+    "file": "File:Sugar_snap_peas_in_blue_containers.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Sugar_snap_peas_in_blue_containers.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c0 pale unclear, c1 flower, c2 dish"
  },
  {
   "key": "mext-06025",
@@ -1193,7 +2895,17 @@
   "desc": "a small bowl of green peas, round bright green peas",
   "items": [
    "mext:06025"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:India_-_Varanasi_green_peas_-_2714.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:India_-_Varanasi_green_peas_-_2714.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "frozen not distinguishable; c1 dry pods, c5 dry peas"
  },
  {
   "key": "mext-06032",
@@ -1201,7 +2913,45 @@
   "desc": "fresh okra pods, ridged bright green pointed pods, one sliced into star-shaped rounds",
   "items": [
    "mext:06032"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Okra_sliced.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:Okra_sliced.JPG",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "wikidata",
+    "file": "File:Ladies'_Finger_BNC.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Ladies%27_Finger_BNC.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "commons-cat",
+    "file": "File:01847jfSan_Fernando_Parian_Cristo_Pablo_Pampanga_Olongapo_Gapan_Roadfvf_24.JPG",
+    "page": "https://commons.wikimedia.org/wiki/File:01847jfSan_Fernando_Parian_Cristo_Pablo_Pampanga_Olongapo_Gapan_Roadfvf_24.JPG",
+    "ok": true
+   },
+   {
+    "n": 5,
+    "origin": "commons-cat",
+    "file": "File:Abelmoschus_esculentus_2.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Abelmoschus_esculentus_2.jpg",
+    "ok": true
+   },
+   {
+    "n": 7,
+    "origin": "commons-cat",
+    "file": "File:BOILED_OR_STEAMED_OKRA_FROM_GARDEN_TO_TABLE.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:BOILED_OR_STEAMED_OKRA_FROM_GARDEN_TO_TABLE.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c3 plant, c4 seeds"
  },
  {
   "key": "mext-06033",
@@ -1209,7 +2959,9 @@
   "desc": "boiled okra, bright green pods and star-shaped slices, glossy",
   "items": [
    "mext:06033"
-  ]
+  ],
+  "refs": [],
+  "vet": "all raw okra/plants"
  },
  {
   "key": "mext-06038",
@@ -1217,7 +2969,9 @@
   "desc": "a Japanese white turnip (kabu), round smooth white root with green leafy stalks, one cut showing white flesh",
   "items": [
    "mext:06038"
-  ]
+  ],
+  "refs": [],
+  "vet": "no peeled turnip; c2 whole unpeeled"
  },
  {
   "key": "mext-06048",
@@ -1225,7 +2979,9 @@
   "desc": "a Japanese kabocha squash, dark green ridged skin, a wedge cut showing deep orange flesh and seeds",
   "items": [
    "mext:06048"
-  ]
+  ],
+  "refs": [],
+  "vet": "orange western pumpkins, cooked dishes"
  },
  {
   "key": "mext-06049",
@@ -1235,7 +2991,17 @@
    "mext:06049",
    "dishes:kabocha-ni",
    "kurume:164"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Kabocha_squash_dish.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Kabocha_squash_dish.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c2/c3 salad, orange pumpkins"
  },
  {
   "key": "mext-06054",
@@ -1243,7 +3009,17 @@
   "desc": "a head of white cauliflower with pale green leaves, a few florets cut off",
   "items": [
    "mext:06054"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Brassica_oleracea_var._botrytis_(Coliflor).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Brassica_oleracea_var._botrytis_(Coliflor).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "fields"
  },
  {
   "key": "mext-06062",
@@ -1251,7 +3027,9 @@
   "desc": "boiled cabbage leaves, soft wilted pale green pieces on a plate",
   "items": [
    "mext:06062"
-  ]
+  ],
+  "refs": [],
+  "vet": "raw/red cabbage, plants"
  },
  {
   "key": "mext-06333",
@@ -1259,7 +3037,9 @@
   "desc": "stir-fried cabbage, glossy soft green cabbage pieces with lightly browned edges on a plate",
   "items": [
    "mext:06333"
-  ]
+  ],
+  "refs": [],
+  "vet": "raw/red cabbage, plants"
  },
  {
   "key": "mext-06065",
@@ -1267,7 +3047,17 @@
   "desc": "two fresh green cucumbers, long slim bumpy dark green, one cut in slices",
   "items": [
    "mext:06065"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 5,
+    "origin": "jawiki-page",
+    "file": "File:Cucumis_sativus1.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Cucumis_sativus1.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "vines/seedlings, c3 seed, c6 sushi"
  },
  {
   "key": "mext-06066",
@@ -1276,7 +3066,17 @@
   "items": [
    "mext:06066",
    "dishes:asazuke"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 2,
+    "origin": "wikidata",
+    "file": "File:Celery_asadzuke_by_ayustety_in_Tokyo.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Celery_asadzuke_by_ayustety_in_Tokyo.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "plants, c3 other pickles"
  },
  {
   "key": "mext-06067",
@@ -1284,7 +3084,9 @@
   "desc": "soy-pickled cucumber, dark olive-brown crunchy cucumber slices in a small dish",
   "items": [
    "mext:06067"
-  ]
+  ],
+  "refs": [],
+  "vet": "fresh cucumbers/plants only"
  },
  {
   "key": "mext-06068",
@@ -1292,7 +3094,9 @@
   "desc": "nukazuke rice-bran pickled cucumber, olive-green cucumber cut in pieces, in a small dish",
   "items": [
    "mext:06068"
-  ]
+  ],
+  "refs": [],
+  "vet": "fresh cucumbers/plants only"
  },
  {
   "key": "mext-06084",
@@ -1300,7 +3104,17 @@
   "desc": "long thin burdock roots (gobo), earthy brown skinned slender roots, a few cut pieces showing white flesh",
   "items": [
    "mext:06084"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Uda-kingobou.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Uda-kingobou.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "flowers/plants"
  },
  {
   "key": "mext-06086",
@@ -1308,7 +3122,24 @@
   "desc": "a bunch of fresh komatsuna, dark green smooth spoon-shaped leaves on pale green stems",
   "items": [
    "mext:06086"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "commons-search",
+    "file": "File:Komatsuna.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Komatsuna.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "commons-search",
+    "file": "File:江戸菜20210530.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:%E6%B1%9F%E6%88%B8%E8%8F%9C20210530.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c2 bagged, market"
  },
  {
   "key": "mext-06087",
@@ -1317,7 +3148,9 @@
   "items": [
    "mext:06087",
    "dishes:ohitashi-komatsuna"
-  ]
+  ],
+  "refs": [],
+  "vet": "raw bunches only"
  },
  {
   "key": "mext-06088",
@@ -1325,7 +3158,24 @@
   "desc": "a small dish of zha cai, crunchy pickled mustard stem in thin pale olive slices with a red chili tint",
   "items": [
    "mext:06088"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Tsa_Tsai.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Tsa_Tsai.jpg",
+    "ok": true
+   },
+   {
+    "n": 2,
+    "origin": "jawiki-page",
+    "file": "File:TwoHeadsZhacai.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:TwoHeadsZhacai.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c1/c3 fresh tuber, dishes"
  },
  {
   "key": "mext-06093",
@@ -1333,7 +3183,17 @@
   "desc": "a small heap of shishito peppers, small thin wrinkled bright green peppers",
   "items": [
    "mext:06093"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 2,
+    "origin": "commons-search",
+    "file": "File:Kkwari-gochu.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Kkwari-gochu.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c0 mixed peppers, c1 cooked, c3 large"
  },
  {
   "key": "mext-06095",
@@ -1341,7 +3201,17 @@
   "desc": "a few fresh green shiso (ooba) leaves, broad leaves with serrated edges and visible veins",
   "items": [
    "mext:06095"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 4,
+    "origin": "commons-search",
+    "file": "File:Green_Perrila_(Beefsteak_plant)-IMG_0543.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Green_Perrila_(Beefsteak_plant)-IMG_0543.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "dishes with shiso garnish, moth"
  },
  {
   "key": "mext-06099",
@@ -1349,7 +3219,9 @@
   "desc": "a bunch of shungiku chrysanthemum greens, deeply lobed bright green leaves",
   "items": [
    "mext:06099"
-  ]
+  ],
+  "refs": [],
+  "vet": "flowers only"
  },
  {
   "key": "mext-06103",
@@ -1357,7 +3229,9 @@
   "desc": "a knob of fresh ginger root, beige knobbly rhizome, one cut showing pale yellow flesh",
   "items": [
    "mext:06103"
-  ]
+  ],
+  "refs": [],
+  "vet": "plants/drawings, no rhizome"
  },
  {
   "key": "mext-06365",
@@ -1365,7 +3239,17 @@
   "desc": "a small mound of grated ginger, moist pale yellow fibrous paste on a small dish",
   "items": [
    "mext:06365"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 5,
+    "origin": "commons-search",
+    "file": "File:Zester.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Zester.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c0/c3 drinks, c2 whole root"
  },
  {
   "key": "mext-06104",
@@ -1373,7 +3257,24 @@
   "desc": "a small dish of beni shoga, bright red thin julienned pickled ginger strips",
   "items": [
    "mext:06104"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 1,
+    "origin": "jawiki",
+    "file": "File:Red_pickled_ginger_box_of_Yoshinoya.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Red_pickled_ginger_box_of_Yoshinoya.jpg",
+    "ok": true
+   },
+   {
+    "n": 6,
+    "origin": "commons-cat",
+    "file": "File:Beni_shoga_20100127.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Beni_shoga_20100127.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c2 pink chunks unclear, gyudon/bento"
  },
  {
   "key": "mext-06105",
@@ -1382,7 +3283,24 @@
   "items": [
    "mext:06105",
    "eatout:gari"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Gari_ginger.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Gari_ginger.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "wikidata",
+    "file": "File:Eingelegter_Ingwer_(25966203794).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Eingelegter_Ingwer_(25966203794).jpg",
+    "ok": true
+   }
+  ],
+  "vet": "century eggs, packs"
  },
  {
   "key": "mext-06116",
@@ -1390,7 +3308,17 @@
   "desc": "green zucchini, a long dark green squash, one cut into round slices",
   "items": [
    "mext:06116"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 2,
+    "origin": "jawiki",
+    "file": "File:Courgette.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Courgette.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "c1 yellow, flowers, plants"
  },
  {
   "key": "mext-06119",
@@ -1398,6 +3326,23 @@
   "desc": "a bunch of celery, long pale green ribbed stalks with leafy tops",
   "items": [
    "mext:06119"
-  ]
+  ],
+  "refs": [
+   {
+    "n": 0,
+    "origin": "wikidata",
+    "file": "File:Céleri.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:C%C3%A9leri.jpg",
+    "ok": true
+   },
+   {
+    "n": 1,
+    "origin": "enwiki",
+    "file": "File:Celery_1.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Celery_1.jpg",
+    "ok": true
+   }
+  ],
+  "vet": "seeds, coins, microscope"
  }
 ]
