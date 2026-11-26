@@ -25,7 +25,7 @@ describe('the shared field (contract/farm.ts)', () => {
     expect([0, 2 * H, 5 * H, G].map((d) => nextStageAt(pl, T + d))).toEqual([T + 2 * H, T + 4 * H, T + G, null]);
     expect(farmStep(f, 'B', op('harvest'), T + 7 * H, judge())?.ops).toEqual([{ o: 'harvest', p: P, n: 1 }]);
     const again = f.plots.get(P)!;
-    expect(again).toEqual({ c: 'tomato', t: T + 7 * H + G, r: true });
+    expect(again).toEqual({ c: 'tomato', t: T + 7 * H + G, r: true, by: 'B' });
     expect([7 * H, 10 * H, 7 * H + G].map((d) => stageOf(again, T + d))).toEqual([2, 2, 3]);
     expect(nextStageAt(again, T + 8 * H)).toBe(T + 7 * H + G);
   });
@@ -81,6 +81,26 @@ describe('the shared field (contract/farm.ts)', () => {
     expect(farmStep(f, 'A', { ops: [{ o: 'harvest', p: P, n: 3 }] }, T + H)?.ops).toEqual([{ o: 'harvest', p: P, n: 3 }]);
     expect(f.net.A?.get('goods:tomato')).toBe(3);
     expect(farmStep(f, 'A', op('dig', Q), T + H)).toBeNull();
+  });
+
+  it('a harvest says who (`by`), kept while it grows back and through JSON; a dig or a new plant has none', () => {
+    const f = emptyFarm();
+    farmStep(f, 'A', plant(), T, judge());
+    expect(f.plots.get(P)!.by).toBeUndefined();
+    farmStep(f, 'B', op('harvest'), T + G, judge());
+    expect(f.plots.get(P)).toEqual({ c: 'tomato', t: T + 2 * G, r: true, by: 'B' });
+    farmStep(f, 'G', op('water'), T + G + H, judge());
+    expect(f.plots.get(P)!.by).toBe('B');
+    farmStep(f, 'G', op('harvest'), T + 2 * G, judge());
+    expect(f.plots.get(P)!.by).toBe('G');
+    expect(fieldFromJson(JSON.parse(JSON.stringify(fieldJson(f))))!.plots.get(P)).toEqual(f.plots.get(P));
+    // an older relay's plant (none), a bad one or one not growing back: none
+    expect(fieldFromJson([[P, { c: 'tomato', t: 1, r: true }], [Q, { c: 'tomato', t: 1, r: true, by: 'X' }]])!.plots.get(P)!.by).toBeUndefined();
+    expect(fieldFromJson([[Q, { c: 'tomato', t: 1, r: true, by: 'X' }]])!.plots.get(Q)!.by).toBeUndefined();
+    expect(fieldFromJson([[Q, { c: 'tomato', t: 1, by: 'A' }]])!.plots.get(Q)!.by).toBeUndefined();
+    farmStep(f, 'A', op('dig'), T + 2 * G, judge());
+    farmStep(f, 'A', plant(), T + 2 * G, judge());
+    expect(f.plots.get(P)!.by).toBeUndefined();
   });
 
   it('a batch is checked for its shape; an older build’s day dropped', () => {

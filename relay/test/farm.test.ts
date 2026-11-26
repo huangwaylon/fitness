@@ -105,8 +105,10 @@ describe('the shared field in the record', () => {
     expect(rows().at(-1)).toEqual({ ops: [{ o: 'harvest', p: P1, n: FARM.maxYield }] });
     expect(sell('A', 'goods:tomato', 1)).toEqual(refused('pocket short'));
     expect(sell('B', 'goods:tomato', FARM.maxYield)).toEqual({ ok: true });
-    // growing back (stage 2), no longer watered
-    expect(plot(P1)).toEqual({ c: 'tomato', t: expect.any(Number), r: true });
+    // growing back (stage 2), no longer watered, B's harvest (the plot's word says so)
+    expect(plot(P1)).toEqual({ c: 'tomato', t: expect.any(Number), r: true, by: 'B' });
+    expect(farm('G', water(P1))).toEqual({ ok: true });
+    expect(plot(P1)).toEqual({ c: 'tomato', t: expect.any(Number), r: true, w: true, by: 'B' }); // watering keeps who
     expect(farm('G', dig(P1))).toEqual({ ok: true });
     expect(field().has(P1)).toBe(false);
     expect(sell('G', 'goods:tomato-start', 1)).toEqual({ ok: true });
@@ -248,7 +250,7 @@ describe('the shared field in the record', () => {
     // folded at the start: a snapshot carries the new field before any farm op
     // (its seq on from the old one's: a phone keeps the highest)
     expect(snap().field).toMatchObject({ seq: 8, v: [
-      [P1, { c: 'tomato', t: T0 + DAY + FARM.growMs, r: true }],
+      [P1, { c: 'tomato', t: T0 + DAY + FARM.growMs, r: true, by: 'A' }],
       [P3, { c: 'potato', t: T0 + 2000 + FARM.growMs }]
     ] });
     expect(sqlOf().exec("SELECT k FROM meta WHERE k = 'farm' OR k LIKE 'farm|%'").toArray().map((r) => r.k)).toEqual(['farm|t6h']);

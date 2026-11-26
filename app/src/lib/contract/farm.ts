@@ -7,7 +7,7 @@
 // The record judges each new op (farmRefusal) against the field and the sender's pocket, drops a refused one and keeps
 // a harvest at the yield it reckons (farmStep); the phones step their unsent rows the same way on the record's field.
 // Shared by the record and the model; pure.
-import { keysAre } from './api.ts';
+import { isWho, keysAre } from './api.ts';
 import { isRec } from './guards.ts';
 import { localDateAt } from './tokyo.ts';
 import type { LocalDate, Who } from '../types.ts';
@@ -58,8 +58,9 @@ export function farmOf(d: Record<string, unknown>): FarmData | null {
   return { ops };
 }
 
-/** A plant: its crop, when it is (or was) ripe from (ms), `r` once harvested (growing back), `w` watered this growth. */
-export interface Plot { c: Crop; t: number; r?: true; w?: true }
+/** A plant: its crop, when it is (or was) ripe from (ms), `r` once harvested (growing back), `w` watered this growth,
+ *  `by` who harvested it last (a plant growing back since 2026-11-26: the plot's word says so; none on older ones). */
+export interface Plot { c: Crop; t: number; r?: true; w?: true; by?: Who }
 
 /** Ms till a plant is ripe at `now` (0: ripe). */
 export const msLeft = (pl: Plot, now: number): number => Math.max(0, pl.t - now);
@@ -148,7 +149,7 @@ export function farmStep(f: Farm, who: Who, data: FarmData, at: number, judge?: 
     } else if (op.o === 'harvest') {
       const n = judge ? yieldOf(pl!, judge.wet) : op.n;
       add(f, who, cropKey(pl!.c), n);
-      f.plots.set(op.p, { c: pl!.c, t: at + FARM.growMs, r: true });
+      f.plots.set(op.p, { c: pl!.c, t: at + FARM.growMs, r: true, by: who });
       kept.push({ o: 'harvest', p: op.p, n });
     } else {
       add(f, who, startKey(pl!.c), 1);
@@ -168,7 +169,7 @@ export function fieldFromJson(x: unknown): Farm | null {
   for (const e of x) {
     if (!Array.isArray(e) || typeof e[0] !== 'string' || !isRec(e[1])) continue;
     const pl = e[1];
-    if (isFarmCrop(pl.c) && typeof pl.t === 'number') plots.set(e[0], { c: pl.c, t: pl.t, ...(pl.r ? { r: true } : {}), ...(pl.w ? { w: true } : {}) });
+    if (isFarmCrop(pl.c) && typeof pl.t === 'number') plots.set(e[0], { c: pl.c, t: pl.t, ...(pl.r ? { r: true } : {}), ...(pl.w ? { w: true } : {}), ...(pl.r && isWho(pl.by) ? { by: pl.by } : {}) });
   }
   return { plots, net: {} };
 }

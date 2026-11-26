@@ -34,7 +34,7 @@ describe('farmOfState', () => {
     const f = farmOfState({ farm: rows, wet: dry, field });
     expect(f.plots.get(R)).toEqual({ c: 'wheat', t: T + FARM.growMs });
     expect(f.plots.get(P)).toEqual({ c: 'tomato', t: T + H, w: true });
-    expect(f.plots.get(Q)).toEqual({ c: 'carrot', t: T + FARM.growMs, r: true });
+    expect(f.plots.get(Q)).toEqual({ c: 'carrot', t: T + FARM.growMs, r: true, by: 'A' });
     expect([...f.net.A!]).toEqual([['goods:wheat-start', -1], ['goods:carrot', 1]]);
     // (the stored field left as it was)
     expect(fieldJson(farmOfState({ farm: none, wet: dry, field }))).toEqual(field.v);
