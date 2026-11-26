@@ -12037,3 +12037,840 @@
 {"check": "claude", "h": "0f4c5c823f", "key": "maff_kyodo-akagaigarammushi_shimane", "model": "m4", "roll": 1, "strength": "weak", "verdict": "pass", "why": ""}
 {"check": "claude", "h": "0b136f4ee4", "key": "maff_kyodo-dojonokenchinjiru_shimane", "model": "m4", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "no recognisable whole loach fish in the soup; just generic kenchin vegetables and tofu"}
 {"check": "claude", "h": "efa66c5617", "key": "maff_kyodo-ha_gesshou_mochi_nara", "model": "m4", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "cakes look like toasted sesame-crusted rice crackers, not soft mochi coated in kinako"}
+{"check": "claude", "h": "7e1eb8bd82", "key": "maff_kyodo-37_20_toyama", "model": "m2", "roll": 2, "strength": "medium", "verdict": "reroll", "why": "looks like a single salmon nigiri/oshizushi block on a leaf, not a round pressed cake cut into wedges with thin trout layer"}
+{"check": "claude", "h": "466cd27606", "key": "maff_kyodo-38_13_gifu", "model": "m2", "roll": 2, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "ba5637841a", "key": "maff_kyodo-38_8_gifu", "model": "m2", "roll": 1, "strength": "strong", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "865603edc0", "key": "maff_kyodo-40_26_hyogo", "model": "m2", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "brown soba-like noodles in a soupy broth instead of clear glass noodles in a nearly dry stew"}
+{"check": "claude", "h": "ff055d6752", "key": "maff_kyodo-43_15_yamaguchi", "model": "m2", "roll": 1, "strength": "strong", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "db06dfc471", "key": "maff_kyodo-43_25_yamaguchi", "model": "m2", "roll": 1, "strength": "medium", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "fe3a7cef10", "key": "maff_kyodo-44_26_tokushima", "model": "m2", "roll": 1, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "7e5c35fc45", "key": "maff_kyodo-47_8_okinawa", "model": "m2", "roll": 1, "strength": "strong", "verdict": "reroll", "why": "smooth scored buns with cartoon smiley faces; not rough cracked deep-fried doughnut balls"}
+{"check": "claude", "h": "0e538640ea", "key": "maff_kyodo-akamochi_ibaraki", "model": "m2", "roll": 1, "strength": "strong", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "b660e1fb2e", "key": "maff_kyodo-atamaryori_oita", "model": "m2", "roll": 1, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "59e9351629", "key": "maff_kyodo-ayu_zushi_nara", "model": "m2", "roll": 1, "strength": "medium", "verdict": "reroll", "why": "whole unsplit raw-looking fish lying on a plate; no visible pressed rice block, not split open"}
+{"check": "claude", "h": "0f89b1c9db", "key": "maff_kyodo-bakudanonigiri_shimane", "model": "m2", "roll": 1, "strength": "medium", "verdict": "reroll", "why": "ordinary triangular onigiri with nori strips and rice showing, not round balls fully wrapped in seaweed"}
+{"check": "claude", "h": "b6d8f3e330", "key": "maff_kyodo-decchi_youkan_shiga", "model": "m2", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "cross-section shows whole red beans in a pale filling, not a uniform dark bean-paste yokan in the sheath"}
+{"check": "claude", "h": "91e015cd67", "key": "maff_kyodo-ebisu_ishikawa", "model": "m2", "roll": 1, "strength": "medium", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "48dfd0e6ec", "key": "maff_kyodo-fukumen_ehime", "model": "m2", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "toppings scattered and mixed together instead of four distinct colour quarters"}
+{"check": "claude", "h": "3fa7dc4811", "key": "maff_kyodo-gappara_mochi_aomori", "model": "m2", "roll": 1, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "e71eea7bee", "key": "maff_kyodo-hasumushi_ishikawa", "model": "m2", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "shows sliced lotus root rounds in broth, not a fluffy dome of grated lotus root under thick sauce"}
+{"check": "claude", "h": "f3153ac2ba", "key": "maff_kyodo-houtou_yama_nashi", "model": "m2", "roll": 1, "strength": "strong", "verdict": "reroll", "why": "noodles are thin udon/ramen-like strands, not very wide flat belt-like ribbons; broth not thick miso"}
+{"check": "claude", "h": "469fdc12d2", "key": "maff_kyodo-kashiwamochi_shimane", "model": "m7", "roll": 2, "strength": "medium", "verdict": "reroll", "why": "plain white rice balls sitting on a leaf, not folded dumplings wrapped in an oak leaf; reads as onigiri"}
+{"check": "claude", "h": "f7deb47a8c", "key": "maff_kyodo-kirizai_niigata", "model": "m7", "roll": 1, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "046cef361f", "key": "maff_kyodo-kuzu_mochi_nara", "model": "m7", "roll": 1, "strength": "strong", "verdict": "reroll", "why": "opaque tofu-like blocks with sesame-seed topping; refs show translucent cakes heaped with kinako"}
+{"check": "claude", "h": "a623a87532", "key": "maff_kyodo-mimi_yama_nashi", "model": "m7", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "dough drawn as rolled buns, not folded basket shapes, and no mimi in the soup"}
+{"check": "claude", "h": "d55924112c", "key": "maff_kyodo-nerikuri_miyazaki", "model": "m7", "roll": 1, "strength": "medium", "verdict": "reroll", "why": "bumpy fried-looking balls; ref shows smooth soft kinako-coated lumps"}
+{"check": "claude", "h": "ffb4499bfa", "key": "maff_kyodo-okaisan_wakayama", "model": "m7", "roll": 1, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "4b0147ba67", "key": "maff_kyodo-same_namasu_mie", "model": "m7", "roll": 1, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "ed6a5f4005", "key": "maff_kyodo-sanma_sushi_nara", "model": "m7", "roll": 1, "strength": "strong", "verdict": "reroll", "why": "whole saury with heads lying on rice like grilled fish; refs show cured fillets pressed on oblong rice"}
+{"check": "claude", "h": "cb0d2ce4e3", "key": "maff_kyodo-shirasu_don_wakayama", "model": "m7", "roll": 1, "strength": "medium", "verdict": "reroll", "why": "plain rice with toppings; the heap of white whitebait is missing"}
+{"check": "claude", "h": "bcffd11dd9", "key": "maff_kyodo-tukino_shizuku_yama_nashi", "model": "m7", "roll": 1, "strength": "medium", "verdict": "reroll", "why": "plain fresh green grapes; no white sugar shell, which is the whole point of the confection"}
+{"check": "claude", "h": "691bba5895", "key": "maff_kyodo-yatara_nagano", "model": "m7", "roll": 1, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "ab9e4685ad", "key": "mext-10248", "model": "m7", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "whole round fish, not split and butterflied open flat"}
+{"check": "claude", "h": "e0473b9bbd", "key": "dishes-miso-tamago", "model": "m7", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "clear broth with halved hard-boiled eggs; needs cloudy miso and one whole poached egg"}
+{"check": "claude", "h": "77e0a0a25d", "key": "maff_kyodo-28_20_iwate", "model": "m7", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "thin round noodles with loose whole beans; needs wide flat noodles smothered in thick azuki porridge"}
+{"check": "claude", "h": "c8074187bb", "key": "maff_kyodo-36_27_shizuoka", "model": "m7", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "round bun-like balls with no navel dent"}
+{"check": "claude", "h": "a43105cbd2", "key": "maff_kyodo-38_19_gifu", "model": "m7", "roll": 2, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "c8a3ab1c1b", "key": "maff_kyodo-39_4_osaka", "model": "m7", "roll": 1, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "23a2502b29", "key": "maff_kyodo-41_21_okayama", "model": "m7", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "stiff thick sticks like fries, not limp thin flat chive leaves"}
+{"check": "claude", "h": "ac28da728b", "key": "maff_kyodo-41_24_okayama", "model": "m7", "roll": 1, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "6ca9303436", "key": "maff_kyodo-41_25_okayama", "model": "m10", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "pieces look like pale tan roots/parsnips, not grey buckwheat dough dumplings"}
+{"check": "claude", "h": "922b5430e5", "key": "maff_kyodo-41_5_okayama", "model": "m10", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "leaf-wrapped cylinders cut open showing whole beans like rice rolls, not flat round grilled buns"}
+{"check": "claude", "h": "0d7d877446", "key": "maff_kyodo-42_14_hiroshima", "model": "m10", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "white rice balls with sparse coarse crumbs, not a full powdery kinako coating"}
+{"check": "claude", "h": "1e7143e237", "key": "maff_kyodo-44_19_tokushima", "model": "m10", "roll": 0, "strength": "weak", "verdict": "reroll", "why": "clawed lobster instead of clawless spiny lobster (ise-ebi)"}
+{"check": "claude", "h": "d40d45473f", "key": "maff_kyodo-44_6_tokushima", "model": "m10", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "looks like halved purple sweet potatoes with whole beans in the rim, not slices with smooth dark bean-paste coating"}
+{"check": "claude", "h": "28e07aef36", "key": "maff_kyodo-45_10_saga", "model": "m10", "roll": 0, "strength": "weak", "verdict": "reroll", "why": "ordinary small fish, no blunt head or bulging top eyes of a mudskipper"}
+{"check": "claude", "h": "7c569c802e", "key": "maff_kyodo-45_13_saga", "model": "m10", "roll": 2, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "dcc80f03a3", "key": "maff_kyodo-45_16_saga", "model": "m10", "roll": 0, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "05cce882b3", "key": "maff_kyodo-47_15_okinawa", "model": "m10", "roll": 0, "strength": "weak", "verdict": "reroll", "why": "pink strips look like ham/crab stick, no cartilage lines or peanut sauce"}
+{"check": "claude", "h": "fd49274b34", "key": "maff_kyodo-aka_garei_no_komaburi_tottori", "model": "m10", "roll": 0, "strength": "weak", "verdict": "reroll", "why": "roe drawn as large shiny ikura-like beads on the edges, not fine dry crumbly coating"}
+{"check": "claude", "h": "b860e74349", "key": "maff_kyodo-butahoneyasai_kagoshima", "model": "m10", "roll": 1, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "336125b706", "key": "maff_kyodo-chouju_namasu_fukui", "model": "m10", "roll": 0, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "9e427dfceb", "key": "maff_kyodo-ebiimotobodaranotaitan_kyoto", "model": "m10", "roll": 1, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "976b4a610c", "key": "maff_kyodo-hakatano_gomasaba_fukuoka", "model": "m10", "roll": 1, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "9d20783768", "key": "maff_kyodo-hatahatanoyuage_yamagata", "model": "m10", "roll": 0, "strength": "weak", "verdict": "reroll", "why": "generic slender silver fish like sardine/ayu, lacks hatahata's plump scaleless body and big mouth"}
+{"check": "claude", "h": "145d5b2a36", "key": "maff_kyodo-heso_daikon_no_nishime_miyagi", "model": "m10", "roll": 0, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "bd4cd0c2ee", "key": "maff_kyodo-jagaimo_to_hijiki_no_nimono_yama_nashi", "model": "m10", "roll": 2, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "556613f262", "key": "maff_kyodo-kaisoyose_ibaraki", "model": "m10", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "reads as an opaque fried tofu block in brown sauce, not set seaweed jelly"}
+{"check": "claude", "h": "b0a249f2b4", "key": "maff_kyodo-kono_shirono_sugata_zushi_kumamoto", "model": "m10", "roll": 0, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "01ce6a6571", "key": "maff_kyodo-kushiasari_aichi", "model": "m10", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "skewered items look like whole clams in shell/chestnuts, not shrunken dried shelled clam meat"}
+{"check": "claude", "h": "7c0b41fc14", "key": "maff_kyodo-masunoankake_yamagata", "model": "m10", "roll": 0, "strength": "weak", "verdict": "reroll", "why": "salmon looks raw and glossy like sashimi with dark soy, not cooked flaky fish in clear amber ankake"}
+{"check": "claude", "h": "21c3a54f8d", "key": "maff_kyodo-namakonosunomono_ishikawa", "model": "m10", "roll": 0, "strength": "weak", "verdict": "reroll", "why": "shows a whole spiky sea cucumber; desc requires only small cut slices"}
+{"check": "claude", "h": "5bf5f47e95", "key": "maff_kyodo-rakkasei_no_nimame_mie", "model": "m10", "roll": 0, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "f0091e90ee", "key": "maff_kyodo-ryukyunosunomono_kochi", "model": "m10", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "thick slices with dark green rind look like cucumber/melon, not peeled taro-stem crescents"}
+{"check": "claude", "h": "e19c32fd93", "key": "maff_kyodo-shakuno_tenpura_kumamoto", "model": "m9", "roll": 0, "strength": "weak", "verdict": "reroll", "why": "raw prawn/lobster-like shrimp with long antennae, no tempura batter; should be battered mantis shrimp"}
+{"check": "claude", "h": "a3687092bb", "key": "maff_kyodo-sorakitamochi_oita", "model": "m9", "roll": 1, "strength": "weak", "verdict": "fallback", "why": "looks like halved deviled eggs with orange topping, not kinako-dusted sweet potato cakes"}
+{"check": "claude", "h": "778b202b04", "key": "maff_kyodo-suno_shui_miyazaki", "model": "m9", "roll": 1, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "272877c52b", "key": "maff_kyodo-tako_momiuri_nara", "model": "m9", "roll": 1, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "f3ab5d5503", "key": "maff_kyodo-teppai_kagawa", "model": "m9", "roll": 0, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "4c6e1ddb73", "key": "maff_kyodo-wakadori_no_mizutaki_fukuoka", "model": "m9", "roll": 1, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "3bc140b23d", "key": "maff_kyodo-itimonji_no_guruguru_kumamoto", "model": "m8", "roll": 1, "strength": "medium", "verdict": "reroll", "why": "shows whole raw spring onions laid side by side, not short coiled blanched bundles"}
+{"check": "claude", "h": "7b8911409d", "key": "maff_kyodo-karaimonettabo_kagoshima", "model": "m8", "roll": 1, "strength": "medium", "verdict": "reroll", "why": "smooth white daifuku-like buns with sparse kinako sprinkle; should be lumpy mochi fully coated in kinako"}
+{"check": "claude", "h": "6bf044aec8", "key": "maff_kyodo-kenchan_oita", "model": "m8", "roll": 1, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "af22f4b724", "key": "maff_kyodo-manbano_kenchan_kagawa", "model": "m8", "roll": 1, "strength": "medium", "verdict": "reroll", "why": "neat tofu cubes and carrot strips over fresh-looking greens; should be wilted greens with crumbled tofu and aburaage strips"}
+{"check": "claude", "h": "ef6ee5a39e", "key": "maff_kyodo-nira_senbei_nagano", "model": "m8", "roll": 1, "strength": "medium", "verdict": "reroll", "why": "looks like a folded yellow omelette with whole chive stalks, not a flat wheat pancake with chopped chives in wedges"}
+{"check": "claude", "h": "3674782fe3", "key": "maff_kyodo-onimanju_aichi", "model": "m8", "roll": 1, "strength": "strong", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "91e972bb7a", "key": "mext-01175", "model": "m8", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "bread slice drawn with brown crust; must be crustless all-white square"}
+{"check": "claude", "h": "becd7c8a53", "key": "mext-01068", "model": "m8", "roll": 1, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "a5ac4b0cc1", "key": "mext-01162", "model": "m8", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "round ivory beads look like chickpeas, not flat wedge-shaped dent corn kernels"}
+{"check": "claude", "h": "c5169709d3", "key": "mext-02004", "model": "m8", "roll": 1, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "f7387b23a7", "key": "mext-02060", "model": "m8", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "opaque beige noodles like somen/soba; boiled starch noodles should be clear and glassy"}
+{"check": "claude", "h": "04291bdb7c", "key": "mext-04086", "model": "m8", "roll": 1, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "be35c62ea5", "key": "mext-04073", "model": "m8", "roll": 1, "strength": "medium", "verdict": "reroll", "why": "round plump green peas, not flat lens-shaped discs"}
+{"check": "claude", "h": "c2ffefb4e1", "key": "mext-06044", "model": "m8", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "bright yellow slices look like pineapple/citrus; no translucent turnip look, no bran"}
+{"check": "claude", "h": "5725fde5dd", "key": "maff_kyodo-jojokiri_aichi", "model": "m6", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "long noodles in thin clear brown broth with kidney-bean-like beans; should be short flat noodles in sweet azuki soup"}
+{"check": "claude", "h": "51676a9a35", "key": "maff_kyodo-koinomani_yamagata", "model": "m6", "roll": 0, "strength": "weak", "verdict": "reroll", "why": "carp crosscut shape right but flesh pale pink/raw-looking, not simmered dark glossy red-brown"}
+{"check": "claude", "h": "d0d1c10499", "key": "maff_kyodo-kounago_no_kugini_mie", "model": "m6", "roll": 1, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "dce217c2e2", "key": "maff_kyodo-kutuzoko_no_nituke_fukuoka", "model": "m6", "roll": 0, "strength": "weak", "verdict": "reroll", "why": "broad flounder with separate tail fin, not elongated shoe-sole tongue sole; little simmered gloss"}
+{"check": "claude", "h": "9f5114baad", "key": "maff_kyodo-mibunanokarashiae_kyoto", "model": "m6", "roll": 0, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "2fba32f8c5", "key": "maff_kyodo-mosaebi_no_sashimi_tottori", "model": "m6", "roll": 0, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "c0b3bd3373", "key": "maff_kyodo-negitosatsumaimononuta_kochi", "model": "m6", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "green onion only a tiny sprinkle; reads as potato/tofu cubes in yellow sauce rather than negi and sweet potato nuta"}
+{"check": "claude", "h": "628fed520f", "key": "maff_kyodo-zuikinotaitan_kyoto", "model": "m6", "roll": 0, "strength": "weak", "verdict": "reroll", "why": "solid brown bark-like logs like burdock/cinnamon sticks, not soft stringy translucent taro stem"}
+{"check": "claude", "h": "18ae717d8a", "key": "mext-04102", "model": "m6", "roll": 0, "strength": "weak", "verdict": "reroll", "why": "smooth paste looks like milk chocolate and is ringed by whole beans; koshian should be dark purplish-brown with no whole beans"}
+{"check": "claude", "h": "38c3578112", "key": "mext-04045", "model": "m6", "roll": 0, "strength": "weak", "verdict": "reroll", "why": "square blocks with holes, not a cylindrical tube with round cut rings"}
+{"check": "claude", "h": "6fe3aabb8e", "key": "maff_kyodo-shijimi_jiru_shiga", "model": "m8", "roll": 1, "strength": "strong", "verdict": "reroll", "why": "clams are large pale asari-like shells, not tiny black shijimi"}
+{"check": "claude", "h": "6636d32c6f", "key": "maff_kyodo-shouga_misooden_aomori", "model": "m8", "roll": 1, "strength": "medium", "verdict": "reroll", "why": "oden items present but the defining ginger miso dollop is missing"}
+{"check": "claude", "h": "967db08030", "key": "maff_kyodo-sumochi_fukuoka", "model": "m8", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "mochi drawn as neat tofu-like cubes in red broth with shredded (not grated) daikon"}
+{"check": "claude", "h": "22114bc915", "key": "maff_kyodo-taranoko_ae_aomori", "model": "m8", "roll": 1, "strength": "strong", "verdict": "reroll", "why": "thick carrot sticks with a few pink beads on top; roe does not coat the strips"}
+{"check": "claude", "h": "0642d9f428", "key": "mext-06098", "model": "m8", "roll": 1, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "c694c748d4", "key": "mext-06343", "model": "m8", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "looks like eggplant halves with crumbly topping, not fully batter-coated tempura"}
+{"check": "claude", "h": "2ba181b9e9", "key": "mext-06208", "model": "m8", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "stiff round stalks like green beans/scallion, not soft flat limp chive blades"}
+{"check": "claude", "h": "3f702012d6", "key": "mext-06394", "model": "m8", "roll": 1, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "2a26c975c0", "key": "mext-06260", "model": "m8", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "long narrow bumpy pea-like pods, not flat broad crescent hyacinth bean pods"}
+{"check": "claude", "h": "1d7233fccd", "key": "maff_kyodo-renkonno_suri_nagashi_jiru_miyazaki", "model": "m8", "roll": 0, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "4e73d9a146", "key": "maff_kyodo-sakeno_kasuni_nagano", "model": "m8", "roll": 1, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "67d0fd3434", "key": "maff_kyodo-sanma_no_kigaki_miyagi", "model": "m8", "roll": 0, "strength": "weak", "verdict": "reroll", "why": "noodle-like brown strands in a soupy broth, not flaked saury mixed into grated daikon"}
+{"check": "claude", "h": "d08a2bfb0b", "key": "maff_kyodo-sasa_kamaboko_no_isobeage_miyagi", "model": "m8", "roll": 0, "strength": "weak", "verdict": "reroll", "why": "fried cakes have fin/tail-like ends and read as small fried fish"}
+{"check": "claude", "h": "630d8e8c3d", "key": "maff_kyodo-takenokonokinomeae_kyoto", "model": "m8", "roll": 1, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "2989d13e6c", "key": "maff_kyodo-tobi_tsuki_dango_fukui", "model": "m8", "roll": 0, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "6d8e2dc96e", "key": "mext-06075", "model": "m8", "roll": 0, "strength": "weak", "verdict": "reroll", "why": "thick ribbed western celery stalks with heart base, not thin-stemmed Chinese celery"}
+{"check": "claude", "h": "4e46907398", "key": "mext-06090", "model": "m8", "roll": 0, "strength": "weak", "verdict": "reroll", "why": "fresh raw-looking whole greens, not boiled, squeezed and cut"}
+{"check": "claude", "h": "95e6c16df2", "key": "mext-06129", "model": "m1", "roll": 0, "strength": "weak", "verdict": "reroll", "why": "shows a sizeable white daikon root; young radish greens should be mostly leaves with only thin threadlike roots"}
+{"check": "claude", "h": "5b70b2311d", "key": "mext-06376", "model": "m1", "roll": 0, "strength": "weak", "verdict": "reroll", "why": "light green savoy-cabbage-like form with a tight headed centre; should be a flat open rosette of dark green crinkled leaves"}
+{"check": "claude", "h": "ec47298172", "key": "mext-06189", "model": "m1", "roll": 0, "strength": "weak", "verdict": "fallback", "why": "drawn as a tight headed napa cabbage; nagasaki hakusai is a non-heading open dark green rosette"}
+{"check": "claude", "h": "865603edc0", "key": "maff_kyodo-40_26_hyogo", "model": "m3", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "soupy bowl of brown soba-like noodles; should be nearly dry stew with clear glass noodles and chicken"}
+{"check": "claude", "h": "7e5c35fc45", "key": "maff_kyodo-47_8_okinawa", "model": "m3", "roll": 2, "strength": "strong", "verdict": "reroll", "why": "pale bun-like balls with a hole-like dimple; should be deep golden-brown solid balls with cracked tops"}
+{"check": "claude", "h": "046cef361f", "key": "maff_kyodo-kuzu_mochi_nara", "model": "m3", "roll": 2, "strength": "strong", "verdict": "reroll", "why": "opaque white slabs with seed-like topping; should be translucent with powdery kinako"}
+{"check": "claude", "h": "a623a87532", "key": "maff_kyodo-mimi_yama_nashi", "model": "m3", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "no folded dough squares in the soup; tray pieces look like rolled marshmallows, not winnowing-basket shapes"}
+{"check": "claude", "h": "d55924112c", "key": "maff_kyodo-nerikuri_miyazaki", "model": "m3", "roll": 2, "strength": "medium", "verdict": "reroll", "why": "neat round balls with sesame-like coating; should be rough lumps covered in powdery kinako"}
+{"check": "claude", "h": "097877d769", "key": "maff_kyodo-wakegiae_kagawa", "model": "m3", "roll": 1, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "0bfca175f0", "key": "mext-06298", "model": "m3", "roll": 1, "strength": "weak", "verdict": "fallback", "why": "broad oval spinach leaves; reads as spinach, not water spinach with narrow arrowhead leaves"}
+{"check": "claude", "h": "c63211ff7b", "key": "mext-07162", "model": "m3", "roll": 1, "strength": "strong", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "922b5430e5", "key": "maff_kyodo-41_5_okayama", "model": "m3", "roll": 2, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "1e7143e237", "key": "maff_kyodo-44_19_tokushima", "model": "m3", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "clawed lobster with big pincers; must be clawless spiny lobster"}
+{"check": "claude", "h": "28e07aef36", "key": "maff_kyodo-45_10_saga", "model": "m3", "roll": 1, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "05cce882b3", "key": "maff_kyodo-47_15_okinawa", "model": "m3", "roll": 1, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "fd49274b34", "key": "maff_kyodo-aka_garei_no_komaburi_tottori", "model": "m3", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "slices only sparsely dotted with shiny orange beads; should be fully crusted in fine dry roe grains"}
+{"check": "claude", "h": "01ce6a6571", "key": "maff_kyodo-kushiasari_aichi", "model": "m3", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "plump glossy round balls like takoyaki/shell-on clams; should be small shrunken dried shelled clams"}
+{"check": "claude", "h": "7c0b41fc14", "key": "maff_kyodo-masunoankake_yamagata", "model": "m3", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "salmon cubes look raw and glossy in dark brown sauce; should be cooked opaque flaky flesh in clear amber ankake"}
+{"check": "claude", "h": "21c3a54f8d", "key": "maff_kyodo-namakonosunomono_ishikawa", "model": "m3", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "whole sea cucumber plus mushroom-like slices on noodles; should be thin slices in grated daikon only"}
+{"check": "claude", "h": "de7670056a", "key": "maff_kyodo-uchimame_jiru_shiga", "model": "m1", "roll": 0, "strength": "weak", "verdict": "reroll", "why": "soybeans drawn whole and round, not flattened uchimame discs; no turnip/taro visible"}
+{"check": "claude", "h": "017cbfb6ea", "key": "maff_kyodo-yuzunokawani_oita", "model": "m1", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "pieces look like whole fruit halves or candied potatoes, not thin simmered yuzu peel"}
+{"check": "claude", "h": "4f970ac998", "key": "mext-06281", "model": "m1", "roll": 1, "strength": "weak", "verdict": "fallback", "why": "drawn as a cluster of capped mushrooms (shimeji-like), not sheathed myoga shoots"}
+{"check": "claude", "h": "59e9351629", "key": "maff_kyodo-ayu_zushi_nara", "model": "m3", "roll": 2, "strength": "medium", "verdict": "reroll", "why": "whole round fish sitting on rice, not split open flat on a pressed rice block"}
+{"check": "claude", "h": "0f89b1c9db", "key": "maff_kyodo-bakudanonigiri_shimane", "model": "m3", "roll": 2, "strength": "medium", "verdict": "reroll", "why": "one onigiri is triangular with white rice showing; should be big round balls fully wrapped in seaweed"}
+{"check": "claude", "h": "b6d8f3e330", "key": "maff_kyodo-decchi_youkan_shiga", "model": "m3", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "interior drawn as a dough roll with whole-bean filling instead of solid brown yokan in bamboo sheath"}
+{"check": "claude", "h": "48dfd0e6ec", "key": "maff_kyodo-fukumen_ehime", "model": "m3", "roll": 2, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "e71eea7bee", "key": "maff_kyodo-hasumushi_ishikawa", "model": "m3", "roll": 2, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "f3153ac2ba", "key": "maff_kyodo-houtou_yama_nashi", "model": "m3", "roll": 2, "strength": "strong", "verdict": "reroll", "why": "noodles are thin round udon/ramen-like strands, not wide flat hoto ribbons; broth too clear"}
+{"check": "claude", "h": "3bc140b23d", "key": "maff_kyodo-itimonji_no_guruguru_kumamoto", "model": "m3", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "plain halved green onions laid in a row, not leaves wound into coils"}
+{"check": "claude", "h": "7b8911409d", "key": "maff_kyodo-karaimonettabo_kagoshima", "model": "m3", "roll": 2, "strength": "medium", "verdict": "reroll", "why": "smooth round buns barely dusted; should be soft flattened mochi lumps fully coated in kinako"}
+{"check": "claude", "h": "ed6a5f4005", "key": "maff_kyodo-sanma_sushi_nara", "model": "m3", "roll": 2, "strength": "strong", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "cb0d2ce4e3", "key": "maff_kyodo-shirasu_don_wakayama", "model": "m3", "roll": 2, "strength": "medium", "verdict": "reroll", "why": "plain rice visible, no heap of whitebait covering it"}
+{"check": "claude", "h": "bcffd11dd9", "key": "maff_kyodo-tukino_shizuku_yama_nashi", "model": "m3", "roll": 2, "strength": "medium", "verdict": "reroll", "why": "plain green grapes with no white sugar coating"}
+{"check": "claude", "h": "91e972bb7a", "key": "mext-01175", "model": "m3", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "bread slice has brown crust edges; should be crustless"}
+{"check": "claude", "h": "a5ac4b0cc1", "key": "mext-01162", "model": "m3", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "kernels are yellow-orange, not ivory-white dent corn"}
+{"check": "claude", "h": "f7387b23a7", "key": "mext-02060", "model": "m3", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "opaque tan wheat-like noodles; boiled starch noodles should be clear and glassy"}
+{"check": "claude", "h": "be35c62ea5", "key": "mext-04073", "model": "m3", "roll": 2, "strength": "medium", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "9d20783768", "key": "maff_kyodo-hatahatanoyuage_yamagata", "model": "m8", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "generic scaly carp-like fish, not scaleless mottled hatahata; no grated daikon"}
+{"check": "claude", "h": "5725fde5dd", "key": "maff_kyodo-jojokiri_aichi", "model": "m8", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "long thin round udon/somen strands instead of short flat hand-cut noodles"}
+{"check": "claude", "h": "f0091e90ee", "key": "maff_kyodo-ryukyunosunomono_kochi", "model": "m8", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "thick cucumber-like chunks, no spongy taro-stem texture, no fish flakes"}
+{"check": "claude", "h": "e19c32fd93", "key": "maff_kyodo-shakuno_tenpura_kumamoto", "model": "m8", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "raw single shrimp/langoustine with long antennae, no tempura batter"}
+{"check": "claude", "h": "628fed520f", "key": "maff_kyodo-zuikinotaitan_kyoto", "model": "m8", "roll": 1, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "18ae717d8a", "key": "mext-04102", "model": "m8", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "smooth paste but surrounded by whole beans; koshi-an should have none"}
+{"check": "claude", "h": "38c3578112", "key": "mext-04045", "model": "m8", "roll": 1, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "af22f4b724", "key": "maff_kyodo-manbano_kenchan_kagawa", "model": "m4", "roll": 2, "strength": "medium", "verdict": "pass", "why": "greens with tofu and fried tofu strips; tofu cubed rather than crumbled, minor"}
+{"check": "claude", "h": "ef6ee5a39e", "key": "maff_kyodo-nira_senbei_nagano", "model": "m4", "roll": 2, "strength": "medium", "verdict": "pass", "why": "thin crepe with garlic chives"}
+{"check": "claude", "h": "6fe3aabb8e", "key": "maff_kyodo-shijimi_jiru_shiga", "model": "m4", "roll": 2, "strength": "strong", "verdict": "reroll", "why": "clams drawn large with pale asari-like shells; shijimi should be tiny shiny black"}
+{"check": "claude", "h": "c2ffefb4e1", "key": "mext-06044", "model": "m4", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "bright yellow round slices look like pineapple/takuan; no skin or rice bran visible"}
+{"check": "claude", "h": "c694c748d4", "key": "mext-06343", "model": "m4", "roll": 2, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "c0259e305f", "key": "mext-07108", "model": "m4", "roll": 1, "strength": "weak", "verdict": "pass", "why": "dried banana slices, a bit golden but recognisable"}
+{"check": "claude", "h": "1e7143e237", "key": "maff_kyodo-44_19_tokushima", "model": "m4", "roll": 2, "strength": "weak", "verdict": "fallback", "why": "clawed American lobster, not a clawless spiny lobster (ise-ebi)"}
+{"check": "claude", "h": "fd49274b34", "key": "maff_kyodo-aka_garei_no_komaburi_tottori", "model": "m4", "roll": 2, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "51676a9a35", "key": "maff_kyodo-koinomani_yamagata", "model": "m4", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "looks like a pink salmon steak, not dark glossy soy-simmered carp"}
+{"check": "claude", "h": "dce217c2e2", "key": "maff_kyodo-kutuzoko_no_nituke_fukuoka", "model": "m4", "roll": 1, "strength": "weak", "verdict": "pass", "why": "flat fish simmered in soy; rather flounder-shaped but acceptable"}
+{"check": "claude", "h": "7c0b41fc14", "key": "maff_kyodo-masunoankake_yamagata", "model": "m4", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "salmon chunks look raw and glossy, not cooked through"}
+{"check": "claude", "h": "21c3a54f8d", "key": "maff_kyodo-namakonosunomono_ishikawa", "model": "m4", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "whole spiky sea cucumber shown; slices look like mushrooms; no grated daikon"}
+{"check": "claude", "h": "c0b3bd3373", "key": "maff_kyodo-negitosatsumaimononuta_kochi", "model": "m4", "roll": 2, "strength": "weak", "verdict": "pass", "why": "sweet potato with miso; green onion only as a sprinkle"}
+{"check": "claude", "h": "67d0fd3434", "key": "maff_kyodo-sanma_no_kigaki_miyagi", "model": "m4", "roll": 1, "strength": "weak", "verdict": "fallback", "why": "looks like a bowl of noodles in broth, not flaked saury with grated daikon"}
+{"check": "claude", "h": "d08a2bfb0b", "key": "maff_kyodo-sasa_kamaboko_no_isobeage_miyagi", "model": "m4", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "fried cakes drawn as whole fish with tails, not leaf-shaped kamaboko"}
+{"check": "claude", "h": "6d8e2dc96e", "key": "mext-06075", "model": "m4", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "thick ribbed Western celery with broad heart base, not thin-stemmed kinsai"}
+{"check": "claude", "h": "4e46907398", "key": "mext-06090", "model": "m4", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "crisp raw-looking bok choy-like bunch, not boiled wilted greens cut into lengths"}
+{"check": "claude", "h": "95e6c16df2", "key": "mext-06129", "model": "m4", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "shows a large white daikon root; should be young greens with only thread-thin roots"}
+{"check": "claude", "h": "5b70b2311d", "key": "mext-06376", "model": "m4", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "cabbage-like headed centre, light frilly leaves; not a flat rosette of dark blistered leaves"}
+{"check": "claude", "h": "6636d32c6f", "key": "maff_kyodo-shouga_misooden_aomori", "model": "m4", "roll": 2, "strength": "medium", "verdict": "reroll", "why": "reads as plain oden; the defining ginger miso dollop on top is missing or unclear"}
+{"check": "claude", "h": "967db08030", "key": "maff_kyodo-sumochi_fukuoka", "model": "m4", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "neat white cubes in brown broth look like tofu, not torn mochi; topping looks like bean sprouts, not grated daikon"}
+{"check": "claude", "h": "22114bc915", "key": "maff_kyodo-taranoko_ae_aomori", "model": "m4", "roll": 2, "strength": "strong", "verdict": "reroll", "why": "bare red carrot sticks with sparse pink dots, like crab sticks; strips should be fully coated in cod roe"}
+{"check": "claude", "h": "22a5888bb0", "key": "mext-01014", "model": "m4", "roll": 1, "strength": "strong", "verdict": "reroll", "why": "kernels too large and glossy red, read as beans or peanuts rather than small matte wheat grains"}
+{"check": "claude", "h": "015d365757", "key": "mext-01030", "model": "m4", "roll": 1, "strength": "strong", "verdict": "reroll", "why": "thin saltine-style crackers with many holes; kanpan should be thick small biscuits with two holes"}
+{"check": "claude", "h": "ab9156e33f", "key": "mext-01070", "model": "m4", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "heap of rounded seed-like kernels, not thin flat wheat germ flakes"}
+{"check": "claude", "h": "e11fb6e720", "key": "mext-02068", "model": "m4", "roll": 1, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "9969469d5a", "key": "mext-02021", "model": "m4", "roll": 1, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "2ba181b9e9", "key": "mext-06208", "model": "m4", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "stiff round bright-green stalks like raw green beans; boiled nira should be soft limp flat blades"}
+{"check": "claude", "h": "2a26c975c0", "key": "mext-06260", "model": "m4", "roll": 2, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "0837b76f88", "key": "mext-07122", "model": "m4", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "whole firm unpeeled grapes with no syrup, reads as fresh grapes not canned peeled ones"}
+{"check": "claude", "h": "632afd0136", "key": "mext-07153", "model": "m4", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "apple halves with red skin and seeded core, reads as fresh apple not peeled canned slices in syrup"}
+{"check": "claude", "h": "2d88404007", "key": "mext-08004", "model": "m4", "roll": 1, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "29fe2bcc93", "key": "mext-08032", "model": "m4", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "whole crisp bright-white mushrooms that look raw, not soft greyish boiled halves"}
+{"check": "claude", "h": "8f24c931b6", "key": "mext-09021", "model": "m4", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "wide frilly ribbons like wood ear or pasta, not a fluffy heap of hair-thin shaved kelp"}
+{"check": "claude", "h": "accd9446ce", "key": "mext-09039", "model": "m4", "roll": 1, "strength": "strong", "verdict": "reroll", "why": "flat folded glossy sheets like rehydrated wakame; no whole frond with midrib and lobes as in refs"}
+{"check": "claude", "h": "de7670056a", "key": "maff_kyodo-uchimame_jiru_shiga", "model": "m6", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "beans are whole round soybeans, not the flattened cracked uchimame discs that define the dish"}
+{"check": "claude", "h": "017cbfb6ea", "key": "maff_kyodo-yuzunokawani_oita", "model": "m6", "roll": 2, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "8fdbb12f1a", "key": "mext-08058", "model": "m6", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "nameko drawn as round orange balls on toothpick-like stems (looks like meatballs), no slimy jelly coat or mushroom caps"}
+{"check": "claude", "h": "d618e5abc2", "key": "mext-03012", "model": "m4", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "syrup drawn golden amber like apple juice; sucrose liquid sugar should be colourless"}
+{"check": "claude", "h": "997c3d588a", "key": "mext-04084", "model": "m4", "roll": 1, "strength": "strong", "verdict": "reroll", "why": "looks like a crisp blistered cracker/cheese toast, not soft spongy damp oil-drained aburaage as in refs"}
+{"check": "claude", "h": "377c402e81", "key": "mext-04085", "model": "m4", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "thick block like grilled tofu (yakidofu), not a thin pancake-flat aburaage sheet"}
+{"check": "claude", "h": "6ec9604f25", "key": "mext-04064", "model": "m4", "roll": 1, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "dd8f4662e7", "key": "mext-05020", "model": "m4", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "fat round acorns/hazelnuts; shii nuts are small slender and pointed"}
+{"check": "claude", "h": "03329b733c", "key": "mext-06076", "model": "m4", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "thick crisp bright stalks like raw celery/asparagus, not soft thin boiled kinsai with leaves"}
+{"check": "claude", "h": "cedf4b0c28", "key": "mext-06097", "model": "m4", "roll": 1, "strength": "medium", "verdict": "reroll", "why": "short ordinary green beans bundle; yardlong beans should be very long thin coiled pods as in ref"}
+{"check": "claude", "h": "2a63e1ed02", "key": "mext-10457", "model": "m4", "roll": 1, "strength": "weak", "verdict": "fallback", "why": "whole unsplit pink fish resembling sea bream, not a horse mackerel opened flat (hiraki)"}
+{"check": "claude", "h": "aa1566cca5", "key": "mext-10395", "model": "m4", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "whole sardines with heads and patchy crumbs like grilled fish; should be butterflied panko-crusted fry"}
+{"check": "claude", "h": "5f9e00c0f3", "key": "mext-10056", "model": "m4", "roll": 1, "strength": "medium", "verdict": "reroll", "why": "few oversized chubby dumpling-like fish, not a fluffy pile of tiny whitebait"}
+{"check": "claude", "h": "9edcc4a62c", "key": "mext-10397", "model": "m4", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "whole headed sardines in tin, not thin headless anchovy fillet strips"}
+{"check": "claude", "h": "9d20783768", "key": "maff_kyodo-hatahatanoyuage_yamagata", "model": "m4", "roll": 2, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "51676a9a35", "key": "maff_kyodo-koinomani_yamagata", "model": "m4", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "pale raw-looking fish steak like salmon; not simmered dark glossy red-brown in sweet soy"}
+{"check": "claude", "h": "d08a2bfb0b", "key": "maff_kyodo-sasa_kamaboko_no_isobeage_miyagi", "model": "m4", "roll": 2, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "e19c32fd93", "key": "maff_kyodo-shakuno_tenpura_kumamoto", "model": "m4", "roll": 2, "strength": "weak", "verdict": "fallback", "why": "raw langoustine/crayfish with long antennae and no batter; not mantis shrimp tempura"}
+{"check": "claude", "h": "18ae717d8a", "key": "mext-04102", "model": "m4", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "whole beans visible around the paste; koshian must be completely smooth"}
+{"check": "claude", "h": "837cb3c274", "key": "mext-06050", "model": "m4", "roll": 0, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "6d8e2dc96e", "key": "mext-06075", "model": "m4", "roll": 2, "strength": "weak", "verdict": "fallback", "why": "western celery with thick ribbed stalks and heart base, not thin-stemmed Chinese celery"}
+{"check": "claude", "h": "4e46907398", "key": "mext-06090", "model": "m4", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "crisp raw leaves with thick stems, not boiled wilted greens squeezed into a cut log"}
+{"check": "claude", "h": "95e6c16df2", "key": "mext-06129", "model": "m6", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "shows a big round white turnip-like root; desc requires mostly leaves with only thin threadlike roots"}
+{"check": "claude", "h": "5b70b2311d", "key": "mext-06376", "model": "m6", "roll": 2, "strength": "weak", "verdict": "fallback", "why": "drawn as a round headed light-green cabbage, not a flat dark crinkled yukina rosette"}
+{"check": "claude", "h": "2302e89437", "key": "mext-06140", "model": "m8", "roll": 1, "strength": "medium", "verdict": "reroll", "why": "far too thick and light orange, looks like a coiled sausage; moriguchi-zuke is finger-thin and dark brown"}
+{"check": "claude", "h": "0714831552", "key": "mext-06164", "model": "m8", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "looks like an ordinary spinach bunch; no thick triangular fleshy leaves on trailing stems"}
+{"check": "claude", "h": "54f184a447", "key": "mext-06192", "model": "m8", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "glossy bright purple halves with pale fresh flesh look raw, not boiled"}
+{"check": "claude", "h": "129718fba1", "key": "mext-06197", "model": "m8", "roll": 1, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "a249bd8be9", "key": "mext-06411", "model": "m8", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "drawn as regular green onions with white bulbs and roots, not thread-thin menegi shoots"}
+{"check": "claude", "h": "5480402db6", "key": "mext-06276", "model": "m8", "roll": 1, "strength": "medium", "verdict": "reroll", "why": "leaves look like cilantro/parsley, not three-part mitsuba leaves; root drawn as a turnip-like bulb"}
+{"check": "claude", "h": "434ed6f91f", "key": "mext-06398", "model": "m8", "roll": 1, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "509665c18c", "key": "mext-07160", "model": "m8", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "strawberries are plump, glossy and fresh-looking, not shrivelled dried"}
+{"check": "claude", "h": "f51f0a7c96", "key": "mext-10089", "model": "m8", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "torn jerky-like pieces with bright red streaks; not firm matte boiled bonito chunks"}
+{"check": "claude", "h": "7591a6ddcc", "key": "mext-10446", "model": "m8", "roll": 1, "strength": "medium", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "b77eb4757c", "key": "mext-10101", "model": "m8", "roll": 1, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "8bc53b9acd", "key": "mext-10424", "model": "m8", "roll": 1, "strength": "strong", "verdict": "reroll", "why": "too pink and heavily marbled, reads as pork/ham; refs show pale pinkish-white kanpachi"}
+{"check": "claude", "h": "24147b49dc", "key": "mext-10121", "model": "m8", "roll": 1, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "cde433d44e", "key": "mext-10135", "model": "m8", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "bright glossy salmon-pink with raw texture; not matte opaque flaking cooked flesh"}
+{"check": "claude", "h": "648ec6325f", "key": "mext-10439", "model": "m8", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "glossy bright orange fillet looks raw and shows a grey skin edge; should be skinless, matte, flaking"}
+{"check": "claude", "h": "2c1eeeb1c9", "key": "mext-10172", "model": "m8", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "whole fish with saba-like stripes instead of a grilled sawara fillet with white flaky flesh"}
+{"check": "claude", "h": "5c81d379ee", "key": "mext-06100", "model": "m6", "roll": 0, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "7715107c1c", "key": "mext-06251", "model": "m6", "roll": 0, "strength": "weak", "verdict": "reroll", "why": "drawn as an ordinary tall blocky bell pepper, not the squat flattened tomato-shaped tomapi"}
+{"check": "claude", "h": "22a5888bb0", "key": "mext-01014", "model": "m8", "roll": 2, "strength": "strong", "verdict": "reroll", "why": "kernels glossy orange-red and bean-like; refs show matte brown wheat grains"}
+{"check": "claude", "h": "015d365757", "key": "mext-01030", "model": "m8", "roll": 2, "strength": "strong", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "ab9156e33f", "key": "mext-01070", "model": "m8", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "shows whole seed-like kernels, not thin flat wheat germ flakes"}
+{"check": "claude", "h": "d618e5abc2", "key": "mext-03012", "model": "m8", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "syrup is golden-yellow like juice/oil; should be colourless"}
+{"check": "claude", "h": "997c3d588a", "key": "mext-04084", "model": "m8", "roll": 2, "strength": "strong", "verdict": "reroll", "why": "looks crisp and flaky like puff pastry, not spongy damp aburaage"}
+{"check": "claude", "h": "377c402e81", "key": "mext-04085", "model": "m8", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "thick scored block like grilled atsuage, not a thin sheet cut into strips"}
+{"check": "claude", "h": "dd8f4662e7", "key": "mext-05020", "model": "m8", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "round chestnut/hazelnut-like nuts; shii nuts are small, slender and pointed"}
+{"check": "claude", "h": "03329b733c", "key": "mext-06076", "model": "m8", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "thick bright green asparagus-like stalks, no leaves; not thin dark kinsai stems"}
+{"check": "claude", "h": "ec6b0a8879", "key": "mext-07092", "model": "m8", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "fresh pear halves with skin, stems and seeds, not peeled canned pear in syrup"}
+{"check": "claude", "h": "9a900a06b7", "key": "mext-07115", "model": "m8", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "whole unpeeled loquats like oranges, not peeled canned halves in syrup"}
+{"check": "claude", "h": "0837b76f88", "key": "mext-07122", "model": "m8", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "fresh-looking grapes with skin, no syrup; not peeled translucent canned grapes"}
+{"check": "claude", "h": "632afd0136", "key": "mext-07153", "model": "m8", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "apple slices with red skin and core; canned apple should be peeled, translucent"}
+{"check": "claude", "h": "693f175ee7", "key": "mext-10175", "model": "m8", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "whole intact mackerel-like fish, not a saury split open flat (hiraki)"}
+{"check": "claude", "h": "376edd57f6", "key": "mext-10408", "model": "m8", "roll": 1, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "5de8350d54", "key": "mext-10215", "model": "m8", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "one sail-like dorsal fin on a mackerel-like fish; no wing-like pectoral fins spread on both sides"}
+{"check": "claude", "h": "6323f934fb", "key": "mext-10219", "model": "m8", "roll": 1, "strength": "medium", "verdict": "reroll", "why": "whole headed fish looking grilled, not headless hard dried herring fillets"}
+{"check": "claude", "h": "48ee1e1412", "key": "mext-10223", "model": "m8", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "knobbly segmented sticks read as ginger/dango; no grainy roe skein texture"}
+{"check": "claude", "h": "55d97031a3", "key": "mext-10233", "model": "m8", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "too pink and marbled, reads as raw pork rather than pale hiramasa sashimi"}
+{"check": "claude", "h": "de7670056a", "key": "maff_kyodo-uchimame_jiru_shiga", "model": "m6", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "soybeans drawn whole and round, not flattened cracked discs (uchimame), so it reads as plain soybean miso soup"}
+{"check": "claude", "h": "8fdbb12f1a", "key": "mext-08058", "model": "m6", "roll": 2, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "cedf4b0c28", "key": "mext-06097", "model": "m1", "roll": 2, "strength": "medium", "verdict": "reroll", "why": "short stubby green-bean bundle like ingen, not extremely long thin yardlong pods"}
+{"check": "claude", "h": "5e9642911b", "key": "mext-07180", "model": "m1", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "looks like a fresh glossy apple with bites/peeled patches, not a soft wrinkled baked apple"}
+{"check": "claude", "h": "881b407f64", "key": "mext-08002", "model": "m1", "roll": 1, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "3cd9f5ffd1", "key": "mext-08050", "model": "m1", "roll": 1, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "29fe2bcc93", "key": "mext-08032", "model": "m1", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "crisp pristine white whole raw-looking mushrooms, not soft greyish boiled"}
+{"check": "claude", "h": "8f24c931b6", "key": "mext-09021", "model": "m1", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "wavy frilly ribbons like frisee/seaweed salad, not hair-thin fluffy shaved tororo kombu"}
+{"check": "claude", "h": "d8e309200d", "key": "mext-09033", "model": "m1", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "glossy black strands like kombu/hijiki tsukudani, not a smooth jam-like nori paste"}
+{"check": "claude", "h": "accd9446ce", "key": "mext-09039", "model": "m1", "roll": 2, "strength": "strong", "verdict": "reroll", "why": "bright yellow-green like blanched wakame; raw frond should be brown as refs show"}
+{"check": "claude", "h": "00989d7da6", "key": "mext-09040", "model": "m1", "roll": 1, "strength": "strong", "verdict": "reroll", "why": "glossy wet rehydrated green wakame, not small dry matte crumpled flakes"}
+{"check": "claude", "h": "c3a81191e3", "key": "mext-10458", "model": "m1", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "whole grilled fish in profile, not split open flat hiraki"}
+{"check": "claude", "h": "aa1566cca5", "key": "mext-10395", "model": "m1", "roll": 2, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "1b8aa1582e", "key": "mext-10396", "model": "m1", "roll": 1, "strength": "strong", "verdict": "fallback", "why": "looks like a plate of pinkish noodles/vermicelli, not glassy grey baby fish"}
+{"check": "claude", "h": "5f9e00c0f3", "key": "mext-10056", "model": "m1", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "chunky cartoon blob fish with big eyes, not a soft pile of tiny thin whitebait; ref unhelpful"}
+{"check": "claude", "h": "39f42fcc30", "key": "mext-10058", "model": "m1", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "whole plump glazed fish, not split open and pressed flat"}
+{"check": "claude", "h": "9edcc4a62c", "key": "mext-10397", "model": "m1", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "whole headed sardines in a tin (oil sardines), not thin headless anchovy fillet strips"}
+{"check": "claude", "h": "5c80c38e5b", "key": "mext-10244", "model": "m1", "roll": 1, "strength": "weak", "verdict": "fallback", "why": "generic red snapper/madai lookalike; no big square head or wing-like blue pectoral fins of gurnard"}
+{"check": "claude", "h": "11b3a4745c", "key": "mext-10427", "model": "m1", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "abalone foot is pale beige; kuro-awabi should show a black/dark green foot"}
+{"check": "claude", "h": "8d785960d1", "key": "mext-09014", "model": "m6", "roll": 0, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "1fa8828485", "key": "mext-10265", "model": "m6", "roll": 0, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "5330c2ce33", "key": "mext-10275", "model": "m6", "roll": 0, "strength": "weak", "verdict": "reroll", "why": "pink lateral stripe makes it read as rainbow trout; yamame should have no pink stripe, parr marks too faint"}
+{"check": "claude", "h": "2302e89437", "key": "mext-06140", "model": "m7", "roll": 2, "strength": "medium", "verdict": "reroll", "why": "moriguchi-zuke drawn short, thick and segmented like a grub; should be arm-long finger-thin wrinkled radish"}
+{"check": "claude", "h": "0714831552", "key": "mext-06164", "model": "m7", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "looks like a generic spinach bunch with broad wavy leaves; not tsuruna's small fleshy triangular leaves on trailing stems"}
+{"check": "claude", "h": "54f184a447", "key": "mext-06192", "model": "m7", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "eggplant looks raw: glossy vivid purple skin and firm pale flesh, not soft boiled dull pieces"}
+{"check": "claude", "h": "a249bd8be9", "key": "mext-06411", "model": "m7", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "drawn as thick scallions with white bulbs; menegi should be thread-thin green shoots with no bulbs"}
+{"check": "claude", "h": "5480402db6", "key": "mext-06276", "model": "m7", "roll": 2, "strength": "medium", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "509665c18c", "key": "mext-07160", "model": "m7", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "strawberries look fresh, plump and juicy; not shrivelled dried"}
+{"check": "claude", "h": "ec6b0a8879", "key": "mext-07092", "model": "m7", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "whole fresh unpeeled pears with stems and seeds; should be peeled cored halves in syrup"}
+{"check": "claude", "h": "9a900a06b7", "key": "mext-07115", "model": "m7", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "whole unpeeled loquats with calyx, look like fresh oranges/apricots; should be peeled translucent halves in syrup"}
+{"check": "claude", "h": "d0bf2201b4", "key": "mext-10082", "model": "m7", "roll": 1, "strength": "strong", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "f51f0a7c96", "key": "mext-10089", "model": "m7", "roll": 2, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "8bc53b9acd", "key": "mext-10424", "model": "m7", "roll": 2, "strength": "strong", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "b776cdd795", "key": "mext-10291", "model": "m7", "roll": 1, "strength": "medium", "verdict": "reroll", "why": "snails drawn in shells; canned escargot should be shell-less meats in brine"}
+{"check": "claude", "h": "731e106295", "key": "mext-10299", "model": "m7", "roll": 1, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "2346f27846", "key": "mext-10414", "model": "m7", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "scallops drawn as fluted ridged pudding/canele shapes; should be smooth white cylinders with seared tops"}
+{"check": "claude", "h": "ccb4f447cc", "key": "mext-10331", "model": "m7", "roll": 1, "strength": "medium", "verdict": "reroll", "why": "large bright orange curled shrimp; should be a sticky clump of tiny dark reddish-brown soy-simmered shrimp"}
+{"check": "claude", "h": "0e64da83ff", "key": "mext-10420", "model": "m7", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "whole squid with body shown; should be only fins and tentacles, no body"}
+{"check": "claude", "h": "7715107c1c", "key": "mext-06251", "model": "m3", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "looks like an ordinary tall bell pepper, not the squat flattened tomato-shaped tomapi"}
+{"check": "claude", "h": "235b8319c1", "key": "mext-10318", "model": "m3", "roll": 0, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "ac4b0d9113", "key": "mext-10366", "model": "m3", "roll": 0, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "8bfc5b6a8b", "key": "mext-10090", "model": "m7", "roll": 1, "strength": "weak", "verdict": "fallback", "why": "looks like a string-netted roast pork / chashu, not a namaribushi bonito loin"}
+{"check": "claude", "h": "7299482a53", "key": "mext-10093", "model": "m7", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "flakes too pale and large, sitting in sauce; not a dark glossy sticky tsukudani clump"}
+{"check": "claude", "h": "072ecc51a2", "key": "mext-10110", "model": "m7", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "generic red sea-bream shaped fish; lacks kichiji big eyes, spiny head and dorsal black spot"}
+{"check": "claude", "h": "75cf616518", "key": "mext-10123", "model": "m7", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "drawn as sardine-like fish; lacks megochi flat shovel-shaped head and tapering body"}
+{"check": "claude", "h": "cde433d44e", "key": "mext-10135", "model": "m7", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "glossy bright orange flesh looks raw, not matte opaque boiled"}
+{"check": "claude", "h": "712bfb7a90", "key": "mext-10433", "model": "m7", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "glossy bright orange steak looks raw, not matte opaque poached flesh"}
+{"check": "claude", "h": "648ec6325f", "key": "mext-10439", "model": "m7", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "glossy bright orange flesh looks raw, not matte opaque poached"}
+{"check": "claude", "h": "79aefad619", "key": "mext-10155", "model": "m7", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "whole raw-looking mackerel, not a boiled boneless fillet with opaque flesh"}
+{"check": "claude", "h": "2c1eeeb1c9", "key": "mext-10172", "model": "m7", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "whole grilled mackerel-like fish, not a sawara fillet with white flaky flesh"}
+{"check": "claude", "h": "1fc9afae7c", "key": "mext-10407", "model": "m7", "roll": 1, "strength": "weak", "verdict": "fallback", "why": "looks like a sliced pork/tuna block with fat seams, not slim saury sashimi"}
+{"check": "claude", "h": "693f175ee7", "key": "mext-10175", "model": "m7", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "whole fish, not split open flat (hiraki)"}
+{"check": "claude", "h": "4a05a5caf3", "key": "mext-10176", "model": "m7", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "whole glazed fish, not split open flat like a ribbon"}
+{"check": "claude", "h": "df11ed89a7", "key": "mext-10409", "model": "m7", "roll": 1, "strength": "medium", "verdict": "reroll", "why": "breaded whole fish with head and tail, not a flat rectangular headless fillet like the ref"}
+{"check": "claude", "h": "5de8350d54", "key": "mext-10215", "model": "m7", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "ordinary fish with one small fin; lacks the huge spread wing-like pectoral fins"}
+{"check": "claude", "h": "6323f934fb", "key": "mext-10219", "model": "m7", "roll": 2, "strength": "medium", "verdict": "reroll", "why": "whole golden fish with heads; should be headless stiff dark dried fillets like the ref"}
+{"check": "claude", "h": "48ee1e1412", "key": "mext-10223", "model": "m7", "roll": 2, "strength": "weak", "verdict": "fallback", "why": "looks like skewered dango/potato balls, not dried herring roe skeins"}
+{"check": "claude", "h": "55d97031a3", "key": "mext-10233", "model": "m7", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "slices read as raw pork loin, not glossy fish sashimi"}
+{"check": "claude", "h": "27f1e59e5f", "key": "mext-11006", "model": "m7", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "heavily marbled steak; lean red shoulder (akami) should have no white fat"}
+{"check": "claude", "h": "25002ef138", "key": "mext-11017", "model": "m6", "roll": 1, "strength": "medium", "verdict": "reroll", "why": "drawn as heavily marbled steak with a white fat edge; 赤肉 should be lean deep red with no fat edge"}
+{"check": "claude", "h": "7bba40883d", "key": "mext-10105", "model": "m6", "roll": 0, "strength": "weak", "verdict": "reroll", "why": "whole raw-looking flatfish with loose roe beads on top; should be a boiled crosswise cut with a solid roe block inside"}
+{"check": "claude", "h": "6cf70381ea", "key": "mext-10380", "model": "m6", "roll": 0, "strength": "weak", "verdict": "fallback", "why": "reads as a bread loaf / swiss roll with a swirl; not recognisable as baked kamaboko"}
+{"check": "claude", "h": "cc64c28fb1", "key": "mext-11249", "model": "m6", "roll": 0, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "5e9642911b", "key": "mext-07180", "model": "m7", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "apple looks fresh and glossy like a candy apple, not baked (no wrinkled/split collapsed skin)"}
+{"check": "claude", "h": "d8e309200d", "key": "mext-09033", "model": "m7", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "shows chunky seaweed pieces rather than a smooth glossy tsukudani paste"}
+{"check": "claude", "h": "00989d7da6", "key": "mext-09040", "model": "m7", "roll": 2, "strength": "strong", "verdict": "reroll", "why": "wakame drawn glossy and rehydrated, not dry brittle dark flakes as in refs"}
+{"check": "claude", "h": "c3a81191e3", "key": "mext-10458", "model": "m7", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "whole grilled fish, not split open flat (hiraki)"}
+{"check": "claude", "h": "39f42fcc30", "key": "mext-10058", "model": "m7", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "plump whole glazed fish, not split and pressed flat mirin-boshi"}
+{"check": "claude", "h": "04c0fde40e", "key": "mext-10421", "model": "m7", "roll": 1, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "5f81901fb9", "key": "mext-10220", "model": "m7", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "whole herring, not split open flat (hiraki)"}
+{"check": "claude", "h": "9f8dd11c30", "key": "mext-10227", "model": "m7", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "one large bream-like simmered fish, not small whole gobies in dark glossy kanroni"}
+{"check": "claude", "h": "41a594fab4", "key": "mext-10411", "model": "m7", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "slices are red and marbled like tuna/meat, not pale pinkish-cream hamachi"}
+{"check": "claude", "h": "11b3a4745c", "key": "mext-10427", "model": "m7", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "abalone foot drawn pale beige; kuro-awabi foot should be black/dark green"}
+{"check": "claude", "h": "b776cdd795", "key": "mext-10291", "model": "m7", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "escargots shown in shells; canned escargot is shell-less meat in brine"}
+{"check": "claude", "h": "0fe284e8b5", "key": "mext-11029", "model": "m7", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "marbled steak with fat rim (sirloin-like), not a lean round fillet medallion"}
+{"check": "claude", "h": "21b143147c", "key": "mext-11096", "model": "m7", "roll": 1, "strength": "weak", "verdict": "fallback", "why": "looks like sliced black-skinned sausage/roll; no grey leaf-like pleated omasum"}
+{"check": "claude", "h": "75ebb7a6f3", "key": "mext-11114", "model": "m7", "roll": 1, "strength": "strong", "verdict": "reroll", "why": "joint with lots of white fat and pinkish marbling; refs show uniform dark lean venison"}
+{"check": "claude", "h": "28d10385ae", "key": "mext-11153", "model": "m7", "roll": 1, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "bb4171e728", "key": "mext-11303", "model": "m7", "roll": 1, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "7715107c1c", "key": "mext-06251", "model": "m1", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "drawn as an ordinary tall bell pepper, not the squat flattened tomato-shaped tomapi"}
+{"check": "claude", "h": "5330c2ce33", "key": "mext-10275", "model": "m1", "roll": 1, "strength": "weak", "verdict": "fallback", "why": "rainbow trout lookalike: pink lateral stripe and red spots, no dark parr marks of yamame"}
+{"check": "claude", "h": "0e4ff69f59", "key": "mext-11086", "model": "m1", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "thick white fat cap and marbling shown, but row is 脂身なし (lean only); reads as pork chop"}
+{"check": "claude", "h": "185ef2fd62", "key": "mext-10270", "model": "m3", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "slender generic mackerel/salmon-like fish; mejina is deep-bodied dark blue-black, no fillet"}
+{"check": "claude", "h": "e9911ad033", "key": "mext-10286", "model": "m3", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "abalone shown in its shell, glossy fresh/cooked; should be shell-less hard dark amber dried disc"}
+{"check": "claude", "h": "64353a8e70", "key": "mext-10296", "model": "m3", "roll": 1, "strength": "strong", "verdict": "reroll", "why": "main shell is a long-spired conch/whelk, not the round knobbly sazae; no grilled look"}
+{"check": "claude", "h": "e6f6d32458", "key": "mext-10309", "model": "m3", "roll": 1, "strength": "medium", "verdict": "reroll", "why": "clams still in shells in sauce; tsukudani should be shell-less dark brown simmered meats"}
+{"check": "claude", "h": "2346f27846", "key": "mext-10414", "model": "m3", "roll": 2, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "ccb4f447cc", "key": "mext-10331", "model": "m3", "roll": 2, "strength": "medium", "verdict": "reroll", "why": "large bright orange boiled shrimp; should be a clump of tiny dark reddish-brown glazed shrimp"}
+{"check": "claude", "h": "0e64da83ff", "key": "mext-10420", "model": "m3", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "whole squid with body shown; should be only fins and tentacles"}
+{"check": "claude", "h": "1a5ab3951a", "key": "mext-10471", "model": "m3", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "slices still show suckers and purple skin edges; should be skinless smooth cream-white slices"}
+{"check": "claude", "h": "3292b37445", "key": "mext-10370", "model": "m3", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "opaque pale noodle pile reads as pasta; jellyfish should be translucent glassy amber shreds"}
+{"check": "claude", "h": "6824e8e31c", "key": "mext-11209", "model": "m3", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "whole skin-on bird; should be skinless boneless lean fillets"}
+{"check": "claude", "h": "d7047a74e8", "key": "mext-11216", "model": "m3", "roll": 1, "strength": "weak", "verdict": "fallback", "why": "marbled fatty slab looks like pork shoulder, not skinless chicken thigh"}
+{"check": "claude", "h": "58629720c0", "key": "mext-11298", "model": "m3", "roll": 1, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "0091e0bcd9", "key": "mext-11242", "model": "m3", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "mangled whole frog body with head lying on plate; should be a pair of skinned legs joined in a V"}
+{"check": "claude", "h": "e5e5da2c7d", "key": "mext-12015", "model": "m3", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "boiled eggs with yellow yolks; should be egg white halves with yolk removed (refs also show yolks)"}
+{"check": "claude", "h": "03e44734e5", "key": "mext-13030", "model": "m3", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "thick opaque glass of milk; should be thin cloudy translucent non-dairy drink"}
+{"check": "claude", "h": "fd6f54e124", "key": "mext-10247", "model": "m5", "roll": 0, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "d130a79c30", "key": "mext-10282", "model": "m5", "roll": 0, "strength": "weak", "verdict": "reroll", "why": "clams still in shells; tsukudani should be shell-less dark meats"}
+{"check": "claude", "h": "9c4bd23f7c", "key": "mext-10298", "model": "m5", "roll": 0, "strength": "weak", "verdict": "reroll", "why": "adductors have ruffled scalloped edges, look like dumplings"}
+{"check": "claude", "h": "f156e036a0", "key": "mext-10431", "model": "m5", "roll": 0, "strength": "weak", "verdict": "reroll", "why": "large opaque shrimp in a ring, not tiny translucent sakura shrimp"}
+{"check": "claude", "h": "b0d5ef90de", "key": "mext-10332", "model": "m5", "roll": 0, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "5347135458", "key": "mext-11211", "model": "m5", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "mangled birds with beaks and gaping heads, not flattened plucked sparrow meat"}
+{"check": "claude", "h": "7299482a53", "key": "mext-10093", "model": "m3", "roll": 2, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "072ecc51a2", "key": "mext-10110", "model": "m3", "roll": 2, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "75cf616518", "key": "mext-10123", "model": "m3", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "drawn as sardine/ayu-like fish with normal heads; megochi needs flat shovel-shaped flathead heads"}
+{"check": "claude", "h": "712bfb7a90", "key": "mext-10433", "model": "m3", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "salmon steak looks raw (bright translucent orange), not matte opaque poached flesh"}
+{"check": "claude", "h": "79aefad619", "key": "mext-10155", "model": "m3", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "looks like a whole/half raw mackerel with head shape, not a flat boiled fillet with opaque cooked flesh"}
+{"check": "claude", "h": "4a05a5caf3", "key": "mext-10176", "model": "m3", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "whole round grilled saury with head; mirin-boshi should be split open flat like a ribbon"}
+{"check": "claude", "h": "df11ed89a7", "key": "mext-10409", "model": "m3", "roll": 2, "strength": "medium", "verdict": "reroll", "why": "whole fried fish with head and tail; should be a headless rectangular panko-breaded fillet"}
+{"check": "claude", "h": "29a90e43ad", "key": "mext-11003", "model": "m3", "roll": 1, "strength": "medium", "verdict": "reroll", "why": "rolled marbled meat with white fat looks like pork; rabbit should be uniform pale pink lean pieces"}
+{"check": "claude", "h": "27f1e59e5f", "key": "mext-11006", "model": "m3", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "heavily marbled with white fat; lean shoulder (赤肉) should be uniform deep red"}
+{"check": "claude", "h": "25002ef138", "key": "mext-11017", "model": "m3", "roll": 2, "strength": "medium", "verdict": "reroll", "why": "sirloin drawn with white fat edge/marbled border; lean cut should have no fat edge"}
+{"check": "claude", "h": "d00c7b3d34", "key": "mext-15144", "model": "m3", "roll": 1, "strength": "medium", "verdict": "reroll", "why": "green zunda sits on a mound of grainy steamed rice, not smooth round mochi"}
+{"check": "claude", "h": "6d224b6a20", "key": "mext-15030", "model": "m3", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "filling shows scattered whole azuki beans, not a smooth koshian ball inside the kuzu"}
+{"check": "claude", "h": "ffd1003387", "key": "mext-15063", "model": "m3", "roll": 1, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "6d7e030434", "key": "mext-15068", "model": "m3", "roll": 1, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "f572824f0a", "key": "mext-15169", "model": "m3", "roll": 1, "strength": "strong", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "7bba40883d", "key": "mext-10105", "model": "m10", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "looks like a whole flattened fish with loose orange roe beads on top, not a crosswise cut piece with a solid roe block inside"}
+{"check": "claude", "h": "bf2a150566", "key": "mext-11010", "model": "m10", "roll": 0, "strength": "weak", "verdict": "reroll", "why": "heavily marbled steak slices; should be lean red shoulder meat with only fine flecks"}
+{"check": "claude", "h": "10cc7a18cd", "key": "mext-15029", "model": "m10", "roll": 0, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "7a2243fb70", "key": "mext-15040", "model": "m10", "roll": 1, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "5e9e5e7e91", "key": "mext-11013", "model": "m2", "roll": 1, "strength": "medium", "verdict": "reroll", "why": "heavily marbled steak with thick white fat rim; should be lean 赤肉 with no fat rim"}
+{"check": "claude", "h": "6eb1af722e", "key": "mext-11020", "model": "m2", "roll": 1, "strength": "medium", "verdict": "reroll", "why": "marbled steak with white fat edge; should be uniform lean red round with no fat"}
+{"check": "claude", "h": "0fe284e8b5", "key": "mext-11029", "model": "m2", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "heavily marbled with fat rim; fillet 赤肉 should be lean deep red medallion"}
+{"check": "claude", "h": "d069ac1092", "key": "mext-11252", "model": "m2", "roll": 1, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "4626d53fec", "key": "mext-11093", "model": "m2", "roll": 1, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "75ebb7a6f3", "key": "mext-11114", "model": "m2", "roll": 2, "strength": "strong", "verdict": "reroll", "why": "venison drawn with white fat marbling and fat edge; should be uniform dark lean meat"}
+{"check": "claude", "h": "8cdf1e017b", "key": "mext-11117", "model": "m2", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "pork shoulder 赤肉 drawn with visible white fat streaks; should be uniformly lean"}
+{"check": "claude", "h": "d4cb29cff7", "key": "mext-11204", "model": "m2", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "goat 赤肉 drawn with heavy white fat marbling like a beef/pork chop; should be lean brick-red"}
+{"check": "claude", "h": "e4870c9257", "key": "mext-11210", "model": "m2", "roll": 1, "strength": "medium", "verdict": "reroll", "why": "whole bird with skin drawn; should be a skinless boneless turkey breast fillet"}
+{"check": "claude", "h": "824a90809b", "key": "mext-15171", "model": "m2", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "filling shows whole beans (tsubuan); should be smooth koshian paste"}
+{"check": "claude", "h": "6ccd3d7f86", "key": "mext-17005", "model": "m2", "roll": 1, "strength": "strong", "verdict": "reroll", "why": "thick paste-like red sauce like ketchup/gochujang; should be thin liquid Tabasco-style"}
+{"check": "claude", "h": "47b1bfa9a6", "key": "mext-17130", "model": "m2", "roll": 1, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "0e4ff69f59", "key": "mext-11086", "model": "m2", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "脂身なし veal drawn with white fat rim and marbling like a pork chop"}
+{"check": "claude", "h": "fcbcacc118", "key": "mext-11100", "model": "m2", "roll": 1, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "ec8b87c197", "key": "mext-11312", "model": "m2", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "looks like thick pork loin/belly slices with fat rim, not flat densely marbled jowl slices"}
+{"check": "claude", "h": "ad9f059189", "key": "mext-11212", "model": "m2", "roll": 0, "strength": "weak", "verdict": "fallback", "why": "unrecognisable: shell/pastry-like ovals, no wing shape or joints visible"}
+{"check": "claude", "h": "5101539eec", "key": "mext-15109", "model": "m2", "roll": 1, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "7b3740be52", "key": "mext-17092", "model": "m2", "roll": 0, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "5f81901fb9", "key": "mext-10220", "model": "m8", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "whole intact fish, not split open flat (hiraki) as a dried herring"}
+{"check": "claude", "h": "9f8dd11c30", "key": "mext-10227", "model": "m8", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "single large bream-like fish in sauce (looks like nitsuke), not small gobies kanroni"}
+{"check": "claude", "h": "41a594fab4", "key": "mext-10411", "model": "m8", "roll": 2, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "185ef2fd62", "key": "mext-10270", "model": "m8", "roll": 2, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "e9911ad033", "key": "mext-10286", "model": "m8", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "abalone shown in its shell like fresh/simmered, not a shell-less dried amber disc"}
+{"check": "claude", "h": "64353a8e70", "key": "mext-10296", "model": "m8", "roll": 2, "strength": "strong", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "e6f6d32458", "key": "mext-10309", "model": "m8", "roll": 2, "strength": "medium", "verdict": "reroll", "why": "glossy round clams that look still in shell / like chestnuts, not small dark shell-less tsukudani meats"}
+{"check": "claude", "h": "d551abda5c", "key": "mext-17143", "model": "m8", "roll": 1, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "704750e9e2", "key": "mext-17135", "model": "m8", "roll": 1, "strength": "medium", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "f4631e8e89", "key": "mext-17078", "model": "m8", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "looks like fresh chopped green onion/chives, not tiny dried parsley flakes"}
+{"check": "claude", "h": "1ca442d843", "key": "takatsuki-r05", "model": "m8", "roll": 1, "strength": "strong", "verdict": "reroll", "why": "bamboo shoot drawn as long fry-like sticks and rice looks like barley; refs show thin slices in seasoned rice"}
+{"check": "claude", "h": "d808b38dfd", "key": "takatsuki-r18", "model": "m8", "roll": 1, "strength": "strong", "verdict": "reroll", "why": "sesame-glazed sweet-and-sour style nuggets, not dark soy-vinegar braised chicken pieces like refs"}
+{"check": "claude", "h": "107ab51874", "key": "takatsuki-r33", "model": "m8", "roll": 1, "strength": "strong", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "93e990f00d", "key": "kurume-017", "model": "m8", "roll": 1, "strength": "strong", "verdict": "reroll", "why": "white mochi only lightly sprinkled, mostly white showing; should be fully coated in kinako"}
+{"check": "claude", "h": "d130a79c30", "key": "mext-10282", "model": "m9", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "clams drawn still in their shells; tsukudani should be shell-less dark glazed clam meats"}
+{"check": "claude", "h": "9c4bd23f7c", "key": "mext-10298", "model": "m9", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "lumpy pale blobs with folded edges read as dumplings, not smooth cylindrical adductor discs"}
+{"check": "claude", "h": "f156e036a0", "key": "mext-10431", "model": "m9", "roll": 1, "strength": "weak", "verdict": "fallback", "why": "large opaque pink shrimp arranged in a ring; not tiny translucent sakura shrimp"}
+{"check": "claude", "h": "94f8c1efd5", "key": "takatsuki-r14", "model": "m9", "roll": 1, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "ed97e84d0e", "key": "takatsuki-r51", "model": "m9", "roll": 1, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "1a5ab3951a", "key": "mext-10471", "model": "m1", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "sliced octopus still shows suckers and dark skin bits; should be skinless smooth slices"}
+{"check": "claude", "h": "3292b37445", "key": "mext-10370", "model": "m1", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "reads as opaque spaghetti on a plate, not translucent jellyfish shreds"}
+{"check": "claude", "h": "6824e8e31c", "key": "mext-11209", "model": "m1", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "whole raw bird with skin, not skinless pheasant fillets"}
+{"check": "claude", "h": "dd276f3918", "key": "mext-11226", "model": "m1", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "bone-in drumstick-like pieces with skin-like texture, not boneless skinless boiled thigh chunks"}
+{"check": "claude", "h": "c27b2b06e1", "key": "mext-11240", "model": "m1", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "whole raw bird with skin, not skinless guinea fowl fillets"}
+{"check": "claude", "h": "0091e0bcd9", "key": "mext-11242", "model": "m1", "roll": 2, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "438f204fd4", "key": "mext-12011", "model": "m1", "roll": 1, "strength": "strong", "verdict": "reroll", "why": "halved pieces show a white ring, i.e. whole halved eggs, not yolk only"}
+{"check": "claude", "h": "e5e5da2c7d", "key": "mext-12015", "model": "m1", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "whole boiled eggs with yolks shown; should be whites only with yolk removed"}
+{"check": "claude", "h": "03e44734e5", "key": "mext-13030", "model": "m1", "roll": 2, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "d00c7b3d34", "key": "mext-15144", "model": "m1", "roll": 2, "strength": "strong", "verdict": "reroll", "why": "base drawn as a grainy rice mound with sparse glossy green sauce, not mochi buried in chunky zunda paste"}
+{"check": "claude", "h": "48950f7827", "key": "mext-15157", "model": "m1", "roll": 1, "strength": "medium", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "de125dc855", "key": "mext-15160", "model": "m1", "roll": 1, "strength": "strong", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "6d224b6a20", "key": "mext-15030", "model": "m1", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "opaque lavender balls with scattered whole beans, not clear glassy kuzu with a smooth paste ball inside"}
+{"check": "claude", "h": "abeff4ac91", "key": "mext-15037", "model": "m1", "roll": 1, "strength": "medium", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "824a90809b", "key": "mext-15171", "model": "m1", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "centre is glossy whole beans that read as cherries/kidney beans, not smooth koshian"}
+{"check": "claude", "h": "6ccd3d7f86", "key": "mext-17005", "model": "m1", "roll": 2, "strength": "strong", "verdict": "reroll", "why": "thick glossy paste like ketchup/gochujang, not a thin Tabasco-like sauce"}
+{"check": "claude", "h": "7bba40883d", "key": "mext-10105", "model": "m5", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "whole raw-looking fish with loose orange beads like ikura; desc wants a simmered crosswise cut with a solid roe block"}
+{"check": "claude", "h": "5347135458", "key": "mext-11211", "model": "m5", "roll": 2, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "1dc98ad7a5", "key": "mext-13021", "model": "m5", "roll": 0, "strength": "weak", "verdict": "reroll", "why": "large cup with brown coffee layer under white cream reads as coffee jelly/latte dessert, not a tiny cup of plain white creamer"}
+{"check": "claude", "h": "8ee97cbcd2", "key": "mext-15007", "model": "m5", "roll": 0, "strength": "weak", "verdict": "reroll", "why": "round bun, not pointed bird shape, and filling shows whole beans (tsubuan) instead of smooth koshian"}
+{"check": "claude", "h": "6dcdb9550c", "key": "kurume-037", "model": "m5", "roll": 0, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "29a90e43ad", "key": "mext-11003", "model": "m3", "roll": 2, "strength": "medium", "verdict": "reroll", "why": "marbled pieces with white fat streaks, reads as pork; lean rabbit should be uniform pale pink, no fat"}
+{"check": "claude", "h": "5e9e5e7e91", "key": "mext-11013", "model": "m3", "roll": 2, "strength": "medium", "verdict": "reroll", "why": "heavily marbled ribeye with thick fat rim; 赤肉 should be lean with only fine flecks, no rim"}
+{"check": "claude", "h": "6eb1af722e", "key": "mext-11020", "model": "m3", "roll": 2, "strength": "medium", "verdict": "reroll", "why": "marbled steak with white fat edge; 脂身なし round should be uniform deep red, no fat"}
+{"check": "claude", "h": "8cdf1e017b", "key": "mext-11117", "model": "m3", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "pork block covered in white fat and marbling; lean shoulder should be uniform pale pink"}
+{"check": "claude", "h": "d4cb29cff7", "key": "mext-11204", "model": "m3", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "heavily marbled with white fat; lean goat should be dark brick-red with no fat"}
+{"check": "claude", "h": "e4870c9257", "key": "mext-11210", "model": "m3", "roll": 2, "strength": "medium", "verdict": "reroll", "why": "drawn as a leg/drumstick-shaped piece with bone knob and skin-like surface, not a skinless breast fillet"}
+{"check": "claude", "h": "dd276f3918", "key": "mext-11226", "model": "m3", "roll": 2, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "c27b2b06e1", "key": "mext-11240", "model": "m3", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "shows whole bird and drumsticks with skin and bone; should be skinless boneless raw fillets"}
+{"check": "claude", "h": "438f204fd4", "key": "mext-12011", "model": "m3", "roll": 2, "strength": "strong", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "5be1581efd", "key": "mext-15049", "model": "m3", "roll": 1, "strength": "medium", "verdict": "reroll", "why": "flat pale docked crackers like saltines; kawara senbei should be curved, smooth glossy golden-brown with stamped emblem"}
+{"check": "claude", "h": "b322da2722", "key": "mext-15065", "model": "m3", "roll": 1, "strength": "medium", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "ca5e20d4bf", "key": "mext-15126", "model": "m3", "roll": 1, "strength": "strong", "verdict": "reroll", "why": "filling drawn as whole beans (tsubuan), not smooth koshian"}
+{"check": "claude", "h": "054d741fec", "key": "mext-15129", "model": "m3", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "curry filling served inside a bread bowl; should be filling only, no bread"}
+{"check": "claude", "h": "0ef1dcb8f3", "key": "mext-15177", "model": "m3", "roll": 1, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "0ee376a238", "key": "mext-17010", "model": "m3", "roll": 1, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "074347ae64", "key": "mext-17142", "model": "m3", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "bowl contains noodles; should be soup liquid only"}
+{"check": "claude", "h": "11625a8df4", "key": "mext-17095", "model": "m3", "roll": 1, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "baa0b5c903", "key": "mext-17069", "model": "m3", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "dry flaky pile with strands reads like shredded cheese; grated ginger should be wet fibrous pulp"}
+{"check": "claude", "h": "f4631e8e89", "key": "mext-17078", "model": "m10", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "looks like coarse chopped fresh green herbs/chives, not tiny dried parsley flakes"}
+{"check": "claude", "h": "1a3cd35025", "key": "mext-18010", "model": "m10", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "raw silver-skinned fish fillets with no breadcrumb coating; should be breaded frozen fry"}
+{"check": "claude", "h": "1ca442d843", "key": "takatsuki-r05", "model": "m10", "roll": 2, "strength": "strong", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "d808b38dfd", "key": "takatsuki-r18", "model": "m10", "roll": 2, "strength": "strong", "verdict": "reroll", "why": "reads as glossy sweet-and-sour fried chicken with green peppers, not dark braised adobo"}
+{"check": "claude", "h": "93e990f00d", "key": "kurume-017", "model": "m10", "roll": 2, "strength": "strong", "verdict": "reroll", "why": "white mochi balls only lightly sprinkled, mostly white showing; should be buried in kinako"}
+{"check": "claude", "h": "a22c0c10fb", "key": "kurume-149", "model": "m10", "roll": 1, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "6369bb43fe", "key": "kurume-158", "model": "m10", "roll": 1, "strength": "medium", "verdict": "reroll", "why": "eggplant strips still show purple skin; yaki nasu should be peeled pale flesh"}
+{"check": "claude", "h": "2e961df968", "key": "kurume-163", "model": "m10", "roll": 1, "strength": "medium", "verdict": "reroll", "why": "orange slices with radial segments look like citrus slices in syrup, not translucent simmered daikon"}
+{"check": "claude", "h": "f2fbb41727", "key": "kurume-243", "model": "m10", "roll": 1, "strength": "strong", "verdict": "reroll", "why": "drawn as a domed bread loaf/bun, not a flat round puck-shaped imagawayaki"}
+{"check": "claude", "h": "c3eb351401", "key": "toyonaka-117806", "model": "m10", "roll": 1, "strength": "medium", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "d0088a961f", "key": "toyonaka-119260", "model": "m10", "roll": 1, "strength": "strong", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "ae0119a5a8", "key": "toyonaka-120284", "model": "m10", "roll": 1, "strength": "strong", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "bf14241290", "key": "toyonaka-118698", "model": "m10", "roll": 1, "strength": "medium", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "fd404d4c94", "key": "toyonaka-266191", "model": "m10", "roll": 1, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "d130a79c30", "key": "mext-10282", "model": "m4", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "clams drawn still in their shells and light amber; tsukudani should be shell-less dark brown meats"}
+{"check": "claude", "h": "9c4bd23f7c", "key": "mext-10298", "model": "m4", "roll": 2, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "bf2a150566", "key": "mext-11010", "model": "m4", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "heavily marbled slices with fat rim; should be lean red shoulder with fine flecks"}
+{"check": "claude", "h": "ec8b87c197", "key": "mext-11312", "model": "m4", "roll": 2, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "fa8bfc1121", "key": "mext-17148", "model": "m4", "roll": 0, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "b70602996d", "key": "kurume-087", "model": "m4", "roll": 0, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "623618c3f4", "key": "kurume-097", "model": "m4", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "fish is short and stout like mackerel, not a slender saury; topping is julienned strands, not grated daikon"}
+{"check": "claude", "h": "c43844eaaf", "key": "kurume-133", "model": "m4", "roll": 0, "strength": "weak", "verdict": "reroll", "why": "konnyaku drawn as brown sticks, not grey strips; no visible sesame dressing coating"}
+{"check": "claude", "h": "9785b59a1e", "key": "kurume-169", "model": "m4", "roll": 1, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "191e4088c2", "key": "kurume-185", "model": "m4", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "broth is clear reddish like ramen soup, not cloudy miso; aburaage drawn as thick yellow blocks like bamboo shoots"}
+{"check": "claude", "h": "9978051424", "key": "kurume-198", "model": "m4", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "kelp drawn as curly lettuce-like leaves, not fine fluffy tororo threads; plum is a smooth red ball like a cherry tomato"}
+{"check": "claude", "h": "5e0d4f13b8", "key": "toyonaka-119618", "model": "m4", "roll": 1, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "74a6e1998c", "key": "toyonaka-261439", "model": "m4", "roll": 1, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "649b7917f2", "key": "toyonaka-118563", "model": "m4", "roll": 0, "strength": "weak", "verdict": "reroll", "why": "whole peeled citrus balls with membrane, not separate translucent segments in syrup"}
+{"check": "claude", "h": "f4c7f945e3", "key": "toyonaka-119464", "model": "m4", "roll": 0, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "8016d116c6", "key": "toyonaka-122492", "model": "m4", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "looks like napa cabbage kimchi; jako barely visible"}
+{"check": "claude", "h": "ae0b868607", "key": "takatsuki-r08", "model": "m3", "roll": 1, "strength": "medium", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "e621dfad0b", "key": "takatsuki-r15", "model": "m3", "roll": 1, "strength": "strong", "verdict": "reroll", "why": "looks like sesame beef stir-fry / bulgogi in red sauce, not dark glossy demi-glace hashed beef"}
+{"check": "claude", "h": "e959c199c7", "key": "takatsuki-r31", "model": "m3", "roll": 1, "strength": "strong", "verdict": "reroll", "why": "noodles are opaque brown like soba, not clear glass noodles"}
+{"check": "claude", "h": "a56da30bce", "key": "takatsuki-r53", "model": "m3", "roll": 1, "strength": "medium", "verdict": "reroll", "why": "yellow spaghetti with green specks, not coated in bright green pesto"}
+{"check": "claude", "h": "ed4f2f1c55", "key": "toyonaka-120365", "model": "m3", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "reads as panko tonkatsu with thick brown sauce, not yuurinchi with thin soy sauce and heap of green onion"}
+{"check": "claude", "h": "9a632a528e", "key": "toyonaka-267617", "model": "m3", "roll": 1, "strength": "strong", "verdict": "reroll", "why": "whole breaded fish with head, not a butterflied leaf-shaped aji fry fillet"}
+{"check": "claude", "h": "2acc11b3c1", "key": "toyonaka-121728", "model": "m3", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "noodles are opaque tan like soba, not clear see-through harusame"}
+{"check": "claude", "h": "e7c751f81e", "key": "toyonaka-269503", "model": "m3", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "segment grooves and white patches read as a peeled mandarin with pith, not a whole frosted unpeeled mikan"}
+{"check": "claude", "h": "1dc98ad7a5", "key": "mext-13021", "model": "m3", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "big layered cup looks like pudding or a latte dessert, not a tiny portion cup of flat white liquid creamer"}
+{"check": "claude", "h": "8ee97cbcd2", "key": "mext-15007", "model": "m3", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "filling shows whole beans (tsubuan), not smooth koshian; shape round, not bird-like"}
+{"check": "claude", "h": "148665be5d", "key": "takatsuki-r43", "model": "m3", "roll": 0, "strength": "weak", "verdict": "reroll", "why": "flat pancake/pizza-like disc with long asparagus spears laid on top, not a craggy puffy kakiage clump"}
+{"check": "claude", "h": "65887604ed", "key": "kurume-018", "model": "m3", "roll": 0, "strength": "weak", "verdict": "reroll", "why": "rice grains visible: reads as nori-wrapped onigiri, not smooth mochi blocks"}
+{"check": "claude", "h": "c71ff23ee0", "key": "kurume-060", "model": "m3", "roll": 0, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "7fc72fd831", "key": "kurume-094", "model": "m3", "roll": 0, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "853dacee7d", "key": "toyonaka-120477", "model": "m3", "roll": 0, "strength": "weak", "verdict": "reroll", "why": "skin has dark mackerel-like stripes (looks like saba), desc requires plain silver-grey sawara skin"}
+{"check": "claude", "h": "fe2b841a1e", "key": "toyonaka-120367", "model": "m3", "roll": 1, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "f2787cd36d", "key": "toyonaka-267580", "model": "m4", "roll": 0, "strength": "weak", "verdict": "fallback", "why": "whole round grilled fish that looks like aji/mackerel, not a butterflied hokke himono"}
+{"check": "claude", "h": "1015c6bf22", "key": "toyonaka-124137", "model": "m4", "roll": 0, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "23a55688d4", "key": "toyonaka-125864", "model": "m4", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "kiriboshi daikon and carrot fine, but tuna drawn as one grilled steak chunk instead of canned flakes; no cabbage"}
+{"check": "claude", "h": "5be1581efd", "key": "mext-15049", "model": "m8", "roll": 2, "strength": "medium", "verdict": "reroll", "why": "pale docked cracker texture, flat; should be smooth glossy golden-brown curved tile senbei"}
+{"check": "claude", "h": "ca5e20d4bf", "key": "mext-15126", "model": "m8", "roll": 2, "strength": "strong", "verdict": "reroll", "why": "filling shows whole azuki beans (tsubuan), not smooth koshian; bread layer not thin"}
+{"check": "claude", "h": "054d741fec", "key": "mext-15129", "model": "m8", "roll": 2, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "074347ae64", "key": "mext-17142", "model": "m8", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "noodle strands visible in the soup; should be liquid only"}
+{"check": "claude", "h": "39e6be15aa", "key": "kurume-137", "model": "m8", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "white mound looks like rice/crumbly, not wet grated daikon"}
+{"check": "claude", "h": "162f4239cf", "key": "kurume-151", "model": "m8", "roll": 1, "strength": "strong", "verdict": "reroll", "why": "whole kabocha wedges with mayo drizzle, not mashed salad as in refs"}
+{"check": "claude", "h": "093cd27d5c", "key": "toyonaka-127428", "model": "m8", "roll": 1, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "8fddd33e48", "key": "toyonaka-268584", "model": "m8", "roll": 1, "strength": "medium", "verdict": "reroll", "why": "uniform round glossy pellets look like cereal/beans, not finely crumbled minced pork"}
+{"check": "claude", "h": "bf2a150566", "key": "mext-11010", "model": "m8", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "heavily marbled slices with white fat rim; should be lean red meat with fine flecks"}
+{"check": "claude", "h": "39126066ce", "key": "kurume-109", "model": "m8", "roll": 0, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "14554ef363", "key": "kurume-160", "model": "m8", "roll": 0, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "847528cce6", "key": "kurume-167", "model": "m8", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "large peeled shrimp instead of tiny dried sakura shrimp"}
+{"check": "claude", "h": "76c5d89d06", "key": "toyonaka-127514", "model": "m8", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "glossy sticky-sauced chunks, not a craggy crisp tatsuta starch coating; fish not evident"}
+{"check": "claude", "h": "fd14e1085b", "key": "toyonaka-125969", "model": "m8", "roll": 0, "strength": "weak", "verdict": "reroll", "why": "opaque brown spaghetti-like noodles, not clear harusame; lettuce looks raw"}
+{"check": "claude", "h": "9cb1f8fe09", "key": "toyonaka-268493", "model": "m8", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "yellow strands read as noodles, not egg ribbons"}
+{"check": "claude", "h": "50e6fbdc2b", "key": "toyonaka-276472", "model": "m8", "roll": 1, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "fa073698c6", "key": "toyonaka-276159", "model": "m6", "roll": 0, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "988cd360e0", "key": "toyonaka-125549", "model": "m6", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "greens drawn as thin noodle-like strands/pea shoots, not recognisable as boiled komatsuna leaves and stems"}
+{"check": "claude", "h": "ecc5c8655b", "key": "toyonaka-131119", "model": "m6", "roll": 1, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "baa0b5c903", "key": "mext-17069", "model": "m10", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "looks like a heap of shredded strands/noodles, not a mound of grated ginger pulp"}
+{"check": "claude", "h": "1a3cd35025", "key": "mext-18010", "model": "m10", "roll": 2, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "2f09412c9c", "key": "kurume-176", "model": "m10", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "whole raw-looking carrot with stem end, not a trimmed glazed barrel chunk"}
+{"check": "claude", "h": "25845d89bf", "key": "kurume-189", "model": "m10", "roll": 1, "strength": "medium", "verdict": "reroll", "why": "pleated gyoza-like dumplings in clear broth instead of flat torn dumplings in cloudy miso soup"}
+{"check": "claude", "h": "6a856f0fd2", "key": "kurume-203", "model": "m10", "roll": 1, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "f6fb137eed", "key": "toyonaka-117781", "model": "m10", "roll": 1, "strength": "medium", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "df16665e4b", "key": "toyonaka-265161", "model": "m10", "roll": 1, "strength": "strong", "verdict": "reroll", "why": "big chunky popcorn-like clumps, not fine sand-like crumbled minced chicken"}
+{"check": "claude", "h": "eec346cd92", "key": "toyonaka-131646", "model": "m10", "roll": 1, "strength": "strong", "verdict": "reroll", "why": "shows thick noodles in the bowl; this item is the topping without noodles"}
+{"check": "claude", "h": "c8c3ded41d", "key": "kumagaya-3631", "model": "m10", "roll": 1, "strength": "medium", "verdict": "reroll", "why": "whole mackerel with head and tail instead of a boneless sauced fillet"}
+{"check": "claude", "h": "a9de1ae5b2", "key": "kumagaya-2465", "model": "m10", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "whole roast chicken instead of a single roasted thigh piece"}
+{"check": "claude", "h": "623618c3f4", "key": "kurume-097", "model": "m10", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "fish looks like a deep-bodied striped mackerel, not slender saury; topped with shredded strands rather than grated daikon"}
+{"check": "claude", "h": "b6dffc7d22", "key": "toyonaka-117802", "model": "m10", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "greens look like asparagus/scallion stalks without leaves and mushrooms are button mushrooms, not eryngii"}
+{"check": "claude", "h": "1985cf23ba", "key": "toyonaka-117815", "model": "m10", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "shows pea/soybean-sprout-like beads in a brown sauce; no leafy tobyo pea shoots"}
+{"check": "claude", "h": "f47afe13db", "key": "toyonaka-119463", "model": "m10", "roll": 0, "strength": "weak", "verdict": "reroll", "why": "whole mackerel with head and tail instead of a flat semi-dried fillet"}
+{"check": "claude", "h": "c1a7336ba6", "key": "toyonaka-284506", "model": "m10", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "noodles are brown soba-like, not clear glass noodles"}
+{"check": "claude", "h": "182d5080a6", "key": "kumagaya-3641", "model": "m10", "roll": 0, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "bf3d413770", "key": "kumagaya-3306", "model": "m10", "roll": 1, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "5c32c84fe2", "key": "kumagaya-3644", "model": "m10", "roll": 1, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "e672b0f15e", "key": "kumagaya-2815", "model": "m5", "roll": 0, "strength": "weak", "verdict": "reroll", "why": "noodles drawn opaque grey-brown like soba, not translucent glassy shirataki"}
+{"check": "claude", "h": "be5c8ccc2a", "key": "kumagaya-2378", "model": "m5", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "topping is thin shredded white strands, not a mound of grated daikon (mizore); sardines otherwise fine"}
+{"check": "claude", "h": "e621dfad0b", "key": "takatsuki-r15", "model": "m5", "roll": 2, "strength": "strong", "verdict": "reroll", "why": "reads as a noodle-like beef stir-fry in thin reddish sauce, not beef and onion in thick dark brown demi-glace"}
+{"check": "claude", "h": "e959c199c7", "key": "takatsuki-r31", "model": "m5", "roll": 2, "strength": "strong", "verdict": "reroll", "why": "noodles are opaque brown like soba, not clear glossy glass noodles"}
+{"check": "claude", "h": "6369bb43fe", "key": "kurume-158", "model": "m5", "roll": 2, "strength": "medium", "verdict": "reroll", "why": "eggplants still have purple skin; yaki nasu should be peeled pale flesh"}
+{"check": "claude", "h": "2e961df968", "key": "kurume-163", "model": "m5", "roll": 2, "strength": "medium", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "f2fbb41727", "key": "kurume-243", "model": "m5", "roll": 2, "strength": "strong", "verdict": "reroll", "why": "domed bread bun with whole beans, not a flat-topped cylinder cake with smooth dark anko"}
+{"check": "claude", "h": "1dc98ad7a5", "key": "mext-13021", "model": "m5", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "large layered pudding/latte cup with brown base, not a tiny cup of plain white liquid creamer"}
+{"check": "claude", "h": "8ee97cbcd2", "key": "mext-15007", "model": "m5", "roll": 2, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "148665be5d", "key": "takatsuki-r43", "model": "m5", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "corn-only fritter with loose asparagus spears and corn cob beside, not one kakiage binding both"}
+{"check": "claude", "h": "c43844eaaf", "key": "kurume-133", "model": "m5", "roll": 1, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "191e4088c2", "key": "kurume-185", "model": "m5", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "broth is clear red-orange like a spicy soup, not cloudy miso; aburaage looks like tofu blocks"}
+{"check": "claude", "h": "9978051424", "key": "kurume-198", "model": "m5", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "green shreds look like green onion/cabbage, not fluffy tororo kombu; plum looks like a tomato"}
+{"check": "claude", "h": "649b7917f2", "key": "toyonaka-118563", "model": "m5", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "whole peeled citrus balls, not separate crescent segments in syrup"}
+{"check": "claude", "h": "c92a2043d9", "key": "toyonaka-118627", "model": "m5", "roll": 0, "strength": "weak", "verdict": "reroll", "why": "jako drawn as brown sticks without eyes, not tiny white dried sardines"}
+{"check": "claude", "h": "bd091e0b13", "key": "toyonaka-119261", "model": "m5", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "round thin pasta-like noodles, not flat white rice noodles; no curry tint, no pork"}
+{"check": "claude", "h": "bf1293b783", "key": "toyonaka-120287", "model": "m5", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "opaque beige soba-like noodles, not translucent jelly strands"}
+{"check": "claude", "h": "b00ab0ec44", "key": "toyonaka-266759", "model": "m5", "roll": 0, "strength": "weak", "verdict": "fallback", "why": "whole striped mackerel/sardine-like fish, not a silver ribbon-like hairtail fillet"}
+{"check": "claude", "h": "47c03212bc", "key": "toyonaka-266224", "model": "m5", "roll": 0, "strength": "weak", "verdict": "reroll", "why": "long wide seaweed strips instead of tiny short hijiki sprigs"}
+{"check": "claude", "h": "8016d116c6", "key": "toyonaka-122492", "model": "m5", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "looks like kimchi; jako are a few grey slivers, not tiny white sardines"}
+{"check": "claude", "h": "a56da30bce", "key": "takatsuki-r53", "model": "m10", "roll": 2, "strength": "medium", "verdict": "reroll", "why": "spaghetti mostly plain yellow with green flecks; not coated in bright green pesto"}
+{"check": "claude", "h": "39e6be15aa", "key": "kurume-137", "model": "m10", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "white mound looks like granular cooked rice, not wet grated daikon; reads as mushroom rice bowl"}
+{"check": "claude", "h": "162f4239cf", "key": "kurume-151", "model": "m10", "roll": 2, "strength": "strong", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "b2bfacee4e", "key": "toyonaka-121214", "model": "m10", "roll": 1, "strength": "strong", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "ed4f2f1c55", "key": "toyonaka-120365", "model": "m10", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "thick dark brown sauce drizzle looks like tonkatsu sauce on a katsu cutlet, not thin soy sauce with ginger/negi"}
+{"check": "claude", "h": "2cded6e2b6", "key": "toyonaka-120366", "model": "m10", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "noodles opaque tan like soba/ramen, not clear glass noodles"}
+{"check": "claude", "h": "cfca405f31", "key": "toyonaka-267572", "model": "m10", "roll": 1, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "9a632a528e", "key": "toyonaka-267617", "model": "m10", "roll": 2, "strength": "strong", "verdict": "reroll", "why": "whole fish with head in glossy batter/glaze; should be butterflied leaf-shaped fillet in coarse panko"}
+{"check": "claude", "h": "2acc11b3c1", "key": "toyonaka-121728", "model": "m10", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "noodles opaque brown like soba, not clear glass noodles"}
+{"check": "claude", "h": "e7c751f81e", "key": "toyonaka-269503", "model": "m10", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "mottled white patches look like a peeled mikan with pith, not an unpeeled frosted one"}
+{"check": "claude", "h": "b30cb8c539", "key": "kumagaya-03556-2", "model": "m10", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "noodles opaque tan like soba, not glossy translucent glass noodles"}
+{"check": "claude", "h": "65887604ed", "key": "kurume-018", "model": "m10", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "visible rice grains: looks like grilled onigiri wrapped in nori, not smooth mochi blocks"}
+{"check": "claude", "h": "847528cce6", "key": "kurume-167", "model": "m10", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "large whole shrimp instead of tiny dried sakura ebi"}
+{"check": "claude", "h": "853dacee7d", "key": "toyonaka-120477", "model": "m10", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "dark-striped skin looks like saba; sauce looks like runny egg yolk rather than miso"}
+{"check": "claude", "h": "7cdd98e376", "key": "toyonaka-121395", "model": "m10", "roll": 0, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "b52fce2055", "key": "toyonaka-120372", "model": "m10", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "cabbage looks like raw lettuce salad, not sauteed"}
+{"check": "claude", "h": "23a55688d4", "key": "toyonaka-125864", "model": "m10", "roll": 2, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "41be7f98ce", "key": "kumagaya-03364", "model": "m10", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "thick creamy cheese-like sauce instead of light soy citrus sauce"}
+{"check": "claude", "h": "a7527880b3", "key": "kumagaya-03626", "model": "m10", "roll": 1, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "2f09412c9c", "key": "kurume-176", "model": "m9", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "whole carrot with stem end, not a trimmed barrel-shaped glace chunk"}
+{"check": "claude", "h": "25845d89bf", "key": "kurume-189", "model": "m9", "roll": 2, "strength": "medium", "verdict": "reroll", "why": "pleated filled gyoza/wonton dumplings in clear broth instead of flat torn dumplings in cloudy miso"}
+{"check": "claude", "h": "df16665e4b", "key": "toyonaka-265161", "model": "m9", "roll": 2, "strength": "strong", "verdict": "reroll", "why": "large puffy nugget-like clumps resembling popcorn/tenkasu, not fine crumbled minced chicken"}
+{"check": "claude", "h": "5c9c37109d", "key": "toyonaka-269524", "model": "m9", "roll": 1, "strength": "medium", "verdict": "reroll", "why": "clear broth with sparse green bits and corn; lacks thick minced slimy molokhia"}
+{"check": "claude", "h": "cd9ef89490", "key": "toyonaka-124138", "model": "m9", "roll": 1, "strength": "medium", "verdict": "reroll", "why": "opaque brown noodles look like yakisoba/spaghetti, not translucent glass noodles"}
+{"check": "claude", "h": "13980121dc", "key": "toyonaka-269405", "model": "m9", "roll": 1, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "8fddd33e48", "key": "toyonaka-268584", "model": "m9", "roll": 2, "strength": "medium", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "eec346cd92", "key": "toyonaka-131646", "model": "m9", "roll": 2, "strength": "strong", "verdict": "reroll", "why": "bowl full of thick udon-like noodles; name says no noodles, should be just the saucy topping"}
+{"check": "claude", "h": "35ff6d25b0", "key": "kumagaya-01978", "model": "m9", "roll": 0, "strength": "strong", "verdict": "reroll", "why": "opaque brown soba-like noodles instead of clear transparent glass noodles"}
+{"check": "claude", "h": "148665be5d", "key": "takatsuki-r43", "model": "m9", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "plain fritter beside loose corn cobs and long asparagus spears; corn/asparagus not bound in the kakiage"}
+{"check": "claude", "h": "b6dffc7d22", "key": "toyonaka-117802", "model": "m9", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "mushrooms drawn as button/shiitake caps, not thick eryngii slices; greens look like asparagus"}
+{"check": "claude", "h": "1985cf23ba", "key": "toyonaka-117815", "model": "m9", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "reddish chili-like sauce with whole seeds, no leafy pea shoots; not a brown ground-sesame goma-ae"}
+{"check": "claude", "h": "649b7917f2", "key": "toyonaka-118563", "model": "m9", "roll": 2, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "9ad201c911", "key": "toyonaka-122019", "model": "m9", "roll": 1, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "412b93bd49", "key": "toyonaka-127414", "model": "m9", "roll": 1, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "76c5d89d06", "key": "toyonaka-127514", "model": "m9", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "sticky glazed sesame pieces like eel kabayaki, not crisp starch-coated fried saury"}
+{"check": "claude", "h": "fd14e1085b", "key": "toyonaka-125969", "model": "m9", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "opaque beige spaghetti-like noodles, not clear transparent harusame"}
+{"check": "claude", "h": "9cb1f8fe09", "key": "toyonaka-268493", "model": "m4", "roll": 2, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "988cd360e0", "key": "toyonaka-125549", "model": "m4", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "komatsuna drawn as stringy green noodle-like strands, not leafy greens"}
+{"check": "claude", "h": "c1a7336ba6", "key": "toyonaka-284506", "model": "m4", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "noodles are opaque tan like soba, not clear harusame"}
+{"check": "claude", "h": "06e6583c42", "key": "kumagaya-03284", "model": "m4", "roll": 0, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "d1ebfa7038", "key": "toyonaka-125955", "model": "m7", "roll": 1, "strength": "strong", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "0edf9ff1c5", "key": "toyonaka-126016", "model": "m7", "roll": 1, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "508477a3e5", "key": "toyonaka-271605", "model": "m7", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "pork slices sit on noodles in broth, reads as pork udon rather than a donburi topping without rice"}
+{"check": "claude", "h": "c8c3ded41d", "key": "kumagaya-3631", "model": "m7", "roll": 2, "strength": "medium", "verdict": "reroll", "why": "whole mackerel with head and tail instead of a flat boneless fillet"}
+{"check": "claude", "h": "a9de1ae5b2", "key": "kumagaya-2465", "model": "m7", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "whole roast chicken instead of a single roasted thigh piece"}
+{"check": "claude", "h": "9eaeec0624", "key": "kumagaya-02999", "model": "m7", "roll": 0, "strength": "medium", "verdict": "reroll", "why": "mushrooms are large stemmed brown caps, not tiny glossy nameko; broth clear orange rather than cloudy miso"}
+{"check": "claude", "h": "a0fe61deba", "key": "kumagaya-03089", "model": "m7", "roll": 1, "strength": "medium", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "f47afe13db", "key": "toyonaka-119463", "model": "m7", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "whole fish with head and tail instead of a flat boneless half fillet"}
+{"check": "claude", "h": "c92a2043d9", "key": "toyonaka-118627", "model": "m7", "roll": 1, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "bd091e0b13", "key": "toyonaka-119261", "model": "m7", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "thin round white noodles with no curry tint; not flat rice noodles, pork barely visible"}
+{"check": "claude", "h": "bf1293b783", "key": "toyonaka-120287", "model": "m7", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "noodles are tan spaghetti-like, not translucent clear konnyaku/agar strands"}
+{"check": "claude", "h": "47c03212bc", "key": "toyonaka-266224", "model": "m7", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "hijiki drawn as long wide seaweed strips instead of tiny short black sprigs"}
+{"check": "claude", "h": "697c8dfde2", "key": "toyonaka-127515", "model": "m7", "roll": 0, "strength": "weak", "verdict": "reroll", "why": "whole fried-egg yolk on top instead of loose beaten-egg curds"}
+{"check": "claude", "h": "1a295e45be", "key": "toyonaka-276446", "model": "m7", "roll": 1, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "89909789a0", "key": "toyonaka-269148", "model": "m7", "roll": 0, "strength": "weak", "verdict": "reroll", "why": "rabbit ears are two separate patties standing behind a round patty, not one rabbit-shaped piece"}
+{"check": "claude", "h": "e672b0f15e", "key": "kumagaya-2815", "model": "m9", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "noodles are opaque grey-brown like soba, not translucent shirataki"}
+{"check": "claude", "h": "be5c8ccc2a", "key": "kumagaya-2378", "model": "m9", "roll": 2, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "01959f11db", "key": "kumagaya-03354", "model": "m9", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "looks like a flat egg omelette/pancake with carrot sticks, not a crisp tangled tempura kakiage"}
+{"check": "claude", "h": "357f7dfd19", "key": "kumagaya-03036", "model": "m9", "roll": 0, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "918a3046e8", "key": "kumagaya-03236", "model": "m9", "roll": 0, "strength": "weak", "verdict": "reroll", "why": "bowl is full of udon noodles; item is the no-noodle version (broth, nameko, grated daikon only)"}
+{"check": "claude", "h": "766cbefda7", "key": "kumagaya-03282", "model": "m9", "roll": 1, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "2cded6e2b6", "key": "toyonaka-120366", "model": "m7", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "noodles drawn opaque tan like soba/pasta, not clear glass noodles"}
+{"check": "claude", "h": "5c9c37109d", "key": "toyonaka-269524", "model": "m7", "roll": 2, "strength": "medium", "verdict": "reroll", "why": "thin clear broth with glass-noodle-like strands; not thick minced molokhia soup as ref"}
+{"check": "claude", "h": "cd9ef89490", "key": "toyonaka-124138", "model": "m7", "roll": 2, "strength": "medium", "verdict": "reroll", "why": "noodles opaque orange like yakisoba/spaghetti, not glassy harusame"}
+{"check": "claude", "h": "e94a68f410", "key": "toyonaka-276160", "model": "m7", "roll": 1, "strength": "medium", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "364a6f24df", "key": "toyonaka-130610", "model": "m7", "roll": 1, "strength": "medium", "verdict": "reroll", "why": "pork glazed odd bright red like sweet-and-sour/chili, not soy-glazed pork with onion"}
+{"check": "claude", "h": "23238cf6a7", "key": "toyonaka-131647", "model": "m7", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "looks like soft boiled yellow noodles, not a crispy deep-fried noodle nest"}
+{"check": "claude", "h": "b30cb8c539", "key": "kumagaya-03556-2", "model": "m7", "roll": 2, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "35ff6d25b0", "key": "kumagaya-01978", "model": "m7", "roll": 1, "strength": "strong", "verdict": "reroll", "why": "noodles opaque brown like soba, not clear transparent harusame"}
+{"check": "claude", "h": "3379f360c2", "key": "kumagaya-02776", "model": "m7", "roll": 0, "strength": "weak", "verdict": "reroll", "why": "broth clear orange, not cloudy light-brown miso soup"}
+{"check": "claude", "h": "3c439db7b1", "key": "kumagaya-02842", "model": "m7", "roll": 0, "strength": "weak", "verdict": "reroll", "why": "noodles visible under the toppings; must be noodle-less thick-sauce soup"}
+{"check": "claude", "h": "5d83f94584", "key": "kumagaya-02743", "model": "m7", "roll": 0, "strength": "strong", "verdict": "fallback", "why": "shows pleated gyoza/wonton dumplings in soup, not flat hand-torn tsumikko dough"}
+{"check": "claude", "h": "4c61a78f27", "key": "kumagaya-02759", "model": "m7", "roll": 0, "strength": "weak", "verdict": "reroll", "why": "shrimp tempura with tails instead of hollow chikuwa tempura; kabocha ok"}
+{"check": "claude", "h": "65887604ed", "key": "kurume-018", "model": "m7", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "rounded grainy blocks look like grilled onigiri, not smooth mochi"}
+{"check": "claude", "h": "853dacee7d", "key": "toyonaka-120477", "model": "m7", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "skin has dark mackerel (saba) stripes; sawara should be plain silver-grey"}
+{"check": "claude", "h": "b52fce2055", "key": "toyonaka-120372", "model": "m7", "roll": 2, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "fd14e1085b", "key": "toyonaka-125969", "model": "m7", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "noodles opaque tan like spaghetti, not clear harusame"}
+{"check": "claude", "h": "e4256844e6", "key": "toyonaka-131687", "model": "m7", "roll": 0, "strength": "weak", "verdict": "reroll", "why": "daikon drawn as small round pale lumps like scallops/potatoes, not half-moon daikon"}
+{"check": "claude", "h": "7bc394dcb3", "key": "toyonaka-285965", "model": "m7", "roll": 1, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "b715f6c3a7", "key": "kumagaya-3130", "model": "m7", "roll": 0, "strength": "weak", "verdict": "reroll", "why": "strips brown and noodle-like; konnyaku should be grey speckled jelly with salt seasoning"}
+{"check": "claude", "h": "41be7f98ce", "key": "kumagaya-03364", "model": "m7", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "creamy yellow-white sauce like hollandaise instead of light soy-citrus sauce; patty looks like steak"}
+{"check": "claude", "h": "5efd0b5a47", "key": "kumagaya-03388", "model": "m9", "roll": 0, "strength": "weak", "verdict": "reroll", "why": "noodles drawn opaque tan-brown like soba, not clear translucent shirataki; wakame/cucumber/carrot fine"}
+{"check": "claude", "h": "15b4823743", "key": "kumagaya-115", "model": "m8", "roll": 1, "strength": "medium", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "195af2ac20", "key": "kumagaya-344", "model": "m8", "roll": 1, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "14181143eb", "key": "kumagaya-00156", "model": "m8", "roll": 1, "strength": "medium", "verdict": "reroll", "why": "looks like a cream-filled roll cake / omelette roll, not a dense kinako-coated gokabo stick"}
+{"check": "claude", "h": "986e5ff03f", "key": "kumagaya-03387", "model": "m8", "roll": 0, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "c0f9004563", "key": "kumagaya-02853", "model": "m8", "roll": 0, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "9403f07e36", "key": "kumagaya-03455", "model": "m8", "roll": 1, "strength": "medium", "verdict": "reroll", "why": "thin watery reddish broth soup, not thick glossy dark-brown demi-glace hayashi"}
+{"check": "claude", "h": "f6cc1ddc96", "key": "kumagaya-03477", "model": "m8", "roll": 0, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "ff71257851", "key": "kumagaya-2045", "model": "m8", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "topping is long shredded daikon strands, not a mound of grated daikon oroshi"}
+{"check": "claude", "h": "e472286f9e", "key": "kumagaya-3236", "model": "m8", "roll": 0, "strength": "weak", "verdict": "reroll", "why": "bowl is full of udon noodles though desc says no noodles; mushrooms look like regular brown mushrooms, not small nameko"}
+{"check": "claude", "h": "4a6c89fc47", "key": "kumagaya-50", "model": "m8", "roll": 0, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "6f7305c088", "key": "kumagaya-3600", "model": "m8", "roll": 1, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "f08420a290", "key": "kumagaya-03623", "model": "m8", "roll": 0, "strength": "weak", "verdict": "reroll", "why": "whole fish with head and tail instead of a boneless fillet"}
+{"check": "claude", "h": "e8d0ab0f28", "key": "kumagaya-03130", "model": "m8", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "konnyaku drawn as brown fry-like batons, not grey speckled konnyaku strips"}
+{"check": "claude", "h": "ea3c11eb09", "key": "kumagaya-03398", "model": "m8", "roll": 1, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "33535f1ab2", "key": "kumagaya-03018", "model": "m8", "roll": 0, "strength": "weak", "verdict": "reroll", "why": "noodles are tan/brown like soba, not translucent clear shirataki"}
+{"check": "claude", "h": "9dc3dadbc1", "key": "kumagaya-03312", "model": "m9", "roll": 0, "strength": "weak", "verdict": "reroll", "why": "skin has dark blue-silver saba-like stripes, reads as mackerel not sawara; no yuzu peel visible"}
+{"check": "claude", "h": "248aa463ef", "key": "kumagaya-03111", "model": "m9", "roll": 0, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "fa5acf8639", "key": "kumagaya-02422", "model": "m9", "roll": 0, "strength": "weak", "verdict": "reroll", "why": "hijiki drawn as long thin noodle-like strands instead of short sprigs"}
+{"check": "claude", "h": "1d0014770b", "key": "kumagaya-03450", "model": "m9", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "thick mottled slices look like terrine/meatloaf, not flat ham slices"}
+{"check": "claude", "h": "15b552f91b", "key": "kumagaya-499", "model": "m9", "roll": 0, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "0c87a60534", "key": "kumagaya-03136", "model": "m9", "roll": 0, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "960c32837d", "key": "kumagaya-02957", "model": "m9", "roll": 0, "strength": "weak", "verdict": "reroll", "why": "chikuwa is a solid battered log, not hollow, no seaweed flecks; sweet potato slices unbattered"}
+{"check": "claude", "h": "508477a3e5", "key": "toyonaka-271605", "model": "m6", "roll": 2, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "364a6f24df", "key": "toyonaka-130610", "model": "m6", "roll": 2, "strength": "medium", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "23238cf6a7", "key": "toyonaka-131647", "model": "m6", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "soft medium-thick wavy noodles like yakisoba; not a thin crispy deep-fried nest"}
+{"check": "claude", "h": "9eaeec0624", "key": "kumagaya-02999", "model": "m6", "roll": 1, "strength": "medium", "verdict": "reroll", "why": "large stemmed button/shimeji-like mushrooms instead of tiny glossy round nameko caps"}
+{"check": "claude", "h": "420ec5ed78", "key": "kumagaya-03030-2", "model": "m6", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "whole corn cob, not cut into short wheels"}
+{"check": "claude", "h": "48b5ef3732", "key": "kumagaya-03317", "model": "m6", "roll": 1, "strength": "strong", "verdict": "reroll", "why": "squares look cheese-topped/gratin rather than panko-crumbed fried fish cake as in refs"}
+{"check": "claude", "h": "f47afe13db", "key": "toyonaka-119463", "model": "m6", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "whole mackerel with head and tail; desc requires a flat headless fillet"}
+{"check": "claude", "h": "47c03212bc", "key": "toyonaka-266224", "model": "m6", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "long thin seaweed strands instead of tiny short hijiki sprigs"}
+{"check": "claude", "h": "697c8dfde2", "key": "toyonaka-127515", "model": "m6", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "whole sunny-side fried egg with yolk instead of loose beaten-egg curds"}
+{"check": "claude", "h": "89909789a0", "key": "toyonaka-269148", "model": "m6", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "ears are separate sausage-like pieces stuck on a round patty; daikon looks like dry shreds/cheese"}
+{"check": "claude", "h": "e4256844e6", "key": "toyonaka-131687", "model": "m6", "roll": 1, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "e672b0f15e", "key": "kumagaya-2815", "model": "m6", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "noodles are brown-grey like soba, not translucent shirataki"}
+{"check": "claude", "h": "447acbbda5", "key": "kumagaya-03395", "model": "m6", "roll": 0, "strength": "weak", "verdict": "reroll", "why": "harusame drawn as brown soba-like noodles, not clear glassy"}
+{"check": "claude", "h": "01959f11db", "key": "kumagaya-03354", "model": "m6", "roll": 2, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "75c61185d4", "key": "kumagaya-02841", "model": "m6", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "strips are tan/brown like burdock or chicken; no grey speckled konnyaku visible"}
+{"check": "claude", "h": "918a3046e8", "key": "kumagaya-03236", "model": "m6", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "bowl contains noodles; desc requires broth with nameko and daikon only"}
+{"check": "claude", "h": "33c01ba020", "key": "kumagaya-03127", "model": "m6", "roll": 0, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "7adfb8fa0d", "key": "kumagaya-03313", "model": "m6", "roll": 1, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "d0a4e2c0d6", "key": "kumagaya-03340-2", "model": "m6", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "only cucumber slices; green onion missing"}
+{"check": "claude", "h": "535f28d538", "key": "kumagaya-01967", "model": "m3", "roll": 1, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "6578c5f17f", "key": "kumagaya-03483", "model": "m3", "roll": 0, "strength": "medium", "verdict": "reroll", "why": "dumplings drawn as pleated gyoza/wonton, not flat torn dough sheets"}
+{"check": "claude", "h": "8e1cddcc44", "key": "kumagaya-02647", "model": "m3", "roll": 1, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "e20eaf0ffb", "key": "kumagaya-02425-2", "model": "m3", "roll": 0, "strength": "weak", "verdict": "reroll", "why": "shrimp tempura with tails instead of chikuwa tubes; sweet potato ok"}
+{"check": "claude", "h": "bf4e828b05", "key": "kumagaya-00128", "model": "m3", "roll": 1, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "e44e84772b", "key": "kumagaya-02853-2", "model": "m3", "roll": 1, "strength": "strong", "verdict": "fallback", "why": "reads as beef noodle soup in red broth; onion looks like noodles, not gyudon topping"}
+{"check": "claude", "h": "b715f6c3a7", "key": "kumagaya-3130", "model": "m3", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "konnyaku drawn as brown flat noodle strips, looks like fried udon"}
+{"check": "claude", "h": "1bdf521c73", "key": "kumagaya-03238", "model": "m3", "roll": 1, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "e12d8b0e06", "key": "kumagaya-03568", "model": "m3", "roll": 0, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "da80c169ac", "key": "kumagaya-03019", "model": "m3", "roll": 0, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "130c2a842b", "key": "kumagaya-02941", "model": "m3", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "served on rice; no pork; takuan looks like corn kernels"}
+{"check": "claude", "h": "6563b65793", "key": "kumagaya-03338", "model": "m3", "roll": 0, "strength": "weak", "verdict": "reroll", "why": "whole round fish instead of a flat butterflied mirin-dried fillet"}
+{"check": "claude", "h": "097201cd32", "key": "kumagaya-02911", "model": "m3", "roll": 0, "strength": "weak", "verdict": "reroll", "why": "noodles are brown like soba, not translucent shirataki"}
+{"check": "claude", "h": "af0b2252e7", "key": "kumagaya-02636", "model": "m3", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "clear amber broth, not beige miso; tofu-like cubes, no visible burdock"}
+{"check": "claude", "h": "fed382cc62", "key": "kumagaya-00907", "model": "m3", "roll": 1, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "507a14528c", "key": "kumagaya-02138", "model": "m3", "roll": 1, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "2e74e568d1", "key": "kumagaya-03372", "model": "m3", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "whole sardines with heads, not butterflied fillets"}
+{"check": "claude", "h": "e877e4f771", "key": "kumagaya-03312-2", "model": "m3", "roll": 0, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "703794ab17", "key": "jbfd-ちらし寿司の素", "model": "m3", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "large chunks like chikuzen-ni, not finely diced wet mix"}
+{"check": "claude", "h": "cf963dcdd8", "key": "jbfd-チーズ鱈・チーズサンドおつまみ", "model": "m3", "roll": 0, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "2c740b4f9e", "key": "jbfd-冷凍骨取り赤魚切身", "model": "m3", "roll": 0, "strength": "weak", "verdict": "reroll", "why": "whole raw fish with head, not a boneless fillet"}
+{"check": "claude", "h": "14181143eb", "key": "kumagaya-00156", "model": "m3", "roll": 2, "strength": "medium", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "35ff6d25b0", "key": "kumagaya-01978", "model": "m3", "roll": 2, "strength": "strong", "verdict": "reroll", "why": "noodles drawn brown like soba, not clear glass noodles"}
+{"check": "claude", "h": "9eaeec0624", "key": "kumagaya-02999", "model": "m3", "roll": 2, "strength": "medium", "verdict": "reroll", "why": "large stemmed brown mushrooms in clear orange broth, not tiny glossy nameko in cloudy miso"}
+{"check": "claude", "h": "3379f360c2", "key": "kumagaya-02776", "model": "m3", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "broth clear orange instead of cloudy light-brown miso; no visible aburaage"}
+{"check": "claude", "h": "3c439db7b1", "key": "kumagaya-02842", "model": "m3", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "noodles visible in bowl though dish is noodle-less; thin red broth not thick starch sauce"}
+{"check": "claude", "h": "4c61a78f27", "key": "kumagaya-02759", "model": "m3", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "shrimp tempura with tails dominates instead of chikuwa tubes"}
+{"check": "claude", "h": "3e42ebfe8a", "key": "dishes-teishoku-sanma", "model": "m3", "roll": 1, "strength": "strong", "verdict": "reroll", "why": "fish too thick with mackerel-like striped back, not slender needle-like grilled saury; no clear grated daikon"}
+{"check": "claude", "h": "697c8dfde2", "key": "toyonaka-127515", "model": "m3", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "whole fried egg with intact yolk on top instead of soft beaten-egg curds"}
+{"check": "claude", "h": "89909789a0", "key": "toyonaka-269148", "model": "m3", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "ears are separate pieces, daikon drawn as dry shreds like cheese, not a rabbit-shaped patty with wet grated daikon"}
+{"check": "claude", "h": "ff71257851", "key": "kumagaya-2045", "model": "m3", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "topping drawn as dry stringy shreds like cheese, not a mound of wet grated daikon"}
+{"check": "claude", "h": "e472286f9e", "key": "kumagaya-3236", "model": "m3", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "udon noodles visible though dish is noodle-less; nameko drawn as long-stemmed mushrooms"}
+{"check": "claude", "h": "f08420a290", "key": "kumagaya-03623", "model": "m3", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "whole fish with head and tail instead of a boneless redfish fillet"}
+{"check": "claude", "h": "e8d0ab0f28", "key": "kumagaya-03130", "model": "m3", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "strips are brown like burdock or noodles, not grey speckled konnyaku"}
+{"check": "claude", "h": "447acbbda5", "key": "kumagaya-03395", "model": "m3", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "harusame drawn brown like soba, not clear glass noodles"}
+{"check": "claude", "h": "75c61185d4", "key": "kumagaya-02841", "model": "m3", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "strips orange-brown like kinpira, not grey speckled konnyaku"}
+{"check": "claude", "h": "918a3046e8", "key": "kumagaya-03236", "model": "m5", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "bowl full of noodles; this item must have no noodles (broth, nameko, grated daikon only)"}
+{"check": "claude", "h": "5efd0b5a47", "key": "kumagaya-03388", "model": "m5", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "noodles are opaque brown like soba, not clear translucent shirataki"}
+{"check": "claude", "h": "8919877cf1", "key": "kumagaya-03549", "model": "m5", "roll": 0, "strength": "weak", "verdict": "reroll", "why": "blue-striped mackerel skin makes it read as saba, not sawara fillet"}
+{"check": "claude", "h": "33535f1ab2", "key": "kumagaya-03018", "model": "m5", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "noodles opaque tan/pink, not clear glassy shirataki; reads as soba/somen salad"}
+{"check": "claude", "h": "87fc54ea2c", "key": "kumagaya-03510", "model": "m8", "roll": 0, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "3a8ec0642c", "key": "kumagaya-03511", "model": "m8", "roll": 0, "strength": "medium", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "ebb8468576", "key": "kumagaya-02309", "model": "m8", "roll": 0, "strength": "medium", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "9403f07e36", "key": "kumagaya-03455", "model": "m8", "roll": 2, "strength": "medium", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "5967f11df5", "key": "kumagaya-03471", "model": "m8", "roll": 0, "strength": "strong", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "1ce8bd48e1", "key": "kumagaya-03446", "model": "m8", "roll": 1, "strength": "medium", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "420ec5ed78", "key": "kumagaya-03030-2", "model": "m8", "roll": 2, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "48b5ef3732", "key": "kumagaya-03317", "model": "m8", "roll": 2, "strength": "strong", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "a2131975f5", "key": "dishes-furofuki-daikon", "model": "m8", "roll": 0, "strength": "strong", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "6a7091cb18", "key": "kumagaya-03048", "model": "m8", "roll": 0, "strength": "weak", "verdict": "reroll", "why": "noodles drawn brown like soba, not clear glass noodles"}
+{"check": "claude", "h": "1b0a373260", "key": "kumagaya-03519", "model": "m8", "roll": 1, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "9dc3dadbc1", "key": "kumagaya-03312", "model": "m8", "roll": 1, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "fa5acf8639", "key": "kumagaya-02422", "model": "m8", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "hijiki drawn as long strands, not short sprigs"}
+{"check": "claude", "h": "1d0014770b", "key": "kumagaya-03450", "model": "m8", "roll": 2, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "5b8d3ee016", "key": "kumagaya-00071", "model": "m8", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "toppings shown on a bed of rice; item is topping only, kanpyo/aburaage missing"}
+{"check": "claude", "h": "3909813efd", "key": "kumagaya-03098", "model": "m8", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "only yellow star pieces (starfruit-like), no mixed fruit cocktail"}
+{"check": "claude", "h": "831ac0f93d", "key": "kumagaya-03401", "model": "m8", "roll": 0, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "960c32837d", "key": "kumagaya-02957", "model": "m6", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "chikuwa drawn as a solid battered log, not a halved hollow tube; sweet potato slices look unbattered/raw"}
+{"check": "claude", "h": "03e26a0031", "key": "kumagaya-03400", "model": "m6", "roll": 0, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "d0a4e2c0d6", "key": "kumagaya-03340-2", "model": "m6", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "only cucumber rounds shown; green onion missing"}
+{"check": "claude", "h": "6578c5f17f", "key": "kumagaya-03483", "model": "m7", "roll": 1, "strength": "medium", "verdict": "reroll", "why": "dumplings drawn as filled gyoza/wontons in reddish broth, not flat torn flour sheets"}
+{"check": "claude", "h": "3379f360c2", "key": "kumagaya-02776", "model": "m7", "roll": 2, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "e20eaf0ffb", "key": "kumagaya-02425-2", "model": "m7", "roll": 1, "strength": "weak", "verdict": "fallback", "why": "shrimp tempura with tails instead of chikuwa tempura"}
+{"check": "claude", "h": "3c439db7b1", "key": "kumagaya-02842", "model": "m7", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "noodles visible in bowl and thin reddish broth, should be no noodles under thick starch sauce"}
+{"check": "claude", "h": "4c61a78f27", "key": "kumagaya-02759", "model": "m7", "roll": 2, "strength": "weak", "verdict": "fallback", "why": "shrimp tempura with tails instead of chikuwa; only kabocha correct"}
+{"check": "claude", "h": "ea80f54f4e", "key": "kumagaya-03380", "model": "m7", "roll": 1, "strength": "medium", "verdict": "reroll", "why": "aosa drawn as a leafy green sprig, not fine fuzzy seaweed wisps"}
+{"check": "claude", "h": "168aec349d", "key": "mext-06059", "model": "m7", "roll": 0, "strength": "weak", "verdict": "reroll", "why": "long uniform yellow strands read as fried noodles, not limp boiled chrysanthemum petals"}
+{"check": "claude", "h": "b715f6c3a7", "key": "kumagaya-3130", "model": "m7", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "konnyaku strips drawn brown and noodle-like, not grey translucent jelly with pale salt seasoning"}
+{"check": "claude", "h": "5efd0b5a47", "key": "kumagaya-03388", "model": "m7", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "noodles are brown like soba, not clear translucent shirataki"}
+{"check": "claude", "h": "130c2a842b", "key": "kumagaya-02941", "model": "m7", "roll": 2, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "6563b65793", "key": "kumagaya-03338", "model": "m7", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "whole round fish with head, not a flat butterflied mirin-glazed fillet"}
+{"check": "claude", "h": "097201cd32", "key": "kumagaya-02911", "model": "m7", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "noodles are brown like soba, not clear translucent shirataki"}
+{"check": "claude", "h": "33535f1ab2", "key": "kumagaya-03018", "model": "m7", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "noodles are brown like soba, not clear translucent shirataki"}
+{"check": "claude", "h": "2d13640812", "key": "kumagaya-02759-2", "model": "m7", "roll": 0, "strength": "weak", "verdict": "reroll", "why": "chikuwa pieces drawn with shrimp tail, read as shrimp tempura"}
+{"check": "claude", "h": "85f66c6ede", "key": "kumagaya-03315", "model": "m7", "roll": 1, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "2b8b65d612", "key": "kumagaya-02812", "model": "m10", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "dumplings are smooth round balls like meatballs, not torn irregular suiton; broth looks clear rather than miso"}
+{"check": "claude", "h": "af0b2252e7", "key": "kumagaya-02636", "model": "m10", "roll": 2, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "2e74e568d1", "key": "kumagaya-03372", "model": "m10", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "whole sardines with heads and tails, not butterflied kabayaki fillets"}
+{"check": "claude", "h": "c2452fd55a", "key": "mext-02049", "model": "m10", "roll": 1, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "4431c150e6", "key": "mext-06330", "model": "m10", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "looks like crisp raw sprouts with seed heads, not soft wilted boiled pea shoots"}
+{"check": "claude", "h": "e5c7de11a5", "key": "kumagaya-00178", "model": "m8", "roll": 1, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "7ef5466716", "key": "kumagaya-02740", "model": "m8", "roll": 1, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "bd81c6e566", "key": "jbfd-ゼリー飲料", "model": "m8", "roll": 1, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "df76ab8ac7", "key": "jbfd-乾燥野菜", "model": "m8", "roll": 1, "strength": "medium", "verdict": "reroll", "why": "pieces look like plump fresh diced vegetables, not shrivelled dehydrated flakes"}
+{"check": "claude", "h": "3e42ebfe8a", "key": "dishes-teishoku-sanma", "model": "m8", "roll": 2, "strength": "strong", "verdict": "reroll", "why": "fish is short and deep-bodied like mackerel, not a long needle-thin saury; no grated daikon"}
+{"check": "claude", "h": "9323f6f7f6", "key": "mext-06118", "model": "m8", "roll": 0, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "d562568169", "key": "mext-06127", "model": "m8", "roll": 0, "strength": "weak", "verdict": "reroll", "why": "upright fresh bok choy heads with pale white stems, not wilted boiled tatsoi"}
+{"check": "claude", "h": "8cbda71d00", "key": "mext-06275", "model": "m8", "roll": 1, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "948f3903fe", "key": "maff_kyodo-tamagokanten_yamagata", "model": "m8", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "egg poured on top like sauce rather than ribbons suspended inside the amber agar blocks"}
+{"check": "claude", "h": "6d1f48adba", "key": "maff_kyodo-dojou_jiru_kagawa", "model": "m8", "roll": 0, "strength": "weak", "verdict": "reroll", "why": "fish are deep-bodied sardine/ayu shapes, not slender eel-like loach"}
+{"check": "claude", "h": "a4c9d174f0", "key": "maff_kyodo-kashiwa_mochi_fukui", "model": "m8", "roll": 0, "strength": "strong", "verdict": "reroll", "why": "round sliced daifuku-like mochi with crinkly lettuce leaves, not half-moon mochi wrapped in an oak leaf"}
+{"check": "claude", "h": "e472286f9e", "key": "kumagaya-3236", "model": "m8", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "noodles visible in the broth despite めんなし; mushrooms are long-stemmed, not tiny round nameko"}
+{"check": "claude", "h": "a2346a40b7", "key": "kumagaya-02349-2", "model": "m8", "roll": 1, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "00e9d860b3", "key": "kumagaya-02362", "model": "m8", "roll": 1, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "309791afec", "key": "kumagaya-03236-2", "model": "m8", "roll": 0, "strength": "weak", "verdict": "reroll", "why": "long-stemmed shimeji-like mushrooms, not tiny button-cap nameko"}
+{"check": "claude", "h": "1a69bdc626", "key": "kumagaya-02152", "model": "m8", "roll": 1, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "842a9832be", "key": "kumagaya-03359", "model": "m8", "roll": 0, "strength": "weak", "verdict": "reroll", "why": "thin pink slices that read as radish/onion rings, not thick translucent daikon discs"}
+{"check": "claude", "h": "d3658668fa", "key": "tokyo_hokeniryo-hitori6_2", "model": "m8", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "only straight stalks like green beans/scallions; no ashitaba leaves visible"}
+{"check": "claude", "h": "703794ab17", "key": "jbfd-ちらし寿司の素", "model": "m8", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "large chunks served over rice like finished chirashi, not a finely diced seasoning mix"}
+{"check": "claude", "h": "2c740b4f9e", "key": "jbfd-冷凍骨取り赤魚切身", "model": "m10", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "shows a whole red fish with head and tail, not a flat boneless skin-on fillet"}
+{"check": "claude", "h": "00a079691a", "key": "mext-06369", "model": "m2", "roll": 1, "strength": "weak", "verdict": "fallback", "why": "heaped bowl looks like steamed rice, not wet squeezed grated daikon"}
+{"check": "claude", "h": "929386854b", "key": "eatout-hirekatsu_teishoku", "model": "m2", "roll": 1, "strength": "strong", "verdict": "reroll", "why": "cutlet is one long sliced loin-style katsu, not round thick hire medallions as in refs"}
+{"check": "claude", "h": "24d32e9524", "key": "dishes-teishoku-hokke", "model": "m2", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "whole striped fish side-on like saba, not hokke split open flat flesh-up"}
+{"check": "claude", "h": "8de2dfe6a0", "key": "mext-02041", "model": "m2", "roll": 0, "strength": "weak", "verdict": "reroll", "why": "whole round tubers like boiled potatoes, not cut knobby kikuimo chunks"}
+{"check": "claude", "h": "168aec349d", "key": "mext-06059", "model": "m2", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "heap of long yellow strands reads as noodles, not loose boiled chrysanthemum petals"}
+{"check": "claude", "h": "c3181375fb", "key": "maff_kyodo-kakinoha_zushi_wakayama", "model": "m2", "roll": 0, "strength": "strong", "verdict": "reroll", "why": "rice blocks with orange salmon-like topping and leaf bands; not wrapped in persimmon leaves, no mackerel"}
+{"check": "claude", "h": "f08420a290", "key": "kumagaya-03623", "model": "m2", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "whole fish with head and tail, not a boneless fillet"}
+{"check": "claude", "h": "447acbbda5", "key": "kumagaya-03395", "model": "m2", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "noodles are brown like soba, not clear harusame"}
+{"check": "claude", "h": "8919877cf1", "key": "kumagaya-03549", "model": "m2", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "fillet has blue-striped mackerel-like skin, desc says pale sawara without blue-striped skin"}
+{"check": "claude", "h": "6a7091cb18", "key": "kumagaya-03048", "model": "m2", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "noodles are brown soba-like, not transparent glass noodles"}
+{"check": "claude", "h": "fa5acf8639", "key": "kumagaya-02422", "model": "m2", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "hijiki drawn as long tangled ribbons, not short sprigs"}
+{"check": "claude", "h": "5b8d3ee016", "key": "kumagaya-00071", "model": "m2", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "shows finished gomoku sushi on rice, not the simmered topping mix alone"}
+{"check": "claude", "h": "3909813efd", "key": "kumagaya-03098", "model": "m2", "roll": 2, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "960c32837d", "key": "kumagaya-02957", "model": "m2", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "chikuwa is a solid fried log, not halved hollow tube; sweet potato slices unbattered"}
+{"check": "claude", "h": "f4105613bf", "key": "mext-06004", "model": "m2", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "long thick uncut stalks look raw like green onion, not soft thin boiled chives cut short"}
+{"check": "claude", "h": "4431c150e6", "key": "mext-06330", "model": "m2", "roll": 2, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "d490e474d8", "key": "mext-06331", "model": "m2", "roll": 1, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "6578c5f17f", "key": "kumagaya-03483", "model": "m1", "roll": 2, "strength": "medium", "verdict": "reroll", "why": "dumplings drawn as folded gyoza/wontons in clear red broth, not flat torn dango sheets"}
+{"check": "claude", "h": "a9b9ccb207", "key": "mext-06079", "model": "m1", "roll": 0, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "cfbed96e6e", "key": "mext-06121", "model": "m1", "roll": 1, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "d562568169", "key": "mext-06127", "model": "m1", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "upright bok choy heads with pale white stems, not wilted dark boiled tatsoi"}
+{"check": "claude", "h": "1f2807accc", "key": "mext-06225", "model": "m1", "roll": 0, "strength": "weak", "verdict": "reroll", "why": "looks like hollow green onion lengths rather than solid slim garlic stems"}
+{"check": "claude", "h": "283637991d", "key": "maff_kyodo-38_17_gifu", "model": "m1", "roll": 1, "strength": "strong", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "948f3903fe", "key": "maff_kyodo-tamagokanten_yamagata", "model": "m1", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "egg drizzled on top like a sauce instead of ribbons suspended inside the jelly"}
+{"check": "claude", "h": "9a62844210", "key": "maff_kyodo-sasamaki_shimane", "model": "m1", "roll": 1, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "6d1f48adba", "key": "maff_kyodo-dojou_jiru_kagawa", "model": "m1", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "fish is a silver sardine/mackerel, not slender loach; broth clear not cloudy miso"}
+{"check": "claude", "h": "920723f796", "key": "maff_kyodo-barazushi_kyoto", "model": "m1", "roll": 0, "strength": "medium", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "a4c9d174f0", "key": "maff_kyodo-kashiwa_mochi_fukui", "model": "m1", "roll": 1, "strength": "strong", "verdict": "reroll", "why": "crinkly lettuce-like leaves and round mochi instead of smooth oak leaf around half-moon mochi"}
+{"check": "claude", "h": "0a9002e0c6", "key": "maff_kyodo-aimaze_oita", "model": "m1", "roll": 0, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "b45c38b86e", "key": "sub-rusk", "model": "m1", "roll": 0, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "6563b65793", "key": "kumagaya-03338", "model": "m8", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "glaze and sesame right, but drawn as a whole round fish, not a butterflied flat fillet"}
+{"check": "claude", "h": "2c740b4f9e", "key": "jbfd-冷凍骨取り赤魚切身", "model": "m8", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "whole round red fish (sea-bream-like) instead of a flat boneless skin-on fillet"}
+{"check": "claude", "h": "a86a401c19", "key": "mext-06368", "model": "m3", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "shows a peaked mound of grated white solids in a bowl, not a thin watery juice"}
+{"check": "claude", "h": "ea80f54f4e", "key": "kumagaya-03380", "model": "m3", "roll": 2, "strength": "medium", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "df76ab8ac7", "key": "jbfd-乾燥野菜", "model": "m3", "roll": 2, "strength": "strong", "verdict": "reroll", "why": "looks like fresh chopped vegetable salad, not shrivelled dehydrated flakes"}
+{"check": "claude", "h": "168aec349d", "key": "mext-06059", "model": "m3", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "uniform thick yellow strands read as noodles, not limp boiled chrysanthemum petals"}
+{"check": "claude", "h": "c3181375fb", "key": "maff_kyodo-kakinoha_zushi_wakayama", "model": "m3", "roll": 1, "strength": "strong", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "097201cd32", "key": "kumagaya-02911", "model": "m3", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "noodles are opaque grey-brown like soba, not translucent shirataki"}
+{"check": "claude", "h": "2d13640812", "key": "kumagaya-02759-2", "model": "m3", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "chikuwa pieces have shrimp-like tails and read as ebi tempura; kabocha flesh largely unbattered"}
+{"check": "claude", "h": "2b8b65d612", "key": "kumagaya-02812", "model": "m3", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "dumplings are smooth round balls like dango in clear broth, not torn suiton in beige miso"}
+{"check": "claude", "h": "309791afec", "key": "kumagaya-03236-2", "model": "m3", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "long-stemmed shimeji/chestnut-type mushrooms, not tiny glossy button nameko"}
+{"check": "claude", "h": "842a9832be", "key": "kumagaya-03359", "model": "m3", "roll": 1, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "d3658668fa", "key": "tokyo_hokeniryo-hitori6_2", "model": "m3", "roll": 2, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "2d6dd90e69", "key": "mext-08055", "model": "m4", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "mushrooms look battered/crumb-coated like karaage, not plain su-age"}
+{"check": "claude", "h": "929386854b", "key": "eatout-hirekatsu_teishoku", "model": "m4", "roll": 2, "strength": "strong", "verdict": "reroll", "why": "single flat sliced loin-style cutlet, not thick round hire medallions"}
+{"check": "claude", "h": "24d32e9524", "key": "dishes-teishoku-hokke", "model": "m4", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "whole striped mackerel-like fish, not hokke split open flat"}
+{"check": "claude", "h": "8de2dfe6a0", "key": "mext-02041", "model": "m4", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "whole round tubers that read as potatoes/turnips, not cut knobby chunks"}
+{"check": "claude", "h": "d562568169", "key": "mext-06127", "model": "m4", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "fresh upright bok choy heads with pale white stems, not wilted boiled tatsoi"}
+{"check": "claude", "h": "1f2807accc", "key": "mext-06225", "model": "m4", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "thick pale hollow leek-like tubes, not slim solid green garlic stems"}
+{"check": "claude", "h": "6d1f48adba", "key": "maff_kyodo-dojou_jiru_kagawa", "model": "m4", "roll": 2, "strength": "weak", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "a4c9d174f0", "key": "maff_kyodo-kashiwa_mochi_fukui", "model": "m4", "roll": 2, "strength": "strong", "verdict": "reroll", "why": "leaves are crinkly bumpy lettuce/goya-like, not smooth lobed oak leaves; one mochi cut open"}
+{"check": "claude", "h": "8919877cf1", "key": "kumagaya-03549", "model": "m4", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "fillet shows blue-grey mackerel-like skin, desc requires pale fillet without blue skin"}
+{"check": "claude", "h": "6a7091cb18", "key": "kumagaya-03048", "model": "m4", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "noodles are brown and soba-like, not clear transparent harusame"}
+{"check": "claude", "h": "f4105613bf", "key": "mext-06004", "model": "m4", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "long stiff uncut fresh-looking stalks, not soft boiled chives cut short"}
+{"check": "claude", "h": "a86a401c19", "key": "mext-06368", "model": "m5", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "should be thin watery juice; shows opaque milky liquid full of noodle-like strands, reads as noodles/shredded daikon not juice"}
+{"check": "claude", "h": "2d13640812", "key": "kumagaya-02759-2", "model": "m5", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "no chikuwa: shows shrimp tempura with tails and a shiitake; kabocha slices bare, not battered"}
+{"check": "claude", "h": "309791afec", "key": "kumagaya-03236-2", "model": "m5", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "mushrooms are large long-stemmed caps, not tiny glossy nameko buttons; no fried tofu visible"}
+{"check": "claude", "h": "2d6dd90e69", "key": "mext-08055", "model": "m5", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "mushrooms look battered/crumb-coated like karaage, not plain deep-fried (素揚げ) bunashimeji; caps too large"}
+{"check": "claude", "h": "8de2dfe6a0", "key": "mext-02041", "model": "m5", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "rounded whole lumps reading as boiled potatoes, not knobby irregular cut Jerusalem artichoke chunks"}
+{"check": "claude", "h": "1f2807accc", "key": "mext-06225", "model": "m5", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "thick hollow tubes with pale ends look like negi/leek, not slim solid garlic stems"}
+{"check": "claude", "h": "8a8a1b833f", "key": "sub-chinsuko", "model": "lead", "roll": 0, "strength": "medium", "verdict": "pass", "why": ""}
+{"check": "claude", "h": "63f19b53a2", "key": "maff_kyodo-32_3_gunma", "model": "lead", "roll": 1, "strength": "weak", "verdict": "reroll", "why": "pleated nikuman-style tops and whole beans; tansan manju are smooth round buns with coarse bean paste"}
+{"check": "claude", "h": "63f19b53a2", "key": "maff_kyodo-32_3_gunma", "model": "lead", "roll": 2, "strength": "weak", "verdict": "reroll", "why": "pleated nikuman-style tops again; tansan manju are smooth round buns"}
