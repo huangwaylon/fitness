@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """ごはん's generated food pictures (docs/food-data.md "Pictures"): one picture per visual concept (a table row, `key`),
-drawn by Z-Image-Turbo from a hand-written description, checked twice against reference photos, packed into sprite
+drawn by Z-Image-Turbo from a hand-written description, checked by Claude against vetted reference photos, packed into sprite
 sheets in app/static/food-img/.
 
   python3 -I food-data/images/fi.py propose <phase>      # draft rows for a phase's items -> $RAW/work/propose-<phase>.json
@@ -8,8 +8,8 @@ sheets in app/static/food-img/.
   python3 -I food-data/images/fi.py refsheet <out> keys  # a contact sheet of rows' candidates, to vet them by eye
   python3 -I food-data/images/fi.py vet <json>           # record the vetting: [{key, ok: [n, ...], why?}] -> the rows' refs
   <mflux python> food-data/images/fi.py gen [keys]       # generate what is due (a fixed seed per key and roll), cached
-  python3 -I food-data/images/fi.py verify [keys]        # the vision check (qwen via ollama) against the vetted refs
-  python3 -I food-data/images/fi.py checksheet <out> keys  # generated beside refs, for the second (by-eye) check
+  <PIL python> food-data/images/fi.py checksheets <out> [keys]  # every generated image beside its refs, for the Claude check
+  python3 -I food-data/images/fi.py claude <json>        # log the check's verdicts (claude2: a second opinion, it wins)
   python3 -I food-data/images/fi.py status               # per row: refs, rolls, verdicts, shipped
   python3 -I food-data/images/fi.py pack                 # paper-even, webp, sheets + index.json into app/static/food-img/
   python3 -I food-data/images/fi.py split <lines> <dest>  # items that look different get their own row (or join another's)
@@ -58,7 +58,7 @@ GEN_PX, STEPS, MAX_ROLL = 512, 9, 2
 # The weights' quantisation: 4 since 2026-11-06 (half the memory, faster on the shared GPU, the same look in a probe);
 # the first ~260 images were q8. Each image's settings are in its sidecar (<png>.json).
 QUANT = int(os.environ.get('FI_QUANT', 4))
-# The checks run only when asked (FI_CHECKS=1: verify and checksheet's rows need 2 vetted references).
+# The checks gate shipping only when asked (FI_CHECKS=1: an unchecked row waits for its check, else ships unchecked).
 CHECKS = os.environ.get('FI_CHECKS') == '1'
 
 
@@ -114,43 +114,42 @@ def desc_hash(row):
     return hashlib.sha256(f'{PROMPT_V}\0{row["desc"]}'.encode()).hexdigest()[:10]
 
 
+def verdict_at(mine, roll):
+    """The verdict on a roll: the second opinion's (claude2) if it has one, else the first check's (claude); None if
+    neither has looked."""
+    for check in ('claude2', 'claude'):
+        v = [x for x in mine if x['roll'] == roll and x['check'] == check]
+        if v:
+            return v[-1]
+    return None
+
+
 def state(row, vs):
-    """A row's pipeline state: ('gen', roll) to generate, then ('ship', roll). The checks (verify, then the by-eye review
-    of a checksheet) are optional for now (the user, 2026-11-06): a row ships unchecked (index `checked: false`) until a
-    check has logged a verdict on it; from then its verdicts decide: ('verify', roll), ('review', roll), ('ship', roll)
-    or ('tile', why) after MAX_ROLL re-rolls. Only verdicts on the row's current description count."""
+    """A row's pipeline state: ('gen', roll) to generate, ('check', roll) for a Claude check (only with FI_CHECKS=1:
+    otherwise an unchecked row ships, index `checked: false`, the user 2026-11-06), ('ship', roll), or ('tile', why).
+    A roll's verdict (verdict_at): pass ships it; reroll draws the next roll (at most MAX_ROLL re-rolls, then the tile);
+    fallback is the tile. Only verdicts on the row's current description count."""
     h = desc_hash(row)
     mine = [v for v in vs.get(row['key'], []) if v.get('h') == h]
     roll = 0
     while True:
-        q = [v for v in mine if v['roll'] == roll and v['check'] == 'qwen']
-        r = [v for v in mine if v['roll'] == roll and v['check'] == 'eye']
-        if not gen_path(row, roll).exists() and not q and not r:
-            return ('gen', roll)
-        if not mine:
+        v = verdict_at(mine, roll)
+        if v is None:
+            if not gen_path(row, roll).exists():
+                return ('gen', roll)
+            return ('check', roll) if CHECKS else ('ship', roll)
+        if v['verdict'] == 'pass':
             return ('ship', roll)
-        if CHECKS and len(vetted_refs(row)) < 2:
-            return ('tile', 'fewer than 2 vetted references')
-        if not q and not r:
-            return ('verify', roll) if CHECKS else ('ship', roll)
-        qv = q[-1]['verdict'] if q else 'unsure'
-        if qv in ('pass', 'unsure'):
-            if not r:
-                return ('review', roll) if CHECKS else ('ship', roll)
-            if r[-1]['verdict'] == 'pass':
-                return ('ship', roll)
-        # a wrong food, a fixable flaw, or the eye check's no: the next roll, at most MAX_ROLL re-rolls
-        if roll >= MAX_ROLL:
-            return ('tile', f'roll {roll}: {(r or q)[-1].get("why", "")}'[:120])
+        if v['verdict'] == 'fallback' or roll >= MAX_ROLL:
+            return ('tile', f'roll {roll}: {v.get("why", "")}'[:120])
         roll += 1
 
 
 def checked(row, vs):
-    """Whether a shipped row passed both checks (else it ships unchecked)."""
+    """Whether a shipped row passed a check (else it ships unchecked)."""
     st, roll = state(row, vs)
     h = desc_hash(row)
-    mine = [v for v in vs.get(row['key'], []) if v.get('h') == h and v['roll'] == roll]
-    return st == 'ship' and any(v['check'] == 'eye' and v['verdict'] == 'pass' for v in mine)
+    return st == 'ship' and verdict_at([v for v in vs.get(row['key'], []) if v.get('h') == h], roll) is not None
 
 
 def vetted_refs(row):
@@ -637,32 +636,45 @@ def cmd_refsheet(out, *keys):
     print(out, sheet.size)
 
 
+def _vetted(k, ok):
+    """A row's vetted refs from candidate numbers ({n, origin, file, page, ok: true} as in cand.json), or an error."""
+    meta = RAW / 'refs' / str(k) / 'cand.json'
+    if not isinstance(ok, list) or not all(isinstance(n, int) for n in ok):
+        return None, f'{k}: ok must be a list of candidate numbers'
+    if ok and not meta.exists():
+        return None, f'{k}: no cand.json'
+    cand = {c['n']: c for c in json.loads(meta.read_text())['cand']} if meta.exists() else {}
+    miss = [n for n in ok if n not in cand]
+    if miss:
+        return None, f'{k}: c{miss} not in cand.json'
+    return [{**{f: cand[n][f] for f in ('n', 'origin', 'file', 'page')}, 'ok': True} for n in dict.fromkeys(ok)], None
+
+
+def _table_files():
+    files = {p: json.loads(p.read_text()) for p in sorted((HERE / 'table').glob('*.json'))}
+    return files, {r['key']: r for rs in files.values() for r in rs}
+
+
+def _write_table(files):
+    for p, rs in files.items():
+        p.write_text(json.dumps(rs, ensure_ascii=False, indent=1) + '\n')
+
+
 def cmd_vet(path):
     """Record the vetting of a row's candidates (a refsheet by eye): a JSON file [{key, ok: [n, ...], why?}] -> the row's
     `refs` = its vetted candidates as in cand.json ({n, origin, file, page, ok: true}); `ok: []` records "none fits"
     (refs: [], unlike an unvetted row's missing refs), `why` lands in the row's `vet`. A later answer for a key
     replaces the earlier one (idempotent). Refused whole, nothing written, if a key isn't in the table or an n isn't
     in its cand.json."""
-    files = {p: json.loads(p.read_text()) for p in sorted((HERE / 'table').glob('*.json'))}
-    rows = {r['key']: r for rs in files.values() for r in rs}
+    files, rows = _table_files()
     todo, bad = [], []
     for a in json.loads(Path(path).read_text()):
-        k, ok = a.get('key'), a.get('ok')
-        meta = RAW / 'refs' / str(k) / 'cand.json'
-        if k not in rows:
-            bad.append(f'{k}: not in the table')
-        elif not isinstance(ok, list) or not all(isinstance(n, int) for n in ok):
-            bad.append(f'{k}: ok must be a list of candidate numbers')
-        elif ok and not meta.exists():
-            bad.append(f'{k}: no cand.json')
+        k = a.get('key')
+        refs, err = _vetted(k, a.get('ok')) if k in rows else (None, f'{k}: not in the table')
+        if err:
+            bad.append(err)
         else:
-            cand = {c['n']: c for c in json.loads(meta.read_text())['cand']} if meta.exists() else {}
-            miss = [n for n in ok if n not in cand]
-            if miss:
-                bad.append(f'{k}: c{miss} not in cand.json')
-            else:
-                todo.append((rows[k], [{**{f: cand[n][f] for f in ('n', 'origin', 'file', 'page')}, 'ok': True}
-                                       for n in dict.fromkeys(ok)], a.get('why', '')))
+            todo.append((rows[k], refs, a.get('why', '')))
     if bad:
         sys.exit('vet: refused, nothing written:\n  ' + '\n  '.join(bad))
     for r, refs, why in todo:
@@ -671,36 +683,108 @@ def cmd_vet(path):
             r['vet'] = why[:200]
         else:
             r.pop('vet', None)
-    for p, rs in files.items():
-        p.write_text(json.dumps(rs, ensure_ascii=False, indent=1) + '\n')
+    _write_table(files)
     print(f'vet: {len(todo)} rows, {sum(len(v) >= 2 for _, v, _ in todo)} with 2+ vetted references')
 
 
-def cmd_checksheet(out, *keys):
-    """The second check: per row, the generated image (its current roll) beside two vetted references, at 256 px."""
+def _cands(k, limit):
+    """A row's candidate numbers whose photo downloaded, in cand.json order."""
+    meta = RAW / 'refs' / k / 'cand.json'
+    cand = json.loads(meta.read_text())['cand'] if meta.exists() else []
+    return [c['n'] for c in cand if (RAW / 'refs' / k / f'c{c["n"]}.jpg').exists()][:limit]
+
+
+def cmd_checksheets(out, *keys):
+    """The Claude check's sheets (fi.py claude): every row with a generated image (or `keys`), its current roll beside
+    its vetted refs (up to 2) or, unvetted, up to 5 candidates labelled c<n>; 6 rows a sheet, ~1,120 x 1,560 px (a
+    vision model downsizes beyond 1,568). Rows without any candidate last, 8 a sheet (4 x 2, the image alone).
+    -> <out>/sheets/s-NNNN.png, <out>/manifest.json [{sheet, keys}], <out>/rows.jsonl (what a checker reads beside)."""
     from PIL import Image, ImageDraw
-    rows = {r['key']: r for r in table()}
-    vs = verdicts()
-    keys = [k for k in keys if k in rows]
-    PX = 256
-    cols = 2
-    cw = 3 * PX + 40
-    sheet = Image.new('RGB', (cols * cw, ((len(keys) + cols - 1) // cols) * (PX + 30)), (250, 246, 236))
-    dr = ImageDraw.Draw(sheet)
-    f = _font(15)
-    for i, k in enumerate(keys):
-        r = rows[k]
+    out = Path(out)
+    (out / 'sheets').mkdir(parents=True, exist_ok=True)
+    vs, byid = verdicts(), items_by_id()
+    rows = [r for r in table() if not keys or r['key'] in keys]
+    info, skipped = {}, 0
+    for r in rows:
         st, roll = state(r, vs)
-        x0, y = (i % cols) * cw, (i // cols) * (PX + 30)
-        dr.text((x0 + 6, y + 4), f'{i + 1}. {r["ja"]}  [{k}] r{roll}', fill=(40, 30, 20), font=f)
-        g = gen_path(r, roll if isinstance(roll, int) else 0)
-        if g.exists():
-            sheet.paste(_thumb(g, PX), (x0 + 6, y + 26))
-        refs = vetted_refs(r)[:2]
-        for j, ref in enumerate(refs):
-            sheet.paste(_thumb(RAW / 'refs' / k / f'c{ref["n"]}.jpg', PX), (x0 + 16 + (j + 1) * PX, y + 26))
-    sheet.save(out)
-    print(out, sheet.size)
+        if not isinstance(roll, int) or not gen_path(r, roll).exists():
+            skipped += 1
+            continue
+        k = r['key']
+        cand = _cands(k, 5)
+        info[k] = dict(key=k, ja=r['ja'], desc=r['desc'], roll=roll, state=st,
+                       items=list(dict.fromkeys(byid.get(i, {}).get('name', i) for i in r.get('items', []))) or [r.get('cat', '')],
+                       vetted=[x['n'] for x in vetted_refs(r)] if 'refs' in r else None, cand=cand, nocand=not cand)
+    with_c = [k for k in info if not info[k]['nocand']]
+    no_c = [k for k in info if info[k]['nocand']]
+    f, fk, fl = _font(20), _font(15), _font(18)
+    BG, INK, KEY = (250, 246, 236), (40, 30, 20), (30, 70, 140)
+
+    def label(dr, x, y, text, fill):
+        dr.rectangle((x, y, x + dr.textlength(text, font=fl) + 8, y + 24), fill=fill)
+        dr.text((x + 4, y + 2), text, fill=(255, 255, 255), font=fl)
+
+    def head(dr, x, y, n, i, width, wide):
+        tag = 'NO REFS' if i['nocand'] else 'UNVETTED' if i['vetted'] is None else f'vetted: {len(i["vetted"])}'
+        tf = f if wide else fk
+        ty = y if wide else y + 27
+        dr.text((x + width - dr.textlength(tag, font=tf), ty), tag, fill=(150, 30, 30) if i['vetted'] is None else (30, 110, 50), font=tf)
+        t = _wrap(dr, f'{n}. {i["ja"]}', f, width * 0.6 if wide else width, 1)[0]
+        dr.text((x, y), t, fill=INK, font=f)
+        kx, ky = (x + dr.textlength(t, font=f) + 14, y + 4) if wide else (x, y + 27)
+        rest = x + width - dr.textlength(tag, font=tf) - 12 - kx
+        dr.text((kx, ky), _wrap(dr, f'r{i["roll"]}  {i["key"]}', fk, rest, 1)[0], fill=KEY, font=fk)
+
+    def paste(sheet, p, x, y, px):
+        im = _thumb(p, px)
+        sheet.paste(im, (x + (px - im.width) // 2, y + (px - im.height) // 2))
+
+    G, C, HD, PER = 222, 170, 32, 6  # 6 x 260 px: under 1,568
+    W, RH = 12 + G + 12 + 5 * (C + 4) + 8, HD + G + 6
+    manifest, n = [], 0
+    for s0 in range(0, len(with_c), PER):
+        ks = with_c[s0:s0 + PER]
+        sheet = Image.new('RGB', (W, len(ks) * RH), BG)
+        dr = ImageDraw.Draw(sheet)
+        for j, k in enumerate(ks):
+            i, y = info[k], j * RH
+            head(dr, 12, y + 4, j + 1, i, W - 24, True)
+            paste(sheet, gen_path({'key': k, 'desc': i['desc']}, i['roll']), 12, y + HD, G)
+            label(dr, 12, y + HD, 'GENERATED', (60, 60, 60))
+            x = 12 + G + 12
+            if i['vetted'] is not None:
+                for m in i['vetted'][:2]:
+                    paste(sheet, RAW / 'refs' / k / f'c{m}.jpg', x, y + HD, G)
+                    label(dr, x, y + HD, f'ref c{m}', (30, 110, 50))
+                    x += G + 8
+            else:
+                for m in i['cand']:
+                    paste(sheet, RAW / 'refs' / k / f'c{m}.jpg', x, y + HD + (G - C) // 2, C)
+                    label(dr, x, y + HD + (G - C) // 2, f'c{m}', (150, 30, 30))
+                    x += C + 4
+            dr.line((0, y + RH - 2, W, y + RH - 2), fill=(170, 150, 120), width=2)
+        n += 1
+        sheet.save(out / 'sheets' / f's-{n:04d}.png')
+        manifest.append({'sheet': f's-{n:04d}.png', 'keys': ks})
+    P, COLS = 340, 4
+    for s0 in range(0, len(no_c), 8):
+        ks = no_c[s0:s0 + 8]
+        cw, ch = P + 24, 50 + P + 12
+        sheet = Image.new('RGB', (COLS * cw, ((len(ks) + COLS - 1) // COLS) * ch), BG)
+        dr = ImageDraw.Draw(sheet)
+        for j, k in enumerate(ks):
+            i, x, y = info[k], (j % COLS) * cw + 12, (j // COLS) * ch
+            head(dr, x, y + 4, j + 1, i, P, False)
+            paste(sheet, gen_path({'key': k, 'desc': i['desc']}, i['roll']), x, y + 50, P)
+        n += 1
+        sheet.save(out / 'sheets' / f's-{n:04d}.png')
+        manifest.append({'sheet': f's-{n:04d}.png', 'keys': ks})
+    for m in manifest:
+        for k in m['keys']:
+            info[k]['sheet'] = m['sheet']
+    (out / 'manifest.json').write_text(json.dumps(manifest, ensure_ascii=False, indent=0) + '\n')
+    (out / 'rows.jsonl').write_text(''.join(json.dumps(info[k], ensure_ascii=False) + '\n' for m in manifest for k in m['keys']))
+    print(f'checksheets: {n} sheets ({len(with_c)} rows with candidates, {len(no_c)} without), {skipped} rows not drawn yet')
 
 
 # ---------- generation (the mflux tool's Python)
@@ -737,80 +821,60 @@ def cmd_gen(keys=None):
             time.sleep(float(os.environ.get("FI_PAUSE", 0)))  # FI_PAUSE: seconds of rest after each image (a shared machine)
 
 
-# ---------- the vision check (qwen via ollama)
+# ---------- the check (Claude, by eye over checksheets)
 
-VMODEL = os.environ.get('VMODEL', 'qwen3.8:27b')  # MLX 4-bit, ~20 GB resident (q8_0's ~33 GB is over a shared Mac's budget)
-OLLAMA = os.environ.get('OLLAMA_URL', 'http://localhost:11434')
-VPROMPT = """You are checking a food illustration for a Japanese nutrition app before it ships. Accuracy matters more than beauty.
-Food: {ja}. Expected look: {desc}
-Images 1-{n} are REFERENCE PHOTOS of this food from independent sources (they may show it plated or styled differently).
-Image {last} is the CANDIDATE generated illustration (a drawing style is fine).
-Judge only the CANDIDATE: is it the right food (right dish, plant part, cut or product, not a lookalike), the right state
-(raw / dried / cooked as named), plausible colours, and is the main subject recognisable?
-Answer JSON: {{"same_food": true|false, "state_ok": true|false, "issues": "<short>",
-"verdict": "pass" | "reroll" | "fallback"}}  (reroll = right idea but a clear flaw; fallback = wrong food or you cannot tell)."""
+VERDICT, STRENGTH = ('pass', 'reroll', 'fallback'), ('strong', 'medium', 'weak')
 
 
-def _b64(p, px=448):
-    import base64
-    from PIL import Image
-    im = Image.open(p).convert('RGB')
-    im.thumbnail((px, px))
-    b = io.BytesIO()
-    im.save(b, 'JPEG', quality=85)
-    return base64.b64encode(b.getvalue()).decode()
-
-
-def ask(row, refs, gen):
-    """One vision check: (verdict pass|wrong|reroll|unsure, why, seconds)."""
-    import urllib.request
-    import urllib.request
-    body = dict(model=VMODEL, stream=False, think=False, options=dict(temperature=0, seed=1),  # no format=json: the MLX runner refuses it
-                prompt=VPROMPT.format(n=len(refs), last=len(refs) + 1, ja=row['ja'], desc=row['desc']),
-                images=[_b64(p) for p in refs] + [_b64(gen)])
-    t = time.time()
-    res = json.loads(urllib.request.urlopen(urllib.request.Request(OLLAMA + '/api/generate', json.dumps(body).encode(),
-                                                                   {'Content-Type': 'application/json'}), timeout=900).read())
-    try:
-        a = json.loads(re.search(r'\{.*\}', res['response'], re.S).group())
-    except (AttributeError, ValueError):
-        a = {'verdict': 'unsure', 'issues': 'unparsable answer'}
-    v = a.get('verdict')
-    verdict = 'pass' if v == 'pass' and a.get('same_food') else 'wrong' if a.get('same_food') is False or v == 'fallback' else 'reroll' if v == 'reroll' else 'unsure'
-    return verdict, str(a.get('issues', ''))[:200], round(time.time() - t, 1)
-
-
-def cmd_verify(keys=None):
+def cmd_claude(path, check='claude'):
+    """Log Claude's verdicts on generated images (a checksheet by eye): a JSON file [{key, verdict: pass|reroll|fallback,
+    strength: strong|medium|weak (2+ good refs, 1, none), why, by, refs_ok?: [n, ...], roll?}]. The roll defaults to the
+    row's current one (claude2, the second opinion: the roll the first check judged). refs_ok on a row not vetted yet
+    records its vetted refs as `vet` does. A repeated answer is a no-op; a changed one is logged after (the last
+    counts). Refused whole, nothing written, on a bad key, verdict, strength, candidate or a roll never drawn."""
     vs = verdicts()
-    for r in table():
-        if keys and r['key'] not in keys:
-            continue
-        st, roll = state(r, vs)
-        if st != 'verify':
-            continue
-        refs = [RAW / 'refs' / r['key'] / f'c{x["n"]}.jpg' for x in vetted_refs(r)[:3]]
-        verdict, why, s = ask(r, refs, gen_path(r, roll))
-        rec = {'key': r['key'], 'roll': roll, 'h': desc_hash(r), 'check': 'qwen', 'verdict': verdict, 'why': why, 'model': VMODEL, 's': s}
-        log_verdict(rec)
-        vs.setdefault(r['key'], []).append(rec)
-        print(json.dumps(rec, ensure_ascii=False), flush=True)
-
-
-def cmd_eye(path):
-    """Log the second check's verdicts: a JSON file [{key, verdict: pass|fail, why}] (the roll and description are the
-    row's current ones)."""
-    vs = verdicts()
-    rows = {r['key']: r for r in table()}
+    files, rows = _table_files()
+    todo, bad, refs = [], [], {}
     for a in json.loads(Path(path).read_text()):
-        r = rows[a['key']]
-        st, roll = state(r, vs)
-        if st != 'review':
-            print('skip (not under review):', a['key'], st, roll)
+        k = a.get('key')
+        r = rows.get(k)
+        if r is None:
+            bad.append(f'{k}: not in the table')
             continue
-        rec = {'key': a['key'], 'roll': roll, 'h': desc_hash(r), 'check': 'eye', 'verdict': a['verdict'], 'why': a.get('why', '')[:200],
-               'model': a.get('by', 'claude')}
+        h = desc_hash(r)
+        mine = [v for v in vs.get(k, []) if v.get('h') == h]
+        same = [v for v in mine if v['check'] == check and all(v.get(f) == a.get(f) for f in ('verdict', 'strength'))
+                and v.get('why') == str(a.get('why', ''))[:200] and v['roll'] == a.get('roll', v['roll'])]
+        if same:
+            continue  # logged already (a batch file applied again: its rows' state may have moved on since)
+        first = [v['roll'] for v in mine if v['check'] == 'claude']
+        roll = a.get('roll', first[-1] if check == 'claude2' and first else state(r, vs)[1])
+        if a.get('verdict') not in VERDICT or a.get('strength') not in STRENGTH:
+            bad.append(f'{k}: verdict must be one of {VERDICT}, strength one of {STRENGTH}')
+        elif not isinstance(roll, int) or not gen_path(r, roll).exists():
+            bad.append(f'{k}: no generated image for roll {roll}')
+        else:
+            if 'refs_ok' in a and 'refs' not in r:
+                refs[k], err = _vetted(k, a['refs_ok'])
+                if err:
+                    bad.append(err)
+                    continue
+            todo.append({'key': k, 'roll': roll, 'h': h, 'check': check, 'verdict': a['verdict'], 'strength': a['strength'],
+                         'why': str(a.get('why', ''))[:200], 'model': a.get('by', 'claude')})
+    if bad:
+        sys.exit(f'{check}: refused, nothing written:\n  ' + '\n  '.join(bad))
+    for k, rs in refs.items():
+        rows[k]['refs'] = rs
+        rows[k]['vet'] = 'vetted in the Claude check'
+    if refs:
+        _write_table(files)
+    for rec in todo:
         log_verdict(rec)
-        vs.setdefault(a['key'], []).append(rec)
+    print(f'{check}: {len(todo)} verdicts logged, {len(refs)} rows vetted')
+
+
+def cmd_claude2(path):
+    cmd_claude(path, 'claude2')
 
 
 def cmd_status(*keys):
@@ -1122,7 +1186,7 @@ def cmd_attach(phase):
 
 if __name__ == '__main__':
     cmd, *args = sys.argv[1:] or ['status']
-    if cmd in ('gen', 'verify', 'refs'):
+    if cmd in ('gen', 'refs'):
         globals()['cmd_' + cmd](set(args[0].split(',')) if args else None)
     else:
         globals()['cmd_' + cmd](*args)
