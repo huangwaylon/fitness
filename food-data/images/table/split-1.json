@@ -2,7 +2,7 @@
  {
   "key": "eatout-hirekatsu_teishoku",
   "ja": "ヒレかつ定食",
-  "desc": "a hire katsu set meal on a tray, small round breaded pork fillet cutlets with shredded cabbage, a bowl of white rice, a bowl of miso soup and pickles",
+  "desc": "a hire katsu set meal on a tray: three small thick round breaded pork cutlets like thick medallions, golden-brown panko crust, one cut showing white pork, with shredded cabbage, a bowl of white rice, miso soup and pickles",
   "items": [
    "eatout:hirekatsu_teishoku"
   ],
@@ -55,7 +55,7 @@
  {
   "key": "dishes-teishoku-sanma",
   "ja": "さんま定食",
-  "desc": "a sanma set meal on a tray, a whole salt-grilled saury on a long plate with grated daikon, a bowl of white rice, a bowl of miso soup and pickles",
+  "desc": "a sanma set meal on a tray: a very long thin needle-like salt-grilled saury, longer than its plate, with charred skin, a small mound of grated daikon, a bowl of white rice, miso soup and pickles",
   "items": [
    "dishes:teishoku-sanma"
   ],
@@ -80,7 +80,7 @@
  {
   "key": "dishes-teishoku-hokke",
   "ja": "ほっけ定食",
-  "desc": "a hokke set meal on a tray, a large grilled atka mackerel split open and spread flat like an open book, golden-brown flesh facing up, with grated daikon, a bowl of white rice, a bowl of miso soup and pickles",
+  "desc": "a hokke set meal on a tray: a large grilled fish split open and laid flat like an open book, flesh side up, golden-brown with the spine down the middle, with grated daikon, a bowl of white rice, miso soup and pickles",
   "items": [
    "dishes:teishoku-hokke",
    "eatout:hokke_teishoku"
@@ -199,7 +199,7 @@
  {
   "key": "dishes-furofuki-daikon",
   "ja": "ふろふき大根",
-  "desc": "furofuki daikon, thick round slices of soft simmered daikon radish topped with glossy sweet brown miso sauce in a small bowl",
+  "desc": "two thick round discs of simmered daikon radish, each like a short white cylinder about 3 cm tall, soft and translucent white, sitting upright in a small bowl with a spoonful of glossy thick brown miso sauce on top; not thin slices, not potato",
   "items": [
    "dishes:furofuki-daikon",
    "maff_kyodo:furofukidaikon_aichi"
@@ -496,7 +496,7 @@
  {
   "key": "mext-02041",
   "ja": "きくいも 水煮",
-  "desc": "boiled Jerusalem artichoke (kikuimo), peeled bite-size pieces, soft and pale cream-white, in a small bowl",
+  "desc": "a small bowl of boiled peeled Jerusalem artichoke cut into irregular bite-size chunks with uneven knobby angular cut faces, soft and tender, pale cream-white with a faintly translucent cooked look; cut pieces, not whole round tubers, not potatoes or turnips",
   "items": [
    "mext:02041"
   ],
@@ -598,7 +598,7 @@
  {
   "key": "mext-06059",
   "ja": "きく ゆで",
-  "desc": "boiled edible chrysanthemum petals (kiku no hana), a small loose mound of soft limp wilted yellow petals, no whole flowers, dressed with a little vinegar in a small dish",
+  "desc": "a small dish of boiled chrysanthemum petals: a loose soft tangled mound of separate thin narrow yellow petals, limp, wilted and wet like cooked threads, glistening with a little vinegar; no flower heads, no stems, no blooms, only loose cooked petals",
   "items": [
    "mext:06059"
   ],
@@ -608,7 +608,7 @@
  {
   "key": "mext-06079",
   "ja": "くわい ゆで",
-  "desc": "boiled kuwai arrowhead bulbs, peeled glossy pale cream-yellow round bulbs each with its curved sprout, in a small bowl",
+  "desc": "a few boiled arrowhead tubers in a small bowl: each a smooth round pale cream-yellow tuber the size of a walnut, peeled and glossy, with a single long thin curved sprout like a beak or horn rising from the top; not onions or garlic, no papery skin",
   "items": [
    "mext:06079"
   ],
@@ -636,7 +636,7 @@
  {
   "key": "mext-06118",
   "ja": "せり ゆで",
-  "desc": "boiled seri (Japanese parsley), deep green stems and leaves cut into short lengths, neatly piled in a small bowl",
+  "desc": "boiled seri (Japanese water dropwort) in a small bowl: short cut lengths of soft deep green thin stems mixed with plenty of small toothed green leaves, wilted and glossy, the leaves clearly visible among the stems; not green beans, not scallions",
   "items": [
    "mext:06118"
   ],
@@ -666,7 +666,7 @@
  {
   "key": "mext-06127",
   "ja": "タアサイ ゆで",
-  "desc": "boiled tatsoi, soft deep green round leaves on short stems, neatly piled in a small bowl",
+  "desc": "a small heap of boiled tatsoi in a small bowl: soft wilted limp very dark green leaves, small rounded spoon-shaped leaf blades on thin short green stalks, glossy and wet, collapsed and tangled after boiling; not upright bok choy heads, no pale white stems",
   "items": [
    "mext:06127"
   ],
@@ -736,7 +736,7 @@
  {
   "key": "mext-06225",
   "ja": "茎にんにく ゆで",
-  "desc": "boiled garlic stems, soft bright green stalks cut into short lengths in a small dish",
+  "desc": "a small dish of boiled garlic stems: thin solid round bright green stalks, slim as a pencil and smooth, cut into short 4 cm lengths, glossy and tender, a neat little pile; not thick pale leek or celery tubes, not hollow",
   "items": [
    "mext:06225"
   ],

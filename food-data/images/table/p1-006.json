@@ -21,7 +21,7 @@
  {
   "key": "dishes-karei-nitsuke",
   "ja": "かれいの煮付け",
-  "desc": "karei no nitsuke, a whole flatfish simmered in glossy dark brown sweet soy broth, with ginger, on a plate",
+  "desc": "a simmered flatfish on a plate: a flat oval diamond-shaped flounder, dark brown skin up, glossy with dark soy glaze, fins all around its flat body, a pool of brown sauce and ginger slivers",
   "items": [
    "dishes:karei-nitsuke"
   ],
@@ -151,7 +151,7 @@
  {
   "key": "dishes-yamakake",
   "ja": "まぐろの山かけ",
-  "desc": "maguro yamakake, cubes of red tuna under white grated nagaimo yam, with wasabi and nori strips, in a bowl",
+  "desc": "a bowl of maguro yamakake: red tuna cubes covered with a thick sticky foamy white puree of grated yam poured over the top like white sauce, a dab of green wasabi and thin nori strips on top",
   "items": [
    "dishes:yamakake"
   ],
@@ -194,7 +194,7 @@
  {
   "key": "dishes-kakiage",
   "ja": "かき揚げ",
-  "desc": "kakiage, a round crisp golden fritter of julienned onion, carrot and small shrimp in tempura batter",
+  "desc": "a kakiage on a plate: a round crisp tangled nest of thin matchstick strips of onion and orange carrot fried together in a light golden lacy tempura batter, spiky and crunchy",
   "items": [
    "dishes:kakiage",
    "eatout:kakiage"
@@ -232,7 +232,7 @@
  {
   "key": "dishes-reishabu",
   "ja": "冷しゃぶサラダ",
-  "desc": "reishabu salad, chilled boiled pork slices on lettuce, cucumber and tomato with sesame dressing",
+  "desc": "a reishabu salad: thin pale whitish-pink boiled pork slices, soft and ruffled, laid over green lettuce with cucumber and tomato, drizzled with creamy beige sesame dressing",
   "items": [
    "dishes:reishabu"
   ],
@@ -345,7 +345,7 @@
  {
   "key": "dishes-natto",
   "ja": "納豆（たれ・からし付き）",
-  "desc": "natto with tare and karashi in a small bowl, sticky brown beans with white threads, green onion and yellow mustard",
+  "desc": "a small bowl of natto: small brown fermented soybeans covered in sticky stretchy white strings like spider web, with a few green onion slices and a small dab of yellow mustard paste on the side",
   "items": [
    "dishes:natto"
   ],
@@ -452,7 +452,7 @@
  {
   "key": "dishes-yakinasu",
   "ja": "焼きなす",
-  "desc": "yaki nasu, grilled peeled eggplant, soft pale green-gold flesh, topped with grated ginger and bonito flakes",
+  "desc": "yaki nasu on a plate: two long peeled grilled eggplants, soft and limp, pale olive-green and gold fibrous flesh with no skin, topped with a mound of grated ginger and pink bonito flakes",
   "items": [
    "dishes:yakinasu"
   ],
@@ -625,7 +625,7 @@
  {
   "key": "dishes-harusame-salad",
   "ja": "春雨サラダ",
-  "desc": "harusame salad, glass noodles with thin cucumber, ham and carrot strips, in a small bowl",
+  "desc": "a small bowl of glass noodle salad: clear see-through thin noodles tossed with thin green cucumber strips, pink ham strips and orange carrot strips, glossy dressing",
   "items": [
    "dishes:harusame-salad",
    "toyonaka:118626",
@@ -820,7 +820,7 @@
  {
   "key": "dishes-horenso-namul",
   "ja": "ほうれん草のナムル",
-  "desc": "spinach namul, green spinach seasoned with sesame oil and sesame seeds",
+  "desc": "a small dish of spinach namul: dark green boiled spinach, soft and limp, squeezed into a neat compact pile of short cut lengths, glossy with sesame oil, sprinkled with white sesame seeds",
   "items": [
    "dishes:horenso-namul"
   ],
@@ -964,7 +964,7 @@
  {
   "key": "dishes-mozuku-su",
   "ja": "もずく酢",
-  "desc": "mozuku-zu, slippery brown mozuku seaweed in sweet vinegar with grated ginger, in a small glass bowl",
+  "desc": "a small glass bowl of mozuku in vinegar: a slippery tangle of very thin dark brown hair-like seaweed threads, gooey and glistening, in a little clear vinegar, topped with a small dab of grated ginger",
   "items": [
    "dishes:mozuku-su"
   ],
@@ -1022,7 +1022,7 @@
  {
   "key": "dishes-kurikinton",
   "ja": "栗きんとん",
-  "desc": "kuri kinton, glossy bright golden-yellow mashed sweet potato with whole candied chestnuts",
+  "desc": "a small bowl heaped with kuri kinton: a smooth glossy bright golden-yellow sweet puree like thick custard, with three whole shiny yellow candied chestnuts set in it",
   "items": [
    "dishes:kurikinton"
   ],
@@ -1032,7 +1032,7 @@
  {
   "key": "dishes-tazukuri",
   "ja": "田作り",
-  "desc": "tazukuri, small dried sardines candied in a glossy sweet soy glaze with sesame",
+  "desc": "a small dish heaped with tazukuri: dozens of tiny thin dried baby sardines, each the size of a paperclip, curled and stuck together in a shiny amber-brown sweet glaze, sprinkled with white sesame",
   "items": [
    "dishes:tazukuri"
   ],
@@ -1071,7 +1071,7 @@
  {
   "key": "dishes-okura-katsuobushi",
   "ja": "オクラのおかか和え",
-  "desc": "okra okaka-ae, sliced green okra stars with bonito flakes and soy",
+  "desc": "a small bowl of sliced boiled green okra: many little five-pointed star-shaped green rounds with white seeds, heaped and topped with a generous fluffy pile of thin pale tan-pink shaved bonito flakes curling like wood shavings, glossed with a little soy sauce",
   "items": [
    "dishes:okura-katsuobushi"
   ]
@@ -1241,7 +1241,7 @@
  {
   "key": "dishes-onigiri-takana",
   "ja": "おにぎり（高菜）",
-  "desc": "a takana onigiri, a rice ball wrapped in a large dark green pickled mustard leaf",
+  "desc": "a takana onigiri: a round rice ball completely wrapped all over in a large soft olive-green pickled mustard leaf, its veins visible, a little white rice peeking out at the top",
   "items": [
    "dishes:onigiri-takana"
   ],
@@ -1251,7 +1251,7 @@
  {
   "key": "dishes-onigiri-shirasu",
   "ja": "おにぎり（しらす）",
-  "desc": "a shirasu onigiri, a rice ball mixed with tiny white baby sardines, with nori",
+  "desc": "a triangle onigiri of white rice studded all over with many tiny white baby fish with tiny black dot eyes mixed into the rice, a strip of dark nori at the bottom",
   "items": [
    "dishes:onigiri-shirasu"
   ],
@@ -1464,7 +1464,7 @@
  {
   "key": "dishes-hayashi-rice",
   "ja": "ハヤシライス",
-  "desc": "hayashi rice, white rice beside glossy reddish-brown demi-glace sauce with thin beef slices, onion and mushrooms",
+  "desc": "a plate of hayashi rice: a mound of white rice on one side, a glossy thick dark red-brown sauce on the other covering it, with thin soft beef slices, onion and sliced mushrooms in the sauce",
   "items": [
    "dishes:hayashi-rice",
    "eatout:hayashi"
@@ -1571,7 +1571,7 @@
  {
   "key": "dishes-katsudon",
   "ja": "かつ丼",
-  "desc": "katsudon, a donburi of rice topped with a sliced breaded pork cutlet simmered with onion and soft golden egg, mitsuba leaves",
+  "desc": "a katsudon bowl: a sliced golden-brown breaded pork cutlet, its crisp crumb crust visible, sitting on rice and covered with soft runny yellow scrambled egg and translucent onion in brown broth, a few green mitsuba leaves",
   "items": [
    "dishes:katsudon",
    "eatout:katsudon",
@@ -1948,7 +1948,7 @@
  {
   "key": "dishes-inarizushi",
   "ja": "いなり寿司",
-  "desc": "inarizushi, three plump pouches of glossy brown sweet fried tofu filled with sushi rice",
+  "desc": "three inarizushi on a plate: closed plump oval pouches of glossy golden-brown fried tofu skin, smooth and soft like small bags, stuffed full, their open ends tucked under",
   "items": [
    "dishes:inarizushi",
    "eatout:inari",
@@ -2061,7 +2061,7 @@
  {
   "key": "dishes-tekkamaki",
   "ja": "鉄火巻き",
-  "desc": "tekka maki, thin sushi rolls in nori cut in six pieces with deep red tuna in the middle",
+  "desc": "a plate of tekka maki: six short round slices of a thin sushi roll, each a circle of white rice wrapped in a black nori sheet with a bright red square of tuna in the centre",
   "items": [
    "dishes:tekkamaki",
    "eatout:maki_tekka"
@@ -2094,7 +2094,7 @@
  {
   "key": "dishes-kanpyomaki",
   "ja": "かんぴょう巻き",
-  "desc": "kanpyo maki, thin sushi rolls in nori with brown simmered gourd strips in the middle",
+  "desc": "a plate of kanpyo maki: six short round slices of a thin sushi roll, each a circle of white rice wrapped in a black nori sheet with a few thin brown strips in the centre",
   "items": [
    "dishes:kanpyomaki",
    "eatout:maki_kanpyo",
@@ -2121,7 +2121,7 @@
  {
   "key": "dishes-temakizushi",
   "ja": "手巻き寿司（4本）",
-  "desc": "temaki sushi, cone-shaped hand rolls of nori filled with rice, tuna, salmon, cucumber and egg",
+  "desc": "four temaki hand rolls standing in a holder: each a large ice-cream-cone-shaped wrap of black nori opening at the top, filled with white rice and sticking out of the top red tuna, orange salmon, green cucumber sticks and yellow egg",
   "items": [
    "dishes:temakizushi"
   ],
@@ -2191,7 +2191,7 @@
  {
   "key": "dishes-isobeyaki",
   "ja": "磯辺焼き（餅2個）",
-  "desc": "isobeyaki, two grilled rice cakes glazed with soy sauce and wrapped in nori",
+  "desc": "two grilled mochi rice cakes on a small plate: smooth rectangular blocks with a soft stretchy plain surface and no rice grains visible, glazed glossy brown with soy sauce, slightly puffed and toasted, each wrapped around the middle with a band of dark green nori; not onigiri",
   "items": [
    "dishes:isobeyaki"
   ]
@@ -2199,7 +2199,7 @@
  {
   "key": "dishes-kinako-mochi",
   "ja": "きなこ餅（2個）",
-  "desc": "kinako mochi, soft white rice cakes coated in golden-tan kinako soybean flour",
+  "desc": "two kinako mochi on a small plate: soft rounded rice cakes completely buried in a thick layer of fine sandy golden-tan powder, no white showing, extra tan powder scattered on the plate",
   "items": [
    "dishes:kinako-mochi"
   ],
@@ -3416,7 +3416,7 @@
  {
   "key": "dishes-oden-tamago",
   "ja": "おでん 卵",
-  "desc": "an oden egg, a whole peeled boiled egg stained light brown by the broth, in clear oden dashi",
+  "desc": "an oden egg in a bowl of clear golden broth: a whole peeled boiled egg, smooth and shiny, its outside stained light caramel-brown from soaking, half submerged in the broth",
   "items": [
    "dishes:oden-tamago",
    "eatout:oden_tamago"
@@ -3449,7 +3449,7 @@
  {
   "key": "dishes-oden-chikuwabu",
   "ja": "おでん ちくわぶ",
-  "desc": "oden chikuwabu, a star-ridged white wheat tube softened in clear oden broth",
+  "desc": "oden chikuwabu in a bowl of clear golden broth: thick chunky lengths of soft white dough tube, its outside cut in deep star-shaped ridges like a star-profile pipe, hollow in the middle",
   "items": [
    "dishes:oden-chikuwabu",
    "eatout:oden_chikuwabu"
@@ -3460,7 +3460,7 @@
  {
   "key": "dishes-oden-gobomaki",
   "ja": "おでん ごぼう巻き",
-  "desc": "oden gobomaki, a fried fish cake roll with a burdock stick inside, in oden broth",
+  "desc": "oden gobomaki in a bowl of clear golden broth: thick cylinders of smooth brown fried fish cake, cut so the end shows a dark brown burdock stick in the centre like a pencil lead",
   "items": [
    "dishes:oden-gobomaki"
   ],
@@ -3470,7 +3470,7 @@
  {
   "key": "dishes-oden-konnyaku",
   "ja": "おでん こんにゃく",
-  "desc": "oden konnyaku, triangles of grey konjac in clear oden broth",
+  "desc": "oden konnyaku in a bowl of clear golden broth: two triangular slabs of dark slate-grey konjac jelly peppered with tiny black specks, scored in a crisscross, glossy and wet",
   "items": [
    "dishes:oden-konnyaku",
    "eatout:oden_konnyaku"
@@ -3481,7 +3481,7 @@
  {
   "key": "dishes-oden-shirataki",
   "ja": "おでん しらたき",
-  "desc": "oden shirataki, a tied knot of translucent konjac noodles in oden broth",
+  "desc": "oden shirataki in a bowl of clear golden broth: one small tied knot of thin glassy see-through konjac noodles, like a little bundle of clear threads tied in the middle",
   "items": [
    "dishes:oden-shirataki",
    "eatout:oden_shirataki"
@@ -3736,7 +3736,7 @@
  {
   "key": "dishes-monjayaki",
   "ja": "もんじゃ焼き",
-  "desc": "monjayaki, a runny griddled batter with chopped cabbage, mentaiko and cheese spread on an iron griddle with small spatulas",
+  "desc": "monjayaki cooking on a flat black iron griddle: a thin sloppy runny brown batter spread flat, bubbling and sticky, with chopped cabbage, pink mentaiko and melted cheese mixed in, two tiny metal spatulas resting on it",
   "items": [
    "dishes:monjayaki",
    "eatout:monja",
@@ -3798,7 +3798,7 @@
  {
   "key": "dishes-mabo-harusame",
   "ja": "麻婆春雨",
-  "desc": "mabo harusame, glass noodles in a red-brown spicy minced pork sauce with garlic chives",
+  "desc": "a plate of mabo harusame: clear see-through glass noodles soaked in a glossy thin red-brown chili sauce with minced pork, the noodles slippery and translucent reddish, with green garlic chive pieces",
   "items": [
    "dishes:mabo-harusame"
   ],
@@ -4173,7 +4173,7 @@
  {
   "key": "dishes-teishoku-shogayaki",
   "ja": "生姜焼き定食",
-  "desc": "a ginger pork set meal on a tray, glossy ginger pork slices with shredded cabbage, rice, miso soup and pickles",
+  "desc": "a ginger pork set meal on a tray: thin wavy pan-fried pork slices, light brown and glossy with sauce and soft onion, beside a heap of shredded cabbage, a bowl of white rice, a bowl of miso soup and pickles",
   "items": [
    "dishes:teishoku-shogayaki",
    "eatout:shogayaki_teishoku"
@@ -4393,7 +4393,7 @@
  {
   "key": "dishes-teishoku-nikujaga",
   "ja": "肉じゃが定食",
-  "desc": "a nikujaga set meal on a tray, a bowl of nikujaga, rice, miso soup and pickles",
+  "desc": "a set meal on a tray: a separate bowl of nikujaga with big chunks of potato, carrot pieces, thin slices of beef and onion in light brown soy broth, beside a bowl of plain white rice with nothing on top, a bowl of miso soup and a small dish of pickles",
   "items": [
    "dishes:teishoku-nikujaga"
   ]
@@ -4564,7 +4564,7 @@
  {
   "key": "eatout-gyudon_negitama",
   "ja": "ねぎ玉牛丼（並盛）",
-  "desc": "negitama gyudon, a beef bowl topped with a heap of green onion and a raw egg yolk",
+  "desc": "a negitama gyudon: a bowl of rice covered with thin brown simmered beef slices, piled on top a big fluffy heap of finely sliced bright green onion, with a round orange raw egg yolk in the middle",
   "items": [
    "eatout:gyudon_negitama"
   ],
@@ -4927,7 +4927,7 @@
  {
   "key": "eatout-mixfry_teishoku",
   "ja": "ミックスフライ定食",
-  "desc": "a mixed fry set meal, a fried shrimp, a croquette and a white fish fry with cabbage, rice and miso soup",
+  "desc": "a mixed fry set meal on a tray: a plate with a long straight breaded golden fried shrimp with a red tail, a round golden croquette and a flat breaded fish fillet, shredded cabbage, a bowl of rice and miso soup",
   "items": [
    "eatout:mixfry_teishoku"
   ],
@@ -5147,7 +5147,7 @@
  {
   "key": "eatout-ramen_jiro",
   "ja": "二郎系ラーメン（小）",
-  "desc": "Jiro-style ramen, thick noodles in rich broth under a towering heap of bean sprouts and cabbage, thick slabs of pork and chopped garlic",
+  "desc": "a bowl of Jiro-style ramen: a huge towering mountain of boiled bean sprouts and cabbage piled high above the bowl rim, thick slabs of fatty pork chashu leaning on it, a heap of chopped raw garlic, thick noodles in brown broth below",
   "items": [
    "eatout:ramen_jiro"
   ],
@@ -5308,7 +5308,7 @@
  {
   "key": "eatout-sara_udon",
   "ja": "皿うどん（細麺パリパリ）",
-  "desc": "sara udon, crisp fried thin noodles under a glossy thick sauce of stir-fried cabbage, pork, shrimp, squid and vegetables",
+  "desc": "a plate of sara udon: a nest of thin crispy deep-fried golden noodles like a crunchy bird's nest, partly covered by a glossy thick translucent sauce of stir-fried cabbage, pork, shrimp, squid and carrot",
   "items": [
    "eatout:sara_udon"
   ],

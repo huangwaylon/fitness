@@ -95,7 +95,7 @@
  {
   "key": "kumagaya-02999",
   "ja": "なめこのみそ汁（わかめなし）",
-  "desc": "Nameko miso soup: a lacquered soup bowl of cloudy tan miso soup with small glossy amber nameko mushrooms, tofu cubes and chopped green onion",
+  "desc": "a lacquered soup bowl of opaque cloudy light-brown miso soup with many tiny whole nameko mushrooms, each a small round glossy orange-amber cap the size of a fingernail with a slimy sheen, plus small white tofu cubes and green onion rings; no large sliced or shiitake mushrooms",
   "items": [
    "kumagaya:02999"
   ],
@@ -618,7 +618,7 @@
  {
   "key": "kumagaya-03036",
   "ja": "ほうれん草と春雨のサラダ（黄ピーマン）",
-  "desc": "Spinach and glass noodle salad: a small bowl of spinach, translucent noodles, yellow bell pepper strips and carrot in a soy-vinegar dressing",
+  "desc": "a small bowl of salad: clear transparent glossy glass noodles, colourless and see-through like cellophane threads, tossed with green spinach, yellow bell pepper strips and orange carrot shreds in a light soy-vinegar dressing; noodles not brown, not soba",
   "items": [
    "kumagaya:03036"
   ]
@@ -642,7 +642,7 @@
  {
   "key": "kumagaya-03568",
   "ja": "うま塩鶏うどんの汁（具増・めんなし）",
-  "desc": "Salty chicken udon broth: a bowl of clear pale salt broth with chicken pieces, napa cabbage, carrot, mushrooms and green onion, no noodles",
+  "desc": "a bowl of clear pale golden salt broth filled with chicken and vegetables: bite-size chicken pieces, napa cabbage, carrot slices, shiitake and shimeji mushrooms, sliced green onion floating on top; a soup with no noodles at all",
   "items": [
    "kumagaya:03568"
   ]
@@ -794,7 +794,7 @@
  {
   "key": "kumagaya-03236",
   "ja": "なめこおろしうどん汁（山菜なし、油揚げ・めんなし）",
-  "desc": "Nameko and grated daikon udon broth: a bowl of clear soy dashi with glossy amber nameko mushrooms and white grated daikon, no noodles",
+  "desc": "a bowl with NO noodles: clear light brown soy broth holding a heap of tiny whole glossy orange-amber nameko mushrooms, each a small round slimy cap, and a mound of white grated daikon; only broth, mushrooms and daikon",
   "items": [
    "kumagaya:03236"
   ]
@@ -820,7 +820,7 @@
  {
   "key": "kumagaya-03483",
   "ja": "だんご汁 （肉なし）",
-  "desc": "Dango-jiru: a lacquered soup bowl of soy broth with chewy flat white flour dumplings, daikon, carrot, taro and green onion, no meat",
+  "desc": "a lacquered soup bowl of brown soy broth with large flat irregular hand-stretched white flour dumplings like thin torn pasta sheets, soft and chewy, with daikon and carrot slices, taro chunks and green onion, no meat; the dumplings are flat wide sheets, not round balls",
   "items": [
    "kumagaya:03483"
   ],
@@ -961,7 +961,7 @@
  {
   "key": "kumagaya-02776",
   "ja": "おふのみそ汁（ふ・油揚げ・小松菜）",
-  "desc": "Fu miso soup: a lacquered soup bowl of tan miso soup with small soft round wheat gluten fu, golden aburaage strips and green komatsuna",
+  "desc": "a black lacquered bowl of opaque cloudy light-brown miso soup, not clear and not orange, with several soft pale cream puffy wheat-gluten rings the size of a coin, thin strips of golden-brown fried tofu pouch and chopped dark green komatsuna leaves and stems",
   "items": [
    "kumagaya:02776"
   ],
@@ -971,7 +971,7 @@
  {
   "key": "kumagaya-02425-2",
   "ja": "ちくわ（加工品）とさつまいもの天ら",
-  "desc": "Chikuwa and sweet potato tempura: a plate of puffy tempura of tube-shaped fish cake pieces and purple-skinned sweet potato slices in pale crisp batter",
+  "desc": "a plate of tempura: short chikuwa fish-cake tubes, thick hollow cylinders with a hole through the middle and browned outer skin, in pale crisp puffy batter, beside round sweet potato slices with purple skin rims and yellow centres; no shrimp, no tails",
   "items": [
    "kumagaya:02425-2"
   ],
@@ -1008,7 +1008,7 @@
  {
   "key": "kumagaya-03388",
   "ja": "しらたきサラダ（わかめ）",
-  "desc": "Shirataki salad with wakame: a small bowl of translucent konnyaku noodles, dark green wakame, cucumber and carrot in a soy-vinegar dressing",
+  "desc": "a small bowl of salad: clear glassy translucent grey-white shirataki konnyaku noodles, see-through like jelly threads, with dark green wakame, cucumber and carrot julienne in a light soy-vinegar dressing; noodles transparent and colourless, not brown, not soba",
   "items": [
    "kumagaya:03388"
   ]
@@ -1062,7 +1062,7 @@
  {
   "key": "kumagaya-03019",
   "ja": "いそ寿司の具（蒸し鶏ほぐし身）",
-  "desc": "Isozushi filling: a small bowl of shredded steamed chicken with carrot, shiitake and green bits in a light sweet soy seasoning, for mixing into rice",
+  "desc": "a small bowl containing only a mixed filling: shredded pale white steamed chicken in fluffy fibres, thin carrot strips, sliced brown shiitake and green bits, lightly glazed with sweet soy; no rice in the bowl, just the filling on its own",
   "items": [
    "kumagaya:03019"
   ]
@@ -1181,7 +1181,7 @@
  {
   "key": "kumagaya-02842",
   "ja": "広東ラーメンスープ（うずらなし。ほうれん草・めんなし）",
-  "desc": "Cantonese ramen soup: a soup bowl of soy broth with a thick glossy starch-thickened topping of napa cabbage, carrot, pork, mushroom and spinach, no noodles",
+  "desc": "a soup bowl with NO noodles at all: brown soy broth covered by a thick glossy translucent starch-thickened sauce, like gravy, holding napa cabbage pieces, carrot slices, thin pork slices, mushrooms and spinach; only vegetables and pork in thick sauce, no noodles underneath",
   "items": [
    "kumagaya:02842"
   ],
@@ -1367,7 +1367,7 @@
  {
   "key": "kumagaya-02743",
   "ja": "つみっこ（ごぼう抜きしょうゆ味）",
-  "desc": "Tsumikko: a bowl of Saitama soy broth with irregular hand-pinched flat white flour dumplings, daikon, carrot, napa cabbage and pork, no burdock",
+  "desc": "a bowl of brown soy broth with many small irregular flat white flour dumplings pinched off by hand, rough thumb-sized torn dough scraps with no filling and no pleats, among daikon and carrot slices, napa cabbage and pork; not gyoza or wontons",
   "items": [
    "kumagaya:02743",
    "kumagaya:03454"
@@ -1430,7 +1430,7 @@
  {
   "key": "kumagaya-03338",
   "ja": "ホッケみりん干し",
-  "desc": "Mirin-dried hokke: a plate of a split grilled atka mackerel fillet with a glossy amber-brown sweet mirin glaze and sesame seeds",
+  "desc": "a plate with a mirin-dried hokke: a fish split and opened completely flat into a wide butterflied fillet, flesh side up, glazed glossy amber-brown with sweet mirin and sprinkled with white sesame seeds; no blue skin, not a whole round fish",
   "items": [
    "kumagaya:03338"
   ]
@@ -1438,7 +1438,7 @@
  {
   "key": "kumagaya-02759",
   "ja": "ちくわ（加工品）とかぼちゃの天ぷら",
-  "desc": "Chikuwa and pumpkin tempura: a plate of puffy tempura of tube-shaped fish cake pieces and orange kabocha slices with green skin in pale crisp batter",
+  "desc": "a plate of tempura: short pieces of hollow fish-cake tube, each a pale cylinder with a browned outer skin and a visible hole through the centre, coated in crisp pale batter, beside orange kabocha slices with green skin; no shrimp, no tails",
   "items": [
    "kumagaya:02759"
   ],
@@ -1448,7 +1448,7 @@
  {
   "key": "kumagaya-02911",
   "ja": "しらたきサラダ（葉大根）",
-  "desc": "Shirataki salad with daikon leaves: a small bowl of translucent konnyaku noodles, green daikon leaf pieces, carrot and cucumber in soy-vinegar dressing",
+  "desc": "a small bowl of salad of thin translucent grey-white jelly noodles, clear and glassy like glass noodles, mixed with chopped leafy green daikon leaves, carrot strips and cucumber in a soy-vinegar dressing; noodles are see-through, not brown",
   "items": [
    "kumagaya:02911"
   ]
@@ -1693,7 +1693,7 @@
  {
   "key": "kumagaya-03549",
   "ja": "サワラのごま風味焼き",
-  "desc": "Sesame-flavoured grilled sawara: a plate of a grilled Spanish mackerel fillet with pale flesh and a coating of white sesame seeds",
+  "desc": "a plate with one rectangular grilled Spanish mackerel fillet piece: pale white flaky flesh, its top crusted with plenty of toasted white sesame seeds, light golden; a cut fillet, no head or tail, no blue-striped skin",
   "items": [
    "kumagaya:03549"
   ]
@@ -1806,7 +1806,7 @@
  {
   "key": "kumagaya-02853",
   "ja": "豚丼の具（しらたき・小松菜）",
-  "desc": "Butadon topping: a bowl of thin pork slices simmered in sweet soy with onion, translucent shirataki and green komatsuna",
+  "desc": "a shallow bowl of sweet-soy simmered pork: many thin curled brown pork slices with soft translucent onion wedges, a small bundle of thin clear jelly noodles tucked at one side, and bright green komatsuna leaves and stems; mostly pork, no broth, not a noodle soup",
   "items": [
    "kumagaya:02853"
   ],
@@ -1824,7 +1824,7 @@
  {
   "key": "kumagaya-03048",
   "ja": "枝豆と春雨のサラダ",
-  "desc": "Edamame and glass noodle salad: a small bowl of translucent noodles, green edamame, cucumber and carrot in a soy-vinegar dressing",
+  "desc": "a small bowl of salad: clear transparent glossy glass noodles, colourless and see-through like cellophane threads, tossed with bright green shelled edamame beans, cucumber strips and orange carrot shreds in a light soy-vinegar dressing; noodles not brown, not soba",
   "items": [
    "kumagaya:03048"
   ]
@@ -2008,7 +2008,7 @@
  {
   "key": "kumagaya-03018",
   "ja": "白滝サラダ",
-  "desc": "Shirataki salad: a small bowl of translucent konnyaku noodles with cucumber, carrot and ham strips in a soy-vinegar dressing",
+  "desc": "a small bowl of shirataki salad: thin translucent white jelly noodles, nearly clear and glossy like glass threads, not brown soba, mixed with thin green cucumber strips, orange carrot shreds and pink ham strips in a light dressing",
   "items": [
    "kumagaya:03018"
   ]
@@ -2138,7 +2138,7 @@
  {
   "key": "kumagaya-03312",
   "ja": "サワラのゆず焼き",
-  "desc": "Yuzu-grilled sawara: a plate of a grilled Spanish mackerel fillet glazed light brown with soy and specks of yellow yuzu peel",
+  "desc": "a plate with one rectangular grilled fillet piece of Spanish mackerel, no head or tail: thick white flesh with a thin silvery-grey skin edge, glazed light brown with soy and sprinkled with specks of yellow yuzu peel; not a whole fish",
   "items": [
    "kumagaya:03312"
   ]
@@ -2156,7 +2156,7 @@
  {
   "key": "kumagaya-03510",
   "ja": "平麺ビーフンのスープ（酸味なし・めんなし）",
-  "desc": "Flat rice noodle soup: a soup bowl of clear Chinese broth with cabbage, carrot, bean sprouts, pork and green onion, no noodles",
+  "desc": "a soup bowl of clear light golden Chinese broth containing only vegetables and meat, with NO noodles: floating cabbage pieces, thin carrot strips, white bean sprouts, small pork slices and green onion rings, the clear broth visible between them; not a noodle soup",
   "items": [
    "kumagaya:03510"
   ],
@@ -2166,7 +2166,7 @@
  {
   "key": "kumagaya-03111",
   "ja": "五目金平（れんこん）",
-  "desc": "Gomoku kinpira with lotus root: a small bowl of glossy soy-glazed burdock and carrot matchsticks, lotus root slices, konnyaku and sesame",
+  "desc": "a small bowl of kinpira: a tangle of thin matchstick strips of brown burdock and orange carrot glossy with soy glaze, mixed with thin quarter-moon slices of lotus root showing holes, short grey konnyaku strips and white sesame seeds; everything thinly cut, no whole carrots",
   "items": [
    "kumagaya:03111"
   ]
@@ -2260,7 +2260,7 @@
  {
   "key": "kumagaya-03511",
   "ja": "カンジャンチキン（胸肉）",
-  "desc": "Ganjang chicken: a plate of fried chicken breast pieces in a sticky glossy dark soy-garlic glaze with sesame seeds",
+  "desc": "a plate of bite-size fried chicken breast pieces coated in a sticky glossy dark brown soy-garlic glaze, deep soy-sauce brown like teriyaki, sprinkled with white sesame seeds; no red chili sauce, not red or orange",
   "items": [
    "kumagaya:03511"
   ],
@@ -2344,7 +2344,7 @@
  {
   "key": "kumagaya-02422",
   "ja": "ひじきと大豆の煮物（さつま揚げ）",
-  "desc": "Hijiki and soybean simmer: a small bowl of short black hijiki seaweed with soybeans, carrot and slices of fried fish cake in sweet soy",
+  "desc": "a small bowl of simmered hijiki: many short black seaweed sprigs like tiny twigs, each only rice-grain length, glossy, mixed with round beige soybeans, carrot bits and slices of fried fish cake in sweet soy; short bits, not long ribbons",
   "items": [
    "kumagaya:02422"
   ]
@@ -2352,7 +2352,7 @@
  {
   "key": "kumagaya-02309",
   "ja": "鶏の照り焼き（赤・キ）",
-  "desc": "Teriyaki chicken: a plate of chicken thigh pieces with browned skin under a glossy dark brown sweet soy glaze",
+  "desc": "a plate of Japanese teriyaki chicken: a pan-fried boneless chicken thigh cut into flat wide slices, skin crisp and browned, coated in a thin glossy dark brown soy glaze, juicy pale meat visible at the cut edges; flat slices, not round nuggets, no sesame, not red",
   "items": [
    "kumagaya:02309"
   ],
@@ -2877,7 +2877,7 @@
  {
   "key": "kumagaya-03471",
   "ja": "チキン南蛮（手作り）",
-  "desc": "Chicken nanban: a plate of fried chicken pieces glossy with sweet vinegar sauce, topped with thick white tartar sauce",
+  "desc": "a plate of chicken nanban: three large flat slices of battered fried chicken, golden and glossy with a light brown sweet-vinegar glaze, half-covered by a thick heavy dollop of chunky white tartar sauce with chopped egg and pickle bits; not a thin mayonnaise drizzle",
   "items": [
    "kumagaya:03471"
   ],
@@ -2945,7 +2945,7 @@
  {
   "key": "kumagaya-03477",
   "ja": "みそきんぴら",
-  "desc": "Miso kinpira: a small bowl of burdock and carrot matchsticks with konnyaku stir-fried in a glossy brown miso glaze",
+  "desc": "a small bowl of thin brown burdock root matchsticks mixed with fewer thin orange carrot matchsticks and small grey konnyaku strips, all stir-fried and coated in a glossy dark brown miso glaze, a tangled pile of thin sticks; not thick batons, no red sauce",
   "items": [
    "kumagaya:03477"
   ],
@@ -3440,7 +3440,7 @@
  {
   "key": "kumagaya-499",
   "ja": "こんにゃくソテー（豚肉）",
-  "desc": "Konnyaku and pork saute: a small plate of grey speckled konnyaku pieces stir-fried with pork slices in a soy glaze",
+  "desc": "a small plate of stir-fry: triangular pieces of grey konnyaku jelly speckled with black dots, smooth and slightly translucent, lightly glazed with soy, mixed with curled thin pork slices; the grey speckled konnyaku clearly dominant, not tofu",
   "items": [
    "kumagaya:499"
   ]
@@ -3544,7 +3544,7 @@
  {
   "key": "kumagaya-00583",
   "ja": "白桃のシャーベット",
-  "desc": "White peach sherbet: a small cup of pale pinkish-white peach sherbet with a frosty grainy texture",
+  "desc": "a small cup of white peach sherbet: a rounded scoop of icy frozen dessert, pale pinkish-white, with a frosty grainy crystalline texture like shaved ice, a small spoon in it",
   "items": [
    "kumagaya:00583"
   ],
@@ -3595,7 +3595,7 @@
  {
   "key": "kumagaya-00336",
   "ja": "イカの天ぷら",
-  "desc": "Squid tempura: a plate of puffy pale golden tempura of squid rings and strips in crisp batter",
+  "desc": "a plate of squid tempura: thick round white squid rings and short squid strips, each coated in puffy pale golden crisp tempura batter, like onion rings",
   "items": [
    "kumagaya:00336"
   ],
@@ -3666,7 +3666,7 @@
  {
   "key": "kumagaya-03136",
   "ja": "カレイ磯辺フライ",
-  "desc": "Flounder isobe fry: a plate of white fish pieces in golden batter speckled green with aonori seaweed",
+  "desc": "a plate of several bite-sized boneless pieces of white fish, each fried in golden batter flecked all over with tiny green seaweed specks; separate pieces only, no fish head, no tail, not a whole fish",
   "items": [
    "kumagaya:03136"
   ]

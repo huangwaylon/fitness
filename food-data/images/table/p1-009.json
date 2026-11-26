@@ -71,7 +71,7 @@
  {
   "key": "dishes-tori-ham",
   "ja": "鶏ハム",
-  "desc": "Japanese homemade chicken ham: a rolled poached chicken breast cut into round pale pink-white slices fanned on a small plate, moist and smooth, no skin",
+  "desc": "slices of homemade chicken ham fanned on a small plate: round slices of pale white cooked chicken breast with a faint pink blush, moist and smooth with fine fibres, matte, no skin, no rind, no fat",
   "items": [
    "dishes:tori-ham"
   ],
@@ -134,7 +134,7 @@
  {
   "key": "dishes-mentaiko-udon",
   "ja": "明太子うどん",
-  "desc": "mentaiko udon: thick white udon noodles in a bowl without soup, tossed with pink-orange spicy cod roe and melted butter, topped with thin strips of dark nori and a green shiso leaf",
+  "desc": "a bowl of mentaiko udon without soup: thick white udon noodles completely coated pink-orange in a creamy sauce of fine grainy spicy roe and butter, topped with thin black nori strips and a green shiso leaf",
   "items": [
    "dishes:mentaiko-udon"
   ],

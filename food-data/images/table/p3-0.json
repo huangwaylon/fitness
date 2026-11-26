@@ -150,7 +150,7 @@
  {
   "key": "mext-01014",
   "ja": "小麦（玄穀） 輸入 硬質",
-  "desc": "hard wheat berries: a small dish of small hard reddish-brown oval wheat kernels with a crease, glossy and dry",
+  "desc": "a small dish of hard wheat grains: hundreds of tiny oval reddish-brown kernels, each the size of a rice grain with a groove down one side, matte and dry like birdseed",
   "items": [
    "mext:01014"
   ],
@@ -239,7 +239,7 @@
  {
   "key": "mext-01023",
   "ja": "強力粉 全粒粉",
-  "desc": "whole wheat flour: a small dish holding a mound of light brown flour speckled with darker bran flecks",
+  "desc": "a small dish holding a mound of whole wheat flour: a light tan brown powder like cocoa mixed with milk, speckled all through with dark brown bran flecks",
   "items": [
    "mext:01023"
   ],
@@ -293,7 +293,7 @@
  {
   "key": "mext-01175",
   "ja": "角形食パン 耳を除いたもの",
-  "desc": "crustless white sandwich bread: a square slice of soft white bread with the crusts cut off, fine white crumb, on a plate",
+  "desc": "a square slice of crustless white sandwich bread on a plate: a pure soft white square with straight cut white edges on all four sides, fine fluffy white crumb, no brown edges",
   "items": [
    "mext:01175"
   ],
@@ -671,7 +671,7 @@
  {
   "key": "mext-01068",
   "ja": "焼きふ 車ふ",
-  "desc": "kuruma-fu: large dry rings of baked wheat gluten with a hole in the middle, the cut face showing a spiral of brown baked layers",
+  "desc": "kuruma-fu: large dry rings of baked wheat gluten like thick wheels, the cut face showing a swirl of thin brown and cream spiral layers like a tree's growth rings, light and porous",
   "items": [
    "mext:01068"
   ],
@@ -691,7 +691,7 @@
  {
   "key": "mext-01070",
   "ja": "小麦はいが",
-  "desc": "wheat germ: a small dish of toasted flaky golden-brown granules",
+  "desc": "a small dish of toasted wheat germ: a heap of thin flat irregular golden-brown flakes like tiny bran flakes or coarse sawdust, dry and crumbly",
   "items": [
    "mext:01070"
   ],
@@ -990,7 +990,7 @@
  {
   "key": "mext-01098",
   "ja": "おもゆ（玄米）",
-  "desc": "omoyu from brown rice: a bowl of thin strained rice gruel, a cloudy pale beige liquid with no grains",
+  "desc": "a bowl of omoyu: a thin smooth cloudy pale beige liquid like rice milk, completely smooth with no grains at all, a spoon resting in it",
   "items": [
    "mext:01098"
   ],
@@ -1047,7 +1047,7 @@
  {
   "key": "mext-01106",
   "ja": "陸稲ごはん（玄米）",
-  "desc": "cooked brown rice: a rice bowl of glossy light brown cooked rice grains",
+  "desc": "a rice bowl heaped with cooked brown rice: soft plump moist grains, light tan-brown, glossy and sticky, steaming",
   "items": [
    "mext:01106"
   ],
@@ -1251,7 +1251,7 @@
  {
   "key": "mext-01122",
   "ja": "そば粉 全層粉",
-  "desc": "whole buckwheat flour: a small dish of greyish-brown flour speckled with dark flecks",
+  "desc": "a small dish holding a mound of whole buckwheat flour: an even greyish-brown powder like ash mixed with cocoa, speckled with tiny dark black husk flecks",
   "items": [
    "mext:01122"
   ],
@@ -1389,7 +1389,7 @@
  {
   "key": "mext-01135",
   "ja": "とうもろこし ジャイアントコーン フライ 味付け",
-  "desc": "fried giant corn: a small dish of large puffy golden-brown roasted corn kernels, crunchy and salted",
+  "desc": "a small dish of giant corn snack: a heap of very large loose roasted corn kernels, each puffed and split open, crunchy golden-brown with darker toasted spots, glistening with oil and salt, no cob",
   "items": [
    "mext:01135"
   ],
@@ -1538,7 +1538,7 @@
  {
   "key": "mext-02047",
   "ja": "さつまいも 皮つき 天ぷら",
-  "desc": "sweet potato tempura: round slices in crisp pale golden batter, purple skin at the rim and yellow inside",
+  "desc": "sweet potato tempura on a plate: round slices of sweet potato fried in a lumpy crisp pale golden tempura batter coating, a ring of purple skin at the edge and bright yellow flesh visible through the batter",
   "items": [
    "mext:02047"
   ],
@@ -1713,7 +1713,7 @@
  {
   "key": "mext-02058",
   "ja": "でん粉めん 生",
-  "desc": "fresh starch noodles: soft clear glassy noodles in a loose heap",
+  "desc": "a loose heap of fresh starch noodles on a plate: thin clear see-through glassy strands like clear plastic threads, wet and slippery, the plate visible through them",
   "items": [
    "mext:02058"
   ],
@@ -1733,7 +1733,7 @@
  {
   "key": "mext-02060",
   "ja": "でん粉めん 乾 ゆで",
-  "desc": "boiled starch noodles: clear glassy slippery noodles in a bowl",
+  "desc": "a bowl of boiled starch noodles: thin clear see-through glassy slippery strands, glistening wet, almost invisible against the bowl",
   "items": [
    "mext:02060"
   ],
@@ -1843,7 +1843,7 @@
  {
   "key": "mext-03012",
   "ja": "しょ糖型液糖",
-  "desc": "liquid sugar syrup: a small glass of clear colourless thick syrup",
+  "desc": "a small clear glass of liquid sugar syrup: a thick colourless syrup clear as water, a glossy slow drip on the rim",
   "items": [
    "mext:03012",
    "mext:03013",
@@ -1858,7 +1858,7 @@
  {
   "key": "mext-03032",
   "ja": "還元水あめ",
-  "desc": "starch syrup: a small dish of thick clear glossy syrup like mizuame, stretching and viscous",
+  "desc": "a small dish of clear starch syrup: a thick water-clear colourless glossy syrup, a spoon lifting a stretchy clear glassy strand",
   "items": [
    "mext:03032",
    "mext:03024",
@@ -1931,7 +1931,7 @@
  {
   "key": "mext-04004",
   "ja": "あずき こし生あん",
-  "desc": "koshi nama-an: a small dish of smooth unsweetened red bean paste, moist and pale reddish-brown",
+  "desc": "a small dish of koshi-an: a perfectly smooth moist pale reddish-brown paste like peanut butter, smoothed flat with a spoon, no beans visible",
   "items": [
    "mext:04004"
   ],
@@ -1951,7 +1951,7 @@
  {
   "key": "mext-04102",
   "ja": "あずき こし練りあん（中割りあん）",
-  "desc": "koshi neri-an: a small dish of smooth glossy dark purplish-brown sweet red bean paste",
+  "desc": "a small dish holding a smooth glossy mound of strained sweet red bean paste, dark purplish-brown, completely smooth and creamy like thick chocolate frosting with soft swirls from a spoon; no whole beans, no bean skins, no grains",
   "items": [
    "mext:04102",
    "mext:04103"
@@ -2033,7 +2033,7 @@
  {
   "key": "mext-04012",
   "ja": "青えんどう 乾",
-  "desc": "dried green peas: a small dish of hard round dull green dried peas",
+  "desc": "a small dish of dried green peas: hard round dried peas, dull matte pale khaki grey-green, slightly wrinkled and wrinkly, dry like pebbles",
   "items": [
    "mext:04012"
   ],
@@ -2429,7 +2429,7 @@
  {
   "key": "mext-04085",
   "ja": "油揚げ 油抜き 焼き",
-  "desc": "grilled aburaage: crisp toasted fried tofu sheet with darker brown grill marks, cut into strips",
+  "desc": "grilled aburaage: one thin flat sheet of fried tofu pouch, thin as a pancake, toasted golden-brown with dark brown grill stripes, cut into short strips",
   "items": [
    "mext:04085"
   ],
@@ -2447,7 +2447,7 @@
  {
   "key": "mext-04045",
   "ja": "豆腐竹輪 焼き",
-  "desc": "grilled tofu chikuwa: a tube of tofu and fish paste with browned grill-marked skin and a hollow centre, sliced",
+  "desc": "grilled tofu chikuwa: a long round tube like a thick hollow pipe, pale cream with browned grill-mottled skin, beside several cut rings each showing a round hole through the middle; a cylindrical tube, not a square block",
   "items": [
    "mext:04045"
   ]
@@ -2634,7 +2634,7 @@
  {
   "key": "mext-04073",
   "ja": "レンズまめ 乾",
-  "desc": "dried lentils: a small dish of small flat lens-shaped greenish-brown discs",
+  "desc": "a small dish of dried lentils: hundreds of tiny flat round discs like little lenses or buttons, dull greenish-brown, all flat",
   "items": [
    "mext:04073"
   ],
@@ -2812,7 +2812,7 @@
  {
   "key": "mext-05048",
   "ja": "とうびし ゆで",
-  "desc": "boiled water caltrop: black two-horned shells, one split open showing soft white starchy flesh like chestnut",
+  "desc": "boiled water caltrop: hard black seed pods, each with two long sharp curved horns sticking out on either side like a bull's horns or a bow tie, one cracked open showing soft white starchy flesh",
   "items": [
    "mext:05048"
   ],
@@ -3129,7 +3129,7 @@
  {
   "key": "mext-06050",
   "ja": "西洋かぼちゃ 冷凍",
-  "desc": "frozen kabocha: frosty chunks of squash with dark green skin and orange flesh",
+  "desc": "a pile of frozen kabocha chunks: bite-size wedge-shaped cut pieces of squash, each with dark green skin on one side and bright orange flesh, coated in white frost crystals and icy, loosely heaped; small cut pieces, not a whole pumpkin",
   "items": [
    "mext:06050"
   ]

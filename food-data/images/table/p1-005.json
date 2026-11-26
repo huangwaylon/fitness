@@ -396,7 +396,7 @@
  {
   "key": "mext-15139",
   "ja": "おしるこ（こしあん）",
-  "desc": "oshiruko in a lacquer bowl, smooth thick dark red-purple sweet bean soup with a toasted white mochi",
+  "desc": "oshiruko in a black lacquer bowl: a smooth thick opaque dark maroon soup like hot chocolate with a satin surface, one square of toasted white mochi floating, puffed and browned",
   "items": [
    "mext:15139"
   ],
@@ -1751,7 +1751,7 @@
  {
   "key": "mext-17029",
   "ja": "めんつゆ（ストレート）",
-  "desc": "a small cup of mentsuyu noodle dipping sauce, clear dark brown, with a bottle",
+  "desc": "a small round cup of clear dark brown noodle dipping sauce, like strong tea, beside a separate standing glass bottle of the same sauce",
   "items": [
    "mext:17029",
    "mext:17141",
@@ -1928,7 +1928,7 @@
  {
   "key": "mext-17032",
   "ja": "麻婆豆腐の素",
-  "desc": "mapo tofu sauce base, thick glossy red-brown spicy sauce with minced meat in a small dish",
+  "desc": "a small dish of mapo sauce: a glossy thick red-brown chili oil sauce with tiny bits of minced meat and red chili oil pooling at the edges",
   "items": [
    "mext:17032"
   ],
@@ -2083,7 +2083,7 @@
  {
   "key": "mext-17040",
   "ja": "フレンチドレッシング（分離液状）",
-  "desc": "a small glass cruet of clear separated salad dressing, oil layer on brown soy vinegar",
+  "desc": "a small glass cruet bottle of salad dressing showing two clear layers: a pale clear golden oil layer on top, a darker cloudy amber vinegar layer at the bottom, with herb specks",
   "items": [
    "mext:17040",
    "mext:17116",
@@ -2163,7 +2163,7 @@
  {
   "key": "mext-17044",
   "ja": "白みそ（甘みそ）",
-  "desc": "a small dish of white miso (shiro miso), smooth pale cream-yellow paste",
+  "desc": "a small dish of white miso: a dense thick matte pale beige-yellow paste like peanut butter, pressed flat with a spoon mark, a slightly grainy surface",
   "items": [
    "mext:17044"
   ],
@@ -2280,7 +2280,7 @@
  {
   "key": "mext-17052",
   "ja": "ハヤシルウ",
-  "desc": "a block of hayashi rice roux, a dark reddish-brown bar divided into squares",
+  "desc": "a block of curry roux: a solid glossy dark chocolate-brown bar divided into a grid of raised squares like a chocolate bar, smooth and waxy",
   "items": [
    "mext:17052"
   ],
@@ -2290,7 +2290,7 @@
  {
   "key": "mext-17125",
   "ja": "お茶漬けの素",
-  "desc": "ochazuke seasoning mix, small crisp rice crackers (arare), nori strips and green tea granules on a small dish",
+  "desc": "a small dish of dry ochazuke seasoning mix: a little loose pile of tiny round rice cracker bits the size of peas, pale beige-brown, mixed with fine dark green nori shreds and small green tea granules; tiny pieces only, no large crackers",
   "items": [
    "mext:17125"
   ]
@@ -2637,7 +2637,7 @@
  {
   "key": "mext-18031",
   "ja": "牛丼の具（牛飯の具）",
-  "desc": "gyudon topping in a bowl, thin simmered beef slices and soft onion in glossy sweet soy sauce, without rice",
+  "desc": "a small bowl of beef bowl topping: a heap of thin flat brown slices of simmered beef, ruffled and soft, with translucent golden onion slices, in a little glossy soy broth",
   "items": [
    "mext:18031",
    "eatout:gyudon_atama"
@@ -3113,7 +3113,7 @@
  {
   "key": "mext-18052",
   "ja": "豆腐ハンバーグ",
-  "desc": "a tofu hamburg steak, a soft pale golden patty topped with grated daikon and shiso, with ponzu",
+  "desc": "a tofu hamburg steak on a plate: a round thick pale golden-tan patty, browned on the outside, topped with a small mound of white grated daikon and a green shiso leaf, a little brown ponzu sauce around it",
   "items": [
    "mext:18052",
    "dishes:tofu-hamburg"
@@ -3229,7 +3229,7 @@
  {
   "key": "mext-18022",
   "ja": "メンチカツ",
-  "desc": "menchi katsu, a thick round minced meat cutlet in a crisp golden-brown panko crust, one cut showing juicy meat, with shredded cabbage",
+  "desc": "a menchi katsu on a plate: a thick round ball-shaped patty coated in coarse golden-brown panko crumbs, cut in half showing a juicy brown minced meat filling, beside shredded cabbage",
   "items": [
    "mext:18022",
    "dishes:menchikatsu",
@@ -3540,7 +3540,7 @@
  {
   "key": "dishes-miso-nameko",
   "ja": "なめこの味噌汁",
-  "desc": "nameko miso soup in a lacquered bowl, brown miso broth with small glossy orange-brown nameko mushrooms and green onion",
+  "desc": "a lacquered bowl of cloudy tan-brown miso soup, filled with many tiny round glossy amber-orange mushroom caps the size of peas, slimy and shiny, a few slices of green onion",
   "items": [
    "dishes:miso-nameko",
    "toyonaka:285963"
@@ -3571,7 +3571,7 @@
  {
   "key": "dishes-miso-shijimi",
   "ja": "しじみの味噌汁",
-  "desc": "shijimi clam miso soup, small dark clam shells in red-brown miso broth with green onion",
+  "desc": "a lacquered bowl of cloudy brown miso soup with many tiny black clam shells, each the size of a fingernail, some open, a few green onion slices",
   "items": [
    "dishes:miso-shijimi"
   ],
@@ -3650,7 +3650,7 @@
  {
   "key": "dishes-miso-tamago",
   "ja": "落とし卵の味噌汁",
-  "desc": "miso soup with a whole poached egg floating in brown miso broth, green onion",
+  "desc": "a bowl of opaque cloudy light-brown miso soup with one whole soft poached egg floating in it, the white smooth and rounded with a hint of yellow yolk showing through, chopped green onion on top; the egg whole and uncut, not a halved boiled egg, broth not clear",
   "items": [
    "dishes:miso-tamago"
   ]
@@ -3750,7 +3750,7 @@
  {
   "key": "dishes-kakitamajiru",
   "ja": "かきたま汁",
-  "desc": "kakitama-jiru, a clear slightly thickened soup with soft wispy yellow egg ribbons and mitsuba",
+  "desc": "a lacquered bowl of clear golden soup with soft fluffy yellow cloud-like wisps of beaten egg floating in it, like egg drop soup, a few green mitsuba leaves on top",
   "items": [
    "dishes:kakitamajiru"
   ],
@@ -3793,7 +3793,7 @@
  {
   "key": "dishes-chuka-wakame-tamago",
   "ja": "中華スープ（わかめと卵）",
-  "desc": "Chinese wakame and egg soup, clear golden broth with egg ribbons, wakame and green onion",
+  "desc": "a bowl of clear golden egg drop soup: soft fluffy yellow cloud-like wisps of beaten egg floating in clear broth, a few dark green wakame pieces and green onion slices",
   "items": [
    "dishes:chuka-wakame-tamago",
    "eatout:chuka_soup"
@@ -3917,7 +3917,7 @@
  {
   "key": "dishes-imoni",
   "ja": "芋煮（山形風）",
-  "desc": "Yamagata imoni, a pot of soy broth with taro, thin beef slices, konjac and green onion",
+  "desc": "a large pot of imoni stew: a clear brown soy broth with round peeled taro potatoes, thin brown slices of simmered beef, grey konjac pieces torn in chunks, and long green onion",
   "items": [
    "dishes:imoni"
   ],
@@ -3953,7 +3953,7 @@
  {
   "key": "dishes-chicken-nanban",
   "ja": "チキン南蛮",
-  "desc": "chicken nanban, fried chicken thigh slices soaked in sweet vinegar topped with thick white tartar sauce with egg, with cabbage",
+  "desc": "chicken nanban on a plate: slices of golden fried chicken covered with a thick heaped blanket of chunky white tartar sauce with bits of chopped boiled egg, beside shredded cabbage",
   "items": [
    "dishes:chicken-nanban",
    "maff_kyodo:chikin_nanban_miyazaki"
@@ -4012,7 +4012,7 @@
  {
   "key": "dishes-yakitori-shio",
   "ja": "焼き鳥（塩・5本）",
-  "desc": "salt yakitori skewers, grilled chicken thigh pieces on bamboo skewers with golden grilled spots and salt, on a long plate with a lemon wedge",
+  "desc": "five yakitori skewers on a long plate: bite-size chicken pieces on bamboo skewers, pale cream-white grilled chicken with light char marks and sprinkled salt, matte and dry, with a lemon wedge",
   "items": [
    "dishes:yakitori-shio",
    "eatout:yakitori_momo_shio"
@@ -4317,7 +4317,7 @@
  {
   "key": "dishes-ebimayo",
   "ja": "エビマヨ",
-  "desc": "shrimp mayo, crisp fried prawns coated in creamy pale orange mayonnaise sauce, on lettuce",
+  "desc": "a plate of ebi mayo: plump curled fried shrimp each fully coated in a thick creamy pale orange mayonnaise sauce, glossy and creamy, on a bed of lettuce",
   "items": [
    "dishes:ebimayo",
    "eatout:ebimayo"
@@ -4442,7 +4442,7 @@
  {
   "key": "dishes-nira-tama",
   "ja": "ニラ玉",
-  "desc": "nira tama, fluffy yellow scrambled egg with dark green garlic chives",
+  "desc": "nira tama on a plate: soft fluffy yellow scrambled eggs mixed with many long dark green garlic chive leaves, about half egg and half chives",
   "items": [
    "dishes:nira-tama"
   ],

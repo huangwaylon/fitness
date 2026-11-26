@@ -226,7 +226,7 @@
  {
   "key": "toyonaka-120477",
   "ja": "さわらのゆずみそかけ",
-  "desc": "Grilled Spanish mackerel with yuzu miso: a plate with a sawara fillet, white flesh and silver-grey skin, topped with a smear of glossy yellow-tan miso sauce flecked with yuzu peel",
+  "desc": "a plate with one rectangular grilled Spanish mackerel fillet piece, plain white flaky flesh with a thin unpatterned silver-grey skin edge, topped with a smear of glossy yellow-tan miso sauce flecked with yellow yuzu peel; a cut fillet, no head or tail, no dark stripes",
   "items": [
    "toyonaka:120477"
   ]
@@ -345,7 +345,7 @@
  {
   "key": "toyonaka-121395",
   "ja": "白いんげん豆のポタージュ",
-  "desc": "White bean potage: a soup bowl of smooth thick creamy off-white puree of white kidney beans, a little green parsley on top",
+  "desc": "a soup bowl of white bean potage: completely smooth thick creamy off-white puree, blended velvety like a cream soup, with no whole beans visible, a smooth flat surface with a little chopped green parsley sprinkled in the centre",
   "items": [
    "toyonaka:121395"
   ]
@@ -410,7 +410,7 @@
  {
   "key": "toyonaka-120365",
   "ja": "ユーリンチー",
-  "desc": "Yuurinchi, Chinese fried chicken: a plate of crisp golden fried chicken pieces drizzled with a glossy soy-vinegar sauce with chopped green onion and ginger",
+  "desc": "yuurinchi on a plate: a flat crispy fried chicken thigh cut into wide strips, golden-brown crunchy crust, drizzled with a thin clear brown soy sauce topped with a heap of chopped green onion and ginger",
   "items": [
    "toyonaka:120365"
   ],
@@ -420,7 +420,7 @@
  {
   "key": "toyonaka-120366",
   "ja": "中華風サラダ（中華ドレッシング）",
-  "desc": "Chinese-style salad: a small bowl of thin clear harusame glass noodles with cucumber, carrot and ham strips in a soy-sesame dressing",
+  "desc": "a small bowl of Chinese-style salad: clear see-through thin glass noodles tossed with thin green cucumber strips, orange carrot strips and pink ham strips, glossy dressing",
   "items": [
    "toyonaka:120366"
   ],
@@ -466,7 +466,7 @@
  {
   "key": "toyonaka-267580",
   "ja": "ほっけの一夜干し",
-  "desc": "Grilled overnight-dried atka mackerel: a plate with a split butterflied hokke fish, golden-brown grilled flesh with dark grey striped skin at the edges",
+  "desc": "a plate with a grilled hokke opened flat: one fish split and butterflied into a wide flat symmetrical shape like an open book, golden-brown grilled flesh facing up with a backbone line down the middle, grey skin at the edges; not a whole round fish, not mackerel",
   "items": [
    "toyonaka:267580"
   ]
@@ -763,7 +763,7 @@
  {
   "key": "toyonaka-267617",
   "ja": "あじのフライ",
-  "desc": "Fried horse mackerel: a plate with a butterflied aji fillet in crisp golden panko, shaped like a flat fish, with a little brown sauce",
+  "desc": "a fried aji fry on a plate: a flat fish fillet opened like a leaf with a tail at one end, coated in coarse golden-brown panko crumbs, crispy, with a little brown sauce",
   "items": [
    "toyonaka:267617"
   ],
@@ -1185,7 +1185,7 @@
  {
   "key": "toyonaka-269524",
   "ja": "モロヘイヤのスープ",
-  "desc": "Molokhia soup: a soup bowl of clear broth with finely chopped dark green slippery molokhia leaves, egg ribbons, onion and carrot",
+  "desc": "a soup bowl of molokhia soup: clear broth thickened with finely minced dark green leaves like green pesto, slippery and slimy, with small fluffy wisps of egg, onion and carrot",
   "items": [
    "toyonaka:269524"
   ],
@@ -1286,7 +1286,7 @@
  {
   "key": "toyonaka-124137",
   "ja": "さわらのおろししょうゆかけ",
-  "desc": "Grilled Spanish mackerel with grated daikon: a plate with a sawara fillet, white flesh and silver skin, topped with a mound of white grated daikon and brown soy sauce",
+  "desc": "a plate with one rectangular grilled fillet piece of Spanish mackerel, no head or tail: thick white flesh with a thin silvery-grey skin edge, topped with a soft moist mound of finely grated white daikon like wet snow, drizzled with brown soy sauce",
   "items": [
    "toyonaka:124137"
   ]
@@ -1294,7 +1294,7 @@
  {
   "key": "toyonaka-124138",
   "ja": "春雨の中華炒め",
-  "desc": "Stir-fried glass noodles: a plate of translucent light brown harusame noodles stir-fried with minced pork, carrot, shiitake, cabbage and green chives",
+  "desc": "a plate of stir-fried glass noodles: clear see-through glassy noodles tinted light brown with soy, with minced pork, carrot, shiitake, cabbage and green chives",
   "items": [
    "toyonaka:124138"
   ],
@@ -1523,7 +1523,7 @@
  {
   "key": "toyonaka-121728",
   "ja": "春雨の和え物",
-  "desc": "Glass noodle salad: a small bowl of clear translucent harusame noodles with cucumber, carrot and ham strips in a vinegar-soy dressing",
+  "desc": "a small bowl of glass noodle salad: clear see-through thin glass noodles with thin green cucumber strips, orange carrot strips and pink ham strips, glossy dressing",
   "items": [
    "toyonaka:121728"
   ],
@@ -1543,7 +1543,7 @@
  {
   "key": "toyonaka-121812",
   "ja": "鶏肉のレモンソースかけ",
-  "desc": "Chicken with lemon sauce: a plate of grilled chicken pieces with browned skin, topped with a glossy pale yellow translucent lemon sauce",
+  "desc": "chicken with lemon sauce on a plate: grilled chicken thigh pieces with browned crispy skin, glazed with a thin runny glossy clear yellow sauce, lemon slices on top",
   "items": [
    "toyonaka:121812"
   ],
@@ -1653,7 +1653,7 @@
  {
   "key": "toyonaka-269405",
   "ja": "ミルクツイスト",
-  "desc": "Milk twist bread: a plate with a soft white bread roll shaped as a twisted rope, pale golden glossy top",
+  "desc": "a milk twist bread on a plate: one long soft white bread loaf made of two strands twisted around each other like a rope, pale golden glossy top",
   "items": [
    "toyonaka:269405"
   ],
@@ -1862,7 +1862,7 @@
  {
   "key": "toyonaka-269503",
   "ja": "冷凍みかん",
-  "desc": "Frozen mandarin: a whole unpeeled orange mikan covered in a thin white frosty ice glaze",
+  "desc": "a frozen mikan: one whole unpeeled round orange mandarin, its orange peel covered in a thin white frosty icy coating like frost on a window",
   "items": [
    "toyonaka:269503",
    "kumagaya:00576"
@@ -2057,7 +2057,7 @@
  {
   "key": "toyonaka-271205",
   "ja": "豚肉の生姜炒め",
-  "desc": "Ginger pork stir-fry: a plate of thin pork slices with onion glazed in a glossy brown soy-ginger sauce",
+  "desc": "ginger pork stir-fry on a plate: wide flat thin pork slices like bacon pieces, light brown and glossy with soy-ginger sauce, with soft onion wedges",
   "items": [
    "toyonaka:271205"
   ],
@@ -2217,7 +2217,7 @@
  {
   "key": "toyonaka-127515",
   "ja": "高野豆腐の卵とじ",
-  "desc": "Koya tofu with egg: a bowl of simmered spongy beige freeze-dried tofu pieces in dashi with soft yellow egg, carrot, onion and green peas",
+  "desc": "a bowl of koya tofu bound with egg: square pieces of beige freeze-dried tofu with a porous spongy texture like a soaked sponge, simmered in dashi and covered with loose soft fluffy beaten-egg curds in yellow and white streaks, with carrot strips, onion and green peas; no whole yolk",
   "items": [
    "toyonaka:127515"
   ]
@@ -2319,7 +2319,7 @@
  {
   "key": "toyonaka-125955",
   "ja": "卵スープ",
-  "desc": "Egg soup: a soup bowl of clear golden broth with soft yellow egg ribbons, green onion and a little carrot",
+  "desc": "a soup bowl of egg drop soup: clear golden broth with soft fluffy yellow cloud-like wisps of beaten egg floating in it, green onion and a little carrot",
   "items": [
    "toyonaka:125955"
   ],
@@ -2404,7 +2404,7 @@
  {
   "key": "toyonaka-125969",
   "ja": "レタスと春雨のそぼろ炒め",
-  "desc": "Lettuce and glass noodles with minced meat: a plate of wilted pale green lettuce, translucent harusame noodles and brown minced pork, glossy",
+  "desc": "a plate of stir-fried glass noodles: clear transparent thin glossy harusame strands like cellophane, mixed with wilted soft cooked pale green lettuce pieces and crumbled brown minced pork, all tossed together; noodles colourless and see-through, not spaghetti, no raw lettuce bed",
   "items": [
    "toyonaka:125969"
   ]
@@ -2787,7 +2787,7 @@
  {
   "key": "toyonaka-269148",
   "ja": "うさぎ型ハンバーグのおろしだれかけ",
-  "desc": "Rabbit-shaped hamburg steak with grated daikon sauce: a plate with a browned meat patty shaped like a rabbit head with two long ears, topped with grated daikon in brown sauce",
+  "desc": "a plate with one browned hamburg steak patty shaped as a rabbit head, the oval face and two long ears formed from one continuous piece of meat, topped with a mound of wet white grated daikon like snow, in brown sauce; no cheese, no shreds",
   "items": [
    "toyonaka:269148"
   ]
@@ -2855,7 +2855,7 @@
  {
   "key": "toyonaka-271605",
   "ja": "豚肉丼の具",
-  "desc": "Pork rice bowl topping: a bowl of thin pork slices simmered with onion in sweet soy broth, glossy brown, no rice",
+  "desc": "a bowl of pork topping without rice: wide flat thin pork slices like bacon pieces simmered brown with onion wedges in sweet soy broth",
   "items": [
    "toyonaka:271605"
   ],
@@ -2875,7 +2875,7 @@
  {
   "key": "toyonaka-276159",
   "ja": "じゃこ天の照り焼き",
-  "desc": "Teriyaki jakoten: a plate of flat oblong grey-brown fried fish cakes with a rough speckled texture, glazed with glossy dark sweet soy",
+  "desc": "a plate of a few flat thin oblong fried fish cakes, each like a rectangular pancake, grey-brown with a rough speckled texture of minced small fish, glazed with glossy dark sweet soy; flat rectangles, not round nuggets",
   "items": [
    "toyonaka:276159"
   ]
@@ -3106,7 +3106,7 @@
  {
   "key": "toyonaka-268161",
   "ja": "すいとん汁",
-  "desc": "Suiton soup: a bowl of clear soy dashi with irregular soft white flour dumplings, chicken, daikon, carrot, burdock and green onion",
+  "desc": "a bowl of suiton soup: soft lumpy irregular white flour dumplings like small torn clouds in clear brown broth with chicken, daikon, carrot, burdock and green onion",
   "items": [
    "toyonaka:268161"
   ],
@@ -3461,7 +3461,7 @@
  {
   "key": "toyonaka-125087",
   "ja": "じゃがいものみそ汁",
-  "desc": "Potato miso soup: a lacquered soup bowl of cloudy tan miso broth with soft pale potato chunks, onion, wakame and green onion",
+  "desc": "a lacquered soup bowl of potato miso soup: opaque cloudy tan-beige broth like milky coffee, with soft pale yellow potato chunks, onion, wakame and green onion",
   "items": [
    "toyonaka:125087"
   ],
@@ -3773,7 +3773,7 @@
  {
   "key": "toyonaka-131687",
   "ja": "厚揚げと大根のごまみそ煮",
-  "desc": "Fried tofu and daikon in sesame miso: a bowl of golden atsuage tofu pieces and soft translucent daikon chunks in a thick tan sesame-miso sauce",
+  "desc": "a bowl of fried tofu chunks with golden-brown crisp skin and white insides, alongside equal numbers of thick half-moon pieces of simmered daikon, pale translucent ivory and soft, all in a thick creamy tan sesame-miso sauce; both tofu and daikon clearly visible",
   "items": [
    "toyonaka:131687"
   ]

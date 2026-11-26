@@ -58,7 +58,7 @@
  {
   "key": "mext-09014",
   "ja": "がごめこんぶ 素干し",
-  "desc": "Dried gagome kombu: a wide flat dark brown kelp blade with a distinctive raised, bumpy honeycomb pattern on its surface and white powdery bloom",
+  "desc": "a dried gagome kombu sheet: one wide flat thin kelp blade lying flat, dark olive-brown, its whole surface covered with a raised bumpy honeycomb net of small pits and ridges like an embossed waffle texture, light white powdery bloom; flat sheet, not a tube",
   "items": [
    "mext:09014"
   ]
@@ -122,7 +122,7 @@
  {
   "key": "mext-09021",
   "ja": "削り昆布",
-  "desc": "Tororo kombu, shaved kelp: a fluffy, airy pile of very fine, wispy, pale greenish-brown kelp shavings, soft like cotton, in a small dish",
+  "desc": "a small dish of tororo kombu: a fluffy soft airy heap of very fine hair-thin shaved kelp, like a wad of pale olive-brown cotton wool or fine steel wool",
   "items": [
    "mext:09021"
   ],
@@ -191,7 +191,7 @@
  {
   "key": "mext-09054",
   "ja": "ほしひじき 鉄釜 ゆで",
-  "desc": "Boiled hijiki: rehydrated short black seaweed sprigs, plump, soft and moist with a slight sheen, in a small bowl",
+  "desc": "a small bowl of boiled hijiki: a heap of short black seaweed bits, each like a small fat black grain of rice or a tiny twig, plump, moist and glossy",
   "items": [
    "mext:09054"
   ],
@@ -211,7 +211,7 @@
  {
   "key": "mext-09033",
   "ja": "ひとえぐさ つくだ煮",
-  "desc": "Nori tsukudani: a glossy, thick, dark blackish-green seaweed paste simmered in soy and sugar, jam-like, in a small dish",
+  "desc": "a small dish of nori tsukudani: a thick smooth glossy black-green paste like dark jam or tar, spooned up, shiny and sticky",
   "items": [
    "mext:09033"
   ],
@@ -221,7 +221,7 @@
  {
   "key": "mext-09035",
   "ja": "まつも 素干し",
-  "desc": "Dried matsumo seaweed: a thin crisp sheet of pressed fine, needle-like dark brown-black strands, on a small plate",
+  "desc": "dried matsumo on a small plate: a thin flat crisp square sheet made of fine dark brown-black needle-like seaweed strands pressed together like a felt mat",
   "items": [
    "mext:09035"
   ],
@@ -264,7 +264,7 @@
  {
   "key": "mext-09040",
   "ja": "乾燥わかめ 素干し",
-  "desc": "Dried wakame: a small pile of crinkled, shrivelled, dark blackish-green pieces, dry and brittle, on a small plate",
+  "desc": "a small plate of dried wakame: small dry brittle crumpled flakes, nearly black dark green, matte, crinkled like dried tea leaves",
   "items": [
    "mext:09040"
   ],
@@ -370,7 +370,7 @@
  {
   "key": "mext-10004",
   "ja": "まあじ 皮つき 水煮",
-  "desc": "Boiled horse mackerel fillet, skin on: plain opaque white-grey cooked flesh with silvery skin, on a small plate, no sauce",
+  "desc": "a small plate with a boiled horse mackerel fillet: a flat boneless fillet, plain opaque white-grey cooked flesh, silvery skin along one side, no sauce",
   "items": [
    "mext:10004",
    "mext:10009"
@@ -381,7 +381,7 @@
  {
   "key": "mext-10391",
   "ja": "まあじ 小型 骨付き 生",
-  "desc": "Raw small horse mackerels: whole small fish, silver with blue-green backs and a line of hard bony scutes along each side, on a plate",
+  "desc": "three small raw aji horse mackerels on a plate: slim silver fish with plain blue-green backs without stripes, a distinctive line of hard bony ridges along the rear half of each side, big eyes",
   "items": [
    "mext:10391"
   ],
@@ -401,7 +401,7 @@
  {
   "key": "mext-10393",
   "ja": "まるあじ 生",
-  "desc": "Raw round scad (maruaji): a whole slender, rounded silver fish with a bluish back, beside a pinkish raw fillet",
+  "desc": "a raw maruaji round scad on a plate: a long slim torpedo-shaped silver fish, round in cross-section, bluish back, small fins, beside a pink raw fillet",
   "items": [
    "mext:10393"
   ],
@@ -411,7 +411,7 @@
  {
   "key": "mext-10394",
   "ja": "まるあじ 焼き",
-  "desc": "Salt-grilled round scad: a whole slender fish with browned, blistered skin and char marks, salt on the fins, on a long plate",
+  "desc": "a salt-grilled maruaji round scad on a long plate: a long slim torpedo-shaped fish with browned blistered skin and char marks, white salt on the fins",
   "items": [
    "mext:10394",
    "mext:10012"
@@ -457,7 +457,7 @@
  {
   "key": "mext-10457",
   "ja": "にしまあじ 開き干し 生",
-  "desc": "Butterflied semi-dried horse mackerel (aji no hiraki), raw: a whole fish split open flat with head attached, glossy pale flesh side up",
+  "desc": "a raw aji no hiraki: a horse mackerel split open flat like an open book, head split in half, glossy pale pink flesh side up with the spine in the middle",
   "items": [
    "mext:10457",
    "mext:10013"
@@ -468,7 +468,7 @@
  {
   "key": "mext-10458",
   "ja": "にしまあじ 開き干し 焼き",
-  "desc": "Grilled aji no hiraki: a butterflied dried horse mackerel, flat and open, golden-brown with char marks, on a plate with grated daikon",
+  "desc": "a grilled aji no hiraki on a plate: a horse mackerel split open flat like an open book, flesh side up, golden-brown with char marks and the spine visible, beside grated daikon",
   "items": [
    "mext:10458"
   ],
@@ -510,7 +510,7 @@
  {
   "key": "mext-10014",
   "ja": "むろあじ くさや",
-  "desc": "Kusaya: a butterflied dried fish, dark amber-brown, stiff, leathery and glossy, torn into thin strips on a plate",
+  "desc": "kusaya on a plate: thin dry stiff strips torn from a dried fish, dark amber-brown and leathery like jerky, fibrous",
   "items": [
    "mext:10014"
   ],
@@ -626,7 +626,7 @@
  {
   "key": "mext-10029",
   "ja": "あゆ うるか",
-  "desc": "Uruka: salted fermented ayu entrails, a glossy, chunky dark brown-grey paste in a tiny dish",
+  "desc": "a tiny dish of uruka: a small spoonful of chunky dark grey-brown fermented paste, coarse and glossy like dark tapenade",
   "items": [
    "mext:10029"
   ],
@@ -676,7 +676,7 @@
  {
   "key": "mext-10035",
   "ja": "いかなご つくだ煮",
-  "desc": "Ikanago kugini: small slender fish simmered in soy and sugar, dark brown, glossy, curled and clumped together, in a small dish",
+  "desc": "a small dish of ikanago kugini: a clump of many thin small fish the size of a matchstick, curled and tangled together, glossy dark brown with sweet soy",
   "items": [
    "mext:10035"
   ],
@@ -815,7 +815,7 @@
  {
   "key": "mext-10048",
   "ja": "まいわし 水煮",
-  "desc": "Boiled sardine: a whole plain-cooked sardine, soft grey-white body with a row of dark spots on its side, on a small plate",
+  "desc": "a boiled sardine on a small plate: a whole sardine cooked plain, matte opaque grey-white soft body, dull and soft, no shine, a row of dark spots on its side",
   "items": [
    "mext:10048"
   ],
@@ -901,7 +901,7 @@
  {
   "key": "mext-10396",
   "ja": "しらす 生",
-  "desc": "Raw whitebait (nama shirasu): tiny glassy, translucent baby fish with black dot eyes, heaped in a small dish",
+  "desc": "a small dish of raw shirasu: a wet glistening heap of tiny glassy see-through baby fish, clear like glass threads, each with two tiny black dot eyes",
   "items": [
    "mext:10396"
   ],
@@ -969,7 +969,7 @@
  {
   "key": "mext-10058",
   "ja": "みりん干し かたくちいわし",
-  "desc": "Mirin-boshi: small butterflied fish dried with a sweet glaze, flat, glossy amber-brown, sprinkled with sesame seeds, on a plate",
+  "desc": "mirin-boshi on a plate: three small fish split open and pressed perfectly flat like flat leaves, no thickness, glossy sticky amber-brown sweet glaze, sprinkled with white sesame seeds",
   "items": [
    "mext:10058",
    "mext:10059"
@@ -1042,7 +1042,7 @@
  {
   "key": "mext-10397",
   "ja": "いわし 缶詰 アンチョビ",
-  "desc": "Anchovies: thin, flat, brownish-pink salted fillets lying in olive oil in a small flat open tin",
+  "desc": "a small flat open tin of anchovies: thin narrow flat strips of fillet, no heads, brownish-pink and glistening, lying side by side in golden olive oil",
   "items": [
    "mext:10397"
   ],
@@ -1317,7 +1317,7 @@
  {
   "key": "mext-10089",
   "ja": "かつお なまり",
-  "desc": "Namari: chunks of boiled bonito, firm, matte, dark reddish-brown and flaky, on a plate",
+  "desc": "namari on a plate: chunks of boiled bonito, firm and dry-looking, matte dull dark brown-grey outside, flaking into layered dark reddish-brown flakes inside, like cooked tuna",
   "items": [
    "mext:10089"
   ],
@@ -1337,7 +1337,7 @@
  {
   "key": "mext-10446",
   "ja": "かつお 裸節",
-  "desc": "Dried bonito block (hadakabushi): a hard, wood-like dark brown smoked fish loin, a cut end showing a dense dark red-brown core",
+  "desc": "a dried bonito block: a hard smooth dark brown elongated loin shaped like a large banana or a smooth wooden club, polished matte surface, one cut end showing a dense dark red-brown glassy core",
   "items": [
    "mext:10446"
   ],
@@ -1355,7 +1355,7 @@
  {
   "key": "mext-10093",
   "ja": "かつお 削り節つくだ煮",
-  "desc": "Bonito flake tsukudani: clumps of shaved bonito flakes simmered in soy, glossy dark brown with sesame seeds, in a small dish",
+  "desc": "a small dish of bonito flake tsukudani: a sticky clump of fine shaved bonito flakes, thin wispy flakes simmered dark glossy brown in soy, flecked with white sesame seeds",
   "items": [
    "mext:10093"
   ],
@@ -1385,7 +1385,7 @@
  {
   "key": "mext-10097",
   "ja": "かつお 缶詰 油漬 フレーク",
-  "desc": "Canned bonito flakes in oil: flaked light brown cooked fish soaked in oil, in an open can",
+  "desc": "an open can of bonito flakes in oil: loose broken flakes of light brown cooked fish, like canned tuna, soaked in golden oil",
   "items": [
    "mext:10097"
   ],
@@ -1463,7 +1463,7 @@
  {
   "key": "mext-10105",
   "ja": "子持ちがれい 水煮",
-  "desc": "Boiled flatfish with roe: a thick piece of flounder with a mass of orange-yellow roe inside, white flesh and brown skin, plain",
+  "desc": "a single thick crosswise cut piece of boiled flatfish on a plate: plain cooked white flesh with brown skin on one side, its belly cavity packed with a solid cooked block of dense orange-yellow roe, firm and grainy, not beads; not a whole fish",
   "items": [
    "mext:10105"
   ]
@@ -1706,7 +1706,7 @@
  {
   "key": "mext-10122",
   "ja": "まごち 生",
-  "desc": "Raw flathead (magochi): a whole elongated brown fish with a broad flat head, beside a white fillet",
+  "desc": "a raw magochi flathead on a plate: a long slim brown fish with a very broad flattened head like a shovel, wide mouth, flat body tapering to a thin tail, beside a white fillet",
   "items": [
    "mext:10122"
   ],
@@ -1716,7 +1716,7 @@
  {
   "key": "mext-10123",
   "ja": "めごち 生",
-  "desc": "Raw small flathead (megochi): small slender brown fish with flat heads, on a plate",
+  "desc": "three small raw megochi on a plate: small slender sandy-brown fish with flat wide shovel-shaped heads, thin tapering bodies like small tadpoles",
   "items": [
    "mext:10123"
   ],
@@ -1736,7 +1736,7 @@
  {
   "key": "mext-10125",
   "ja": "このしろ 甘酢漬",
-  "desc": "Vinegar-marinated shad: cured fillets with shiny silver skin speckled with dark dots and pale flesh, on a small plate",
+  "desc": "a small plate of vinegar-marinated kohada: flat cured fillets folded or laid flat, shiny silver skin speckled with a row of dark dots, pale pinkish-white flesh",
   "items": [
    "mext:10125"
   ],
@@ -1841,7 +1841,7 @@
  {
   "key": "mext-10135",
   "ja": "しろさけ 水煮",
-  "desc": "Boiled chum salmon: a plain cooked fillet, opaque pale pink-orange and flaky, on a small plate, no sauce",
+  "desc": "a small plate with a boiled salmon fillet: matte opaque pale pink cooked flesh, dry-looking, flaking into big layered flakes, no sauce",
   "items": [
    "mext:10135"
   ],
@@ -1897,7 +1897,7 @@
  {
   "key": "mext-10447",
   "ja": "しろさけ サケ節 削り節",
-  "desc": "Salmon flakes (sake-bushi): thin curly shavings of dried salmon, pinkish-beige and fluffy, in a small dish",
+  "desc": "a small dish of sake-bushi: a fluffy heap of thin dry curly paper-like shavings, pale pinkish-beige, like wood shavings or bonito flakes",
   "items": [
    "mext:10447"
   ],
@@ -1907,7 +1907,7 @@
  {
   "key": "mext-10433",
   "ja": "たいせいようさけ 養殖 皮つき 水煮",
-  "desc": "Boiled Atlantic salmon, skin on: a plain poached fillet, opaque pale orange-pink flesh with silver-grey skin, no sauce",
+  "desc": "a small plate with a poached salmon fillet with skin: matte opaque pale orange-pink cooked flesh splitting into flakes, silver-grey skin on the bottom, no sauce",
   "items": [
    "mext:10433",
    "mext:10434",
@@ -1948,7 +1948,7 @@
  {
   "key": "mext-10439",
   "ja": "たいせいようさけ 養殖 皮なし 水煮",
-  "desc": "Boiled Atlantic salmon, skinless: a plain poached fillet, opaque pale orange and flaky, no skin, no sauce",
+  "desc": "a small plate with a poached skinless salmon fillet: matte opaque pale pinkish-orange cooked flesh splitting into big soft flakes, no skin, no sauce",
   "items": [
    "mext:10439",
    "mext:10440",
@@ -1976,7 +1976,7 @@
  {
   "key": "mext-10402",
   "ja": "にじます 海面養殖 皮なし 生",
-  "desc": "Raw sea-farmed rainbow trout, skinless: a bright orange fillet with white fat lines, glossy, cut into slices",
+  "desc": "a small plate of raw skinless trout slices: thick rectangular slices of bright orange fish flesh with thin white fat lines, glossy, no skin",
   "items": [
    "mext:10402"
   ],
@@ -2036,7 +2036,7 @@
  {
   "key": "mext-10155",
   "ja": "まさば 水煮",
-  "desc": "Boiled mackerel: a plain cooked fillet, greyish-white flesh with blue-green striped skin, no sauce, on a small plate",
+  "desc": "a small plate with a boiled mackerel fillet: a flat boneless fillet, opaque greyish-white cooked flesh, blue-green striped skin along the top, no sauce",
   "items": [
    "mext:10155",
    "mext:10405",
@@ -2089,7 +2089,7 @@
  {
   "key": "mext-10162",
   "ja": "さば 開き干し",
-  "desc": "Butterflied dried mackerel (saba no hiraki): a whole fish split open flat, glossy pale flesh and blue-striped skin edge",
+  "desc": "a saba no hiraki: a dried mackerel split open flat like an open book, pale glossy flesh side up with the spine in the middle, blue-striped skin edge visible",
   "items": [
    "mext:10162"
   ],
@@ -2167,7 +2167,7 @@
  {
   "key": "mext-10175",
   "ja": "さんま 開き干し",
-  "desc": "Butterflied dried saury: a long, slender fish split open flat, glossy pale flesh, on a long plate",
+  "desc": "a dried sanma no hiraki on a long plate: a very long thin needle-like saury split open flat like an open book, pale glossy flesh up, longer than the plate",
   "items": [
    "mext:10175"
   ],
@@ -2177,7 +2177,7 @@
  {
   "key": "mext-10176",
   "ja": "さんま みりん干し",
-  "desc": "Saury mirin-boshi: a long butterflied saury with a sweet, glossy amber-brown glaze and sesame seeds",
+  "desc": "sanma mirin-boshi on a long plate: a very long thin saury split open flat like a ribbon, glossy amber-brown sweet glaze, sprinkled with white sesame seeds",
   "items": [
    "mext:10176"
   ],
@@ -2349,7 +2349,7 @@
  {
   "key": "mext-10194",
   "ja": "まだい 養殖 皮つき 水煮",
-  "desc": "Boiled sea bream, skin on: a plain cooked fillet, white flaky flesh with pink-red skin, no sauce",
+  "desc": "a small plate with a boiled sea bream fillet: a flat boneless piece of plain cooked white flaky fish, pink-red skin on top, no sauce",
   "items": [
    "mext:10194"
   ],
@@ -2424,7 +2424,7 @@
  {
   "key": "mext-10409",
   "ja": "すけとうだら フライ",
-  "desc": "Pollock fry: a breaded deep-fried white fish fillet in golden crust, on a plate",
+  "desc": "a pollock fry on a plate: a flat rectangular breaded fish fillet with no head, coarse golden-brown panko crust, cut showing flaky white fish inside",
   "items": [
    "mext:10409"
   ],
@@ -2512,7 +2512,7 @@
  {
   "key": "mext-10448",
   "ja": "たら 桜でんぶ",
-  "desc": "Sakura denbu: a fluffy heap of fine bright pink sweet fish floss in a small dish",
+  "desc": "a small dish of sakura denbu: a fluffy loose heap of fine dry bright pink flakes like pink sawdust or pink snow",
   "items": [
    "mext:10448"
   ],
@@ -2552,7 +2552,7 @@
  {
   "key": "mext-10215",
   "ja": "とびうお 生",
-  "desc": "Raw flying fish: a whole fish with a blue back and large wing-like pectoral fins spread out",
+  "desc": "a raw flying fish on a plate: a slim blue-backed silver fish with huge long wing-like clear fins spread out on both sides like dragonfly wings",
   "items": [
    "mext:10215"
   ],
@@ -2562,7 +2562,7 @@
  {
   "key": "mext-10421",
   "ja": "とびうお 煮干し",
-  "desc": "Dried flying fish (niboshi): whole boiled and dried flying fish, stiff and dull grey, on a plate",
+  "desc": "a few dried flying fish on a plate: stiff hard dried whole fish, dull grey-brown and matte, long wing-like fins folded dry along the sides",
   "items": [
    "mext:10421"
   ],
@@ -2645,7 +2645,7 @@
  {
   "key": "mext-10219",
   "ja": "身欠きにしん",
-  "desc": "Migaki nishin: dried split herring fillets, hard, stiff and dark golden-brown, on a plate",
+  "desc": "migaki nishin on a plate: two long headless dried herring fillets, hard and stiff like wood, dark golden-brown and slightly oily",
   "items": [
    "mext:10219"
   ],
@@ -2663,7 +2663,7 @@
  {
   "key": "mext-10220",
   "ja": "にしん 開き干し",
-  "desc": "Butterflied dried herring: a whole fish split open flat, glossy pale flesh, on a plate",
+  "desc": "a dried nishin no hiraki on a plate: a herring split open flat like an open book, glossy pale flesh side up with the spine in the middle",
   "items": [
    "mext:10220"
   ],
@@ -2713,7 +2713,7 @@
  {
   "key": "mext-10228",
   "ja": "はたはた 生",
-  "desc": "Raw sandfish (hatahata): whole scaleless pale brown mottled fish with large mouths and big pectoral fins",
+  "desc": "three raw hatahata sandfish on a plate: long slim fish without scales, pale sandy brown with dark mottled spots, big upturned mouths and large fan-like side fins",
   "items": [
    "mext:10228"
   ],
@@ -2788,7 +2788,7 @@
  {
   "key": "mext-10410",
   "ja": "ひらめ 養殖 皮なし 生",
-  "desc": "Raw flounder, skinless: thin translucent white sashimi slices fanned out on a plate",
+  "desc": "a plate of skinless raw flounder sashimi: paper-thin almost transparent white slices arranged in a circle of petals, the plate pattern showing through",
   "items": [
    "mext:10410"
   ],
@@ -2806,7 +2806,7 @@
  {
   "key": "mext-10236",
   "ja": "とらふぐ 養殖 生",
-  "desc": "Raw tiger puffer (fugu): paper-thin translucent sashimi slices arranged like a chrysanthemum on a plate",
+  "desc": "a large round plate of fugu sashimi: paper-thin see-through white slices of fish arranged in a big circle of overlapping petals like a chrysanthemum, the blue plate pattern visible through them",
   "items": [
    "mext:10236",
    "mext:10237"
@@ -2875,7 +2875,7 @@
  {
   "key": "mext-10244",
   "ja": "ほうぼう 生",
-  "desc": "Raw red gurnard (houbou): a whole red fish with large blue-green wing-like pectoral fins",
+  "desc": "a raw houbou red gurnard on a plate: a red fish with a big bony square head and enormous fan-like pectoral fins spread out like butterfly wings, blue-green with bright blue spots",
   "items": [
    "mext:10244"
   ],
@@ -2905,7 +2905,7 @@
  {
   "key": "mext-10247",
   "ja": "塩ほっけ",
-  "desc": "Salted hokke: a butterflied dried fish, opened flat, pale flesh with yellowish-brown striped skin edge",
+  "desc": "a salted hokke fish butterflied and opened completely flat, both halves spread like a book: a wide flat oval of pale pinkish-white flesh, spine down the middle, edged with yellowish-brown striped skin, lying on a plate; not a whole round fish",
   "items": [
    "mext:10247"
   ]
@@ -3069,7 +3069,7 @@
  {
   "key": "mext-10265",
   "ja": "マジェランあいなめ 生",
-  "desc": "Raw Patagonian toothfish: a thick, rich white fillet with dark skin, on a plate",
+  "desc": "a thick raw Patagonian toothfish fillet on a plate: a rectangular slab of snow-white fatty flesh with glossy flaky layers and black-grey skin on the underside; a cut fillet piece only, no head, no tail, not a whole fish",
   "items": [
    "mext:10265"
   ]
@@ -3105,7 +3105,7 @@
  {
   "key": "mext-10267",
   "ja": "みなみだら 生",
-  "desc": "Raw southern blue whiting: a white raw fillet, on a plate",
+  "desc": "a raw boneless white fish fillet on a plate: a flat translucent pale white piece of raw fish flesh, no head, no skin",
   "items": [
    "mext:10267"
   ],
@@ -3185,7 +3185,7 @@
  {
   "key": "mext-10275",
   "ja": "やまめ 養殖 生",
-  "desc": "Raw yamame trout: a slim whole fish with olive back and dark oval parr marks along its silver side, no red spots",
+  "desc": "a raw yamame trout: a slim whole fish with an olive-brown back with small black dots, silvery sides marked with a row of large dark bluish-grey vertical oval blotches like thumbprints, white belly; no pink or red stripe, no red spots",
   "items": [
    "mext:10275"
   ]
@@ -3203,7 +3203,7 @@
  {
   "key": "mext-10279",
   "ja": "あかがい 生",
-  "desc": "Raw ark shell (akagai): bright orange-red raw clam flesh cut open, beside a thick ribbed white-brown shell",
+  "desc": "raw akagai on a plate: bright orange-red raw clam meat sliced open into a butterfly shape, beside a round bivalve clam shell with thick radial ribs, white with dark brown fuzz",
   "items": [
    "mext:10279"
   ],
@@ -3213,7 +3213,7 @@
  {
   "key": "mext-10280",
   "ja": "あげまき 生",
-  "desc": "Raw agemaki clam: long rectangular thin shells, with plump pale cream raw meat, on a plate",
+  "desc": "raw agemaki clams on a plate: long narrow rectangular yellowish shells like razor clams, open, with plump pale cream raw meat inside",
   "items": [
    "mext:10280"
   ],
@@ -3241,7 +3241,7 @@
  {
   "key": "mext-10282",
   "ja": "あさり つくだ煮",
-  "desc": "Asari tsukudani: small clam meats simmered in soy, dark brown and glossy, in a small dish",
+  "desc": "a small dish of clam tsukudani: a heap of tiny shell-less clam meats, each a small soft curled nugget, simmered dark brown almost black, sticky and glossy with soy glaze; no shells at all, no broth",
   "items": [
    "mext:10282"
   ]
@@ -3259,7 +3259,7 @@
  {
   "key": "mext-10427",
   "ja": "くろあわび 生",
-  "desc": "Raw abalone: an abalone in its oval ear-shaped shell with a row of holes, the thick dark black-green muscular foot on top",
+  "desc": "a raw kuro-awabi: an abalone in its oval ear-shaped shell with a row of small holes along one edge, a thick black and dark green muscular foot filling the shell",
   "items": [
    "mext:10427",
    "mext:10428"
@@ -3278,7 +3278,7 @@
  {
   "key": "mext-10286",
   "ja": "あわび 干し",
-  "desc": "Dried abalone: hard, oval, translucent amber-brown dried abalone, on a plate",
+  "desc": "a dried abalone on a plate: a hard oval disc without shell, translucent dark amber-brown like amber glass or a toffee, wrinkled edge",
   "items": [
    "mext:10286"
   ],
@@ -3288,7 +3288,7 @@
  {
   "key": "mext-10287",
   "ja": "あわび 塩辛",
-  "desc": "Abalone shiokara: chopped salted abalone flesh and innards, a chunky greenish-brown paste in a tiny dish",
+  "desc": "a tiny dish of abalone shiokara: chopped small chunks of abalone in a thick greenish-brown salty paste, glossy",
   "items": [
    "mext:10287"
   ],

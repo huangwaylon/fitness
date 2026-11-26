@@ -260,7 +260,7 @@
  {
   "key": "maff_kyodo-dojou_jiru_kagawa",
   "ja": "どじょう汁（香川県）",
-  "desc": "dojo-jiru kagawa style, a large bowl of cloudy miso broth with thick white udon noodles, small whole dark grey loach, chunks of taro and purple eggplant, burdock pieces, fried tofu strips and green leek",
+  "desc": "a large bowl of opaque cloudy beige miso soup with thick white udon noodles and several small whole slender loach fish, eel-like dark grey-brown fish with little heads clearly visible on top, plus taro chunks, eggplant, burdock pieces, fried tofu strips and green leek",
   "items": [
    "maff_kyodo:dojou_jiru_kagawa"
   ],
@@ -439,7 +439,7 @@
  {
   "key": "maff_kyodo-barazushi_kyoto",
   "ja": "ばらずし（京都府）",
-  "desc": "tango barazushi, a shallow square wooden box of vinegared rice layered with sweet brown flaked mackerel, topped with yellow shredded egg, sliced shiitake, kanpyo strips, pink kamaboko, bamboo shoot and red pickled ginger",
+  "desc": "a shallow square wooden box of vinegared rice evenly covered with a layer of fine pale brown sweet crumbled mackerel flakes like loose fish floss, scattered with yellow shredded egg, thin shiitake slices, kanpyo strips, pink kamaboko and red pickled ginger; no fish fillets, no eel",
   "items": [
    "maff_kyodo:barazushi_kyoto"
   ],
@@ -523,7 +523,7 @@
  {
   "key": "maff_kyodo-kashiwa_mochi_fukui",
   "ja": "柏餅（福井県）",
-  "desc": "kashiwa mochi fukui style, half-moon white rice cakes folded over azuki paste, each wrapped in a large glossy green oak leaf with wavy edges, several on a plate",
+  "desc": "several kashiwa mochi on a plate: each a smooth white rice cake folded in half into a flat half-moon, sweet azuki paste inside, wrapped in one large smooth glossy green oak leaf with lobed wavy edges and clear veins; whole, not sliced, no crinkly lettuce-like leaves",
   "items": [
    "maff_kyodo:kashiwa_mochi_fukui"
   ],
@@ -580,7 +580,7 @@
  {
   "key": "maff_kyodo-aimaze_oita",
   "ja": "あいまぜ（大分県）",
-  "desc": "aimaze oita style, simmered zenmai fern shoots, dried daikon strips, shiitake and carrot strips folded into a creamy white mashed tofu dressing, a heap in a small dark bowl",
+  "desc": "a small dark bowl of aimaze: a heap of clearly visible thin brown zenmai fern shoots, light tan dried daikon strips, orange carrot strips and sliced dark brown shiitake, lightly coated in a crumbly white mashed tofu dressing so the vegetables show through; not mashed potato",
   "items": [
    "maff_kyodo:aimaze_oita"
   ],
@@ -629,7 +629,7 @@
  {
   "key": "maff_kyodo-kakinoha_zushi_wakayama",
   "ja": "柿の葉寿司（和歌山県）",
-  "desc": "kakinoha zushi wakayama style, small pressed sushi bundles wrapped in autumn persimmon leaves of red, orange and yellow, some unwrapped showing vinegared rice topped with mackerel, simmered shiitake or shrimp, on a plate",
+  "desc": "a plate of small rectangular pressed sushi bundles, each tightly wrapped in a single flat persimmon leaf of green, orange or red, neatly lined up; two unwrapped bundles show a block of white vinegared rice topped with a slice of silvery mackerel; no persimmon fruit anywhere",
   "items": [
    "maff_kyodo:kakinoha_zushi_wakayama"
   ],

@@ -91,14 +91,16 @@ class RulesTest(unittest.TestCase):
 
 
 class ProductsTxtTest(unittest.TestCase):
-    """The committed rules: every key a shipped picture, and the lookalike classes stay fixed."""
-    shipped = {r['key'] for r in json.load(open(os.path.join(IMAGES, 'shipped.json'), encoding='utf-8'))}
+    """The committed rules: every key a table row (a row not shipping, waiting for a re-roll or on its tile, gives its
+    products the category tile: pack only maps products to shipped pictures), and the lookalike classes stay fixed."""
+    table = {r['key'] for f in os.listdir(os.path.join(IMAGES, 'table')) if f.endswith('.json')
+             for r in json.load(open(os.path.join(IMAGES, 'table', f), encoding='utf-8'))}
     R = pmatch.Rules(open(os.path.join(IMAGES, 'products.txt'), encoding='utf-8').read())
 
-    def test_keys_ship(self):
+    def test_keys_are_rows(self):
         keys = {v[0] for v in self.R.words.values()} | set(self.R.tags.values()) | {k for _, k in self.R.brands} | \
             {k for rules in self.R.ctx.values() for _, k in rules} | set(self.R.kinds)
-        self.assertEqual(sorted(k for k in keys if k and k not in self.shipped), [])
+        self.assertEqual(sorted(k for k in keys if k and k not in self.table), [])
 
     def test_lookalikes(self):
         for name, want in [('鯖の竜田揚げ', 'jbfd-魚介の竜田揚げ'), ('いかの唐揚げ', 'jbfd-魚介の竜田揚げ'), ('そら豆の唐揚げ', None),

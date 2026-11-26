@@ -2,7 +2,7 @@
  {
   "key": "mext-01004",
   "ja": "オートミール",
-  "desc": "a small bowl heaped with dry rolled oats: many thin flat irregular pale beige oat flakes, matte and papery, a few loose flakes beside the bowl, with a wooden spoon",
+  "desc": "a small bowl of old-fashioned rolled oat flakes: each flake a thin flattened pressed oval disc, pale beige and papery, many flat discs piled loosely like dry cereal flakes, a few flat flakes spilled beside the bowl",
   "items": [
    "mext:01004"
   ],
@@ -522,7 +522,7 @@
  {
   "key": "mext-01048",
   "ja": "中華めん（ゆで）",
-  "desc": "a heap of boiled ramen noodles, thin wavy glossy pale yellow strands, plain without soup, on a plate",
+  "desc": "a loose tangled heap of soft cooked yellow wheat noodles on a white plate, long thin wavy glossy strands draped and spilling in curls over the plate, wet and shiny, freshly boiled and drained",
   "items": [
    "mext:01048"
   ],
@@ -542,7 +542,7 @@
  {
   "key": "mext-01053",
   "ja": "沖縄そば（ゆで）",
-  "desc": "a bowl of Okinawa soba, thick flat wheat noodles in clear broth topped with large slices of braised pork belly, fish cake and green onion, red pickled ginger",
+  "desc": "a bowl of Okinawa soba: very thick flat wide pale-yellow wheat noodles like fettuccine in clear golden pork broth, topped with three large slabs of glossy brown braised pork belly, pink-edged fish cake slices, chopped green onion and a pinch of red pickled ginger",
   "items": [
    "mext:01053"
   ],
@@ -754,7 +754,7 @@
  {
   "key": "mext-01066",
   "ja": "焼きふ（釜焼きふ）",
-  "desc": "Japanese yaki-fu, a few dry baked wheat gluten rounds and small rings, very light and airy like puffed bread crust, pale golden-cream with a lightly toasted top, matte and dry, not fried, not nuggets",
+  "desc": "a few Japanese baked wheat gluten pieces (fu) on a plate: very light porous pale cream rings with a fine airy sponge texture like dry meringue, a thin toasted light-brown crust only on top, matte and dry",
   "items": [
    "mext:01066"
   ],
@@ -827,7 +827,7 @@
  {
   "key": "mext-01079",
   "ja": "パン粉（乾燥）",
-  "desc": "a small bowl of dry Japanese panko breadcrumbs, coarse light golden-white flakes",
+  "desc": "a small bowl of dry panko breadcrumbs: a fluffy pile of tiny pale cream-white irregular jagged shards and splinters of dried white bread, airy and crisp, a little pile of the same white crumbs spilled beside the bowl",
   "items": [
    "mext:01079"
   ],
@@ -1076,7 +1076,7 @@
  {
   "key": "mext-01113",
   "ja": "きりたんぽ",
-  "desc": "kiritanpo, mashed rice packed around cedar sticks as long cylinders and toasted golden-brown, two sticks, one cut into diagonal pieces",
+  "desc": "two kiritanpo on bamboo skewers: thick cylinders of pounded white steamed rice wrapped around a thin wooden skewer that sticks out of both ends, the rice surface visibly white and grainy with golden-brown toasted patches, one cylinder cut into diagonal pieces showing white rice inside",
   "items": [
    "mext:01113"
   ],
@@ -1202,7 +1202,7 @@
  {
   "key": "mext-01120",
   "ja": "白玉粉",
-  "desc": "a small mound of white shiratamako flour in coarse irregular lumps, beside three small white shiratama dumplings",
+  "desc": "a small mound of white shiratamako rice flour in coarse irregular chalky white lumps, beside three small smooth perfectly round white balls the size of marbles",
   "items": [
    "mext:01120"
   ],
@@ -1313,7 +1313,7 @@
  {
   "key": "mext-01137",
   "ja": "コーンフレーク",
-  "desc": "a bowl of crisp golden-orange corn flakes",
+  "desc": "a bowl of corn flakes cereal: many thin crisp curled irregular flakes, each a wavy torn chip of pale golden toasted corn with darker toasted edges, piled loosely like dry autumn leaves",
   "items": [
    "mext:01137"
   ],
@@ -1345,7 +1345,7 @@
  {
   "key": "mext-02003",
   "ja": "こんにゃく",
-  "desc": "a rectangular slab of grey konjac (konnyaku) with tiny dark specks, glossy and firm, a few triangle pieces cut beside it",
+  "desc": "a rectangular slab of konnyaku konjac jelly, dull slate-grey and translucent like grey rubber, evenly peppered with tiny black specks, glossy wet surface, a few grey triangle-cut pieces beside it",
   "items": [
    "mext:02003"
   ],
@@ -1363,7 +1363,7 @@
  {
   "key": "mext-02005",
   "ja": "しらたき",
-  "desc": "a tangled bundle of thin translucent shirataki konjac noodles, glossy white strands",
+  "desc": "a loose wet tangle of shirataki konjac noodles in a small dish: thin clear see-through glassy strands like fishing line, glistening and translucent with water droplets, the plate visible through them",
   "items": [
    "mext:02005"
   ],
@@ -1568,7 +1568,7 @@
  {
   "key": "mext-02025",
   "ja": "やまといも 生",
-  "desc": "a raw yamatoimo yam, a lumpy fist-shaped root with brown skin, a cut showing dense white flesh, beside a little grated white sticky tororo",
+  "desc": "a raw yamatoimo yam: a short lumpy knobbly root shaped like a clenched fist or a ginger knob, rough light-brown skin with hairy rootlets, one cut face showing dense bright white flesh, beside a small bowl of foamy white grated yam paste",
   "items": [
    "mext:02025"
   ],
@@ -1622,7 +1622,7 @@
  {
   "key": "mext-02037",
   "ja": "くずきり（ゆで）",
-  "desc": "kuzukiri, flat translucent clear noodles in ice water in a glass bowl, with a little cup of dark kuromitsu syrup",
+  "desc": "a glass bowl of ice water holding kuzukiri: long flat clear transparent ribbon noodles like strips of glass, almost invisible in the water with ice cubes, beside a tiny cup of black syrup",
   "items": [
    "mext:02037"
   ],
@@ -1752,7 +1752,7 @@
  {
   "key": "mext-02061",
   "ja": "緑豆はるさめ（ゆで）",
-  "desc": "cooked glass noodles (harusame), slippery clear transparent thin noodles on a plate",
+  "desc": "a small plate of cooked glass noodles: a loose pile of thin wet clear transparent strands like clear plastic threads, glistening, the white plate visible through them",
   "items": [
    "mext:02061",
    "mext:02062"
@@ -1872,7 +1872,7 @@
  {
   "key": "mext-03029",
   "ja": "黒蜜",
-  "desc": "a small glass pitcher of kuromitsu, thick glossy very dark brown sugar syrup",
+  "desc": "a small glass pitcher filled with black syrup (kuromitsu), thick and nearly black like molasses, a glossy dark brown-black drip running down the spout, a little pool of black syrup on a white saucer",
   "items": [
    "mext:03029"
   ],
@@ -1989,7 +1989,7 @@
  {
   "key": "mext-04101",
   "ja": "こしあん",
-  "desc": "a small bowl of koshian smooth sweet red bean paste, very smooth dense dark purple-brown paste",
+  "desc": "a small bowl of koshian, perfectly smooth sweet bean paste like thick chocolate pudding, dark purple-brown with a silky satin sheen, smoothed with a spoon, no visible beans or skins",
   "items": [
    "mext:04101"
   ],
@@ -1999,7 +1999,7 @@
  {
   "key": "mext-04016",
   "ja": "うぐいす豆",
-  "desc": "a small dish of uguisu-mame, sweet simmered green peas, glossy olive-green beans",
+  "desc": "a small dish of uguisu-mame, sweet simmered beans: glossy wrinkled khaki olive-brown-green beans coated in shiny thick syrup, like candied fruit, dull yellowish-green",
   "items": [
    "mext:04016"
   ],
@@ -2163,7 +2163,7 @@
  {
   "key": "mext-04040",
   "ja": "油揚げ",
-  "desc": "two thin rectangular sheets of aburaage deep-fried tofu, puffy golden-yellow with a spongy surface",
+  "desc": "two flat thin rectangular sheets of aburaage fried tofu pouch, thin like a folded towel, puffy golden-tan surface with a fine spongy pitted texture, light brown, soft and floppy",
   "items": [
    "mext:04040"
   ],
@@ -2254,7 +2254,7 @@
  {
   "key": "mext-04047",
   "ja": "ひきわり納豆",
-  "desc": "hikiwari natto, chopped fermented soybean bits, brown and sticky with white threads, in a small bowl",
+  "desc": "a small bowl of hikiwari natto: finely crushed fermented soybeans in small broken brown fragments like coarse crumbs, sticky and moist, stretched with white stringy threads",
   "items": [
    "mext:04047"
   ],
@@ -2624,7 +2624,7 @@
  {
   "key": "mext-05031",
   "ja": "マカダミアナッツ",
-  "desc": "a small pile of round creamy-white macadamia nuts",
+  "desc": "a small pile of shelled macadamia nuts, each a perfectly round smooth ball like a large marble, creamy ivory white, a couple split in half showing round smooth halves",
   "items": [
    "mext:05031"
   ],
@@ -2842,7 +2842,7 @@
  {
   "key": "mext-06020",
   "ja": "さやえんどう 生",
-  "desc": "a small heap of snow peas, flat bright green pods with tiny peas inside",
+  "desc": "a small heap of snow peas (sayaendo), very flat thin bright green pods like flat leaves, the tiny peas inside only faint bumps, a small stem tip on each pod",
   "items": [
    "mext:06020"
   ],
@@ -3024,7 +3024,7 @@
  {
   "key": "mext-06062",
   "ja": "キャベツ ゆで",
-  "desc": "boiled cabbage leaves, soft wilted pale green pieces on a plate",
+  "desc": "a small plate of boiled cabbage: soft limp wilted pale green leaf pieces, translucent and slumped, folded over each other, steaming and moist",
   "items": [
    "mext:06062"
   ],
@@ -3101,7 +3101,7 @@
  {
   "key": "mext-06084",
   "ja": "ごぼう 生",
-  "desc": "long thin burdock roots (gobo), earthy brown skinned slender roots, a few cut pieces showing white flesh",
+  "desc": "a few raw gobo burdock roots: very long thin straight dark brown sticks like wooden broom handles, earthy rough skin, plus a few short diagonal cut pieces showing off-white flesh",
   "items": [
    "mext:06084"
   ],
@@ -3144,7 +3144,7 @@
  {
   "key": "mext-06087",
   "ja": "こまつな ゆで",
-  "desc": "boiled komatsuna greens cut into short lengths, deep green, neatly piled in a small bowl with bonito flakes",
+  "desc": "a small bowl of boiled komatsuna: soft dark green leafy greens cut into short 4 cm lengths, leaves and thin stems pressed together in a neat bundle, topped with a pinch of pale bonito flakes",
   "items": [
    "mext:06087",
    "dishes:ohitashi-komatsuna"
@@ -3155,7 +3155,7 @@
  {
   "key": "mext-06088",
   "ja": "ザーサイ",
-  "desc": "a small dish of zha cai, crunchy pickled mustard stem in thin pale olive slices with a red chili tint",
+  "desc": "a small dish of zha cai pickle: thin irregular chunky slices of crunchy pickled mustard stem, dull khaki olive-green and beige, glossy with red chili oil and red chili flakes",
   "items": [
    "mext:06088"
   ],
@@ -3236,7 +3236,7 @@
  {
   "key": "mext-06365",
   "ja": "おろししょうが",
-  "desc": "a small mound of grated ginger, moist pale yellow fibrous paste on a small dish",
+  "desc": "a small dish with a small mound of freshly grated ginger: wet stringy fibrous pale cream-beige pulp with watery juice pooling around it",
   "items": [
    "mext:06365"
   ],
@@ -3254,7 +3254,7 @@
  {
   "key": "mext-06104",
   "ja": "紅しょうが（しょうが酢漬）",
-  "desc": "a small dish of beni shoga, bright red thin julienned pickled ginger strips",
+  "desc": "a small dish of beni shoga: a tangled pile of very thin bright red matchstick-thin threads of pickled ginger, like red shredded threads, wet and vivid scarlet",
   "items": [
    "mext:06104"
   ],

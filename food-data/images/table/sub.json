@@ -186,7 +186,7 @@
   "key": "sub-rusk",
   "ja": "ラスク",
   "cat": "菓子・デザート",
-  "desc": "rusks, a few thin crisp slices of twice-baked bread glazed with butter and sugar, golden with sparkling sugar crystals, on a small plate",
+  "desc": "a few thin crisp rusks on a small plate: small thin slices of dry twice-baked baguette, each about 1 cm thick, hard and crunchy, golden with a crackly glaze of white sugar crystals on top; no butter pat, not thick soft toast",
   "items": [],
   "refs": [],
   "vet": "vetted in the Claude check"
@@ -336,7 +336,7 @@
   "key": "sub-chinsuko",
   "ja": "ちんすこう",
   "cat": "菓子・デザート",
-  "desc": "chinsuko, a few small oblong Okinawan shortbread biscuits with ridged edges, pale golden and crumbly, on a small plate",
+  "desc": "a few chinsuko on a small plate: small flat elongated rectangular biscuits about finger length, with wavy ridged grooved long sides like a corrugated bar, pale golden, sandy and crumbly, matte; rectangular bars, not round, not flower-shaped, not shell-shaped madeleines",
   "items": [],
   "refs": [
    {

@@ -65,7 +65,7 @@
  {
   "key": "kumagaya-03401",
   "ja": "マーボーメン（めんなし）",
-  "desc": "Mapo noodle soup without the noodles: a bowl of reddish-brown thickened soy-chili broth with small white tofu cubes, minced pork, chopped green onion and chive bits",
+  "desc": "a bowl of mapo soup with no noodles at all: thick reddish-brown glossy soy-chili broth filled with small white tofu cubes and crumbly minced pork, topped with chopped green onion and chive bits; only soup, tofu and meat, no noodles visible",
   "items": [
    "kumagaya:03401"
   ]
@@ -82,7 +82,7 @@
  {
   "key": "kumagaya-02957",
   "ja": "竹輪磯辺揚げ・さつま芋のお茶天ぷら",
-  "desc": "Chikuwa isobe-age and green-tea sweet potato tempura: a plate with halved fish-paste tubes in batter flecked with green aonori, beside round slices of sweet potato with purple skin in pale green-tinged batter",
+  "desc": "a plate of two fried items: halved fish-cake tubes, hollow cylinders cut lengthwise, in batter speckled with green seaweed, beside round slices of sweet potato with purple skin and yellow flesh in pale batter faintly tinted green with tea; no shrimp, no tails",
   "items": [
    "kumagaya:02957"
   ]
@@ -123,7 +123,7 @@
  {
   "key": "kumagaya-03400",
   "ja": "桜エビとキャベツのペペロンチーノ炒め",
-  "desc": "Sakura shrimp and cabbage peperoncino stir-fry: a plate of glossy stir-fried pale green cabbage pieces with tiny dried pink-red sakura shrimp, garlic slivers and red chili rings",
+  "desc": "a plate of stir-fried cabbage: soft wilted glossy pale green cabbage pieces, cooked and slightly translucent, scattered with many tiny dried pink-red sakura shrimp each only fingernail-size, thin and papery, with garlic slivers and red chili rings; no large prawns",
   "items": [
    "kumagaya:03400"
   ]
@@ -142,7 +142,7 @@
  {
   "key": "kumagaya-03127",
   "ja": "銀ヒラスの照り焼き",
-  "desc": "Teriyaki silver pomfret: a plate with a grilled fish fillet with silvery-white flesh under a shiny dark amber teriyaki glaze, lightly charred edges",
+  "desc": "a plate with one rectangular grilled fish fillet piece, no head or tail: white flesh with silvery skin edge under a shiny dark amber teriyaki glaze, lightly charred edges; a cut fillet, not a whole fish",
   "items": [
    "kumagaya:03127"
   ]
@@ -218,7 +218,7 @@
  {
   "key": "kumagaya-03380",
   "ja": "あおさのみそ汁",
-  "desc": "Aosa seaweed miso soup: a lacquered soup bowl of beige miso broth with fluffy bright green aosa sea lettuce floating in loose fine wisps and small tofu cubes",
+  "desc": "a lacquered soup bowl of aosa miso soup: opaque cloudy beige broth like milky coffee, covered with fluffy bright green fine hair-like seaweed wisps floating like green fuzz, small tofu cubes",
   "items": [
    "kumagaya:03380"
   ],
@@ -636,7 +636,7 @@
  {
   "key": "kumagaya-02759-2",
   "ja": "ちくわとかぼちゃの天ぷら",
-  "desc": "Chikuwa and pumpkin tempura: a plate of halved fish-paste tubes and wedge slices of kabocha with dark green skin and orange flesh, in crisp golden batter",
+  "desc": "a plate of tempura: halved chikuwa fish-paste tubes with a hollow centre and thin wedge slices of kabocha pumpkin with green skin and orange flesh, every piece fully coated in crisp bumpy golden tempura batter; no bare unbattered pieces",
   "items": [
    "kumagaya:02759-2"
   ]
@@ -690,7 +690,7 @@
  {
   "key": "kumagaya-00240-2",
   "ja": "煮ぼうとう",
-  "desc": "Ni-houtou: a bowl of thick flat wide wheat noodle ribbons simmered in brown miso broth with chunks of orange kabocha, daikon, carrot, taro and leek; the noodles are noodles, not bread",
+  "desc": "a bowl of ni-houtou: very wide flat thick ribbon noodles, broad as a belt, pale and soft, in thick cloudy brown miso broth with big orange kabocha chunks, daikon, carrot, taro and leek",
   "items": [
    "kumagaya:00240-2"
   ],
@@ -1024,7 +1024,7 @@
  {
   "key": "kumagaya-00780",
   "ja": "スパニッシュオムレツ",
-  "desc": "Spanish omelette: a plate with a thick round flat yellow egg omelette cut into wedges, showing potato, onion, red pepper and green bits inside",
+  "desc": "a Spanish omelette on a plate: a tall thick round cake of egg like a thick cake, 4 cm high, golden outside, cut into wedges showing dense layers of potato, onion and red pepper inside",
   "items": [
    "kumagaya:00780"
   ],
@@ -1191,7 +1191,7 @@
  {
   "key": "kumagaya-03236-2",
   "ja": "なめこうどん汁（めんなし）",
-  "desc": "Nameko udon soup without noodles: a lacquered bowl of light soy dashi broth with small slippery glossy amber nameko mushrooms, fried tofu, carrot and green onion",
+  "desc": "a lacquered bowl of light clear soy dashi broth with many tiny glossy amber-orange nameko mushrooms, button caps smaller than a fingertip, slippery and gel-coated, plus fried tofu strips, carrot and green onion; a mushroom soup with nothing long or stringy in it",
   "items": [
    "kumagaya:03236-2"
   ]
@@ -1273,7 +1273,7 @@
  {
   "key": "kumagaya-00178",
   "ja": "ほうとう（めんなし）",
-  "desc": "Houtou without noodles: a bowl of brown miso broth with large chunks of orange kabocha pumpkin, daikon, carrot, taro, shiitake and leek, no noodles",
+  "desc": "a bowl of houtou vegetables without noodles: thick cloudy brown miso broth filled only with large chunks of orange kabocha pumpkin, daikon, carrot, taro, shiitake and leek",
   "items": [
    "kumagaya:00178"
   ],
@@ -1359,7 +1359,7 @@
  {
   "key": "kumagaya-03312-2",
   "ja": "サワラのゆずみそ焼き",
-  "desc": "Spanish mackerel with yuzu miso: a plate with a grilled sawara fillet, white flesh and silver-grey skin, topped with a toasted golden yuzu-miso glaze",
+  "desc": "a plate with one grilled boneless sawara fillet, a rectangular cut piece without head or tail, white flesh with thin silver-grey skin, its top spread with a smooth thin layer of miso paste toasted golden-brown with darker scorched spots; no roe, not a whole fish",
   "items": [
    "kumagaya:03312-2"
   ]
@@ -1385,7 +1385,7 @@
  {
   "key": "kumagaya-02740",
   "ja": "こんにゃくサラダ",
-  "desc": "Konnyaku salad: a small bowl of thin grey speckled konnyaku strips with cucumber, carrot and wakame in a sesame-vinegar dressing",
+  "desc": "a small bowl of konnyaku salad: thin strips of slate-grey speckled konjac jelly, with tiny black specks, mixed with cucumber, carrot and dark green wakame in a sesame dressing",
   "items": [
    "kumagaya:02740"
   ],
@@ -1469,7 +1469,7 @@
  {
   "key": "kumagaya-03359",
   "ja": "大根の韓国風煮",
-  "desc": "Korean-style simmered daikon: a bowl of thick daikon rounds simmered translucent in a red-brown spicy gochujang-soy sauce with bits of meat and green onion",
+  "desc": "a bowl of thick round discs of daikon radish, each like a thick white wheel, simmered translucent so the edges look pale and glassy, tinted orange-red by a spicy red sauce, with bits of ground meat and green onion; flat discs, not balls or onions",
   "items": [
    "kumagaya:03359"
   ]
@@ -1935,7 +1935,7 @@
  {
   "key": "jbfd-チーズ鱈・チーズサンドおつまみ",
   "ja": "チーズ鱈・チーズサンドおつまみ",
-  "desc": "Cheese cod snack: a small dish of thin stick snacks of pale yellow cheese sandwiched between two thin layers of dried cod sheet",
+  "desc": "a small dish of cheese cod snack sticks: flat thin rectangular strips like tiny sandwiches, a thin pale yellow cheese layer pressed between two thin flat beige dried cod sheets, the stacked layers visible on the cut ends, laid flat side by side; flat stacked strips, not rolled",
   "items": [
    "jbfd:チーズ鱈・チーズサンドおつまみ"
   ]
@@ -2061,7 +2061,7 @@
  {
   "key": "jbfd-乾燥野菜",
   "ja": "乾燥野菜",
-  "desc": "Dried vegetables: a small dish of shrivelled dehydrated vegetable pieces, dried carrot, cabbage, green onion and corn, dull and dry",
+  "desc": "a small dish of dried vegetable flakes: small shrivelled wrinkled dehydrated pieces, tiny orange carrot bits, pale cabbage flakes, green onion bits and yellow corn kernels, all dry and shrunken like instant soup mix",
   "items": [
    "jbfd:乾燥野菜"
   ],
@@ -2126,7 +2126,7 @@
  {
   "key": "jbfd-冷凍骨取り赤魚切身",
   "ja": "冷凍骨取り赤魚切身",
-  "desc": "Frozen boneless redfish fillet: a plate with a raw redfish fillet with bright red-orange skin and white flesh, no bones",
+  "desc": "a raw boneless redfish fillet on a plate: a flat skin-on fillet, the skin bright red-orange, the flesh pure white and semi-translucent, no bones; white fish meat, not orange salmon flesh, not a round steak cut",
   "items": [
    "jbfd:冷凍骨取り赤魚切身"
   ]
@@ -2635,7 +2635,7 @@
  {
   "key": "jbfd-麺用ソース",
   "ja": "麺用ソース",
-  "desc": "Noodle sauce: a small dish of dark brown pourable sauce, glossy, like mentsuyu or yakisoba sauce",
+  "desc": "a small round dish filled with dark brown glossy liquid sauce, like soy sauce, a small spoon dipped in it, sauce only",
   "items": [
    "jbfd:麺用ソース"
   ],

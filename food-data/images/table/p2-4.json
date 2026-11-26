@@ -316,7 +316,7 @@
  {
   "key": "maff_kyodo-oroshi_soba_fukui",
   "ja": "おろしそば",
-  "desc": "oroshi soba, cold grey-brown buckwheat noodles in a blue-patterned bowl topped with a heap of white grated daikon, pinkish shaved bonito flakes and chopped green onion, with cold dark dipping broth",
+  "desc": "oroshi soba in a blue-patterned bowl: cold grey-brown buckwheat noodles with a large white heap of grated daikon radish piled on top, pinkish bonito flakes and green onion, a little dark cold broth",
   "items": [
    "maff_kyodo:oroshi_soba_fukui"
   ],
@@ -453,7 +453,7 @@
  {
   "key": "maff_kyodo-rakkasei_no_nimame_mie",
   "ja": "落花生の煮豆",
-  "desc": "rakkasei no nimame, a pile of shelled peanuts simmered soft and tan-brown, glossy with sweet soy, in a blue bowl",
+  "desc": "a blue bowl heaped with simmered peanut kernels: many shelled individual oval nuts with no shells or pods, soft and plump, tan-brown with a glossy sweet soy coating, sitting in a little brown syrup; not peanuts in the shell",
   "items": [
    "maff_kyodo:rakkasei_no_nimame_mie"
   ]
@@ -527,7 +527,7 @@
  {
   "key": "maff_kyodo-renkonno_suri_nagashi_jiru_miyazaki",
   "ja": "れんこんのすり流し汁",
-  "desc": "renkon no surinagashi jiru, a thick cloudy grey-white miso soup of coarsely grated lotus root with strips of fried tofu, topped with green onion rings and a curl of yellow yuzu peel, in a brown wooden bowl",
+  "desc": "a brown wooden bowl of thick creamy grey-white soup with a coarse grainy porridge-like texture of grated lotus root, no lotus slices or holes visible, with strips of fried tofu, green onion rings and a curl of yellow yuzu peel on top",
   "items": [
    "maff_kyodo:renkonno_suri_nagashi_jiru_miyazaki"
   ]
@@ -789,7 +789,7 @@
  {
   "key": "maff_kyodo-sanma_no_kigaki_miyagi",
   "ja": "サンマのきがき",
-  "desc": "sanma no kigaki, flaked saury stewed with coarsely grated daikon in soy until brown and moist, with soft onion and green onion, in a cream bowl",
+  "desc": "a cream bowl of moist brown flaked saury stew: small broken shreds of cooked fish mixed through a soft mound of coarsely grated daikon, simmered in soy until light brown and wet but not soupy, with soft onion bits and chopped green onion; no fillet chunks, no noodles",
   "items": [
    "maff_kyodo:sanma_no_kigaki_miyagi"
   ]
@@ -822,7 +822,7 @@
  {
   "key": "maff_kyodo-sanma_zushi_wakayama",
   "ja": "さんまずし",
-  "desc": "sanma zushi, a whole cured saury with head and tail on a long log of sushi rice, cut into slices with silver-blue skin showing, on a long white plate with a bamboo leaf, pink ginger and wasabi",
+  "desc": "sanma zushi on a long white plate: a long log of white sushi rice topped full-length with a split cured saury, cut into thick slices showing white rice under shiny silver-blue fish skin, the head at one end, with pink ginger",
   "items": [
    "maff_kyodo:sanma_zushi_wakayama"
   ],
@@ -871,7 +871,7 @@
  {
   "key": "maff_kyodo-sasa_kamaboko_no_isobeage_miyagi",
   "ja": "笹かまぼこの磯部揚げ",
-  "desc": "sasa kamaboko no isobeage, leaf-shaped fish cakes fried in a golden yellow batter flecked with green aonori seaweed, on white paper",
+  "desc": "a few fried fish cakes on a plate: flat elongated leaf-shaped pieces of white fish paste, like bamboo leaves with a pointed tip, coated in golden yellow batter flecked with green aonori seaweed; leaf-shaped cakes with no head, fins, eyes or tail, not a whole fish",
   "items": [
    "maff_kyodo:sasa_kamaboko_no_isobeage_miyagi"
   ]
@@ -1106,7 +1106,7 @@
  {
   "key": "maff_kyodo-shakuno_tenpura_kumamoto",
   "ja": "シャクの天ぷら",
-  "desc": "shaku no tenpura, whole mud shrimps fried in thin crisp batter, orange-pink shells and claws showing through, on green leaves",
+  "desc": "tempura of small mantis shrimp on green leaves: flat segmented bodies with broad fan-shaped tails and folded front claws, no long antennae, each coated in thin lacy crisp pale batter through which the orange-pink shell shows; not ordinary prawns",
   "items": [
    "maff_kyodo:shakuno_tenpura_kumamoto"
   ]
@@ -1114,7 +1114,7 @@
  {
   "key": "maff_kyodo-shijimi_jiru_shiga",
   "ja": "しじみ汁",
-  "desc": "shijimi jiru, a red lacquered bowl of cloudy light brown miso broth filled with many small open dark shijimi clams with olive and purple shells, a few chopped green onions on top",
+  "desc": "a red lacquered bowl of shijimi jiru: cloudy light brown miso broth filled with many tiny clams, each the size of a fingernail, shiny black-olive shells, opened, a few green onion slices",
   "items": [
    "maff_kyodo:shijimi_jiru_shiga",
    "maff_kyodo:shijimijiru_shimane"
@@ -1192,7 +1192,7 @@
  {
   "key": "maff_kyodo-shirauonokakiage_shimane",
   "ja": "白魚のかき揚げ",
-  "desc": "shirauo no kakiage, a loose round fritter of many tiny white icefish with chopped vegetables in pale crisp batter, on paper in a black bowl",
+  "desc": "shirauo no kakiage in a black bowl on paper: a loose crisp lacy fritter of many tiny slim white fish and a few chopped vegetables bound by thin pale crisp tempura batter, the little white fish clearly visible",
   "items": [
    "maff_kyodo:shirauonokakiage_shimane"
   ],
@@ -1241,7 +1241,7 @@
  {
   "key": "maff_kyodo-shiso_maki_miyagi",
   "ja": "しそ巻き",
-  "desc": "shiso maki, small rolls of green perilla leaves wrapped around sweet miso, fried until dark green and crinkly, lined up on a blue and white oval plate",
+  "desc": "shiso maki on a blue and white oval plate: small finger-sized rolls of dark green perilla leaves, fried until crinkled and dark olive-green, glossy with oil, each rolled up tight, lined up in a row",
   "items": [
    "maff_kyodo:shiso_maki_miyagi"
   ],
@@ -1285,7 +1285,7 @@
  {
   "key": "maff_kyodo-shouga_misooden_aomori",
   "ja": "しょうが味噌おでん",
-  "desc": "shoga miso oden, oden of daikon, a boiled egg, konnyaku, chikuwa and fried fish cake in clear broth, topped with a thick orange-brown ginger miso sauce, in a ceramic bowl",
+  "desc": "shoga miso oden in a ceramic bowl: a thick round of daikon, a peeled boiled egg, grey konjac triangle, a chikuwa tube and a fried fish cake sitting in a little clear broth, a thick dollop of orange-brown ginger miso on top",
   "items": [
    "maff_kyodo:shouga_misooden_aomori"
   ],
@@ -1436,7 +1436,7 @@
  {
   "key": "maff_kyodo-sumochi_fukuoka",
   "ja": "酢もち",
-  "desc": "sumochi, small torn pieces of soft white rice cake tossed in a heap of grated white daikon dressed with bitter orange juice and soy, in a blue patterned bowl",
+  "desc": "sumochi in a blue patterned bowl: small irregular torn pieces of soft white rice cake tossed with a big heap of wet white grated daikon, glistening with a little citrus soy dressing",
   "items": [
    "maff_kyodo:sumochi_fukuoka"
   ],
@@ -1654,7 +1654,7 @@
  {
   "key": "maff_kyodo-tako_meshi_ehime",
   "ja": "たこ飯",
-  "desc": "takomeshi, brown soy-cooked rice with purple-red octopus pieces with suckers, orange carrot strips and burdock, topped with crumbled nori, in a blue-striped bowl",
+  "desc": "takomeshi in a blue-striped bowl: short-grain cooked rice tinted light brown by soy, every grain visible, mixed with purple-red octopus pieces with suckers, orange carrot strips and burdock, crumbled nori on top",
   "items": [
    "maff_kyodo:tako_meshi_ehime",
    "maff_kyodo:tako_meshi_kumamoto",
@@ -1709,7 +1709,7 @@
  {
   "key": "maff_kyodo-taranoko_ae_aomori",
   "ja": "たらの子和え",
-  "desc": "tara no ko ae, julienned orange carrot stir-fried and coated with pale pink cod roe, in a square pale green dish",
+  "desc": "tara no ko ae in a square pale green dish: thin matchstick strips of carrot completely coated in fine pale pink grainy cod roe, the roe clinging like pink sand to every strip",
   "items": [
    "maff_kyodo:taranoko_ae_aomori"
   ],
@@ -1767,7 +1767,7 @@
  {
   "key": "maff_kyodo-teppai_kagawa",
   "ja": "てっぱい",
-  "desc": "teppai, thin strips of vinegar-cured silver-skinned fish and white daikon tossed in a white miso vinegar dressing with green onion and red chili, in a patterned bowl",
+  "desc": "a patterned bowl of thin strips of silver-skinned vinegared fish and white daikon strips coated in a thick creamy opaque white miso dressing, like mayonnaise, with green onion and a few thin red chili rings; dressing is white, not red, brown or soy",
   "items": [
    "maff_kyodo:teppai_kagawa"
   ]
@@ -1843,7 +1843,7 @@
  {
   "key": "maff_kyodo-tobi_tsuki_dango_fukui",
   "ja": "とびつき団子",
-  "desc": "tobitsuki dango, oblong white rice-flour dumplings completely coated with glossy dark red sweetened cowpeas, on green leaves on a plate, with a small dish of kinako",
+  "desc": "a few oblong white rice-flour dumplings on green leaves on a plate, each completely covered all over in a thick coat of whole dark red sweet-simmered cowpea beans, many small beans stuck to the surface like a beaded crust, no white showing, with a small dish of kinako",
   "items": [
    "maff_kyodo:tobi_tsuki_dango_fukui"
   ]
@@ -2188,7 +2188,7 @@
  {
   "key": "maff_kyodo-uchimame_jiru_shiga",
   "ja": "打ち豆汁",
-  "desc": "uchimame jiru, miso soup with flattened pale yellow soybean discs, white turnip chunks, taro, fried tofu and green onion, in a black bowl",
+  "desc": "a black bowl of miso soup with many flattened soybeans: small pale yellow beans crushed into thin flat cracked discs the size of a fingernail, clearly visible floating on the surface, with white turnip chunks, taro, fried tofu and green onion",
   "items": [
    "maff_kyodo:uchimame_jiru_shiga"
   ]
@@ -2382,7 +2382,7 @@
  {
   "key": "maff_kyodo-yaki_morokono_dorozu_shiga",
   "ja": "焼きもろこのどろ酢",
-  "desc": "yaki moroko no dorozu, small whole grilled silver-brown honmoroko fish laid on a green leaf-shaped plate with a thick yellow-brown mustard miso vinegar sauce",
+  "desc": "yaki moroko no dorozu on a green leaf-shaped plate: several small slender whole grilled fish, each as small as a finger, silver-brown and lightly charred, lined up beside a thick yellow-brown mustard miso sauce",
   "items": [
    "maff_kyodo:yaki_morokono_dorozu_shiga"
   ],
@@ -2660,7 +2660,7 @@
  {
   "key": "maff_kyodo-zuikinotaitan_kyoto",
   "ja": "ずいきの炊いたん",
-  "desc": "zuiki no taitan, short pinkish-brown pieces of taro stem simmered in light dashi and slightly thickened, topped with a dab of grated ginger, in a pale green bowl",
+  "desc": "a pale green bowl with short pieces of simmered taro stem: soft stringy fibrous lengths about 4 cm long, ridged lengthwise, with spongy porous ends, translucent pale greyish-pink to light brown, in a little light dashi, topped with grated ginger; not solid cubes, not meat",
   "items": [
    "maff_kyodo:zuikinotaitan_kyoto"
   ]

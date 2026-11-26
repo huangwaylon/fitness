@@ -2,7 +2,7 @@
  {
   "key": "toyonaka-131646",
   "ja": "皿うどん（めんなし）",
-  "desc": "Sara udon topping without noodles: a bowl of glossy thick translucent starch sauce over stir-fried cabbage, carrot, bean sprouts, pork slices, shrimp, squid and pink-white kamaboko",
+  "desc": "a bowl of sara udon topping: a heap of stir-fried cabbage, carrot, bean sprouts, pork slices, shrimp, squid and pink-white kamaboko covered in glossy thick clear sauce, just the vegetables and sauce",
   "items": [
    "toyonaka:131646"
   ],
@@ -27,7 +27,7 @@
  {
   "key": "toyonaka-131647",
   "ja": "皿うどんめん",
-  "desc": "Sara udon noodles: a nest of thin crisp deep-fried golden noodles on a plate, dry and crunchy, tangled like fine straw, no sauce",
+  "desc": "a nest of crispy fried noodles on a plate: very thin golden noodles deep-fried into a dry crunchy tangled pile like fine straw or a bird's nest",
   "items": [
    "toyonaka:131647"
   ],
@@ -467,7 +467,7 @@
  {
   "key": "toyonaka-285570",
   "ja": "のり風味の卵スープ",
-  "desc": "Nori egg soup: a bowl of clear broth with yellow egg ribbons and dark green shreds of nori seaweed, green onion",
+  "desc": "a bowl of nori egg soup: clear golden broth with soft fluffy yellow cloud-like wisps of beaten egg and small dark black-green shreds of nori, green onion",
   "items": [
    "toyonaka:285570"
   ],
@@ -549,7 +549,7 @@
  {
   "key": "toyonaka-261325",
   "ja": "豆腐の味噌汁",
-  "desc": "Tofu miso soup: a lacquered bowl of cloudy light brown miso soup with white tofu cubes, wakame and green onion rings",
+  "desc": "a lacquered bowl of tofu miso soup: opaque cloudy tan-beige broth like milky coffee, with white tofu cubes, dark green wakame and green onion rings",
   "items": [
    "toyonaka:261325"
   ],
@@ -628,7 +628,7 @@
  {
   "key": "kumagaya-3454",
   "ja": "つみっこ",
-  "desc": "Tsumikko: a bowl of soup with pinched flat irregular white wheat flour dumplings, daikon, carrot, taro, shiitake and green onion in a soy broth",
+  "desc": "a bowl of tsumikko: flat irregular pinched pieces of white flour dough, like torn flat noodle scraps, in brown soy broth with daikon, carrot, taro, shiitake and green onion",
   "items": [
    "kumagaya:3454"
   ],
@@ -680,7 +680,7 @@
  {
   "key": "kumagaya-3641",
   "ja": "サワラのおろしかけ",
-  "desc": "Sawara with grated daikon: a grilled Spanish mackerel fillet with grey-white flesh and silver skin, topped with a mound of white grated daikon and soy sauce",
+  "desc": "a grilled sawara fillet: a thick rectangular piece of white fish with plain uniform silvery-grey skin with no stripes, light brown grill marks, topped with a mound of wet finely grated white daikon like slushy snow, drizzled with soy; not striped mackerel skin, not shredded strands",
   "items": [
    "kumagaya:3641"
   ]
@@ -865,7 +865,7 @@
  {
   "key": "kumagaya-3130",
   "ja": "こんにゃくねぎ塩ソテー",
-  "desc": "Konnyaku with green onion and salt: a small dish of grey speckled konnyaku strips stir-fried with green onion, glossy, translucent and jelly-like",
+  "desc": "a small dish of konnyaku stir-fried with salt: short thick strips of grey jelly speckled with tiny black dots, firm, translucent and wobbly, lightly shiny, with chopped bright green onion; pale salt seasoning, not brown, not noodles or udon",
   "items": [
    "kumagaya:3130"
   ]
@@ -919,7 +919,7 @@
  {
   "key": "kumagaya-909",
   "ja": "ゼリーフライ",
-  "desc": "Jelly fry: a flat oval deep-fried patty of okara and potato with no breadcrumbs, smooth dark brown surface, sauce-glazed, shaped like a coin, not a jelly",
+  "desc": "jelly fry on a plate: flat oval smooth dark brown patties like large flat coins, glossy with brown sauce, a smooth surface without crumbs",
   "items": [
    "kumagaya:909"
   ],
@@ -979,7 +979,7 @@
  {
   "key": "kumagaya-163",
   "ja": "おふのみそ汁",
-  "desc": "Fu miso soup: a lacquered bowl of cloudy miso soup with small soft spongy round wheat-gluten fu pieces floating, onion slices, wakame and green onion",
+  "desc": "a lacquered bowl of fu miso soup: opaque cloudy tan-beige broth like milky coffee, with small soft round pale cream spongy bread-like rings floating, onion slices, wakame and green onion",
   "items": [
    "kumagaya:163",
    "kumagaya:02700"
@@ -1059,7 +1059,7 @@
  {
   "key": "kumagaya-3552",
   "ja": "豚丼の具",
-  "desc": "Pork donburi topping: a bowl of thin pork slices and onion simmered in a sweet glossy dark soy sauce",
+  "desc": "a bowl of pork topping without rice: wide flat thin pork slices like bacon pieces, simmered with onion wedges in glossy dark soy sauce",
   "items": [
    "kumagaya:3552"
   ],
@@ -1247,7 +1247,7 @@
  {
   "key": "kumagaya-2114",
   "ja": "ぶどうフルーツポンチ",
-  "desc": "Grape fruit punch: a small bowl of purple grape halves, mandarin segments and white nata de coco cubes in clear syrup",
+  "desc": "a small bowl of grape fruit punch: halved small round purple grapes, orange mandarin segments and white cubes of coconut jelly in clear syrup",
   "items": [
    "kumagaya:2114"
   ],
@@ -1387,7 +1387,7 @@
  {
   "key": "kumagaya-3108",
   "ja": "じゃが芋と玉葱のみそ汁",
-  "desc": "Potato and onion miso soup: a lacquered bowl of cloudy miso soup with soft potato cubes, translucent onion slices and wakame",
+  "desc": "a lacquered bowl of potato and onion miso soup: opaque cloudy tan-beige broth like milky coffee, with soft pale potato cubes, soft white onion slices and wakame",
   "items": [
    "kumagaya:3108"
   ],
@@ -1494,7 +1494,7 @@
  {
   "key": "kumagaya-4",
   "ja": "なめこのみそ汁",
-  "desc": "Nameko miso soup: a lacquered bowl of cloudy miso soup with small glossy amber-brown slippery nameko mushrooms, tofu cubes and green onion",
+  "desc": "a lacquered bowl of nameko miso soup: opaque cloudy tan-beige broth like milky coffee, with many tiny round glossy amber-orange mushroom caps the size of peas, slimy and shiny, white tofu cubes and green onion",
   "items": [
    "kumagaya:4"
   ],
@@ -1874,7 +1874,7 @@
  {
   "key": "kumagaya-2815",
   "ja": "しらたきサラダ",
-  "desc": "Shirataki salad: a small bowl of thin translucent grey-white konnyaku noodles with cucumber, carrot strips and ham in a sesame dressing",
+  "desc": "a small bowl of salad of thin translucent grey-white jelly noodles, clear and glassy like glass noodles, mixed with cucumber strips, carrot strips and ham strips in a pale creamy sesame dressing; noodles are see-through, not brown",
   "items": [
    "kumagaya:2815"
   ]
@@ -1907,7 +1907,7 @@
  {
   "key": "kumagaya-3236",
   "ja": "なめこおろしうどん汁（めんなし）",
-  "desc": "Nameko and grated daikon udon soup without noodles: a bowl of light soy broth with slippery amber nameko mushrooms, grated white daikon, chicken and green onion",
+  "desc": "a bowl of light brown soy broth with no noodles at all: many small round glossy amber-orange nameko mushrooms the size of fingertips, a mound of white fluffy grated daikon like wet snow, a few chicken pieces and green onion rings; broth only, no udon",
   "items": [
    "kumagaya:3236"
   ]
@@ -1933,7 +1933,7 @@
  {
   "key": "kumagaya-3631",
   "ja": "サバのソース焼き",
-  "desc": "Mackerel grilled with sauce: a grilled saba fillet with striped silver-blue skin, glazed with a dark brown Worcester-style sauce",
+  "desc": "a grilled mackerel fillet on a plate: one flat boneless piece with no head, silver-blue striped skin up, grilled with dark char spots, glazed with dark brown sauce",
   "items": [
    "kumagaya:3631"
   ],
@@ -2053,7 +2053,7 @@
  {
   "key": "kumagaya-844",
   "ja": "さわらの西京焼",
-  "desc": "Sawara saikyo-yaki: a grilled Spanish mackerel fillet marinated in sweet white miso, golden-brown caramelised patches, silver skin",
+  "desc": "sawara saikyo-yaki on a plate: one thick boneless rectangular fillet with no head, white flesh, thin silver-grey skin, the top caramelised in dark golden-brown patches",
   "items": [
    "kumagaya:844"
   ],
@@ -2221,7 +2221,7 @@
  {
   "key": "kumagaya-50",
   "ja": "ごま味うどん汁（めんなし）",
-  "desc": "Sesame udon soup without noodles: a bowl of creamy tan sesame-flavoured broth with pork, carrot, daikon, shiitake and green onion",
+  "desc": "a bowl of creamy tan sesame broth, opaque and milky, filled only with pieces of pork, carrot slices, daikon chunks, shiitake slices and chopped green onion; a chunky pork and vegetable soup with nothing long or stringy in it",
   "items": [
    "kumagaya:50"
   ]
@@ -2454,7 +2454,7 @@
  {
   "key": "kumagaya-03623",
   "ja": "赤魚のレモンバター焼き",
-  "desc": "Redfish with lemon butter: a pan-fried red-skinned akauo fillet with white flesh, shiny butter sauce and a lemon slice",
+  "desc": "a plate with one pan-fried redfish fillet, a boneless flat rectangular piece with no head and no tail, orange-red skin, cooked opaque white flesh, golden seared edges, glossy butter sauce and a lemon slice on top; not a whole fish",
   "items": [
    "kumagaya:03623"
   ]
@@ -2567,7 +2567,7 @@
  {
   "key": "kumagaya-03391",
   "ja": "さばのごま風味焼き",
-  "desc": "Sesame mackerel: a grilled saba fillet with striped silver-blue skin, coated in white sesame seeds, golden-brown",
+  "desc": "a sesame mackerel fillet on a plate: one flat boneless grilled piece with no head, the top fully crusted in white sesame seeds toasted golden-brown",
   "items": [
    "kumagaya:03391"
   ],
@@ -3057,7 +3057,7 @@
  {
   "key": "kumagaya-03556-2",
   "ja": "豚肉のチャプチェ",
-  "desc": "Pork japchae: a plate of glossy brown sweet potato glass noodles stir-fried with pork, spinach, carrot, onion and sesame",
+  "desc": "a plate of pork japchae: glossy clear see-through grey-brown glass noodles, thin and slippery, stir-fried with strips of pork, spinach, carrot and onion, sesame seeds on top",
   "items": [
    "kumagaya:03556-2"
   ],
@@ -3133,7 +3133,7 @@
  {
   "key": "kumagaya-03284",
   "ja": "赤魚のアヒージョ風",
-  "desc": "Redfish ajillo-style: pieces of red-skinned akauo fish with white flesh, mushrooms and garlic slices in shiny olive oil, parsley",
+  "desc": "a small shallow skillet of shiny golden olive oil with several bite-sized chunks of cooked white fish with red skin, button mushrooms and thin garlic slices, sprinkled with chopped parsley; cut fish pieces, not a whole fish",
   "items": [
    "kumagaya:03284"
   ]
@@ -3223,7 +3223,7 @@
  {
   "key": "kumagaya-03387",
   "ja": "おふのみそ汁（豆腐）",
-  "desc": "Fu and tofu miso soup: a lacquered bowl of cloudy miso soup with small spongy round wheat-gluten fu pieces, white tofu cubes and green onion",
+  "desc": "a black lacquered bowl of opaque cloudy light-brown miso soup, milky like cafe au lait, with a few small pale cream puffy wheat-gluten rings, soft and spongy like soaked croutons, white tofu cubes and chopped green onion; broth not clear, not orange, no meatballs",
   "items": [
    "kumagaya:03387"
   ],
@@ -3309,7 +3309,7 @@
  {
   "key": "kumagaya-01978",
   "ja": "春雨サ",
-  "desc": "Glass noodle salad: a small bowl of clear harusame noodles with cucumber, carrot and ham strips in a glossy soy-vinegar dressing",
+  "desc": "a small bowl of glass noodle salad: thin clear transparent colourless noodles like glossy fishing line, see-through and slippery, not brown soba, tossed with thin green cucumber strips, orange carrot shreds and pink ham strips in a light glossy dressing",
   "items": [
    "kumagaya:01978"
   ],
@@ -3545,7 +3545,7 @@
  {
   "key": "kumagaya-03395",
   "ja": "茎わかめのサラダ（春雨）",
-  "desc": "Stem wakame salad with glass noodles: a small bowl of crunchy dark green stem wakame strips, clear harusame noodles, cucumber and carrot in a sesame dressing",
+  "desc": "a small bowl of salad: crunchy dark green stem wakame strips mixed with clear glassy colourless thin harusame noodles like fishing line, plus cucumber and carrot julienne in a sesame dressing; the noodles are see-through, not brown, not soba",
   "items": [
    "kumagaya:03395"
   ]

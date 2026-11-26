@@ -90,7 +90,7 @@
  {
   "key": "mext-15144",
   "ja": "ずんだもち",
-  "desc": "Zunda mochi: soft white round rice cakes smothered in bright pale green mashed edamame paste with coarse bean bits, on a small plate",
+  "desc": "zunda mochi on a small plate: soft round white rice cakes fully covered and buried under a thick heap of bright pale green chunky mashed edamame paste with coarse bean bits",
   "items": [
    "mext:15144"
   ],
@@ -284,7 +284,7 @@
  {
   "key": "mext-15029",
   "ja": "カステラまんじゅう こしあん入り",
-  "desc": "Castella manju: small round baked buns with a glossy golden-brown cake crust, one cut showing smooth dark red bean paste inside, on a plate",
+  "desc": "small round baked buns with a glossy golden-brown cake crust on a plate, one cut in half showing a smooth uniform dark purple-brown bean paste filling, silky like chocolate ganache with no whole beans, inside a thin pale yellow cake layer",
   "items": [
    "mext:15029"
   ]
@@ -300,7 +300,7 @@
  {
   "key": "mext-15160",
   "ja": "かるかんまんじゅう こしあん入り",
-  "desc": "Karukan manju: pure white fluffy steamed buns of yam and rice flour with a fine spongy surface, one cut showing smooth dark red bean paste, on a plate",
+  "desc": "karukan manju on a plate: smooth round snow-white domed buns with a fine spongy matte surface like a marshmallow, perfectly smooth tops, one cut in half showing smooth dark purple-brown bean paste like chocolate filling",
   "items": [
    "mext:15160"
   ],
@@ -339,7 +339,7 @@
  {
   "key": "mext-15161",
   "ja": "かるかんまんじゅう つぶしあん入り",
-  "desc": "Karukan manju: pure white fluffy steamed buns of yam and rice flour with a fine spongy surface, one cut showing chunky red bean paste with skins, on a plate",
+  "desc": "karukan manju on a plate: smooth round snow-white domed buns with a fine spongy matte surface like a marshmallow, perfectly smooth tops, one cut in half showing chunky dark red bean paste with bean skins",
   "items": [
    "mext:15161"
   ],
@@ -431,7 +431,7 @@
  {
   "key": "mext-15032",
   "ja": "とうまんじゅう こしあん入り",
-  "desc": "To manju: small round baked buns with a thin glossy tan crust, one cut showing smooth dark bean paste inside, on a plate",
+  "desc": "to manju on a plate: small round baked buns with a thin glossy tan crust, one cut in half showing a perfectly smooth dark purple-brown paste filling like chocolate fudge, no visible beans",
   "items": [
    "mext:15032"
   ],
@@ -625,7 +625,7 @@
  {
   "key": "mext-15047",
   "ja": "ごかぼう",
-  "desc": "Gokabo: soft cylindrical sticks of puffed millet and rice bound with syrup and coated in roasted soybean flour, pale tan powdery, on a plate",
+  "desc": "gokabo on a plate: short solid cylindrical sticks, like fat chalk sticks, completely coated in a thick dusty layer of pale tan powder, matte and powdery all over",
   "items": [
    "mext:15047"
   ],
@@ -653,7 +653,7 @@
  {
   "key": "mext-15049",
   "ja": "小麦粉せんべい かわらせんべい",
-  "desc": "Kawara senbei: large curved roof-tile shaped wheat crackers, glossy golden-brown with a stamped design, on a plate",
+  "desc": "two kawara senbei on a plate: large thin rectangular crackers gently curved like Japanese roof tiles, smooth glossy golden-brown with a stamped emblem pressed in the middle",
   "items": [
    "mext:15049"
   ],
@@ -799,7 +799,7 @@
  {
   "key": "mext-15065",
   "ja": "八つ橋",
-  "desc": "Yatsuhashi: hard baked curved strips of cinnamon-flavoured rice cracker, glossy tan, shaped like a koto bridge, on a plate",
+  "desc": "hard yatsuhashi on a plate: long thin strips of smooth glossy tan cracker, each bent in a gentle arch like a small bridge, a fine dusting of cinnamon",
   "items": [
    "mext:15065"
   ],
@@ -941,7 +941,7 @@
  {
   "key": "mext-15129",
   "ja": "カレーパン 具のみ",
-  "desc": "Curry bread filling: a mound of thick brown Japanese curry paste with minced meat and tiny vegetable bits, in a small dish",
+  "desc": "a small dish holding only curry bread filling: a mound of thick brown curry paste with minced meat and tiny diced vegetables, a spoon in it, no bread",
   "items": [
    "mext:15129"
   ],
@@ -1001,7 +1001,7 @@
  {
   "key": "mext-15075",
   "ja": "ショートケーキ 果実なし",
-  "desc": "Plain shortcake: a wedge of white cream-covered sponge cake with layers of yellow sponge and whipped cream, no strawberries, on a plate",
+  "desc": "a wedge of plain shortcake on a plate: soft yellow sponge layers and thick white whipped cream layers, covered all over in smooth white cream, only white and yellow, plain",
   "items": [
    "mext:15075"
   ],
@@ -1057,7 +1057,7 @@
  {
   "key": "mext-15183",
   "ja": "デニッシュペストリー アメリカンタイプ あん入り こしあん",
-  "desc": "American Danish pastry: a soft golden swirled pastry with icing drizzle, filled with smooth dark red bean paste, on a plate",
+  "desc": "an American Danish pastry on a plate: a soft golden swirled pastry with white icing drizzle, cut to show a smooth dark purple-brown paste filling like chocolate fudge",
   "items": [
    "mext:15183"
   ],
@@ -1125,7 +1125,7 @@
  {
   "key": "mext-15174",
   "ja": "イーストドーナッツ あん入り こしあん",
-  "desc": "Yeast doughnut: a round fluffy fried bun with no hole, sugar-dusted golden surface, cut to show smooth dark bean paste inside, on a plate",
+  "desc": "a filled yeast doughnut on a plate: a solid round puffy ball-shaped fried bun like a bun with no hole, golden with sugar, cut in half showing a smooth dark purple-brown paste filling",
   "items": [
    "mext:15174"
   ],
@@ -1135,7 +1135,7 @@
  {
   "key": "mext-15175",
   "ja": "イーストドーナッツ あん入り つぶしあん",
-  "desc": "Yeast doughnut: a round fluffy fried bun with no hole, sugar-dusted golden surface, cut to show chunky red bean paste inside, on a plate",
+  "desc": "a filled yeast doughnut on a plate: a solid round puffy ball-shaped fried bun like a bun with no hole, golden with sugar, cut in half showing chunky dark red bean paste filling",
   "items": [
    "mext:15175"
   ],
@@ -1145,7 +1145,7 @@
  {
   "key": "mext-15176",
   "ja": "イーストドーナッツ あん入り カスタードクリーム",
-  "desc": "Yeast doughnut: a round fluffy fried bun with no hole, sugar-dusted golden surface, cut to show pale yellow custard cream inside, on a plate",
+  "desc": "a filled yeast doughnut on a plate: a solid round puffy ball-shaped fried bun like a bun with no hole, golden with sugar, cut in half showing creamy pale yellow custard filling",
   "items": [
    "mext:15176"
   ],
@@ -1175,7 +1175,7 @@
  {
   "key": "mext-15179",
   "ja": "ケーキドーナッツ あん入り カスタードクリーム",
-  "desc": "Cake doughnut: a dense round fried cake with a cracked dark golden crust, cut to show pale yellow custard cream inside, on a plate",
+  "desc": "a filled cake doughnut on a plate: a solid round dense fried cake like a muffin top, cracked dark golden crust, no hole, cut in half showing creamy pale yellow custard filling",
   "items": [
    "mext:15179"
   ],
@@ -1865,7 +1865,7 @@
  {
   "key": "mext-16033",
   "ja": "玉露（茶葉）",
-  "desc": "Gyokuro tea leaves: fine dark deep-green needle-shaped rolled loose tea leaves, glossy, in a small dish",
+  "desc": "a small dish of gyokuro tea leaves: a heap of tiny thin dry tightly rolled dark green tea needles, each as fine as a pine needle fragment, deep blackish-green, glossy",
   "items": [
    "mext:16033"
   ],
@@ -1890,7 +1890,7 @@
  {
   "key": "mext-16036",
   "ja": "せん茶（茶葉）",
-  "desc": "Sencha tea leaves: thin dark green needle-shaped rolled loose tea leaves in a small dish",
+  "desc": "a small dish of sencha tea leaves: a heap of tiny thin dry rolled dark green tea needle fragments, short and fine like dried herbs, dark olive green",
   "items": [
    "mext:16036"
   ],
@@ -2232,7 +2232,7 @@
  {
   "key": "mext-17148",
   "ja": "かつお・昆布だし 本枯れ節・昆布だし",
-  "desc": "Katsuo and kombu dashi: a clear golden broth in a small bowl, with bonito flakes and a piece of kombu beside it",
+  "desc": "a small bowl of clear pale golden broth; beside it a small heap of thin curly pale pink-brown dried bonito shavings like wood shavings, and a flat rectangular sheet of dried kelp, dark olive-green with a white powdery surface; nothing spiky",
   "items": [
    "mext:17148"
   ]
@@ -2278,7 +2278,7 @@
  {
   "key": "mext-17092",
   "ja": "顆粒おでん用",
-  "desc": "Granulated oden soup base: fine pale yellow-tan granules in a small dish",
+  "desc": "a small dish holding a little heap of dry granulated soup stock: very fine sandy pale yellow-tan granules like coarse sugar or instant broth powder, matte and dry, a few grains spilled beside the dish; no liquid, no lumps or balls",
   "items": [
    "mext:17092"
   ]
@@ -2296,7 +2296,7 @@
  {
   "key": "mext-17142",
   "ja": "ラーメンスープ 濃縮 ストレートしょうゆ味",
-  "desc": "Shoyu ramen soup: a clear brown soy broth with glistening oil droplets on top, in a small bowl",
+  "desc": "a small bowl of clear brown soy ramen soup only: a clear tea-brown liquid with small round golden oil droplets floating on the surface, liquid only",
   "items": [
    "mext:17142"
   ],
@@ -2306,7 +2306,7 @@
  {
   "key": "mext-17143",
   "ja": "ラーメンスープ 濃縮 ストレートみそ味",
-  "desc": "Miso ramen soup: an opaque light orange-brown cloudy miso broth with oil droplets, in a small bowl",
+  "desc": "a small bowl of miso ramen soup only: an opaque cloudy light orange-brown liquid like milky tea, small oil droplets on the surface, liquid only",
   "items": [
    "mext:17143"
   ],
@@ -2691,7 +2691,7 @@
  {
   "key": "mext-17065",
   "ja": "こしょう 混合 粉",
-  "desc": "Mixed pepper: fine speckled grey-black and white ground pepper in a small dish",
+  "desc": "a small dish of ground mixed pepper: a fine powder in grey and black specks and white specks, like fine grey sand",
   "items": [
    "mext:17065"
   ],
@@ -2768,7 +2768,7 @@
  {
   "key": "mext-17069",
   "ja": "しょうが おろし",
-  "desc": "Grated ginger: a small moist mound of pale yellow finely grated fibrous ginger, in a small dish",
+  "desc": "a small dish with a small mound of grated ginger: wet stringy fibrous pale cream-beige pulp with watery juice pooling around it",
   "items": [
    "mext:17069"
   ],
@@ -2859,7 +2859,7 @@
  {
   "key": "mext-17076",
   "ja": "にんにく おろし",
-  "desc": "Grated garlic: a small moist mound of creamy white finely grated garlic paste in a small dish",
+  "desc": "a small dish with a small mound of grated garlic: a smooth wet creamy off-white paste like thick mayonnaise",
   "items": [
    "mext:17076"
   ],
@@ -2998,7 +2998,7 @@
  {
   "key": "mext-18010",
   "ja": "白身フライ 冷凍（揚げる前）",
-  "desc": "Frozen white fish fry: raw breaded flat fish fillets covered in pale uncooked white panko crumbs, frosty, on a plate, not yet fried",
+  "desc": "frozen white fish fry on a plate: flat rectangular fillets with no head or tail, covered in coarse pale white raw breadcrumbs, dusted with white frost",
   "items": [
    "mext:18010"
   ],
@@ -3164,7 +3164,7 @@
  {
   "key": "takatsuki-r09",
   "ja": "豚キムチごはん",
-  "desc": "Pork kimchi rice: rice stir-fried with red kimchi and pork slices, reddish orange, with green onion, in a bowl",
+  "desc": "a bowl of pork kimchi fried rice: every grain of rice stir-fried and tinted reddish orange, mixed with chopped red kimchi and pieces of pork, green onion on top",
   "items": [
    "takatsuki:r09"
   ],
@@ -3392,7 +3392,7 @@
  {
   "key": "takatsuki-r31",
   "ja": "チャプチェ",
-  "desc": "Japchae: glossy translucent sweet potato glass noodles stir-fried with beef, spinach, carrot, onion and mushroom, sesame on top, on a plate",
+  "desc": "a plate of japchae: glossy clear see-through grey-brown glass noodles, thin and slippery, stir-fried with strips of beef, spinach, carrot, onion and mushroom, sesame seeds on top",
   "items": [
    "takatsuki:r31",
    "toyonaka:117763"
@@ -3686,7 +3686,7 @@
  {
   "key": "takatsuki-r43",
   "ja": "コーンとアスパラガスのかきあげ",
-  "desc": "Corn and asparagus kakiage: a crispy golden tempura fritter with yellow corn kernels and green asparagus pieces, on a plate",
+  "desc": "a corn and asparagus kakiage on a plate: one round thick puffy deep-fried tempura fritter about palm-sized, a craggy clump of yellow corn kernels and short green asparagus pieces bound together in crisp golden-brown batter with lacy crunchy edges; not loose vegetables, not long spears",
   "items": [
    "takatsuki:r43"
   ]
@@ -3939,7 +3939,7 @@
  {
   "key": "kurume-017",
   "ja": "きな粉もち",
-  "desc": "Kinako mochi: soft white rice cake coated in pale tan roasted soybean flour, on a small plate",
+  "desc": "kinako mochi on a small plate: soft rice cakes completely buried in a thick layer of fine sandy golden-tan powder, no white showing, extra tan powder heaped around them",
   "items": [
    "kurume:017"
   ],
@@ -3964,7 +3964,7 @@
  {
   "key": "kurume-018",
   "ja": "磯辺焼き",
-  "desc": "Isobe yaki: grilled rice cake glazed with soy sauce and wrapped in a dark nori sheet, on a small plate",
+  "desc": "a small plate with two grilled mochi rice cakes: smooth rectangular blocks of soft pounded rice cake, puffed and slightly stretchy, no rice grains visible, glazed shiny amber with soy sauce, each wrapped in a band of dark green nori; not an onigiri",
   "items": [
    "kurume:018"
   ]
@@ -4078,7 +4078,7 @@
  {
   "key": "kurume-037",
   "ja": "やまかけうどん",
-  "desc": "Yamakake udon: thick white udon noodles in clear brown broth topped with sticky white grated yam and nori strips, in a bowl",
+  "desc": "a bowl of thick white udon noodles in clear brown broth topped with a large dollop of grated yam: a thick sticky foamy white goo, creamy and gloopy like whipped egg white, spreading over the noodles, with thin nori strips; no tofu cubes",
   "items": [
    "kurume:037"
   ]
@@ -4106,7 +4106,7 @@
  {
   "key": "kurume-043",
   "ja": "わかめそば",
-  "desc": "Wakame soba: thin grey-brown buckwheat noodles in dark broth topped with soft green wakame seaweed and green onion, in a bowl",
+  "desc": "a bowl of wakame soba: thin grey-brown buckwheat noodles in dark brown broth, half the surface covered by a big heap of glossy dark green wakame seaweed pieces, with green onion",
   "items": [
    "kurume:043"
   ],
@@ -4322,7 +4322,7 @@
  {
   "key": "kurume-060",
   "ja": "豆腐ハンバーグ＿ジャポネソース",
-  "desc": "Tofu hamburg with japonaise sauce: a pale soft tofu patty with a brown soy-onion sauce and grated daikon, on a plate",
+  "desc": "a tofu hamburg steak on a plate: a thick round oval patty with a browned pan-seared surface and soft pale beige inside, topped with glossy brown soy-onion sauce and a small mound of white grated daikon; a formed patty like a burger, not a plain white tofu block",
   "items": [
    "kurume:060"
   ]
@@ -4487,7 +4487,7 @@
  {
   "key": "kurume-075",
   "ja": "冷しゃぶ",
-  "desc": "Reishabu: chilled boiled thin pork slices over lettuce and tomato with a sesame or ponzu dressing, on a plate",
+  "desc": "reishabu on a plate: thin pale whitish-pink boiled pork slices, soft and ruffled, laid over green lettuce and tomato wedges, drizzled with creamy beige sesame dressing",
   "items": [
    "kurume:075"
   ],
@@ -4619,7 +4619,7 @@
  {
   "key": "kurume-087",
   "ja": "揚げ鮭のマリネ",
-  "desc": "Fried salmon marinade: fried pink salmon pieces in vinegar marinade with sliced onion, carrot and bell pepper, on a plate",
+  "desc": "on a plate, bite-size chunks of salmon dusted in flour and deep-fried, golden-brown and crusty outside, cooked opaque pale pink inside, soaked in a clear vinegar marinade with thin slices of onion, carrot and bell pepper on top; fried pieces, not a raw fillet",
   "items": [
    "kurume:087"
   ]
@@ -4672,7 +4672,7 @@
  {
   "key": "kurume-094",
   "ja": "鯛の煮付け",
-  "desc": "Tai nitsuke: sea bream pieces with pink skin simmered in glossy dark brown sweet soy sauce, with ginger, in a shallow dish",
+  "desc": "a shallow dish with a chunk of sea bream simmered in dark sweet soy: a thick bone-in piece with red-pink scaly skin, the flesh cooked opaque white and flaky, glazed glossy brown, sitting in dark brown sauce with ginger shreds; not raw slices, not pork",
   "items": [
    "kurume:094"
   ]

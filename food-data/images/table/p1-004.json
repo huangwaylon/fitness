@@ -65,7 +65,7 @@
  {
   "key": "mext-10283",
   "ja": "あさり 水煮缶詰",
-  "desc": "shelled boiled asari clam meat, small soft beige-brown clams in a little dish",
+  "desc": "a small dish of shelled boiled clam meat: a little heap of small soft tan and beige clam bodies with orange-brown edges, plump and moist in a little broth, no shells at all",
   "items": [
    "mext:10283"
   ],
@@ -230,7 +230,7 @@
  {
   "key": "mext-10315",
   "ja": "ほたて貝柱 水煮缶詰",
-  "desc": "flaked boiled scallop meat, shredded pale cream scallop in a small dish",
+  "desc": "a small dish of canned scallop flakes: fluffy shredded pale cream fibres of scallop meat, like shredded crab meat, loose stringy threads heaped in a mound",
   "items": [
    "mext:10315"
   ],
@@ -304,7 +304,7 @@
  {
   "key": "mext-10325",
   "ja": "桜えび（素干し）",
-  "desc": "a small heap of dried sakura shrimp, tiny bright pink-red translucent dried shrimp",
+  "desc": "a small heap of dried sakura shrimp: hundreds of tiny thin delicate pink shrimp, each smaller than a fingernail, translucent and paper-thin, with long thin feelers, light and dry",
   "items": [
    "mext:10325"
   ],
@@ -669,7 +669,7 @@
  {
   "key": "mext-10379",
   "ja": "かまぼこ",
-  "desc": "a semicircular block of kamaboko fish cake on a small wooden board, pink-red top and white inside, a few slices cut",
+  "desc": "kamaboko fish cake on a small wooden board: a half-cylinder dome-shaped block, its curved top skin bright pink, the body smooth pure white, sitting on a thin flat wooden plank, with a few slices cut showing a white half-moon face with a pink rim",
   "items": [
    "mext:10379"
   ],
@@ -806,7 +806,7 @@
  {
   "key": "mext-10386",
   "ja": "さつま揚げ",
-  "desc": "a few satsuma-age fried fish cakes, flat golden-brown round and oblong patties",
+  "desc": "a few satsuma-age fish cakes: thick smooth flat rounds of fish paste, evenly fried a soft matte medium brown all over like a thick pancake, with a smooth even surface and a pale grey-white interior where one is cut",
   "items": [
    "mext:10386",
    "kurume:088"
@@ -948,7 +948,7 @@
  {
   "key": "mext-11059",
   "ja": "国産牛 ヒレ 生",
-  "desc": "a raw beef fillet (hire) steak, a thick round cylinder of deep red very lean beef",
+  "desc": "a raw beef fillet steak: a tall thick round puck of lean deep red meat like a short log, smooth fine grain, no fat edge, cut faces glossy dark red",
   "items": [
    "mext:11059",
    "mext:11085"
@@ -1084,7 +1084,7 @@
  {
   "key": "mext-11099",
   "ja": "牛シマチョウ（大腸） 生",
-  "desc": "beef large intestine (shimacho), striped pale pink and white flat pieces",
+  "desc": "a small plate of raw shimacho beef intestine cut into flat bite-size rectangles: each piece pale pink-white on one side with soft white fat on the other, with clear horizontal stripes across the surface",
   "items": [
    "mext:11099"
   ],
@@ -1119,7 +1119,7 @@
  {
   "key": "mext-11103",
   "ja": "牛テール 生",
-  "desc": "raw oxtail, round cross-section pieces of bone with red meat and white fat",
+  "desc": "raw oxtail on a plate: four thick round coin-shaped cross sections, each with a white round vertebra bone in the centre surrounded by a ring of dark red meat and a rim of white fat",
   "items": [
    "mext:11103"
   ],
@@ -1144,7 +1144,7 @@
  {
   "key": "mext-11274",
   "ja": "牛ハラミ 生",
-  "desc": "raw beef skirt (harami), thick dark red strips with coarse grain",
+  "desc": "raw beef skirt steak on a plate: long thick strips of dark red meat with a coarse visible grain of parallel fibres running across, lean, a thin silvery membrane on one edge",
   "items": [
    "mext:11274"
   ],
@@ -1190,7 +1190,7 @@
  {
   "key": "mext-11105",
   "ja": "コンビーフ",
-  "desc": "a block of corned beef, pinkish-brown shredded packed beef in a trapezoid shape",
+  "desc": "a block of canned corned beef out of its tin on a plate: a tapered loaf of pink-brown finely shredded beef fibres pressed tightly together, matte and fibrous, with a few slices crumbling apart",
   "items": [
    "mext:11105"
   ],
@@ -1208,7 +1208,7 @@
  {
   "key": "mext-11107",
   "ja": "ビーフジャーキー",
-  "desc": "strips of beef jerky, dark red-brown chewy dried meat",
+  "desc": "strips of beef jerky: thin flat leathery strips of dried meat, dark brown with a reddish tint, dry and wrinkled, twisted and torn edges, matte",
   "items": [
    "mext:11107"
   ],
@@ -1265,7 +1265,7 @@
  {
   "key": "mext-11275",
   "ja": "鹿肉（にほんじか） 生",
-  "desc": "raw venison, a deep burgundy-red very lean block of meat and slices",
+  "desc": "raw venison on a plate: a block of very dark burgundy-red lean meat, almost purple-maroon, uniform colour without any white fat, plus a few thin slices of the same dark meat",
   "items": [
    "mext:11275"
   ],
@@ -1476,7 +1476,7 @@
  {
   "key": "mext-11172",
   "ja": "豚足 ゆで",
-  "desc": "boiled pig's trotters (tonsoku), pale glossy skin, split in half",
+  "desc": "boiled pig's trotters on a plate: two pig's feet split lengthwise, each with two small hooved toes at the end, pale pinkish-white glossy gelatinous skin, cut faces showing bones and collagen",
   "items": [
    "mext:11172"
   ],
@@ -1814,7 +1814,7 @@
  {
   "key": "mext-11205",
   "ja": "あいがも 生",
-  "desc": "raw duck breast, deep red meat with a thick creamy-white skin and fat layer, sliced",
+  "desc": "raw duck breast on a plate: a flat oval breast fillet with a thick cream-white layer of skin and fat over the top surface, scored in a crisscross, some slices cut showing deep dark red lean meat under the white fat band",
   "items": [
    "mext:11205"
   ],
@@ -1824,7 +1824,7 @@
  {
   "key": "mext-11213",
   "ja": "親鶏むね肉 皮つき 生",
-  "desc": "a raw chicken breast with skin, plump pale pink meat with pale yellow skin",
+  "desc": "a raw boneless chicken breast fillet with skin on a tray: a plump teardrop-shaped single piece of pale pink meat, covered on top by smooth pale yellowish skin, no bone",
   "items": [
    "mext:11213",
    "mext:11219"
@@ -1886,7 +1886,7 @@
  {
   "key": "mext-11221",
   "ja": "鶏もも肉 皮つき 生",
-  "desc": "a raw boneless chicken thigh fillet as sold in Japan, one flat irregular piece of pink meat laid out on a tray, with pale yellowish-white bumpy skin covering one side, no bone, not a drumstick",
+  "desc": "a raw boneless chicken thigh fillet on a small tray: one flat irregular sheet of pink meat about the size of a hand, lying flat, half covered by pale yellowish-white bumpy skin",
   "items": [
    "mext:11221"
   ],
@@ -1938,7 +1938,7 @@
  {
   "key": "mext-11224",
   "ja": "鶏もも肉 皮なし 生",
-  "desc": "a raw boneless skinless chicken thigh fillet as sold in Japan, one flat irregular piece of deep pink meat with no skin and no bone, laid out on a tray, not a drumstick",
+  "desc": "a raw skinless boneless chicken thigh fillet on a small tray: one flat irregular sheet of rose-pink meat about the size of a hand, lying flat, with visible muscle seams",
   "items": [
    "mext:11224"
   ],
@@ -1968,7 +1968,7 @@
  {
   "key": "mext-11229",
   "ja": "ささみ ゆで",
-  "desc": "boiled chicken tenderloins, white shredded strips",
+  "desc": "a small plate of boiled chicken tenderloins: three plain matte white cooked strips torn into fluffy white shreds, opaque and dry-looking, cooked through",
   "items": [
    "mext:11229"
   ],
@@ -2048,7 +2048,7 @@
  {
   "key": "mext-11234",
   "ja": "鶏皮（むね） 生",
-  "desc": "raw chicken skin, pale yellow bumpy sheets",
+  "desc": "raw chicken skin: a few flat floppy sheets laid out on a tray, pale creamy-yellow with goosebump pores, thin and wrinkled, translucent white fat underneath",
   "items": [
    "mext:11234",
    "mext:11235"
@@ -2117,7 +2117,7 @@
  {
   "key": "mext-12020",
   "ja": "ピータン",
-  "desc": "a century egg (pitan), cut into wedges, translucent dark amber-brown jelly white and grey-green yolk",
+  "desc": "a century egg cut into wedges on a plate: the egg white is translucent glossy dark amber-brown jelly like dark tea jelly, the yolk dark grey-green with a darker ring, the wedge shapes of an egg",
   "items": [
    "mext:12020"
   ],
@@ -2270,7 +2270,7 @@
  {
   "key": "mext-12006",
   "ja": "ポーチドエッグ",
-  "desc": "a poached egg, a soft white oval with a runny yolk visible, on a slice of toast",
+  "desc": "a poached egg on toast: a soft rounded white oval pillow of egg sitting on a square of toast, the white wrapped around itself with no flat frilly edge, cut open so runny golden yolk spills down",
   "items": [
    "mext:12006"
   ],
@@ -2765,7 +2765,7 @@
  {
   "key": "mext-13029",
   "ja": "乳酸菌飲料（殺菌・カルピス系）",
-  "desc": "a glass of Calpis-style milky white soft drink with ice cubes",
+  "desc": "a tall plain clear glass of milky white drink with ice cubes, opaque pure white like diluted milk, condensation on the plain unmarked glass",
   "items": [
    "mext:13029"
   ],
@@ -2832,7 +2832,7 @@
  {
   "key": "mext-13035",
   "ja": "クリームチーズ",
-  "desc": "a block of cream cheese, smooth soft white, a slice spread",
+  "desc": "a block of cream cheese on a small plate: a smooth rectangular brick of soft pure white cheese like butter, a silky even surface, a corner scooped with a knife showing creamy soft spread",
   "items": [
    "mext:13035"
   ],
@@ -2889,7 +2889,7 @@
  {
   "key": "mext-13037",
   "ja": "チェダーチーズ",
-  "desc": "a block of orange cheddar cheese, a few slices cut",
+  "desc": "a block of orange cheddar cheese on a board: a dense solid deep orange rectangular brick, smooth and opaque, with three thin solid orange slices cut from it",
   "items": [
    "mext:13037"
   ],
@@ -2973,7 +2973,7 @@
  {
   "key": "mext-13040",
   "ja": "プロセスチーズ",
-  "desc": "processed cheese, a few slices of smooth pale yellow cheese and a wedge",
+  "desc": "processed cheese on a plate: a stack of three thin square slices of smooth uniform pale yellow cheese, perfectly flat with clean edges, plastic-smooth surface",
   "items": [
    "mext:13040"
   ],
@@ -3384,7 +3384,7 @@
  {
   "key": "mext-15009",
   "ja": "カステラ",
-  "desc": "slices of castella sponge cake, golden yellow crumb with a dark brown top and bottom",
+  "desc": "two rectangular slices of castella cake: a very fine soft bright yellow sponge, the top a thin flat glossy dark brown layer and the bottom a thin brown layer, perfectly straight sides like a brick",
   "items": [
    "mext:15009"
   ],
@@ -3734,7 +3734,7 @@
  {
   "key": "mext-15038",
   "ja": "ようかん（練り）",
-  "desc": "a block of neri yokan, dense glossy dark red-purple bean jelly, a few slices cut",
+  "desc": "a rectangular bar of yokan on a small plate: a dense smooth glossy opaque dark maroon block like a dark chocolate bar, with a few clean thick slices cut, uniform colour throughout",
   "items": [
    "mext:15038"
   ],
@@ -3766,7 +3766,7 @@
  {
   "key": "mext-15039",
   "ja": "水ようかん",
-  "desc": "mizu yokan, soft smooth glossy dark red bean jelly in a small dish",
+  "desc": "a small square slab of mizu yokan on a little dish: a soft wobbly smooth opaque reddish-brown block like chocolate pudding, uniform colour, glossy wet surface",
   "items": [
    "mext:15039",
    "kurume:249"
@@ -3796,7 +3796,7 @@
  {
   "key": "mext-15045",
   "ja": "かりんとう（黒）",
-  "desc": "karinto, crunchy deep-fried dough sticks coated in glossy dark brown sugar",
+  "desc": "a small pile of karinto: short thin finger-length sticks, uniformly very dark brown almost black with a glossy brown sugar coat, crunchy and knobbly like twigs",
   "items": [
    "mext:15045"
   ],
@@ -3855,7 +3855,7 @@
  {
   "key": "mext-15125",
   "ja": "揚げパン",
-  "desc": "an agepan, a fried koppepan bread roll coated in kinako soybean flour and sugar",
+  "desc": "an agepan: a long oval soft bread roll completely coated on every side in a thick layer of fine sandy beige powder and sugar, like a sugared doughnut with tan powder",
   "items": [
    "mext:15125",
    "eatout:agepan"
@@ -4030,7 +4030,7 @@
  {
   "key": "mext-15132",
   "ja": "メロンパン",
-  "desc": "a melon pan, a round sweet bun with a crisp pale golden cookie crust scored in a crosshatch grid and sprinkled with sugar",
+  "desc": "a melon pan: a round domed bun covered by a pale yellow crisp cookie crust, scored in a deep diamond lattice grid of grooves across the top, sparkling with granulated sugar",
   "items": [
    "mext:15132",
    "eatout:melonpan"

@@ -242,7 +242,7 @@
  {
   "key": "eatout-sushi_hotate",
   "ja": "にぎり寿司 ほたて",
-  "desc": "two pieces of scallop nigiri sushi, a plump white scallop on sushi rice",
+  "desc": "two scallop nigiri sushi: each a block of white rice topped with one plump thick round ivory-white scallop disc, butterflied open, smooth and glossy",
   "items": [
    "eatout:sushi_hotate"
   ],
@@ -380,7 +380,7 @@
  {
   "key": "eatout-gunkan_shirasu",
   "ja": "軍艦 しらす",
-  "desc": "two pieces of shirasu gunkan sushi, nori-wrapped rice topped with tiny white boiled baby sardines and ginger",
+  "desc": "two gunkan sushi: short cylinders of rice wrapped by a band of black nori, each topped with a heap of tiny thin white baby fish with black dot eyes, with a little pink pickled ginger beside",
   "items": [
    "eatout:gunkan_shirasu"
   ],
@@ -549,7 +549,7 @@
  {
   "key": "eatout-onigiri_bakudan",
   "ja": "爆弾おにぎり（具だくさん大型）",
-  "desc": "a bakudan onigiri, a big round rice ball fully wrapped in nori, cut in half showing several fillings",
+  "desc": "a bakudan onigiri: one big round ball of rice as big as a softball, entirely wrapped in black nori, cut in half showing white rice inside with several fillings: salmon flakes, egg, pickled plum",
   "items": [
    "eatout:onigiri_bakudan"
   ],
@@ -672,7 +672,7 @@
  {
   "key": "eatout-sand_fruit",
   "ja": "フルーツサンド",
-  "desc": "fruit sando, crustless white bread with whipped cream and colourful strawberry, kiwi and mandarin slices showing in the cut face",
+  "desc": "two halves of a fruit sandwich, crustless soft white bread with a thick white whipped cream filling, cut diagonally so the cut face shows halved red strawberries, green kiwi slices and orange mandarin segments embedded in the cream",
   "items": [
    "eatout:sand_fruit"
   ],
@@ -785,7 +785,7 @@
  {
   "key": "eatout-bento_nori",
   "ja": "のり弁当",
-  "desc": "a nori bento, white rice covered in a sheet of nori with a white fish fry, chikuwa tempura and kinpira",
+  "desc": "a rectangular bento box: a flat bed of white rice covered by a flat black nori sheet, topped with a breaded golden fried white fish fillet, a fried chikuwa tube and a small pile of brown stir-fried burdock strips",
   "items": [
    "eatout:bento_nori",
    "eatout:bento_mentai_nori"
@@ -832,7 +832,7 @@
  {
   "key": "eatout-bento_shogayaki",
   "ja": "生姜焼き弁当",
-  "desc": "a ginger pork bento, rice with glossy ginger pork slices and shredded cabbage in a box",
+  "desc": "a rectangular bento box: white rice on one side, thin wavy light-brown pan-fried ginger pork slices with soft onion on the other, and a heap of shredded cabbage",
   "items": [
    "eatout:bento_shogayaki"
   ],
@@ -889,7 +889,7 @@
  {
   "key": "eatout-bento_nanban",
   "ja": "チキン南蛮弁当",
-  "desc": "a chicken nanban bento, rice with fried chicken under tartar sauce and cabbage in a box",
+  "desc": "a rectangular bento box: white rice, slices of golden fried chicken covered with a thick heap of chunky white tartar sauce, and shredded cabbage",
   "items": [
    "eatout:bento_nanban"
   ],
@@ -907,7 +907,7 @@
  {
   "key": "eatout-bento_yakiniku",
   "ja": "焼肉弁当",
-  "desc": "a yakiniku bento, rice covered with grilled beef slices in sweet sauce in a box",
+  "desc": "a rectangular bento box filled with white rice covered by a messy layer of thin ruffled brown grilled beef slices with charred edges and a sticky brown sauce, a few onion slices",
   "items": [
    "eatout:bento_yakiniku"
   ],
@@ -932,7 +932,7 @@
  {
   "key": "eatout-bento_katsu",
   "ja": "ロースカツ弁当",
-  "desc": "a pork cutlet bento, rice with sliced tonkatsu and shredded cabbage in a box",
+  "desc": "a rectangular bento box: white rice and a sliced tonkatsu, its thick craggy golden-brown panko crust around white pork, with shredded cabbage",
   "items": [
    "eatout:bento_katsu"
   ],
@@ -967,7 +967,7 @@
  {
   "key": "eatout-chicken_hot",
   "ja": "骨なしフライドチキン（ホットスナック）",
-  "desc": "a piece of fried chicken with a thick craggy crisp golden-brown seasoned coating",
+  "desc": "a boneless fried chicken nugget-style piece: one irregular chunk of chicken thigh, roughly fist-sized, with a thick craggy crunchy golden-brown coating, in a paper sleeve",
   "items": [
    "eatout:chicken_hot"
   ],
@@ -1018,7 +1018,7 @@
  {
   "key": "eatout-pizzaman",
   "ja": "ピザまん",
-  "desc": "a pizza bun, a soft orange-tinted steamed bun torn open showing tomato sauce and cheese",
+  "desc": "a pizza bun: a smooth round soft steamed bun, pale orange-tinted dough with a matte fluffy surface, torn in half showing red tomato sauce and stretchy melted cheese inside",
   "items": [
    "eatout:pizzaman"
   ],
@@ -1100,7 +1100,7 @@
  {
   "key": "eatout-oden_sausage",
   "ja": "おでん ウインナー巻",
-  "desc": "oden wiener-maki, a sausage wrapped in fish cake, in clear oden broth",
+  "desc": "oden wiener-maki in a bowl of clear golden broth: a pink sausage completely wrapped in a thick tube of smooth light-brown fish cake, cut in half so the end shows the pink sausage in the middle",
   "items": [
    "eatout:oden_sausage"
   ],
@@ -1213,7 +1213,7 @@
  {
   "key": "eatout-big_burger",
   "ja": "ビッグサイズバーガー（3段バンズ）",
-  "desc": "a big three-tier burger, two beef patties, lettuce, cheese and sauce between three sesame bun layers",
+  "desc": "a tall big burger stacked in three bun layers: sesame top bun, beef patty with cheese and lettuce, a middle bun slice, a second beef patty with cheese, lettuce and sauce, then the bottom bun; three bread layers clearly visible from the side, like a double-decker",
   "items": [
    "eatout:big_burger"
   ]
@@ -1349,7 +1349,7 @@
  {
   "key": "eatout-ff_applepie",
   "ja": "アップルパイ（揚げ・ファストフード）",
-  "desc": "a fried fast-food apple pie, a rectangular crisp blistered golden turnover with apple filling",
+  "desc": "a fast-food fried apple pie: a flat rectangular pocket pastry like an envelope, crisp golden blistered bubbly crust, one end broken open showing hot apple filling",
   "items": [
    "eatout:ff_applepie"
   ],
@@ -1462,7 +1462,7 @@
  {
   "key": "eatout-gyudon_set",
   "ja": "牛丼（並盛）セット（みそ汁・サラダ）",
-  "desc": "a gyudon set, a beef bowl with a bowl of miso soup and a small salad on a tray",
+  "desc": "a gyudon set on a tray: a bowl of white rice covered with thin brown simmered beef slices and soft onion, a lacquered bowl of miso soup and a small green salad on the side",
   "items": [
    "eatout:gyudon_set"
   ],
@@ -1530,7 +1530,7 @@
  {
   "key": "eatout-hamburg_curry",
   "ja": "ハンバーグカレー",
-  "desc": "hamburg curry, rice and brown curry topped with a hamburg patty",
+  "desc": "a plate of hamburg curry: white rice and thick brown curry sauce, with a large thick round brown grilled minced-meat patty sitting on top of the curry",
   "items": [
    "eatout:hamburg_curry"
   ],
@@ -1837,7 +1837,7 @@
  {
   "key": "eatout-yakitori_reba",
   "ja": "焼き鳥 レバー（たれ）",
-  "desc": "reba yakitori, skewered chicken liver glazed glossy dark brown",
+  "desc": "two yakitori skewers of chicken liver: smooth dark reddish-brown liver pieces with a glossy dark tare glaze, soft and smooth without grain, on bamboo skewers",
   "items": [
    "eatout:yakitori_reba"
   ],
@@ -1946,7 +1946,7 @@
  {
   "key": "eatout-takowasa",
   "ja": "たこわさ",
-  "desc": "takowasa, chopped raw octopus in a pale green wasabi marinade, in a small dish",
+  "desc": "a small dish of takowasa: small chopped chunks of raw octopus, translucent greyish-white with bits of purple skin, in a pale green wasabi-flecked slimy marinade, with a nori sheet beside it",
   "items": [
    "eatout:takowasa"
   ],
@@ -2040,7 +2040,7 @@
  {
   "key": "eatout-karubi",
   "ja": "焼肉 カルビ（1人前）",
-  "desc": "yakiniku kalbi, marbled beef short rib slices sizzling on a grill with grill marks",
+  "desc": "yakiniku kalbi on a grill: marbled beef short rib slices cooking on a black grill, browned and seared with dark grill marks, fat sizzling and glistening, edges crisped",
   "items": [
    "eatout:karubi"
   ],
@@ -2058,7 +2058,7 @@
  {
   "key": "eatout-rosu_yakiniku",
   "ja": "焼肉 ロース（1人前）",
-  "desc": "yakiniku rosu, thin slices of beef loin grilled on a mesh grill",
+  "desc": "yakiniku loin slices cooking on a round mesh grill: thin beef slices seared brown with grilled crisscross marks on the cooked side, only a little pink in the centre",
   "items": [
    "eatout:rosu_yakiniku"
   ],
@@ -2085,7 +2085,7 @@
  {
   "key": "eatout-isobeage",
   "ja": "ちくわの磯辺揚げ",
-  "desc": "chikuwa isobe-age, chikuwa tubes fried in green aonori tempura batter",
+  "desc": "chikuwa isobe-age on a plate: chikuwa tubes fried in tempura batter that is visibly speckled all over with bright green seaweed flakes, a green-flecked golden crust, cut on the diagonal",
   "items": [
    "eatout:isobeage"
   ],
@@ -2110,7 +2110,7 @@
  {
   "key": "eatout-ikaten",
   "ja": "天ぷら いか（1個）",
-  "desc": "squid tempura, a ring of squid in light golden batter",
+  "desc": "one squid ring tempura: a thick round white squid ring coated in light golden crispy tempura batter, like a large onion ring",
   "items": [
    "eatout:ikaten"
   ],
@@ -2120,7 +2120,7 @@
  {
   "key": "eatout-nasuten",
   "ja": "天ぷら なす（1個）",
-  "desc": "eggplant tempura, a fan-cut eggplant with purple skin in light golden batter",
+  "desc": "one eggplant tempura: a long eggplant half cut into a fan of slices still joined at the stem, the purple skin visible through a light thin crisp golden tempura batter",
   "items": [
    "eatout:nasuten"
   ],
@@ -2194,7 +2194,7 @@
  {
   "key": "eatout-ryokucha_hai",
   "ja": "緑茶ハイ",
-  "desc": "ryokucha-hai, a tall glass of green tea with shochu and ice",
+  "desc": "a tall glass of green tea highball with ice: a pale muted yellowish-green cloudy drink, the colour of brewed green tea, with ice cubes",
   "items": [
    "eatout:ryokucha_hai"
   ],
@@ -2525,7 +2525,7 @@
  {
   "key": "eatout-gumsyrup",
   "ja": "ガムシロップ（1個）",
-  "desc": "a small single-portion cup of clear gum syrup with a peeled foil lid",
+  "desc": "a small single-portion plastic cup of gum syrup, the syrup inside water-clear and colourless like water, foil lid peeled back",
   "items": [
    "eatout:gumsyrup"
   ],
@@ -2646,7 +2646,7 @@
  {
   "key": "eatout-yakisobapan",
   "ja": "焼きそばパン",
-  "desc": "a yakisoba pan, a soft koppepan roll split and stuffed with sauce yakisoba noodles, topped with red pickled ginger",
+  "desc": "a yakisoba pan: a long soft golden-brown hot dog bun split along the top and stuffed with brown sauce-fried noodles, topped with a small pile of red pickled ginger",
   "items": [
    "eatout:yakisobapan"
   ],
@@ -3180,7 +3180,7 @@
  {
   "key": "eatout-ankake_yakisoba",
   "ja": "五目あんかけ焼きそば",
-  "desc": "gomoku ankake yakisoba, crisp pan-fried noodles under glossy thick sauce with vegetables, shrimp and pork",
+  "desc": "a plate of crisp-fried noodles: a flat golden-brown disc of thin crunchy deep-fried noodles with crispy edges showing, covered in the middle by thick glossy translucent clear-amber starchy sauce full of napa cabbage, carrot, snow peas, shrimp, pork slices and a quail egg; not soft noodles, not red sauce",
   "items": [
    "eatout:ankake_yakisoba"
   ]

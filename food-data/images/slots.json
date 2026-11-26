@@ -5224,7 +5224,8 @@
 "mext-15038",
 "mext-17090",
 "sub-baumkuchen",
-"sub-financier"
+"sub-financier",
+"eatout-danish"
 ],
 "banana": [
 "eatout-protein_whey",
@@ -5299,10 +5300,13 @@
 "mext-13003",
 "mext-13025",
 "mext-17032",
-"mext-18033"
+"mext-18033",
+"mext-17033"
 ],
 "beer": [
-"mext-03022"
+"mext-03022",
+"mext-10281",
+"mext-15057"
 ],
 "bread": [
 "mext-15103",
@@ -5422,7 +5426,10 @@
 "mext-15045",
 "mext-15170",
 "sub-karupasu",
-"toyonaka-117749"
+"toyonaka-117749",
+"maff_kyodo-44_20_tokushima",
+"toyonaka-267665",
+"mext-17033"
 ],
 "chicken": [
 "eatout-bento_makunouchi",
@@ -5547,7 +5554,8 @@
 "mext-07117",
 "mext-15102",
 "mext-18054",
-"mext-18056"
+"mext-18056",
+"mext-04032"
 ],
 "don": [
 "mext-10055",
@@ -5754,7 +5762,9 @@
 "mext-18040",
 "sub-nabe-tsuyu",
 "sub-rusk",
-"toyonaka-112197"
+"toyonaka-112197",
+"mext-01135",
+"mext-06236"
 ],
 "ramen": [
 "dishes-consomme-soup",
@@ -5848,7 +5858,9 @@
 "mext-10151",
 "mext-11189",
 "mext-11222",
-"mext-15102"
+"mext-15102",
+"mext-10468",
+"mext-06180"
 ],
 "salmon": [
 "mext-10131",
@@ -5923,7 +5935,8 @@
 "mext-10379",
 "mext-13040",
 "mext-18040",
-"toyonaka-267052"
+"toyonaka-267052",
+"mext-17042"
 ],
 "soba": [
 "mext-01191",
@@ -5947,7 +5960,8 @@
 "mext-13042",
 "mext-15102",
 "mext-17019",
-"mext-18053"
+"mext-18053",
+"mext-01034"
 ],
 "soup": [
 "eatout-protein_whey",
@@ -5975,7 +5989,8 @@
 "mext-01034",
 "mext-01088",
 "mext-02039",
-"mext-18002"
+"mext-18002",
+"mext-17127"
 ],
 "sushi": [
 "mext-01111",
@@ -5988,7 +6003,8 @@
 "dishes-roll-cabbage",
 "mext-04046",
 "mext-06105",
-"mext-12018"
+"mext-12018",
+"mext-17042"
 ],
 "sweet": [
 "sub-baumkuchen",
@@ -6041,7 +6057,8 @@
 "eatout-pizzaman",
 "kumagaya-02488",
 "mext-15087",
-"mext-16044"
+"mext-16044",
+"mext-17033"
 ],
 "tuna": [
 "mext-09023",
@@ -6056,7 +6073,9 @@
 "jbfd-グラノーラ",
 "dishes-onigiri-tunamayo",
 "dishes-chirashizushi",
-"dishes-kakuni"
+"dishes-kakuni",
+"eatout-margherita",
+"mext-11276"
 ],
 "udon": [
 "dishes-consomme-soup",

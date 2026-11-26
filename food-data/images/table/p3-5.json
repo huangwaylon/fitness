@@ -94,7 +94,7 @@
  {
   "key": "kurume-108",
   "ja": "甘えびの刺身（5尾）（醤油付き）",
-  "desc": "Sweet shrimp sashimi: five small raw amaebi, peeled translucent pink-orange bodies with red tails left on, lined up on a small plate with shiso and a tiny dish of soy sauce",
+  "desc": "five amaebi sashimi on a small plate: peeled raw shrimp bodies, translucent glossy soft pink like jelly, only the small red tail fan left on, lined up on a shiso leaf, a tiny dish of soy sauce",
   "items": [
    "kurume:108"
   ],
@@ -104,7 +104,7 @@
  {
   "key": "kurume-109",
   "ja": "たまごの袋煮",
-  "desc": "Tamago fukuroni: a deep-fried tofu pouch (aburaage) tied shut with a toothpick, a whole egg cooked inside, simmered golden brown in a small bowl with sweet soy broth, cut showing yolk",
+  "desc": "a small bowl with sweet soy broth holding a plump golden-brown simmered fried tofu pouch, one cut in half to show a whole cooked egg with set white and yellow yolk inside the pouch; the egg is inside the pouch, no separate egg",
   "items": [
    "kurume:109"
   ]
@@ -351,7 +351,7 @@
  {
   "key": "kurume-133",
   "ja": "小松菜とこんにゃくのごま和え",
-  "desc": "Komatsuna and konnyaku goma-ae: green komatsuna lengths and grey speckled konnyaku strips coated in a sweet brown ground sesame dressing in a small bowl",
+  "desc": "a small bowl of goma-ae: cut lengths of boiled komatsuna with soft flat dark green leaves and thin stalks, mixed with thin grey konnyaku strips speckled with black dots, all evenly coated in a sandy brown ground sesame dressing; leaves visible, not green onions",
   "items": [
    "kurume:133"
   ]
@@ -385,7 +385,7 @@
  {
   "key": "kurume-137",
   "ja": "きのこのおろし和え",
-  "desc": "Mushrooms with grated daikon: cooked shimeji, enoki and shiitake mixed with a mound of wet white grated daikon and a little soy in a small bowl",
+  "desc": "a small bowl of mushrooms with grated daikon: cooked shimeji, enoki and brown shiitake slices mixed into a big wet mound of white grated daikon pulp, a dash of soy",
   "items": [
    "kurume:137"
   ],
@@ -477,7 +477,7 @@
  {
   "key": "kurume-149",
   "ja": "ミモザサラダ（マヨネーズ和え）",
-  "desc": "Mimosa salad: green salad of lettuce and broccoli topped with crumbled yellow and white boiled egg like mimosa flowers, with dabs of mayonnaise, in a small bowl",
+  "desc": "a small bowl of mimosa salad: green lettuce and broccoli covered with a thick sprinkle of finely crumbled hard-boiled egg, fine yellow yolk crumbs and white bits like tiny yellow flowers, dabs of mayonnaise",
   "items": [
    "kurume:149"
   ],
@@ -570,7 +570,7 @@
  {
   "key": "kurume-156",
   "ja": "れんこん挟み焼き＿きのこ餡かけ",
-  "desc": "Stuffed lotus root with mushroom sauce: two white lotus root slices with visible holes sandwiching minced meat, pan-browned, under a glossy translucent brown mushroom starch sauce on a plate",
+  "desc": "two stuffed lotus root sandwiches on a plate: each made of two round white lotus root slices with their ring of holes, a thick layer of minced meat pressed between them, browned, under a glossy clear brown sauce with shimeji mushrooms",
   "items": [
    "kurume:156"
   ],
@@ -590,7 +590,7 @@
  {
   "key": "kurume-158",
   "ja": "焼き茄子",
-  "desc": "Yaki-nasu: grilled eggplant with the charred skin peeled off, soft pale green-gold flesh in strips, topped with grated ginger and bonito flakes on a long plate",
+  "desc": "yaki nasu on a long plate: peeled grilled eggplants torn into soft long strips, pale olive-green and gold fibrous flesh with no skin, topped with grated ginger and pink bonito flakes",
   "items": [
    "kurume:158"
   ],
@@ -618,7 +618,7 @@
  {
   "key": "kurume-160",
   "ja": "にんじんのカレーきんぴら",
-  "desc": "Curry carrot kinpira: thin matchstick carrot strips stir-fried, golden-yellow with curry powder, glossy, in a small dish",
+  "desc": "a small dish of curry kinpira: a tangle of very thin fine carrot matchsticks, thin as toothpicks, bright orange tinged yellow with curry powder, glossy with oil, soft and slightly bent from stir-frying; thin orange shreds, not thick French fries",
   "items": [
    "kurume:160"
   ]
@@ -795,7 +795,7 @@
  {
   "key": "kurume-176",
   "ja": "人参のグラッセ",
-  "desc": "Carrot glace: one orange carrot piece cut in a rounded oval, glossy with butter and sugar, on a small plate",
+  "desc": "a carrot glace on a small plate: one short chunk of carrot trimmed into a smooth rounded barrel shape, cooked soft, glossy shiny orange with a buttery glaze",
   "items": [
    "kurume:176"
   ],
@@ -813,7 +813,7 @@
  {
   "key": "kurume-178",
   "ja": "さつま芋の天ぷら",
-  "desc": "Sweet potato tempura: one round slice of sweet potato with a purple skin ring and yellow flesh in a thin pale crisp tempura batter",
+  "desc": "one sweet potato tempura slice: a round slice of sweet potato completely coated in a lumpy crisp pale golden tempura batter, a ring of purple skin and yellow flesh visible through the batter",
   "items": [
    "kurume:178"
   ],
@@ -918,7 +918,7 @@
  {
   "key": "kurume-189",
   "ja": "だご汁",
-  "desc": "Dago-jiru: Kyushu miso soup with flat torn chewy white flour dumplings, pork, daikon, carrot, taro and burdock in a soup bowl",
+  "desc": "a soup bowl of dago-jiru: cloudy brown miso soup with flat irregular hand-torn white dumplings like soft torn noodle sheets, pork, daikon, carrot, taro and burdock",
   "items": [
    "kurume:189"
   ],
@@ -1056,7 +1056,7 @@
  {
   "key": "kurume-203",
   "ja": "オニオンスープ",
-  "desc": "Onion soup: clear amber-brown consomme with soft golden translucent onion slices in a soup cup",
+  "desc": "a soup cup of onion soup: clear amber-brown broth filled with thin soft golden-brown caramelised onion slices, limp and translucent, like strands",
   "items": [
    "kurume:203",
    "toyonaka:266724"
@@ -1306,7 +1306,7 @@
  {
   "key": "kurume-243",
   "ja": "回転饅頭（今川焼）",
-  "desc": "Imagawayaki: a thick round griddle cake, golden-brown flat top and pale edge, cut open showing dark red sweet bean paste inside",
+  "desc": "an imagawayaki: a thick round flat-topped cylinder cake like a hockey puck, golden-brown top and pale cream sides, cut in half showing a thick smooth dark red bean paste filling",
   "items": [
    "kurume:243"
   ],
@@ -1331,7 +1331,7 @@
  {
   "key": "kurume-245",
   "ja": "串団子（醤油味）",
-  "desc": "Mitarashi-style dango: three or four round chewy white rice dumplings on a bamboo skewer, lightly charred, glazed glossy brown with soy",
+  "desc": "a mitarashi dango skewer: four round white rice dumplings on a bamboo skewer, completely coated in a thick glossy translucent amber-brown soy glaze, toasted with charred spots",
   "items": [
    "kurume:245"
   ],
@@ -1406,7 +1406,7 @@
  {
   "key": "kurume-248",
   "ja": "練ようかん",
-  "desc": "Neri yokan: a dense smooth glossy dark red-brown rectangular slice of sweet bean jelly on a small plate",
+  "desc": "a slice of neri yokan on a small plate: a dense smooth glossy opaque dark maroon rectangle like a dark chocolate bar, uniform colour throughout",
   "items": [
    "kurume:248"
   ],
@@ -2065,7 +2065,7 @@
  {
   "key": "toyonaka-117833",
   "ja": "きんぴらごぼう（豚肉入り）",
-  "desc": "Kinpira gobo with pork: brown burdock and orange carrot matchsticks with pork strips, glossy sweet soy and sesame, in a small dish",
+  "desc": "a small dish of kinpira gobo with pork: a heap of thin matchstick-thin strips of brown burdock and orange carrot, with thin pork strips, glossy brown with sweet soy and white sesame seeds",
   "items": [
    "toyonaka:117833"
   ],
@@ -2229,7 +2229,7 @@
  {
   "key": "toyonaka-265146",
   "ja": "肉吸い",
-  "desc": "Nikusui: Osaka beef soup without noodles: thin sweet beef slices, a soft egg or tofu and green onion in clear golden dashi in a bowl",
+  "desc": "a bowl of nikusui: clear golden dashi soup with no noodles, thin brown simmered beef slices, a soft white tofu block and chopped green onion",
   "items": [
    "toyonaka:265146"
   ],
@@ -2309,7 +2309,7 @@
  {
   "key": "toyonaka-265161",
   "ja": "とりそぼろ",
-  "desc": "Chicken soboro: fine crumbled minced chicken simmered in sweet soy, light brown and moist, in a small dish",
+  "desc": "a small dish of chicken soboro: fine dry crumbled minced chicken in tiny granules like coarse sand, light golden-brown, loose and fluffy",
   "items": [
    "toyonaka:265161"
   ],
@@ -2672,7 +2672,7 @@
  {
   "key": "toyonaka-118563",
   "ja": "あま夏みかん缶",
-  "desc": "Canned amanatsu: peeled glossy pale yellow-orange citrus segments in light syrup in a small dish",
+  "desc": "a small glass dish of canned citrus: many separate peeled crescent-shaped segments, smooth glossy translucent pale yellow-orange with no membrane, floating in clear syrup; not a whole fruit, not a ball",
   "items": [
    "toyonaka:118563"
   ]
@@ -2720,7 +2720,7 @@
  {
   "key": "toyonaka-119463",
   "ja": "さばのよしる干し",
-  "desc": "Grilled mackerel yoshiru-boshi: a semi-dried saba fillet grilled glossy brown with a shiny blue-silver striped skin, on a plate",
+  "desc": "one semi-dried mackerel fillet grilled on a plate: a flat boneless half-fish fillet without head or tail, glossy golden-brown grilled flesh, the edge showing blue-silver striped skin; not a whole fish",
   "items": [
    "toyonaka:119463"
   ]
@@ -2728,7 +2728,7 @@
  {
   "key": "toyonaka-119464",
   "ja": "豚肉とごぼうのあまから煮",
-  "desc": "Sweet-spicy pork and burdock: pork slices simmered with brown burdock pieces in glossy sweet soy sauce in a small bowl",
+  "desc": "a small bowl of pork and burdock simmered in glossy sweet soy: thin slices of pork mixed with many long thin diagonal-cut slices of burdock root, dark brown woody sticks with fibrous texture, the burdock as plentiful as the pork and clearly visible",
   "items": [
    "toyonaka:119464"
   ]
@@ -2804,7 +2804,7 @@
  {
   "key": "toyonaka-118627",
   "ja": "ちりめんじゃこと小松菜の炒め物",
-  "desc": "Chirimen jako and komatsuna stir-fry: green komatsuna lengths with tiny dried white baby sardines, glossy, in a small dish",
+  "desc": "a small dish of stir-fried komatsuna: chopped leafy dark green leaves and stems, wilted and glossy, with lots of tiny dried white baby sardines, each a thin white sliver with black dot eyes, scattered all over; leafy greens, not green beans, no meat",
   "items": [
    "toyonaka:118627",
    "toyonaka:118980"
@@ -3500,7 +3500,7 @@
  {
   "key": "toyonaka-266759",
   "ja": "太刀魚のレモン醤油かけ",
-  "desc": "Hairtail with lemon soy: a grilled tachiuo fillet with shiny silver skin and white flesh, drizzled with brown lemon soy sauce, on a plate",
+  "desc": "a plate with a grilled hairtail fillet: a long flat ribbon-like strip of fish with bright shiny metallic silver skin like aluminium foil, no stripes or scales, and white flesh, drizzled with a little brown lemon soy sauce, a lemon slice beside; not mackerel",
   "items": [
    "toyonaka:266759"
   ]
@@ -3645,7 +3645,7 @@
  {
   "key": "toyonaka-266224",
   "ja": "牛肉とひじきの炒め煮",
-  "desc": "Beef and hijiki stir-simmer: tiny black hijiki sprigs with beef slices, carrot and konnyaku in glossy sweet soy in a small bowl",
+  "desc": "a small bowl of simmered hijiki: lots of tiny short black seaweed sprigs like little black grains of rice, mixed with thin beef slices, carrot matchsticks and konnyaku strips in glossy sweet soy; no long wide seaweed strips",
   "items": [
    "toyonaka:266224"
   ]
@@ -3711,7 +3711,7 @@
  {
   "key": "toyonaka-106857",
   "ja": "ハヤシ（ごはんなし）",
-  "desc": "Hayashi sauce without rice: thin beef slices, onion and mushrooms in a glossy rich dark red-brown demi-glace tomato sauce in a deep bowl",
+  "desc": "a deep bowl of hayashi sauce: a glossy thick dark reddish-brown gravy like beef stew, with thin soft brown beef slices, onion and sliced mushrooms",
   "items": [
    "toyonaka:106857",
    "kumagaya:230"

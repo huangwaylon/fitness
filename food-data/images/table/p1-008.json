@@ -107,7 +107,7 @@
  {
   "key": "mext-04037",
   "ja": "ゆし豆腐",
-  "desc": "yushi-dofu, soft fluffy curdled white tofu in its cloudy whey in a bowl",
+  "desc": "a bowl of yushi-dofu: soft loose fluffy white curds of tofu like cottage cheese clouds, floating in cloudy pale whey broth, a few green onion slices",
   "items": [
    "mext:04037"
   ],
@@ -201,7 +201,7 @@
  {
   "key": "mext-04068",
   "ja": "べにばないんげん 乾",
-  "desc": "dry scarlet runner beans (hanamame), large purple beans speckled with black",
+  "desc": "a small heap of dry hanamame beans: large kidney-shaped dried beans, shiny purple with black marbled speckles, dry and hard, no pods",
   "items": [
    "mext:04068"
   ],
@@ -231,7 +231,7 @@
  {
   "key": "mext-05022",
   "ja": "とち 蒸し",
-  "desc": "horse chestnuts (tochi no mi), large round glossy dark brown nuts with a pale patch",
+  "desc": "a few horse chestnuts: perfectly round glossy chestnut-brown nuts like big shiny marbles, each with one large pale beige round patch, smooth and polished",
   "items": [
    "mext:05022"
   ],
@@ -241,7 +241,7 @@
  {
   "key": "mext-05025",
   "ja": "ひし 生",
-  "desc": "water caltrops (hishi), dark brown-black horned nuts shaped like a bull's head",
+  "desc": "a few water caltrop nuts: hard dark brown-black seed pods, each a flat curved shape with two sharp curved horns on each side like a crescent bow tie, matte and woody",
   "items": [
    "mext:05025"
   ],
@@ -345,7 +345,7 @@
  {
   "key": "mext-06402",
   "ja": "アイスプラント 生",
-  "desc": "ice plant leaves, thick succulent green leaves covered in tiny glistening water-like bubbles",
+  "desc": "a small heap of ice plant leaves: loose thick elongated fleshy green leaves and stems, covered all over in tiny clear glistening bead-like bubbles like dew drops or frost",
   "items": [
    "mext:06402"
   ],
@@ -462,7 +462,7 @@
  {
   "key": "mext-06060",
   "ja": "きく 菊のり",
-  "desc": "kiku nori, dried pressed chrysanthemum petal sheets, flat translucent yellow-lilac sheets",
+  "desc": "kiku nori: thin flat square sheets of pressed dried chrysanthemum petals, like thin yellow and pale lilac paper, the outlines of petals pressed in, translucent, stacked",
   "items": [
    "mext:06060"
   ],
@@ -482,7 +482,7 @@
  {
   "key": "mext-06077",
   "ja": "クレソン 生",
-  "desc": "a bunch of watercress, small round dark green leaves on thin stems",
+  "desc": "a bunch of watercress: dark green stems each with several small round glossy leaflets in pairs, a loose leafy bunch with slender stems",
   "items": [
    "mext:06077"
   ],
@@ -608,7 +608,7 @@
  {
   "key": "mext-06101",
   "ja": "じゅんさい 水煮びん詰",
-  "desc": "junsai, tiny curled green water shield leaves coated in clear jelly, in a small glass dish",
+  "desc": "a small glass dish of junsai: many tiny rolled-up young green leaves, each smaller than a fingernail, embedded in a thick clear transparent jelly coating, glistening",
   "items": [
    "mext:06101"
   ],
@@ -681,7 +681,7 @@
  {
   "key": "mext-06109",
   "ja": "生ずいき 生",
-  "desc": "zuiki, fresh taro stalks, long thick spongy stalks with reddish-purple skin, cut pieces showing a pale sponge-like cross-section full of small holes",
+  "desc": "fresh zuiki taro stalks: several very long thick celery-like stalks with reddish-purple skin, and a few short cut pieces showing a pale green-white spongy cross-section full of small holes",
   "items": [
    "mext:06109"
   ],
@@ -699,7 +699,7 @@
  {
   "key": "mext-06115",
   "ja": "すぐきな すぐき漬",
-  "desc": "suguki pickles, pale yellow-green fermented turnip and leaves in a small dish",
+  "desc": "a small dish of suguki pickles: slices of pale cream turnip root and chopped soft yellowish-green leaves, wet and limp",
   "items": [
    "mext:06115"
   ],
@@ -836,7 +836,7 @@
  {
   "key": "mext-06162",
   "ja": "つくし 生",
-  "desc": "tsukushi horsetail shoots, slender pale brown segmented stems with cone-like caps",
+  "desc": "a small bundle of tsukushi field horsetail shoots: thin pale beige hollow stalks with dark brown papery collars at each joint, each topped by an elongated rounded brown cone like a pencil tip with a honeycomb pattern",
   "items": [
    "mext:06162"
   ],
@@ -1078,7 +1078,7 @@
  {
   "key": "mext-06201",
   "ja": "和種なばな 生",
-  "desc": "nanohana, bunches of rapeseed shoots, green stems with tight green buds and a few bright yellow flowers",
+  "desc": "a bunch of edible nanohana rapeseed shoots tied together: thick juicy green stems with soft green leaves, topped by clusters of tight closed green flower buds, only a few small yellow flowers opening",
   "items": [
    "mext:06201"
   ],
@@ -1354,7 +1354,7 @@
  {
   "key": "mext-06265",
   "ja": "へちま 生",
-  "desc": "a young sponge gourd (hechima), a long dark green ridged gourd, a few slices",
+  "desc": "a young hechima sponge gourd: a very long slender dark green cylindrical gourd as long as an arm, with faint lengthwise ridges, beside a few round slices showing pale green-white soft flesh",
   "items": [
    "mext:06265"
   ],
@@ -1605,7 +1605,7 @@
  {
   "key": "mext-07003",
   "ja": "アセロラ 酸味種 生",
-  "desc": "acerola cherries, small glossy bright red lobed fruits",
+  "desc": "a small heap of acerola cherries: small shiny bright scarlet fruits, slightly squat with three soft shallow lobes like tiny pumpkins, no long stems",
   "items": [
    "mext:07003",
    "mext:07159"
@@ -1634,7 +1634,7 @@
  {
   "key": "mext-07008",
   "ja": "あんず 乾",
-  "desc": "dried apricots, flat chewy glossy deep orange halves",
+  "desc": "a small heap of dried apricots: flat round wrinkled discs, each a pressed half-fruit, deep translucent orange, sticky and leathery like orange coins",
   "items": [
    "mext:07008"
   ],
@@ -2213,7 +2213,7 @@
  {
   "key": "mext-09001",
   "ja": "あおさ 素干し",
-  "desc": "dried aosa seaweed, fluffy crumpled bright green flakes in a small dish",
+  "desc": "a small dish of dried aosa seaweed: a fluffy pile of dry brittle papery bright green flakes, crumpled and crinkled like torn green tissue paper, light and crumbly",
   "items": [
    "mext:09001"
   ],
@@ -2233,7 +2233,7 @@
  {
   "key": "mext-09034",
   "ja": "ふのり 素干し",
-  "desc": "dried funori seaweed, thin branching red-brown fronds",
+  "desc": "a small pile of dried funori seaweed: a tangled mass of fine dark red-brown fronds that fork again and again into thin branching twigs like tiny coral or bare tree branches",
   "items": [
    "mext:09034"
   ],

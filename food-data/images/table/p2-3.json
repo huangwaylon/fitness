@@ -22,7 +22,7 @@
  {
   "key": "maff_kyodo-houtou_yama_nashi",
   "ja": "ほうとう",
-  "desc": "hoto, thick flat wide hand-cut wheat noodles simmered in cloudy beige miso broth with orange kabocha squash chunks, mushrooms, napa cabbage and green onion, in a black cast-iron pot",
+  "desc": "a black cast-iron pot of hoto: very wide flat thick ribbon noodles, broad as a belt, soft and pale, in thick cloudy opaque beige miso broth with big orange kabocha squash chunks, mushrooms, napa cabbage and green onion",
   "items": [
    "maff_kyodo:houtou_yama_nashi"
   ],
@@ -186,7 +186,7 @@
  {
   "key": "maff_kyodo-ikinari_dango_kumamoto",
   "ja": "いきなり団子",
-  "desc": "ikinari dango, a large round steamed bun with thin translucent white wheat skin, one cut in half showing a thick yellow round of sweet potato and a dark red bean paste layer, on a white plate",
+  "desc": "ikinari dango on a white plate: domed buns with a thin translucent white chewy skin, one cut in half showing a thick round slice of yellow sweet potato in the middle with a dark red-brown bean paste layer under it",
   "items": [
    "maff_kyodo:ikinari_dango_kumamoto"
   ],
@@ -401,7 +401,7 @@
  {
   "key": "maff_kyodo-isazanotamagotoji_ishikawa",
   "ja": "いさざの卵とじ",
-  "desc": "isaza no tamagotoji, tiny translucent ice gobies bound in soft fluffy yellow simmered egg with clear broth, topped with green mitsuba, in a small lidded blue-and-white bowl",
+  "desc": "isaza no tamagotoji in a small blue-and-white bowl: soft runny fluffy yellow scrambled egg in clear broth with many tiny thin glassy translucent little fish with black eyes mixed in, green mitsuba leaves on top",
   "items": [
    "maff_kyodo:isazanotamagotoji_ishikawa"
   ],
@@ -465,7 +465,7 @@
  {
   "key": "maff_kyodo-itimonji_no_guruguru_kumamoto",
   "ja": "一文字のぐるぐる",
-  "desc": "hitomoji no guruguru, short bundles of blanched green scallion with the green leaves wound tightly around the white stem, lined up on a white plate beside a small glass dish of orange vinegar miso",
+  "desc": "hitomoji no guruguru on a white plate: short neat finger-length bundles of soft blanched green onion, each made by winding the dark green leaf tightly round and round the white base like a little coil, lined up in a row, beside a dish of yellow miso sauce",
   "items": [
    "maff_kyodo:itimonji_no_guruguru_kumamoto"
   ],
@@ -583,7 +583,7 @@
  {
   "key": "maff_kyodo-jakoten_ehime",
   "ja": "じゃこ天",
-  "desc": "jakoten, flat oval golden-brown fried fish cakes with a rough bumpy grey-brown surface, made from whole small fish ground with bones, stacked on a silver platter",
+  "desc": "jakoten stacked on a silver platter: flat oval fish cakes like thin patties, a rough bumpy dull grey-brown surface flecked with dark bits of fish skin and bone, lightly fried brown in spots",
   "items": [
    "maff_kyodo:jakoten_ehime"
   ],
@@ -608,7 +608,7 @@
  {
   "key": "maff_kyodo-jambomochi_kagoshima",
   "ja": "じゃんぼ餅",
-  "desc": "jambo mochi, small flat round white rice cakes lightly grilled, each pierced with two short bamboo sticks splayed like a V, glazed with brown sweet soy sauce, in a dark bowl",
+  "desc": "jambo mochi in a dark bowl: small flat rectangles of white rice cake, each with two short bamboo sticks stuck into one end and splayed in a V, toasted and glazed with glossy brown sweet soy sauce",
   "items": [
    "maff_kyodo:jambomochi_kagoshima"
   ],
@@ -871,7 +871,7 @@
  {
   "key": "maff_kyodo-kakinoha_zushi_nara",
   "ja": "柿の葉寿司",
-  "desc": "kakinoha-zushi, small rectangular blocks of pressed sushi rice topped with vinegared mackerel, each wrapped in a green persimmon leaf, a couple unwrapped showing the fish, on a black plate",
+  "desc": "kakinoha-zushi on a black plate: small neat rectangular packets each tightly wrapped in a flat green persimmon leaf, a couple unwrapped showing a block of white rice topped with pale silver-pink vinegared mackerel",
   "items": [
    "maff_kyodo:kakinoha_zushi_nara"
   ],
@@ -1006,7 +1006,7 @@
  {
   "key": "maff_kyodo-karaimonettabo_kagoshima",
   "ja": "からいもねったぼ",
-  "desc": "karaimo nettabo, two soft round flattened lumps of mashed sweet potato kneaded with mochi, pale yellow and dusted with beige kinako, on a dark round plate",
+  "desc": "karaimo nettabo on a dark round plate: two soft flattened round lumps of sticky mochi, pale yellow-cream, completely dusted all over with tan kinako powder, matte and soft",
   "items": [
    "maff_kyodo:karaimonettabo_kagoshima"
   ],
@@ -1204,7 +1204,7 @@
  {
   "key": "maff_kyodo-kashiwamochi_shimane",
   "ja": "かしわ餅",
-  "desc": "kashiwa mochi, round white rice-flour dumplings filled with bean paste, each folded inside a large pale green oval greenbrier leaf, on a dark plate",
+  "desc": "kashiwa mochi on a dark plate: white rice dumplings each completely folded in half inside a large pale green oval leaf, like a taco, the leaf wrapped around the outside, only a little white dumpling showing",
   "items": [
    "maff_kyodo:kashiwamochi_shimane"
   ],
@@ -1274,7 +1274,7 @@
  {
   "key": "maff_kyodo-kenojiru_aomori",
   "ja": "けの汁",
-  "desc": "kenojiru, a lacquered bowl of miso soup packed with finely diced root vegetables, mountain greens, fried tofu and dried tofu in tiny cubes, with ground soybean",
+  "desc": "a lacquered bowl of kenojiru: miso soup thick with a mass of tiny finely diced cubes of daikon, carrot, burdock, fried tofu and mountain greens, all chopped as small as peas, like a chunky confetti",
   "items": [
    "maff_kyodo:kenojiru_aomori"
   ],
@@ -1398,7 +1398,7 @@
  {
   "key": "maff_kyodo-kishimen_aichi",
   "ja": "きしめん",
-  "desc": "kishimen, very flat wide thin white wheat noodles in light brown dashi broth topped with bonito flakes, a pink-and-white fish cake slice, green spinach and fried tofu, in a deep bowl",
+  "desc": "a deep bowl of kishimen: very flat wide thin ribbon noodles like flat paper strips, pale white and glossy, in light brown dashi broth, topped with bonito flakes, a pink-and-white fish cake slice, green spinach and fried tofu",
   "items": [
    "maff_kyodo:kishimen_aichi"
   ],
@@ -1511,7 +1511,7 @@
  {
   "key": "maff_kyodo-koinomani_yamagata",
   "ja": "鯉のうま煮",
-  "desc": "koi no umani, a thick crosscut slice of carp with skin simmered dark glossy red-brown in sweet soy, in a small blue-rimmed dish",
+  "desc": "a thick round crosscut steak of carp, cut across the whole fish body, showing a ring of dark scaly fish skin, flaky fish flesh and a central backbone cross-section, simmered dark glossy red-brown in sweet soy, in a small dish; fish, not pork",
   "items": [
    "maff_kyodo:koinomani_yamagata"
   ]
@@ -1573,7 +1573,7 @@
  {
   "key": "maff_kyodo-kono_shirono_sugata_zushi_kumamoto",
   "ja": "このしろの姿寿司",
-  "desc": "konoshiro no sugata-zushi, whole gizzard shad with silver dotted skin, head and tail on, stuffed with vinegared rice and sliced across, laid on green leaves on a plate",
+  "desc": "a whole silver gizzard shad with head and tail, split open along the belly and stuffed full of white vinegared rice, sliced across into thick pieces so each cut shows silver dotted fish skin wrapped around a core of white rice, laid on green leaves on a plate",
   "items": [
    "maff_kyodo:kono_shirono_sugata_zushi_kumamoto"
   ]
@@ -1581,7 +1581,7 @@
  {
   "key": "maff_kyodo-koppa_mochi_kumamoto",
   "ja": "こっぱもち",
-  "desc": "koppa mochi, thick flat slabs of soft pale tan mochi made with sweet potato, cut into rough oval pieces on a white plate",
+  "desc": "koppa mochi on a white plate: thick flat rough oval slabs of soft dense mochi, matte tan-brown with darker specks, like slices of a thick flat cake",
   "items": [
    "maff_kyodo:koppa_mochi_kumamoto"
   ],
@@ -1617,7 +1617,7 @@
  {
   "key": "maff_kyodo-kujaku_oita",
   "ja": "くじゃく",
-  "desc": "kujaku, a fried fish paste ball wrapping a whole boiled egg, cut in half to show the yellow yolk, a pink-red dyed white ring and green fish paste layer, on a bamboo leaf in a dark dish",
+  "desc": "kujaku in a dark dish on a bamboo leaf: a golden fried ball cut in half, the cut face showing rings like a target: yellow yolk in the centre, white egg ring, a thin pink-red ring, a green fish-paste layer and a golden crust",
   "items": [
    "maff_kyodo:kujaku_oita"
   ],
@@ -1668,7 +1668,7 @@
  {
   "key": "maff_kyodo-kujirajiru_hokkaido",
   "ja": "鯨汁",
-  "desc": "kujira-jiru, a soy-flavoured soup with white salted whale blubber pieces, daikon, tofu, konnyaku and green vegetables, in a black lacquered bowl",
+  "desc": "a black lacquered bowl of kujira-jiru: clear brown soy broth with thick white rubbery pieces of whale blubber edged with black skin, daikon chunks, tofu, grey konjac and green vegetables",
   "items": [
    "maff_kyodo:kujirajiru_hokkaido"
   ],
@@ -1753,7 +1753,7 @@
  {
   "key": "maff_kyodo-kutuzoko_no_nituke_fukuoka",
   "ja": "くつぞこの煮つけ",
-  "desc": "kutsuzoko no nitsuke, whole flat tongue sole fish simmered dark brown in soy, glossy skin, garnished with white needle ginger and green onion stalks, on a long plate",
+  "desc": "a whole flat tongue sole simmered in soy on a long plate: a very thin flat elongated oval fish shaped like a shoe sole, both eyes on one side, fins fringing the whole edge, glossy dark brown, with white needle ginger and green onion; flat like a flounder, not round-bodied",
   "items": [
    "maff_kyodo:kutuzoko_no_nituke_fukuoka"
   ]
@@ -1852,7 +1852,7 @@
  {
   "key": "maff_kyodo-manbano_kenchan_kagawa",
   "ja": "まんばのけんちゃん",
-  "desc": "manba no kenchan, dark green chopped manba greens stir-fried with crumbled white tofu and fried tofu, in a red-and-white patterned bowl",
+  "desc": "manba no kenchan in a red-and-white bowl: soft wilted dark green chopped leafy greens stir-fried with crumbled white tofu in small soft lumps and thin strips of fried tofu",
   "items": [
    "maff_kyodo:manbano_kenchan_kagawa"
   ],
@@ -1895,7 +1895,7 @@
  {
   "key": "maff_kyodo-masunoankake_yamagata",
   "ja": "鱒のあんかけ",
-  "desc": "masu no ankake, boiled pink cherry salmon pieces with green garlic chives under a clear amber sweet kudzu sauce, topped with grated ginger, in a patterned bowl",
+  "desc": "a patterned bowl with chunks of boiled cherry salmon cooked through, opaque matte pale pink-orange flaky flesh with silver skin, not raw or glossy, coated by a clear glossy amber thick sauce with short green garlic chives and a small mound of grated ginger on top",
   "items": [
    "maff_kyodo:masunoankake_yamagata"
   ]
@@ -2090,7 +2090,7 @@
  {
   "key": "maff_kyodo-mibunanokarashiae_kyoto",
   "ja": "壬生菜のからし和え",
-  "desc": "mibuna no karashi-ae, blanched dark green mibuna greens cut into short lengths, dressed with pale yellow mustard sesame dashi, in a small white bowl",
+  "desc": "a small white bowl of blanched leafy greens: flat soft dark green leaves with thin flat stems, cut into short lengths and lightly squeezed into a little heap, dressed with a pale yellow mustard dressing; flat leaves, not hollow tubes, not scallions",
   "items": [
    "maff_kyodo:mibunanokarashiae_kyoto"
   ]
@@ -2126,7 +2126,7 @@
  {
   "key": "maff_kyodo-minazuki_kyoto",
   "ja": "水無月",
-  "desc": "minazuki, a triangular wedge of white chewy uiro rice cake topped with a layer of glossy sweet red azuki beans, on white paper",
+  "desc": "minazuki on white paper: a triangular wedge of smooth translucent pale white jelly-like rice cake, a solid dense top layer of small dark red-brown azuki beans pressed on top",
   "items": [
    "maff_kyodo:minazuki_kyoto"
   ],
@@ -2308,7 +2308,7 @@
  {
   "key": "maff_kyodo-mosaebi_no_sashimi_tottori",
   "ja": "もさえびの刺身",
-  "desc": "mosaebi no sashimi, raw translucent peeled shrimp with heads and pink tails left on, arranged over crushed ice in a bowl with green garnishes and lemon",
+  "desc": "raw shrimp sashimi in a bowl over crushed ice: peeled shrimp bodies glassy translucent pale grey-white like wet jelly, only the heads and tail tips orange-pink, with green shiso leaves and a lemon wedge; raw not cooked, not opaque orange, no shells on the bodies",
   "items": [
    "maff_kyodo:mosaebi_no_sashimi_tottori"
   ]
@@ -2427,7 +2427,7 @@
  {
   "key": "maff_kyodo-namakonosunomono_ishikawa",
   "ja": "なまこの酢の物",
-  "desc": "namako no sunomono, thin slices of dark brownish sea cucumber with crunchy texture mixed with white grated daikon in vinegar, topped with red chilli rings, in a small blue dish",
+  "desc": "a small blue dish of vinegared sea cucumber: thin coin-shaped slices of dark brownish-grey sea cucumber, firm and crunchy, mixed into wet white grated daikon in vinegar, topped with a few red chilli rings; only small cut slices, no whole sea cucumber",
   "items": [
    "maff_kyodo:namakonosunomono_ishikawa"
   ]
@@ -2626,7 +2626,7 @@
  {
   "key": "maff_kyodo-nira_senbei_nagano",
   "ja": "にらせんべい",
-  "desc": "nira senbei, thin crispy pan-fried wheat pancakes dotted with chopped green garlic chives, cut into wedges, on a white plate",
+  "desc": "nira senbei on a white plate: a thin flat pale wheat crepe pancake fried golden in spots, filled with many long dark green chopped garlic chive strips, cut into wedges",
   "items": [
    "maff_kyodo:nira_senbei_nagano"
   ],

@@ -10,7 +10,7 @@
  {
   "key": "eatout-kimchi_nabe_soup",
   "ja": "キムチ鍋スープ（市販のつゆ）",
-  "desc": "kimchi hot-pot broth on its own: a small donabe clay pot of clear bright orange-red spicy soup with tiny red chili flecks and nothing else in it",
+  "desc": "a small clay hot pot filled only with clear bright orange-red spicy broth, a smooth liquid surface with a slight oily sheen and tiny red chili flecks; completely empty of ingredients, no kimchi, no cabbage, no vegetables, no meat or tofu, just the soup",
   "items": [
    "eatout:kimchi_nabe_soup"
   ]
@@ -26,7 +26,7 @@
  {
   "key": "eatout-sundubu_soup",
   "ja": "スンドゥブスープ（市販の素）",
-  "desc": "sundubu stew broth on its own: a black Korean stone pot filled with a smooth plain bright red spicy liquid soup with a sheen of chili oil on its surface, no noodles, no tofu, no vegetables, nothing in it",
+  "desc": "a black Korean stone pot filled to the brim with plain smooth bright red spicy liquid broth, a thin soup with a glossy sheen of red chili oil on the surface, completely empty of solids: no tofu, no noodles, no vegetables, just red liquid",
   "items": [
    "eatout:sundubu_soup"
   ]
