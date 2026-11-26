@@ -11,9 +11,9 @@
     "deploy": "sh scripts/deploy.sh"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "^5.20261121.1",
+    "@cloudflare/workers-types": "^5.20261123.1",
     "@types/node": "^26.6.5",
-    "knip": "^6.47.0",
+    "knip": "^6.48.0",
     "typescript": "^7.0.2",
     "vitest": "^5.1.1",
     "wrangler": "^4.166.0"
