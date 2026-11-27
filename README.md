@@ -51,7 +51,7 @@ npm run verify     # every CI check but e2e
 - On the Mac: `~/.config/island-fund/keys` (mode 600), `~/.config/island-fund/archive-age.key`, `relay/.smoke-keys`,
   `~/.config/gym-bot/secrets.env`, `~/.config/its-bot/`; a gitignored `app/.env.local` for real-data tests.
 
-Raw sources the repo doesn't hold (`~/food-images-raw`, `app/.cache/tts/{clean,refs}`, `food-data/raw/`) are in the
+Raw sources the repo doesn't hold (`~/food-images-raw`, `food-data/raw/`) are in the
 `assets-*` GitHub releases (`app/scripts/assets-release.sh`); NH models, full music and avatar sources in the
 `sources-*` release. Restore steps: each script's header.
 

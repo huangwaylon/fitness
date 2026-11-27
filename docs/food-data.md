@@ -157,7 +157,7 @@ undo): [runbook "Refresh Kalori"](ops/runbook.md#13-refresh-kalori).
 
 - **Source**: a release `kalori-YYYY-MM-DD` (`kalori-data.tar.gz`, `SHA256SUMS`) written by
   `food-data/scripts/kalori_scrape.py` (docstring: commands, record format, exit codes), pinned by `fetch.py`'s
-  `KALORI_TAG` ([decisions](decisions.md#kaloris-raw-data-in-releases-the-scraper-in-food-data)).
+  `KALORI_TAG` ([decisions](decisions.md#kalori-as-a-lazy-dataset)).
 - **Build**: `fetch.py kalori` (checksums, complete coverage) → `build.py kalori` → `npm run food:data`. A partial input
   (a `kalori_shops.json` shop with no items, or under 45,000 items) fails unless `KALORI_ALLOW_PARTIAL=1`.
 - **A refresh** (`kalori-scrape.yml`, weekly, its header describes every job): incremental from the accepted
