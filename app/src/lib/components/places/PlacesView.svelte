@@ -51,7 +51,8 @@
   void places.load(false, true);
   const ix = $derived(places.index);
   // the vocabulary a typed word reads (search.ts: made on its first read), in a quiet moment once the rows are drawn,
-  // not in the opening's task nor on the first key
+  // not in the opening's task nor on the first key; the field's focus makes it if that moment hasn't come (a word typed
+  // straight after the opening: the first key's search then ~2 ms over 3,500 places, not ~5)
   $effect(() => {
     const x = ix;
     if (!x) return;
@@ -457,7 +458,7 @@
           <input bind:this={field} bind:value={text} type="search" class="q" data-places-q data-sfx="none" enterkeyhint="search" autocomplete="off" spellcheck="false"
             placeholder={pick(S.search, L)} aria-label={pick(S.search, L)} oninput={() => read()} onkeydown={onkey}
             oncompositionstart={() => (composing = true)} oncompositionend={() => ((composing = false), read())}
-            onfocus={() => ((asked = true), sheet.set('full'))} onblur={() => read(true)} />
+            onfocus={() => ((asked = true), sheet.set('full'), void ix?.vocab)} onblur={() => read(true)} />
           {#if text}<button type="button" class="clear hit44" data-sfx="tick" aria-label={pick(S.clearText, L)} onclick={() => ((text = ''), field?.focus())}><Icon name="close" size={14} stroke={2.6} /></button>{/if}
         </label>
         {#if places.rows?.length}<ChipRow label={pick(S.filters, L)}>
