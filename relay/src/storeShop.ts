@@ -4,7 +4,7 @@ import { isId, isWho, movesWallet, type Who } from '../../app/src/lib/contract/a
 import { isRec } from '../../app/src/lib/contract/guards.ts';
 import { addDays, localDateAt, prevDay } from '../../app/src/lib/contract/tokyo.ts';
 import { adjustOf, caughtOf, isShopEvent, rewardOf, shopLedger, shopRowOf, SHOP_EVENTS, type LedgerEvent, type Ledger, type ShopRow, type TallyDay, isPocketKey } from '../../app/src/lib/contract/shop.ts';
-import { emptyFarm, farmOf, farmStep, fieldJson, type Farm, type FarmData, type FarmRefusal } from '../../app/src/lib/contract/farm.ts';
+import { emptyFarm, farmOf, farmStep, fieldJson, plotJson, type Farm, type FarmData, type FarmRefusal } from '../../app/src/lib/contract/farm.ts';
 import { isTally } from '../../app/src/lib/contract/tally.ts';
 import { LedgerStore, WHO } from './ledger.ts';
 import { emptyLedger, ledgerRefusal, ledgerStep, pocketMoves, pruneGames, tallyStep, type FieldWire, type Ledger as Stored, type LedgerPart, type Ledgers } from '../../app/src/lib/contract/ledger.ts';
@@ -266,10 +266,10 @@ export class StoreShop {
       const g = [...l.g.keys()].sort(), fg = [...f.g.keys()].sort();
       if (g.join() !== fg.join()) drift.push({ who, part: 'g', stored: g.length, fold: fg.length, keys: [...g.filter((x) => !fg.includes(x)), ...fg.filter((x) => !g.includes(x))] });
     }
-    // (the stored field against the fold of the farm rows, while kept: its plots, plot by plot)
+    // (the stored field against the fold of the farm rows, while kept: its plots, plot by plot, each as plotJson writes it)
     if (!this.ledgerOnly()) {
       const kept = this.farmState().plots, fold = this.farmFold().plots;
-      const keys = [...new Set([...kept.keys(), ...fold.keys()])].filter((p) => JSON.stringify(kept.get(p)) !== JSON.stringify(fold.get(p))).sort();
+      const keys = [...new Set([...kept.keys(), ...fold.keys()])].filter((p) => { const a = kept.get(p), b = fold.get(p); return !a || !b || JSON.stringify(plotJson(a)) !== JSON.stringify(plotJson(b)); }).sort();
       if (keys.length) drift.push({ who: 'A', part: 'field', stored: kept.size, fold: fold.size, keys });
     }
     for (const d of drift) this.b.io.log?.('ledger.drift', { who: d.who, part: d.part, stored: d.stored, fold: d.fold, keys: d.keys.length });

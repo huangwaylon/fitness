@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { emptyFarm, FARM, farmOf, farmRefusal, farmStep, fieldFromJson, fieldJson, needsWater, nextStageAt, plotOf, stageOf, yieldOf, type FarmData, type Plot } from './farm.ts';
+import { emptyFarm, FARM, farmOf, farmRefusal, farmStep, fieldFromJson, fieldJson, needsWater, nextStageAt, plotJson, plotOf, stageOf, yieldOf, type FarmData, type Plot } from './farm.ts';
 import { gameWet, wxWetDays } from './wet.ts';
 import { dayWeather } from '#lib/world/weather.ts';
 import { seeded } from '../random.ts';
@@ -81,6 +81,18 @@ describe('the shared field (contract/farm.ts)', () => {
     expect(farmStep(f, 'A', { ops: [{ o: 'harvest', p: P, n: 3 }] }, T + H)?.ops).toEqual([{ o: 'harvest', p: P, n: 3 }]);
     expect(f.net.A?.get('goods:tomato')).toBe(3);
     expect(farmStep(f, 'A', op('dig', Q), T + H)).toBeNull();
+  });
+
+  it('fieldJson writes each plant’s keys in one order (c, t, r, w, by), whichever steps made it', () => {
+    const f = emptyFarm();
+    farmStep(f, 'A', plant(), T, judge());
+    farmStep(f, 'B', op('harvest'), T + G, judge());
+    farmStep(f, 'G', op('water'), T + G + H, judge());
+    // (the step leaves `w` after `by`; the JSON text has them in the one order)
+    expect(Object.keys(f.plots.get(P)!)).toEqual(['c', 't', 'r', 'by', 'w']);
+    expect(JSON.stringify(fieldJson(f))).toBe(JSON.stringify([[P, { c: 'tomato', t: T + 2 * G, r: true, w: true, by: 'B' }]]));
+    expect(JSON.stringify(fieldJson(fieldFromJson(JSON.parse(JSON.stringify(fieldJson(f))))!))).toBe(JSON.stringify(fieldJson(f)));
+    expect(Object.keys(plotJson({ by: 'A', w: true, r: true, t: 1, c: 'wheat' }))).toEqual(['c', 't', 'r', 'w', 'by']);
   });
 
   it('a harvest says who (`by`), kept while it grows back and through JSON; a dig or a new plant has none', () => {

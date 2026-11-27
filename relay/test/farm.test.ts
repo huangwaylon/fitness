@@ -231,6 +231,33 @@ describe('the shared field in the record', () => {
     expect(farm('A', plant(P2))).toEqual(refused('farm taken')); // taken
   });
 
+  it('a plant harvested, then watered, is the same plant in the stored field and the fold (the keys’ order apart): no drift', () => {
+    starts('A', 'tomato', 1);
+    farm('A', plant(P1));
+    now += FARM.growMs;
+    expect(farm('A', harvest(P1))).toEqual({ ok: true });
+    expect(farm('B', water(P1))).toEqual({ ok: true });
+    expect(plot(P1)).toMatchObject({ r: true, w: true, by: 'A' });
+    expect(store.shopCheck()).toEqual({ ok: true, farm: 'same' });
+    expect(store.ledgerCheck().drift).toEqual([]);
+  });
+
+  it('a plant harvested before `by` (none in the stored field) is found, and mended by shopcheck’s fix', () => {
+    starts('A', 'tomato', 1);
+    farm('A', plant(P1));
+    now += FARM.growMs;
+    farm('B', harvest(P1));
+    farm('A', water(P1));
+    sqlOf().exec("UPDATE ledger SET v = json_remove(v, '$[0][1].by') WHERE who = 'F'");
+    expect(plot(P1).by).toBeUndefined();
+    expect(store.shopCheck()).toEqual({ ok: true, farm: 'differs' });
+    expect(store.ledgerCheck().drift).toMatchObject([{ part: 'field', keys: [P1] }]);
+    expect(store.shopCheck({ fix: true })).toMatchObject({ farm: 'differs' });
+    expect(store.shopCheck()).toEqual({ ok: true, farm: 'same' });
+    expect(store.ledgerCheck().drift).toEqual([]);
+    expect(plot(P1)).toMatchObject({ r: true, w: true, by: 'B' });
+  });
+
   it('the deploy: the old relay’s field ({p, n}, day-based, owners) and its key are dropped and the rows folded at once under the new rules, each at its `at`', () => {
     starts('A', 'tomato', 2);
     starts('B', 'potato', 1);

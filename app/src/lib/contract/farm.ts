@@ -160,9 +160,13 @@ export function farmStep(f: Farm, who: Who, data: FarmData, at: number, judge?: 
   return kept.length ? { ops: kept } : null;
 }
 
-/** The field's plots as a JSON value (the record's stored field, relay/src/ledger.ts; a reply's `field`) and back (a
- *  plot not of this shape, an older relay's, dropped). */
-export const fieldJson = (f: Farm): unknown => [...f.plots].sort(([a], [b]) => (a < b ? -1 : 1));
+/** A plant with its keys in one order (c, t, r, w, by), whichever steps made it: a harvest then a watering gives
+ *  the keys in another order, which compared as JSON text reads as a different plant (the record's checks). */
+export const plotJson = (pl: Plot): Plot => ({ c: pl.c, t: pl.t, ...(pl.r ? { r: true } : {}), ...(pl.w ? { w: true } : {}), ...(pl.r && pl.by ? { by: pl.by } : {}) });
+
+/** The field's plots as a JSON value (the record's stored field, relay/src/ledger.ts; a reply's `field`; each plant
+ *  plotJson's) and back (a plot not of this shape, an older relay's, dropped). */
+export const fieldJson = (f: Farm): unknown => [...f.plots].sort(([a], [b]) => (a < b ? -1 : 1)).map(([p, pl]) => [p, plotJson(pl)]);
 export function fieldFromJson(x: unknown): Farm | null {
   if (!Array.isArray(x)) return null;
   const plots = new Map<string, Plot>();
