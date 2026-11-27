@@ -284,6 +284,21 @@ describe('/log and /health/log (the Worker)', () => {
     sink([{ e: 'req', l: 1 }, { e: 'do.error', l: 3 }]);
     await Promise.all(waits);
     expect(sent.map((s) => s.map((e) => e.e))).toEqual([['req'], ['do.error']]);
+    // (code review 2026-11-27) the rows a request wrote and read still go, stripped to them: the read guard keeps moving
+    sent.length = 0;
+    sink([{ e: 'req', l: 1, role: 'A', d: { action: 'snapshot', st: 'ok', rw: 2, rr: 900 } }, { e: 'admin', l: 1, d: { rr: 5 } }]);
+    await Promise.all(waits);
+    expect(sent).toEqual([[{ e: 'req', l: 1, d: { rw: 2, rr: 900 } }]]);
+  });
+
+  it('a capped day still counts the record\'s rows read: the read guard reaches SHED_PCT after the relay\'s bucket fills', () => {
+    const big = (n: number) => Array.from({ length: n }, () => ({ e: 'req' as const, l: 1 as const, d: { action: 'snapshot', st: 'ok' } }));
+    let r = log.add(big(100));
+    for (let i = 0; i < 100 && r.closed === undefined; i++) r = log.add(big(100));
+    expect(r.closed).toEqual(expect.any(Number));
+    expect(log.reads().rshed).toBe(false);
+    expect(log.add([{ e: 'req', l: 1, d: { rw: 0, rr: SHED_PCT * 50_000 } }])).toMatchObject({ kept: 0 });
+    expect(log.reads().rshed).toBe(true);
   });
 });
 

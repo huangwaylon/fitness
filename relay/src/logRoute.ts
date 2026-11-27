@@ -7,7 +7,7 @@
 // - `GET /health/log`: the log's health for the alert (log.ts stats), only with `Authorization: Bearer <HEALTH_TOKEN>`
 //   (a secret the health workflow holds: it reads counts, nothing else).
 // - `relaySink`: the relay's own events to the object, best effort, never in a reply's path; once the relay's day is
-//   capped it stops sending until midnight (per isolate).
+//   capped it sends only errors and the rows counted until midnight (per isolate).
 import { bearerOf, corsRoute, tokenOk } from './auth.ts';
 import { textCapped } from './body.ts';
 import { LOG_BODY_MAX } from '../../app/src/lib/contract/log.ts';
@@ -76,11 +76,13 @@ export async function logHealthRoute(req: Request, token: string | undefined, lo
   }
 }
 
-/** The relay's events to the log, in the background (`waitUntil`); once its day is capped, only errors. */
+/** The relay's events to the log, in the background (`waitUntil`); once its day is capped, only errors and the rows
+ *  the record wrote and read (a request's `rw` / `rr`, as the object counts them before its cap: without them the read
+ *  guard, log.ts reads(), stopped moving once the log closed, as on 2026-11-25; code review 2026-11-27). */
 export function relaySink(log: () => LogRoom, waitUntil: (p: Promise<unknown>) => void, now: () => number): (evs: RelayEvent[]) => void {
   return (all) => {
-    // a capped day still takes errors (their own cap, the object's)
-    const evs = (closed.get('relay') ?? 0) > now() ? all.filter((e) => e.l === 3) : all;
+    // a capped day still takes errors (their own cap, the object's) and the counts, stripped to them
+    const evs = (closed.get('relay') ?? 0) > now() ? all.flatMap((e) => (e.l === 3 ? [e] : counts(e))) : all;
     if (!evs.length) return;
     waitUntil(
       Promise.resolve()
@@ -88,4 +90,13 @@ export function relaySink(log: () => LogRoom, waitUntil: (p: Promise<unknown>) =
         .then((r) => void (typeof r.closed === 'number' && closed.set('relay', r.closed)), (e) => console.warn('log', errName(e)))
     );
   };
+}
+
+/** A capped day's `req` / `room.close`: only its rows written and read (nothing to keep, the bucket is full), or none
+ *  when it carries neither; `cron.backup` whole. */
+function counts(e: RelayEvent): RelayEvent[] {
+  if (e.e === 'cron.backup') return [e]; // (one a day, its outcome kept for the backup's health)
+  if (e.e !== 'req' && e.e !== 'room.close') return [];
+  const rw = Number(e.d?.rw) || 0, rr = Number(e.d?.rr) || 0;
+  return rw > 0 || rr > 0 ? [{ e: e.e, l: e.l, d: { rw, rr } }] : [];
 }
