@@ -15,8 +15,7 @@ it. Tabs プラン / メモ / 設定. Rules: `lib/wedding/progress.ts`, `time/zo
 - **Plan** (`Head`, `Plan`, `TaskRow`, `TaskForm`): tasks with a due date (required on new ones), optional start,
   category and one-level checklist; filters すべて / 期限切れ / もうすぐ (≤ 14 days) / あとで / 完了; grouped by month. The
   board's progress is the mean of its tasks'.
-  ＋ (a new task) sits in the title bar before ✕ on プラン, like every sheet's ＋ (review 11-24: the floating
-  button was the only one in any sheet, and tasks are added rarely, so reach matters less than one place for ＋).
+  ＋ (a new task) sits in the title bar before ✕ on プラン, like every sheet's ＋ (no floating button).
 - **Notes** (`Notes`): one shared markdown note; the draft lives in memory (`notepad.svelte.ts`). Crossed saves show
   both versions with これにする and ふたつ合わせる.
 - **Categories** (`lib/contract/wedCats.ts`): a Japanese starter list; free text allowed.
@@ -44,4 +43,4 @@ it. Tabs プラン / メモ / 設定. Rules: `lib/wedding/progress.ts`, `time/zo
 ## Migration
 
 Loaded once from the old board (tools at git tag `wedding-import`); `relay/test/wedding.test.ts` "the imported shapes"
-keeps those rows valid. Still to do: rotate the Apps Script `APP_KEY`, archive the `/exec` deployment and the old repo.
+keeps those rows valid. Open, outside the repo: rotate the Apps Script `APP_KEY`, archive the `/exec` deployment and the old repo.

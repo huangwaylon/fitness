@@ -2,7 +2,7 @@
 
 One shared to-do list, from the leaf menu's やること pill and the HUD's disc ([design](design.md#island)): one-line
 items, each with an optional note, due date and reminder, done or not. Everyone edits everything, the guest too, live on
-every phone, queued offline. (Lists until 2026-11-25: [the move](#the-move-from-lists).)
+every phone, queued offline.
 
 ## Files
 
@@ -50,20 +50,10 @@ due?, rem?, to?}`, a removal `{id, at, rm: true}` (final). Texts ≤ 200 chars (
 
 ### The move from lists
 
-Until 2026-11-25 the data was lists `{id, at, title, ord}` and items `{…, list}`. `todo-migrate` (`relay/scripts/
-record.ts`, the admin's `todo_migrate`, `store.ts todoMigrate` over `todoMigrate.ts`), in one transaction:
-
-- each standing list becomes one item **under the list's id** and its maker: title → text, ord kept;
-- its items → the note, one a line, open ones first in list order, then done ones as 「✓ 」 lines; a dated item's line
-  ends with its due, 「牛乳（11/24 15:00）」;
-- the item takes the earliest open due, with that item's reminder if it had one; the other reminders go (their dates
-  stay in their lines); done when the list had items and all were done;
-- a note past 2000 chars keeps the lines that fit and ends 「…ほか N件」; an item whose list is gone is dropped;
-- the old rows are deleted, `todo.migrate` logged (counts only), the phones told, the alarm re-armed. A second run
-  changes nothing; `dry` counts only. A `load` of an older dump keeps its lists as they were: run it again after.
-
-Order: backup → relay deploy → `todo-migrate dry` → `todo-migrate` → app deploy (COMPAT 3: older pages reload at a
-safe moment; until then they show none of the items).
+The old lists (`{id, at, title, ord}` and items `{…, list}`) were folded once by `todo-migrate` (`relay/scripts/record.ts`,
+admin op `todo_migrate` over `relay/src/todoMigrate.ts`; `dry` counts only, a second run changes nothing): each list
+became one item under the list's id, its items the note (open first, done as 「✓ 」 lines), carrying the earliest open
+due and its reminder. A `load` of an older dump keeps its lists: run it again after.
 
 ## Due dates and reminders
 

@@ -107,5 +107,5 @@ opens `PlaceFloat` (name, category, hours, 経路); ✕, an empty tap, Esc or th
 
 ## Open
 
-- The GPX picker's `accept=` may grey out a .gpx in iOS Files: check on a phone.
+- The GPX picker's `accept=` may grey out a .gpx in iOS Files, and hike mode outdoors: check on a real iPhone.
 - Not built: recording a hike, landscape docked sheet, waypoint popups.

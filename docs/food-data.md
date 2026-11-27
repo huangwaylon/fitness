@@ -137,7 +137,9 @@ generic food's picture or show a category tile; Kalori menus hotlink Kalori's (`
   `food-data/images/pmatch.py` + `products.txt` match products by name and OFF tags (doubtful: the tile; lookalike
   guards and its audit in the docstring). Renders
   cached in `$FOOD_IMG_RAW`; `food-data/images/shipped.json`. Check: Claude by eye (`fi.py checksheets`,
-  `claude`; `claude2` wins); reroll ≤ 2, near miss ships; fallback = tile; `FI_CHECKS=1` holds unchecked rows.
+  `claude`; `claude2` wins); reroll ≤ 2; all rolls failing on a flaw (right food) ship the last roll (`near` in
+  shipped.json), a fallback verdict (wrong food) is the tile; `FI_CHECKS=1` holds unchecked rows. Shipped: 4,996
+  pictures (74.8 MB), ~150 rows on the tile, 8 of them commonly logged.
 - **Pack**: webp sprite sheets in `app/static/food-img/`, append-only, content-hashed; its `index.json` maps ids to
   cells (`lib/food/images.ts` `imgOf`); the app build cuts product ids into `off.json` (`scripts/food-shards.ts`,
   `loadProductImages`). The service worker caches sheets on use, never at install.
