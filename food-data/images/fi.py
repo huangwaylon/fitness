@@ -133,6 +133,10 @@ def state(row, vs):
     description count."""
     h = desc_hash(row)
     mine = [v for v in vs.get(row['key'], []) if v.get('h') == h]
+    for r in range(MAX_ROLL + 1):  # a pass at any roll ships, even after a fallback (rolls drawn ahead of their check)
+        v = verdict_at(mine, r)
+        if v and v['verdict'] == 'pass':
+            return ('ship', r)
     roll = 0
     while True:
         v = verdict_at(mine, roll)

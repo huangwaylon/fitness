@@ -135,7 +135,7 @@
  {
   "key": "mext-10295",
   "ja": "さざえ 生",
-  "desc": "a turban shell (sazae), a spiky dark green-brown conical sea snail shell",
+  "desc": "one sazae turban shell: a squat round fist-sized shell shaped like a ball, rough dark green-brown, ringed with rows of short thick spikes, a wide round opening closed by a flat round lid",
   "items": [
    "mext:10295"
   ],
@@ -1144,7 +1144,7 @@
  {
   "key": "mext-11274",
   "ja": "牛ハラミ 生",
-  "desc": "raw beef skirt steak on a plate: long thick strips of dark red meat with a coarse visible grain of parallel fibres running across, lean, a thin silvery membrane on one edge",
+  "desc": "raw beef harami skirt steak: three long narrow belts of lean dark crimson meat lying side by side like ribbons, coarse ridged parallel muscle fibres running across them like corduroy, a thin silvery membrane along one edge",
   "items": [
    "mext:11274"
   ],
@@ -1190,7 +1190,7 @@
  {
   "key": "mext-11105",
   "ja": "コンビーフ",
-  "desc": "a block of canned corned beef out of its tin on a plate: a tapered loaf of pink-brown finely shredded beef fibres pressed tightly together, matte and fibrous, with a few slices crumbling apart",
+  "desc": "a small tapered brick-shaped block of Japanese canned corned beef on a plate: rough matte pink-brown surface of loose shredded meat threads like pulled pork or flaked tuna, a spoonful of loose shreds flaked off beside it",
   "items": [
    "mext:11105"
   ],
@@ -1208,7 +1208,7 @@
  {
   "key": "mext-11107",
   "ja": "ビーフジャーキー",
-  "desc": "strips of beef jerky: thin flat leathery strips of dried meat, dark brown with a reddish tint, dry and wrinkled, twisted and torn edges, matte",
+  "desc": "a few pieces of beef jerky on a plate: dried meat like strips of tree bark or old leather, deep chocolate-brown with a faint mahogany tint, matte, cracked and wrinkled surface, dry fibrous torn edges",
   "items": [
    "mext:11107"
   ],
@@ -1265,7 +1265,7 @@
  {
   "key": "mext-11275",
   "ja": "鹿肉（にほんじか） 生",
-  "desc": "raw venison on a plate: a block of very dark burgundy-red lean meat, almost purple-maroon, uniform colour without any white fat, plus a few thin slices of the same dark meat",
+  "desc": "a few thin slices of raw venison fanned on a plate: dark maroon-purple lean meat, deep wine-red like raw liver, one smooth uniform colour edge to edge, satin sheen",
   "items": [
    "mext:11275"
   ],
@@ -1498,7 +1498,7 @@
  {
   "key": "mext-11176",
   "ja": "ロースハム",
-  "desc": "slices of Japanese loin ham, thin round pink slices with a thin white fat rim, fanned on a plate",
+  "desc": "four thin round slices of Japanese loin ham fanned on a plate: each a smooth even uniform pale pink circle like pink paper, slightly glossy, with a narrow white fat rim along one edge",
   "items": [
    "mext:11176"
   ],
@@ -1886,7 +1886,7 @@
  {
   "key": "mext-11221",
   "ja": "鶏もも肉 皮つき 生",
-  "desc": "a raw boneless chicken thigh fillet on a small tray: one flat irregular sheet of pink meat about the size of a hand, lying flat, half covered by pale yellowish-white bumpy skin",
+  "desc": "one raw boneless chicken thigh lying flat on a small white tray: an irregular flat piece of meat like a pink pancake the size of a palm, pale pink flesh, one side covered with creamy yellow bumpy skin",
   "items": [
    "mext:11221"
   ],
@@ -2048,7 +2048,7 @@
  {
   "key": "mext-11234",
   "ja": "鶏皮（むね） 生",
-  "desc": "raw chicken skin: a few flat floppy sheets laid out on a tray, pale creamy-yellow with goosebump pores, thin and wrinkled, translucent white fat underneath",
+  "desc": "raw chicken skin: two thin irregular sheets spread out flat on a plate like wet crumpled cloth, pale creamy-yellow with dotted pimpled pores like goosebumps, moist and glossy, soft white fatty underside",
   "items": [
    "mext:11234",
    "mext:11235"
@@ -2059,7 +2059,7 @@
  {
   "key": "mext-11236",
   "ja": "鶏なんこつ 生",
-  "desc": "raw chicken cartilage (nankotsu), small white translucent pieces with a little meat",
+  "desc": "a small pile of raw chicken nankotsu on a plate: small bite-size triangles and knobs of milky white translucent cartilage like pieces of hard white jelly, each with a little thin pale pink meat attached",
   "items": [
    "mext:11236"
   ],
@@ -2377,7 +2377,7 @@
  {
   "key": "mext-12014",
   "ja": "卵白 生",
-  "desc": "raw egg white, a clear glossy viscous liquid in a small glass bowl",
+  "desc": "a small glass bowl of raw egg white only: a clear colourless glossy liquid, transparent like water with a slight sheen, thick and viscous like jelly, faintly cloudy in the middle",
   "items": [
    "mext:12014"
   ],
@@ -3734,7 +3734,7 @@
  {
   "key": "mext-15038",
   "ja": "ようかん（練り）",
-  "desc": "a rectangular bar of yokan on a small plate: a dense smooth glossy opaque dark maroon block like a dark chocolate bar, with a few clean thick slices cut, uniform colour throughout",
+  "desc": "a rectangular block of neri yokan on a small plate: smooth dense dark reddish-brown bean jelly with a satin sheen, slightly translucent at the cut edges, one thick slice cut off, like a smooth brick of firm dark jelly",
   "items": [
    "mext:15038"
   ],
@@ -3796,7 +3796,7 @@
  {
   "key": "mext-15045",
   "ja": "かりんとう（黒）",
-  "desc": "a small pile of karinto: short thin finger-length sticks, uniformly very dark brown almost black with a glossy brown sugar coat, crunchy and knobbly like twigs",
+  "desc": "a small pile of kuro karinto snack: short chubby fried dough sticks, finger length with rounded ends, coated in a shiny dark brown sugar glaze like chocolate, glossy lacquered surface",
   "items": [
    "mext:15045"
   ],

@@ -4512,16 +4512,16 @@
 {
 "key": "eatout-chicken_hot",
 "ja": "骨なしフライドチキン（ホットスナック）",
-"desc": "a boneless fried chicken nugget-style piece: one irregular chunk of chicken thigh, roughly fist-sized, with a thick craggy crunchy golden-brown coating, in a paper sleeve",
+"desc": "a single round lumpy nugget of fried chicken meat, a solid ball shape like a large karaage, entirely covered in craggy crunchy golden-brown coating, sitting in a small white paper bag",
 "items": [
 "eatout:chicken_hot"
 ],
-"roll": 2,
-"seed": 96380,
-"prompt": "6285c22078",
+"roll": 0,
+"seed": 96378,
+"prompt": "fc5acbc756",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": true,
-"near": true
+"near": false
 },
 {
 "key": "eatout-chijimi",
@@ -33855,6 +33855,20 @@
 "near": false
 },
 {
+"key": "mext-01036",
+"ja": "イングリッシュマフィン",
+"desc": "two English muffins: thick solid flat round discs like squat hamburger buns, pale golden sides, tops dusted with coarse cornmeal; one pulled apart into two halves lying face up, each showing a rough craggy cream surface full of little holes",
+"items": [
+"mext:01036"
+],
+"roll": 0,
+"seed": 16211,
+"prompt": "a942501e05",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": true,
+"near": false
+},
+{
 "key": "mext-01037",
 "ja": "ナン",
 "desc": "a large teardrop-shaped Indian naan flatbread, soft and puffy with dark brown charred blisters, glossy with butter",
@@ -34759,16 +34773,16 @@
 {
 "key": "mext-01113",
 "ja": "きりたんぽ",
-"desc": "two kiritanpo on bamboo skewers: thick cylinders of pounded white steamed rice wrapped around a thin wooden skewer that sticks out of both ends, the rice surface visibly white and grainy with golden-brown toasted patches, one cylinder cut into diagonal pieces showing white rice inside",
+"desc": "one long kiritanpo lying on a plate: a single smooth unbroken tube of mashed white rice like a thick white sausage, wrapped around a cedar stick poking out of one end, white grainy surface with golden-brown toasted patches",
 "items": [
 "mext:01113"
 ],
-"roll": 2,
-"seed": 12587,
-"prompt": "7121bede66",
+"roll": 0,
+"seed": 12585,
+"prompt": "1763132438",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": true,
-"near": true
+"near": false
 },
 {
 "key": "mext-01114",
@@ -35603,6 +35617,20 @@
 "near": false
 },
 {
+"key": "mext-01180",
+"ja": "春巻きの皮（揚げ）",
+"desc": "three flat square sheets of deep-fried pastry wrapper lying flat on a plate, paper-thin and golden, crisp and covered in small blisters and bubbles like a papadum, edges slightly curled, one sheet broken into crisp shards",
+"items": [
+"mext:01180"
+],
+"roll": 0,
+"seed": 14970,
+"prompt": "a1f268ff27",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": true,
+"near": false
+},
+{
 "key": "mext-01181",
 "ja": "米（赤米）",
 "desc": "raw red rice: a small dish of short rice grains with reddish-brown bran",
@@ -36025,13 +36053,13 @@
 {
 "key": "mext-02005",
 "ja": "しらたき",
-"desc": "a loose wet tangle of shirataki konjac noodles in a small dish: thin clear see-through glassy strands like fishing line, glistening and translucent with water droplets, the plate visible through them",
+"desc": "clear shirataki noodles in a shallow dish of water: colourless transparent jelly strands like glass vermicelli or clear fishing line, loosely tangled, the dish pattern showing right through them, glistening wet highlights",
 "items": [
 "mext:02005"
 ],
 "roll": 2,
 "seed": 79238,
-"prompt": "67e8e3a595",
+"prompt": "049590e5f5",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": true,
 "near": true
@@ -36250,13 +36278,13 @@
 {
 "key": "mext-02025",
 "ja": "やまといも 生",
-"desc": "a raw yamatoimo yam: a short lumpy knobbly root shaped like a clenched fist or a ginger knob, rough light-brown skin with hairy rootlets, one cut face showing dense bright white flesh, beside a small bowl of foamy white grated yam paste",
+"desc": "a raw yamatoimo yam: one squat rounded lump the size of a fist, shaped like a potato or a mitten, dull grey-brown rough bumpy skin with a few fine rootlets, one end sliced off showing a flat bright white cut face",
 "items": [
 "mext:02025"
 ],
 "roll": 2,
 "seed": 32360,
-"prompt": "3a4fac18c4",
+"prompt": "9ccaf3234c",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": true,
 "near": true
@@ -36348,16 +36376,16 @@
 {
 "key": "mext-02037",
 "ja": "くずきり（ゆで）",
-"desc": "a glass bowl of ice water holding kuzukiri: long flat clear transparent ribbon noodles like strips of glass, almost invisible in the water with ice cubes, beside a tiny cup of black syrup",
+"desc": "kuzukiri in a glass bowl of ice water: long flat ribbons of clear colourless jelly, transparent like cellophane, the bowl bottom visible through them, a few ribbons lifted on chopsticks glinting with highlights, beside a tiny cup of dark brown syrup",
 "items": [
 "mext:02037"
 ],
-"roll": 2,
-"seed": 89037,
-"prompt": "9cb60d2d16",
+"roll": 0,
+"seed": 89035,
+"prompt": "2b8b90d7df",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": true,
-"near": true
+"near": false
 },
 {
 "key": "mext-02038",
@@ -36648,14 +36676,14 @@
 {
 "key": "mext-02061",
 "ja": "緑豆はるさめ（ゆで）",
-"desc": "a small plate of cooked glass noodles: a loose pile of thin wet clear transparent strands like clear plastic threads, glistening, the white plate visible through them",
+"desc": "a small bowl of cooked glass noodles: a loose tangle of colourless see-through threads like fishing line or wet cellophane strings, clear as water, glistening, the white bowl showing through every strand",
 "items": [
 "mext:02061",
 "mext:02062"
 ],
 "roll": 2,
 "seed": 62653,
-"prompt": "ecd350480d",
+"prompt": "170ce079b3",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": true,
 "near": true
@@ -37602,13 +37630,13 @@
 {
 "key": "mext-04047",
 "ja": "ひきわり納豆",
-"desc": "a small bowl of hikiwari natto: finely crushed fermented soybeans in small broken brown fragments like coarse crumbs, sticky and moist, stretched with white stringy threads",
+"desc": "a small bowl of hikiwari natto: a moist sticky brown clump of tiny minced bits like coarse ground coffee or chopped nuts, mashed together into a crumbly paste, fine white sticky threads stretching up from it",
 "items": [
 "mext:04047"
 ],
 "roll": 2,
 "seed": 92402,
-"prompt": "6e97ab223d",
+"prompt": "e8eaca1776",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": true,
 "near": true
@@ -39165,13 +39193,13 @@
 {
 "key": "mext-06020",
 "ja": "さやえんどう 生",
-"desc": "a small heap of snow peas (sayaendo), very flat thin bright green pods like flat leaves, the tiny peas inside only faint bumps, a small stem tip on each pod",
+"desc": "five raw snow peas laid flat side by side on a plate: each pod paper-thin and flat like a bright green ribbon or leaf, smooth and slightly translucent, tiny pea shapes faintly visible inside, a pointed tip and a small stem cap",
 "items": [
 "mext:06020"
 ],
 "roll": 2,
 "seed": 90560,
-"prompt": "f384364749",
+"prompt": "9165cf0687",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": true,
 "near": true
@@ -39703,16 +39731,16 @@
 {
 "key": "mext-06062",
 "ja": "キャベツ ゆで",
-"desc": "a small plate of boiled cabbage: soft limp wilted pale green leaf pieces, translucent and slumped, folded over each other, steaming and moist",
+"desc": "a small heap of boiled cabbage pieces on a plate: limp droopy leaf squares collapsed flat in a soft pile, glossy pale yellow-green and semi-translucent like cooked onion, wet sheen, wisps of steam rising",
 "items": [
 "mext:06062"
 ],
-"roll": 2,
-"seed": 84248,
-"prompt": "55c5345bed",
+"roll": 0,
+"seed": 84246,
+"prompt": "e4e2e180d0",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": true,
-"near": true
+"near": false
 },
 {
 "key": "mext-06063",
@@ -39837,6 +39865,20 @@
 "roll": 0,
 "seed": 60973,
 "prompt": "102c8e1274",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": true,
+"near": false
+},
+{
+"key": "mext-06072",
+"ja": "みずな 生",
+"desc": "a bundle of raw mizuna greens: dozens of long pencil-thin white stems like spaghetti, each ending in small deeply jagged bright green leaves like rocket or dandelion leaves, the whole bunch long, slender and airy",
+"items": [
+"mext:06072"
+],
+"roll": 0,
+"seed": 3127,
+"prompt": "8a20a646a9",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": true,
 "near": false
@@ -40041,16 +40083,16 @@
 {
 "key": "mext-06088",
 "ja": "ザーサイ",
-"desc": "a small dish of zha cai pickle: thin irregular chunky slices of crunchy pickled mustard stem, dull khaki olive-green and beige, glossy with red chili oil and red chili flakes",
+"desc": "a small dish of zha cai: irregular knobby chunks and thin wavy shavings of pickled mustard tuber, lumpy and wrinkled like ginger root slices, dull khaki-brown and olive, glossy with red chili oil and red chili flakes",
 "items": [
 "mext:06088"
 ],
-"roll": 2,
-"seed": 56552,
-"prompt": "b2f1b365d7",
+"roll": 0,
+"seed": 56550,
+"prompt": "c17747eba4",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": true,
-"near": true
+"near": false
 },
 {
 "key": "mext-06089",
@@ -40160,6 +40202,20 @@
 "roll": 1,
 "seed": 46792,
 "prompt": "0642d9f428",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": true,
+"near": false
+},
+{
+"key": "mext-06099",
+"ja": "しゅんぎく 生",
+"desc": "a bunch of fresh shungiku leafy greens like a bunch of spinach: long green stems covered in deeply cut jagged feathery leaves like large flat-leaf parsley or carrot tops, all bright green leaves tied with a band",
+"items": [
+"mext:06099"
+],
+"roll": 0,
+"seed": 53521,
+"prompt": "47d10b353b",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": true,
 "near": false
@@ -40730,13 +40786,13 @@
 {
 "key": "mext-06143",
 "ja": "福神漬",
-"desc": "a small dish of fukujinzuke curry pickle: a heap of tiny diced pieces, all dyed deep glossy red-brown in thick sweet soy syrup, small thin slices and crescents, sticky and shiny like a relish",
+"desc": "a close-up of a small saucer heaped with fukujinzuke relish like a chopped chutney: hundreds of tiny thin chips and crescents of radish, cucumber and lotus root, each the size of a grain of rice, all deep red-brown and glossy with syrup",
 "items": [
 "mext:06143"
 ],
 "roll": 2,
 "seed": 70039,
-"prompt": "18a14b1523",
+"prompt": "c397bb1a33",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": true,
 "near": true
@@ -41560,6 +41616,20 @@
 "near": false
 },
 {
+"key": "mext-06207",
+"ja": "にら 生",
+"desc": "a bundle of nira laid flat side by side: long thin flat ribbon-like leaves like wide blades of grass, uniformly dark green from end to end, cut square at both ends, tied with a thin band",
+"items": [
+"mext:06207"
+],
+"roll": 0,
+"seed": 29777,
+"prompt": "9ddbd8ea07",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": true,
+"near": false
+},
+{
 "key": "mext-06208",
 "ja": "にら ゆで",
 "desc": "a small dish of boiled garlic chives: soft limp flat thin dark green ribbon-like blades cut into short lengths, glossy",
@@ -41900,16 +41970,16 @@
 {
 "key": "mext-06235",
 "ja": "はくさい 塩漬",
-"desc": "salt-pickled napa cabbage, soft pale green and white pieces in a small dish",
+"desc": "a small mound of salt-pickled napa cabbage cut into bite-size squares: limp wilted leaves, soft translucent pale yellow-green with pale white ribs, wet and glistening, pressed together in a small dish",
 "items": [
 "mext:06235"
 ],
-"roll": 2,
-"seed": 11520,
-"prompt": "d8d3a0946d",
+"roll": 1,
+"seed": 11519,
+"prompt": "04718b837e",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": true,
-"near": true
+"near": false
 },
 {
 "key": "mext-06236",
@@ -42463,6 +42533,20 @@
 "near": false
 },
 {
+"key": "mext-06280",
+"ja": "みょうが",
+"desc": "two myoga buds on a plate: small elongated pointed buds shaped like a closed tulip bud or a fat flame, made of tight overlapping scales, pink-red at the tip fading to cream at the base; one cut lengthwise showing pale layered insides",
+"items": [
+"mext:06280"
+],
+"roll": 1,
+"seed": 13915,
+"prompt": "2a5527cfbd",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": true,
+"near": false
+},
+{
 "key": "mext-06282",
 "ja": "むかご 生",
 "desc": "mukago, small round dark brown yam bulbils like tiny potatoes",
@@ -42732,13 +42816,13 @@
 {
 "key": "mext-06306",
 "ja": "らっきょう 甘酢漬",
-"desc": "a small dish of pickled rakkyo: plump oval shallot bulbs, glossy, pearly translucent white like jelly, wet with sweet vinegar",
+"desc": "a small glass dish of sweet-pickled rakkyo: smooth glossy oval pickles the size of grapes, shiny translucent pale ivory like lychee flesh or jelly, slick wet surfaces, sitting in clear syrupy vinegar",
 "items": [
 "mext:06306"
 ],
 "roll": 2,
 "seed": 43122,
-"prompt": "da3ebe7493",
+"prompt": "6a21fdac79",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": true,
 "near": true
@@ -42830,13 +42914,13 @@
 {
 "key": "mext-06313",
 "ja": "サラダな",
-"desc": "a head of butter lettuce: a loose round open rosette of large soft smooth floppy pale green leaves cupped like a flower, smooth edges, tender and delicate",
+"desc": "a round head of butter lettuce seen from above like an open green rose: large soft round cup-shaped leaves with a smooth satin surface and smooth rounded edges, pale yellow-green in the centre, deeper green outer leaves",
 "items": [
 "mext:06313"
 ],
 "roll": 2,
 "seed": 54368,
-"prompt": "2388a155a3",
+"prompt": "9c33a475fb",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": true,
 "near": true
@@ -43313,6 +43397,20 @@
 "roll": 0,
 "seed": 75980,
 "prompt": "a0f890fa79",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": true,
+"near": false
+},
+{
+"key": "mext-06354",
+"ja": "ブロッコリースプラウト",
+"desc": "a dense tangle of tiny microgreen sprouts like cress or alfalfa sprouts in a small clear plastic pack: hundreds of hair-thin white threadlike stems, each topped with a tiny pair of round green seed leaves",
+"items": [
+"mext:06354"
+],
+"roll": 0,
+"seed": 19769,
+"prompt": "38fe849a00",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": true,
 "near": false
@@ -44256,7 +44354,7 @@
 {
 "key": "mext-07022",
 "ja": "梅干し",
-"desc": "a small dish of three umeboshi: soft deeply wrinkled shrivelled red plums, matte red-pink, wet with salt crystals, very wrinkled like raisins",
+"desc": "three umeboshi in a small dish: small soft shrivelled dried plums, skin crumpled in many fine creases like a prune or raisin, dull matte dusty pinkish-red, a few coarse white salt crystals",
 "items": [
 "mext:07022",
 "dishes:umeboshi",
@@ -44264,7 +44362,7 @@
 ],
 "roll": 2,
 "seed": 4281,
-"prompt": "a95b4446c1",
+"prompt": "f13faf2b47",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": true,
 "near": true
@@ -45394,16 +45492,16 @@
 {
 "key": "mext-07117",
 "ja": "レーズン（干しぶどう）",
-"desc": "a small pile of raisins, wrinkled dark brown dried grapes",
+"desc": "a close-up of a small heap of about thirty raisins on a saucer beside a teaspoon: each raisin tiny, the size of a pea, shrivelled and deeply wrinkled, matte dark purple-brown, irregular rounded little shapes",
 "items": [
 "mext:07117"
 ],
-"roll": 2,
-"seed": 38478,
-"prompt": "343ff3b54d",
+"roll": 0,
+"seed": 38476,
+"prompt": "176543279d",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": true,
-"near": true
+"near": false
 },
 {
 "key": "mext-07118",
@@ -45802,13 +45900,13 @@
 {
 "key": "mext-07148",
 "ja": "りんご 皮なし",
-"desc": "peeled apple wedges on a small plate: pale ivory-cream crescents of apple flesh, the outer curve also cream with no skin, moist and crisp, a seed cavity notch on each",
+"desc": "four peeled apple wedges on a small plate: crescent slices that are cream-white all over like pear flesh, the smooth outer curve pale ivory like the cut faces, moist and crisp, a small seed notch on each",
 "items": [
 "mext:07148"
 ],
 "roll": 2,
 "seed": 10266,
-"prompt": "0f948c9079",
+"prompt": "65971b395c",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": true,
 "near": true
@@ -46000,16 +46098,16 @@
 {
 "key": "mext-07165",
 "ja": "デコポン（しらぬひ）",
-"desc": "a dekopon citrus fruit: a large bumpy orange mandarin with a prominent round knob on top, like a small ball protruding at the stem end, slightly rough peel",
+"desc": "a single dekopon citrus: a big orange mandarin with a tall raised round knob on top like a small head on a short neck, shaped like a squat gourd or snowman, bumpy orange peel, short green stem on the knob",
 "items": [
 "mext:07165"
 ],
-"roll": 2,
-"seed": 50601,
-"prompt": "c2ebab2c51",
+"roll": 0,
+"seed": 50599,
+"prompt": "8e158f0d21",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": true,
-"near": true
+"near": false
 },
 {
 "key": "mext-07166",
@@ -46329,6 +46427,20 @@
 "roll": 1,
 "seed": 53284,
 "prompt": "881b407f64",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": true,
+"near": false
+},
+{
+"key": "mext-08003",
+"ja": "なめたけ（えのき味付け瓶詰）",
+"desc": "a small dish of nametake: a sticky tangle of very thin long enoki strands like thin pale threads with pinhead caps, coated in thick glossy dark brown soy syrup like jam",
+"items": [
+"mext:08003"
+],
+"roll": 0,
+"seed": 52629,
+"prompt": "571c4e9223",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": true,
 "near": false
@@ -46700,13 +46812,13 @@
 {
 "key": "mext-08034",
 "ja": "まつたけ",
-"desc": "two matsutake mushrooms, thick white-brown stems with dark brown caps, one cut lengthwise",
+"desc": "two matsutake mushrooms lying side by side: long thick straight cream-white stems like fat carrots, each topped by a small tight smooth dark brown dome cap barely wider than the stem; one sliced lengthwise in half showing solid white flesh",
 "items": [
 "mext:08034"
 ],
 "roll": 2,
 "seed": 87735,
-"prompt": "9e3eeb1346",
+"prompt": "5224797b4d",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": true,
 "near": true
@@ -47148,6 +47260,20 @@
 "near": false
 },
 {
+"key": "mext-09012",
+"ja": "海ぶどう",
+"desc": "a sprig of umibudo seaweed coiled on a small dish: thin pale green stems densely coated with hundreds of tiny glossy translucent green beads the size of caviar, like strings of green fish roe",
+"items": [
+"mext:09012"
+],
+"roll": 0,
+"seed": 72071,
+"prompt": "b19a80c11a",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": true,
+"near": false
+},
+{
 "key": "mext-09013",
 "ja": "えながおにこんぶ 素干し",
 "desc": "Dried oni kelp (kombu): long, wide, flat strips of dark brown-black kelp with a white powdery bloom on the surface, stiff and leathery, folded on a plate",
@@ -47546,13 +47672,13 @@
 {
 "key": "mext-09044",
 "ja": "カットわかめ（乾）",
-"desc": "a small dish of dried cut wakame: small dry hard crumpled flakes, nearly black dark green, brittle and crinkled like dried tea leaves",
+"desc": "a close-up of a spoonful of dried cut wakame on a small saucer: tiny shrivelled black-green crumbs and curled bits like loose black tea leaves or dried herbs, matte, rough, hard and dry",
 "items": [
 "mext:09044"
 ],
 "roll": 2,
 "seed": 65785,
-"prompt": "4232ef2fa9",
+"prompt": "44773f8684",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": true,
 "near": true
@@ -47595,6 +47721,34 @@
 "roll": 0,
 "seed": 83658,
 "prompt": "e067fc805d",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": true,
+"near": false
+},
+{
+"key": "mext-09050",
+"ja": "ひじき（乾）",
+"desc": "a small white dish heaped with dried hijiki: tiny short jet-black twig-like bits like black tea leaves or pine needles, dry, brittle and matte black",
+"items": [
+"mext:09050"
+],
+"roll": 0,
+"seed": 69775,
+"prompt": "27def1ce7e",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": true,
+"near": false
+},
+{
+"key": "mext-09051",
+"ja": "ひじき（ゆで）",
+"desc": "a small dish of boiled hijiki: a heap of short shiny jet-black little sticks like chopped black licorice or black rice grains, each the size of a matchstick tip, glossy and wet",
+"items": [
+"mext:09051"
+],
+"roll": 0,
+"seed": 80345,
+"prompt": "34541039f3",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": true,
 "near": false
@@ -47775,13 +47929,13 @@
 {
 "key": "mext-10006",
 "ja": "あじの開き 生",
-"desc": "a raw aji no hiraki: a horse mackerel split open flat like an open book, head split in half, showing the pale pink raw flesh with the spine in the middle, silver skin on the outer edges",
+"desc": "a raw horse mackerel opened flat like an open book, seen from above, lying skin-side down: two pale pink fillets side by side joined along a central spine, the head split in half at the top, tail at the bottom",
 "items": [
 "mext:10006"
 ],
 "roll": 2,
 "seed": 90247,
-"prompt": "88ed4f93e3",
+"prompt": "196f56979d",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": true,
 "near": true
@@ -47789,14 +47943,14 @@
 {
 "key": "mext-10007",
 "ja": "あじの開き 焼き",
-"desc": "a grilled aji no hiraki on a rectangular plate: a horse mackerel split open flat like an open book, the opened flesh side up showing golden-brown grilled flesh and the spine, beside a small mound of grated daikon",
+"desc": "a grilled aji no hiraki lying completely flat on a rectangular plate: a fish opened like an open book into a wide butterfly shape, golden-brown flesh facing up, one fillet on each side of the central spine, head split in two, grated daikon beside",
 "items": [
 "mext:10007",
 "dishes:aji-hiraki"
 ],
 "roll": 2,
 "seed": 44629,
-"prompt": "526a6f076a",
+"prompt": "163155dfe4",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": true,
 "near": true
@@ -48326,16 +48480,16 @@
 {
 "key": "mext-10055",
 "ja": "しらす干し",
-"desc": "a small dish of shirasu boshi: a heap of hundreds of tiny thin dried white-ivory baby fish like thin white threads, each with tiny black dots for eyes",
+"desc": "a close-up of a small saucer of shirasu boshi: a heap of tiny dried baby fish, each a slim slightly curved pale white sliver the size of a grain of rice, clearly fish-shaped with two black dot eyes at the head end and a tiny tail",
 "items": [
 "mext:10055"
 ],
-"roll": 2,
-"seed": 73148,
-"prompt": "486b2b7a5b",
+"roll": 1,
+"seed": 73147,
+"prompt": "ba16224993",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": true,
-"near": true
+"near": false
 },
 {
 "key": "mext-10056",
@@ -48721,16 +48875,16 @@
 {
 "key": "mext-10092",
 "ja": "かつお節（削り節）",
-"desc": "a small heap of katsuobushi bonito flakes, thin curly pale pinkish-brown shavings",
+"desc": "a small mound of katsuobushi bonito flakes in a dish: paper-thin wispy shavings like wood shavings, very pale beige-pink and semi-translucent like dried rose petals, delicate and crinkled, light as tissue paper",
 "items": [
 "mext:10092"
 ],
-"roll": 2,
-"seed": 87223,
-"prompt": "dbd340dcfd",
+"roll": 0,
+"seed": 87221,
+"prompt": "862f576770",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": true,
-"near": true
+"near": false
 },
 {
 "key": "mext-10093",
@@ -48770,6 +48924,20 @@
 "roll": 0,
 "seed": 69846,
 "prompt": "b0d8f4ee01",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": true,
+"near": false
+},
+{
+"key": "mext-10096",
+"ja": "かつお缶（味付けフレーク）",
+"desc": "an open small round tin can and a small dish heaped with seasoned canned bonito flakes: loose shredded crumbs of soft brown meat like canned tuna, moist and glossy with sweet soy sauce",
+"items": [
+"mext:10096"
+],
+"roll": 1,
+"seed": 2669,
+"prompt": "6878ce6f3f",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": true,
 "near": false
@@ -50041,13 +50209,13 @@
 {
 "key": "mext-10203",
 "ja": "たらこ 焼き",
-"desc": "two grilled tarako on a small plate: smooth plump elongated pink-orange pouches like small sausages, lightly charred golden-brown in patches, one sliced open showing densely packed fine pale pink grainy roe like wet sand",
+"desc": "a pair of grilled tarako on a plate: two soft flattened cod roe sacs side by side, joined at one end like a pair of leaves, pink-orange skin with light browned spots; one cut into rounds showing dense fine pale pink grainy roe like moist sand",
 "items": [
 "mext:10203"
 ],
 "roll": 2,
 "seed": 45286,
-"prompt": "21525e6d4c",
+"prompt": "6a7e2a6718",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": true,
 "near": true
@@ -50491,13 +50659,13 @@
 {
 "key": "mext-10248",
 "ja": "ほっけ開き干し 生",
-"desc": "a raw dried hokke opened flat: one fish split from the back and butterflied into a wide flat symmetrical shape like an open book, pale pinkish-white flesh facing up with the backbone down the centre, head split in half, grey striped skin at the edges; not a whole round fish",
+"desc": "a raw hokke himono lying completely flat on a plate: a fish split and opened like an open book into a wide butterfly shape, one pale pinkish-white fillet on each side of the central backbone, head split in two halves, grey striped skin at the edges",
 "items": [
 "mext:10248"
 ],
 "roll": 2,
 "seed": 16522,
-"prompt": "ab9e4685ad",
+"prompt": "6d2eea0bb5",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": true,
 "near": true
@@ -52100,19 +52268,19 @@
 {
 "key": "mext-10390",
 "ja": "あじフライ",
-"desc": "two Japanese aji fry, butterflied horse mackerel fillets in crisp golden panko, fan-shaped, with shredded cabbage",
+"desc": "two aji fry on a plate: flat breaded fish cutlets shaped like a fan or a broad leaf, thick craggy coating of coarse golden-brown panko crumbs all over, a small tail fin at the narrow end, beside shredded cabbage and a lemon wedge",
 "items": [
 "mext:10390",
 "dishes:aji-fry",
 "toyonaka:125962",
 "kumagaya:277"
 ],
-"roll": 2,
-"seed": 4834,
-"prompt": "7c1ff0c637",
+"roll": 0,
+"seed": 4832,
+"prompt": "c221a9718f",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": true,
-"near": true
+"near": false
 },
 {
 "key": "mext-10391",
@@ -52209,6 +52377,20 @@
 "roll": 0,
 "seed": 2834,
 "prompt": "412740053f",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": true,
+"near": false
+},
+{
+"key": "mext-10400",
+"ja": "きす 天ぷら",
+"desc": "two pieces of kisu tempura on paper: each a small slender fish fillet opened flat into a wide willow-leaf shape, coated in pale golden crisp lacy batter, flat and leaf-like",
+"items": [
+"mext:10400"
+],
+"roll": 0,
+"seed": 9196,
+"prompt": "21ab4b463d",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": true,
 "near": false
@@ -52343,7 +52525,7 @@
 {
 "key": "mext-10412",
 "ja": "ほっけ開き干し 焼き",
-"desc": "a grilled hokke fish split open and butterflied completely flat on a long plate: a wide flat oval of golden-brown grilled flesh with the spine down the middle, both halves spread open like a book, skin side underneath; not a whole round fish; a little grated daikon",
+"desc": "an opened grilled hokke fish lying flat on a long plate like an open book: a wide flat oval of golden-brown grilled flesh, one fillet on each side of a thin central spine, the split head at the top, tail at the bottom, a small mound of grated daikon",
 "items": [
 "mext:10412",
 "dishes:hokke",
@@ -52351,7 +52533,7 @@
 ],
 "roll": 2,
 "seed": 5059,
-"prompt": "1e365f3bfa",
+"prompt": "8b63518342",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": true,
 "near": true
@@ -53483,13 +53665,13 @@
 {
 "key": "mext-11105",
 "ja": "コンビーフ",
-"desc": "a block of canned corned beef out of its tin on a plate: a tapered loaf of pink-brown finely shredded beef fibres pressed tightly together, matte and fibrous, with a few slices crumbling apart",
+"desc": "a small tapered brick-shaped block of Japanese canned corned beef on a plate: rough matte pink-brown surface of loose shredded meat threads like pulled pork or flaked tuna, a spoonful of loose shreds flaked off beside it",
 "items": [
 "mext:11105"
 ],
 "roll": 2,
 "seed": 94927,
-"prompt": "94edd74123",
+"prompt": "5a78148c5c",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": true,
 "near": true
@@ -53511,16 +53693,16 @@
 {
 "key": "mext-11107",
 "ja": "ビーフジャーキー",
-"desc": "strips of beef jerky: thin flat leathery strips of dried meat, dark brown with a reddish tint, dry and wrinkled, twisted and torn edges, matte",
+"desc": "a few pieces of beef jerky on a plate: dried meat like strips of tree bark or old leather, deep chocolate-brown with a faint mahogany tint, matte, cracked and wrinkled surface, dry fibrous torn edges",
 "items": [
 "mext:11107"
 ],
 "roll": 2,
 "seed": 82179,
-"prompt": "72f1fe0f44",
+"prompt": "c812838423",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": true,
-"near": true
+"near": false
 },
 {
 "key": "mext-11108",
@@ -54065,16 +54247,16 @@
 {
 "key": "mext-11176",
 "ja": "ロースハム",
-"desc": "slices of Japanese loin ham, thin round pink slices with a thin white fat rim, fanned on a plate",
+"desc": "four thin round slices of Japanese loin ham fanned on a plate: each a smooth even uniform pale pink circle like pink paper, slightly glossy, with a narrow white fat rim along one edge",
 "items": [
 "mext:11176"
 ],
-"roll": 2,
-"seed": 79250,
-"prompt": "20659753b9",
+"roll": 1,
+"seed": 79249,
+"prompt": "8c14db1df5",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": true,
-"near": true
+"near": false
 },
 {
 "key": "mext-11180",
@@ -54541,13 +54723,13 @@
 {
 "key": "mext-11221",
 "ja": "鶏もも肉 皮つき 生",
-"desc": "a raw boneless chicken thigh fillet on a small tray: one flat irregular sheet of pink meat about the size of a hand, lying flat, half covered by pale yellowish-white bumpy skin",
+"desc": "one raw boneless chicken thigh lying flat on a small white tray: an irregular flat piece of meat like a pink pancake the size of a palm, pale pink flesh, one side covered with creamy yellow bumpy skin",
 "items": [
 "mext:11221"
 ],
 "roll": 2,
 "seed": 47569,
-"prompt": "90a6c3ec8d",
+"prompt": "318750054b",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": true,
 "near": true
@@ -54717,6 +54899,35 @@
 "roll": 0,
 "seed": 26882,
 "prompt": "8c90b17d5d",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": true,
+"near": false
+},
+{
+"key": "mext-11234",
+"ja": "鶏皮（むね） 生",
+"desc": "raw chicken skin: two thin irregular sheets spread out flat on a plate like wet crumpled cloth, pale creamy-yellow with dotted pimpled pores like goosebumps, moist and glossy, soft white fatty underside",
+"items": [
+"mext:11234",
+"mext:11235"
+],
+"roll": 2,
+"seed": 41635,
+"prompt": "f2bc12b027",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": true,
+"near": true
+},
+{
+"key": "mext-11236",
+"ja": "鶏なんこつ 生",
+"desc": "a small pile of raw chicken nankotsu on a plate: small bite-size triangles and knobs of milky white translucent cartilage like pieces of hard white jelly, each with a little thin pale pink meat attached",
+"items": [
+"mext:11236"
+],
+"roll": 0,
+"seed": 25549,
+"prompt": "4b4a9af57e",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": true,
 "near": false
@@ -54993,13 +55204,13 @@
 {
 "key": "mext-11274",
 "ja": "牛ハラミ 生",
-"desc": "raw beef skirt steak on a plate: long thick strips of dark red meat with a coarse visible grain of parallel fibres running across, lean, a thin silvery membrane on one edge",
+"desc": "raw beef harami skirt steak: three long narrow belts of lean dark crimson meat lying side by side like ribbons, coarse ridged parallel muscle fibres running across them like corduroy, a thin silvery membrane along one edge",
 "items": [
 "mext:11274"
 ],
 "roll": 2,
 "seed": 54567,
-"prompt": "33c5b1d9dd",
+"prompt": "0d669709a4",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": true,
 "near": true
@@ -55007,16 +55218,16 @@
 {
 "key": "mext-11275",
 "ja": "鹿肉（にほんじか） 生",
-"desc": "raw venison on a plate: a block of very dark burgundy-red lean meat, almost purple-maroon, uniform colour without any white fat, plus a few thin slices of the same dark meat",
+"desc": "a few thin slices of raw venison fanned on a plate: dark maroon-purple lean meat, deep wine-red like raw liver, one smooth uniform colour edge to edge, satin sheen",
 "items": [
 "mext:11275"
 ],
-"roll": 2,
-"seed": 78037,
-"prompt": "1cf9392a2b",
+"roll": 0,
+"seed": 78035,
+"prompt": "7092a7bae8",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": true,
-"near": true
+"near": false
 },
 {
 "key": "mext-11276",
@@ -55645,6 +55856,20 @@
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": true,
 "near": false
+},
+{
+"key": "mext-12014",
+"ja": "卵白 生",
+"desc": "a small glass bowl of raw egg white only: a clear colourless glossy liquid, transparent like water with a slight sheen, thick and viscous like jelly, faintly cloudy in the middle",
+"items": [
+"mext:12014"
+],
+"roll": 2,
+"seed": 72645,
+"prompt": "47072a0a90",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": true,
+"near": true
 },
 {
 "key": "mext-12015",
@@ -57208,6 +57433,20 @@
 "near": false
 },
 {
+"key": "mext-15038",
+"ja": "ようかん（練り）",
+"desc": "a rectangular block of neri yokan on a small plate: smooth dense dark reddish-brown bean jelly with a satin sheen, slightly translucent at the cut edges, one thick slice cut off, like a smooth brick of firm dark jelly",
+"items": [
+"mext:15038"
+],
+"roll": 0,
+"seed": 1107,
+"prompt": "ebfb110769",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": true,
+"near": false
+},
+{
 "key": "mext-15039",
 "ja": "水ようかん",
 "desc": "a small square slab of mizu yokan on a little dish: a soft wobbly smooth opaque reddish-brown block like chocolate pudding, uniform colour, glossy wet surface",
@@ -57296,13 +57535,13 @@
 {
 "key": "mext-15045",
 "ja": "かりんとう（黒）",
-"desc": "a small pile of karinto: short thin finger-length sticks, uniformly very dark brown almost black with a glossy brown sugar coat, crunchy and knobbly like twigs",
+"desc": "a small pile of kuro karinto snack: short chubby fried dough sticks, finger length with rounded ends, coated in a shiny dark brown sugar glaze like chocolate, glossy lacquered surface",
 "items": [
 "mext:15045"
 ],
 "roll": 2,
 "seed": 31563,
-"prompt": "560cddd62e",
+"prompt": "5eb325be0d",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": true,
 "near": true
@@ -59851,16 +60090,16 @@
 {
 "key": "mext-16052",
 "ja": "果実色飲料",
-"desc": "Fruit-coloured soda: a bright orange fizzy soft drink with bubbles in a clear glass",
+"desc": "a glass of Japanese melon soda: a vivid bright emerald-green fizzy drink full of rising bubbles in a tall clear glass with ice cubes and a straw",
 "items": [
 "mext:16052"
 ],
-"roll": 2,
-"seed": 90247,
-"prompt": "a4ebc36d69",
+"roll": 0,
+"seed": 90245,
+"prompt": "07eb96f19d",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": true,
-"near": true
+"near": false
 },
 {
 "key": "mext-16053",
@@ -60372,13 +60611,13 @@
 {
 "key": "mext-17027",
 "ja": "コンソメ（固形ブイヨン）",
-"desc": "bouillon cubes, small golden-brown square cubes, one in a cup of clear broth",
+"desc": "four dry bouillon cubes on a small plate: hard square cubes the size of dice, golden-yellow to light brown, crumbly matte surface, one half-unwrapped from gold foil, one broken open showing granular powder inside",
 "items": [
 "mext:17027"
 ],
 "roll": 2,
 "seed": 9066,
-"prompt": "d29f66e51d",
+"prompt": "7d933b3b97",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": true,
 "near": true
@@ -61970,18 +62209,18 @@
 {
 "key": "mext-18021",
 "ja": "白身魚フライ",
-"desc": "white fish fry, a flat breaded fried fish fillet in golden panko, with tartar sauce and cabbage",
+"desc": "two flat golden panko-breaded fried fillets on a plate, crisp crumb coating, one cut showing flaky white flesh inside, with a mound of shredded green cabbage and a dollop of tartar sauce",
 "items": [
 "mext:18021",
 "toyonaka:266174",
 "kumagaya:908"
 ],
-"roll": 2,
-"seed": 98765,
-"prompt": "0c68ead8a2",
+"roll": 0,
+"seed": 98763,
+"prompt": "d5877978ee",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": true,
-"near": true
+"near": false
 },
 {
 "key": "mext-18022",
@@ -61996,6 +62235,20 @@
 "roll": 0,
 "seed": 59889,
 "prompt": "588315e26c",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": true,
+"near": false
+},
+{
+"key": "mext-18023",
+"ja": "松前漬け",
+"desc": "matsumaezuke in a small dish: a tangle of thin black-green kombu strips and pale cream squid strips in a glossy sticky amber marinade, studded with small chunky yellow pieces of herring roe and a few thin orange carrot strips",
+"items": [
+"mext:18023"
+],
+"roll": 0,
+"seed": 33767,
+"prompt": "38c77d2d91",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": true,
 "near": false

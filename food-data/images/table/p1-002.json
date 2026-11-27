@@ -332,7 +332,7 @@
  {
   "key": "mext-01036",
   "ja": "イングリッシュマフィン",
-  "desc": "two English muffins, round flat rolls dusted with cornmeal, one split open showing a holey cream interior",
+  "desc": "two English muffins: thick solid flat round discs like squat hamburger buns, pale golden sides, tops dusted with coarse cornmeal; one pulled apart into two halves lying face up, each showing a rough craggy cream surface full of little holes",
   "items": [
    "mext:01036"
   ],
@@ -774,7 +774,7 @@
  {
   "key": "mext-01180",
   "ja": "春巻きの皮（揚げ）",
-  "desc": "crisp golden fried spring roll wrapper sheets, thin bubbly square sheets",
+  "desc": "three flat square sheets of deep-fried pastry wrapper lying flat on a plate, paper-thin and golden, crisp and covered in small blisters and bubbles like a papadum, edges slightly curled, one sheet broken into crisp shards",
   "items": [
    "mext:01180"
   ],
@@ -1076,7 +1076,7 @@
  {
   "key": "mext-01113",
   "ja": "きりたんぽ",
-  "desc": "two kiritanpo on bamboo skewers: thick cylinders of pounded white steamed rice wrapped around a thin wooden skewer that sticks out of both ends, the rice surface visibly white and grainy with golden-brown toasted patches, one cylinder cut into diagonal pieces showing white rice inside",
+  "desc": "one long kiritanpo lying on a plate: a single smooth unbroken tube of mashed white rice like a thick white sausage, wrapped around a cedar stick poking out of one end, white grainy surface with golden-brown toasted patches",
   "items": [
    "mext:01113"
   ],
@@ -1363,7 +1363,7 @@
  {
   "key": "mext-02005",
   "ja": "しらたき",
-  "desc": "a loose wet tangle of shirataki konjac noodles in a small dish: thin clear see-through glassy strands like fishing line, glistening and translucent with water droplets, the plate visible through them",
+  "desc": "clear shirataki noodles in a shallow dish of water: colourless transparent jelly strands like glass vermicelli or clear fishing line, loosely tangled, the dish pattern showing right through them, glistening wet highlights",
   "items": [
    "mext:02005"
   ],
@@ -1568,7 +1568,7 @@
  {
   "key": "mext-02025",
   "ja": "やまといも 生",
-  "desc": "a raw yamatoimo yam: a short lumpy knobbly root shaped like a clenched fist or a ginger knob, rough light-brown skin with hairy rootlets, one cut face showing dense bright white flesh, beside a small bowl of foamy white grated yam paste",
+  "desc": "a raw yamatoimo yam: one squat rounded lump the size of a fist, shaped like a potato or a mitten, dull grey-brown rough bumpy skin with a few fine rootlets, one end sliced off showing a flat bright white cut face",
   "items": [
    "mext:02025"
   ],
@@ -1622,7 +1622,7 @@
  {
   "key": "mext-02037",
   "ja": "くずきり（ゆで）",
-  "desc": "a glass bowl of ice water holding kuzukiri: long flat clear transparent ribbon noodles like strips of glass, almost invisible in the water with ice cubes, beside a tiny cup of black syrup",
+  "desc": "kuzukiri in a glass bowl of ice water: long flat ribbons of clear colourless jelly, transparent like cellophane, the bowl bottom visible through them, a few ribbons lifted on chopsticks glinting with highlights, beside a tiny cup of dark brown syrup",
   "items": [
    "mext:02037"
   ],
@@ -1752,7 +1752,7 @@
  {
   "key": "mext-02061",
   "ja": "緑豆はるさめ（ゆで）",
-  "desc": "a small plate of cooked glass noodles: a loose pile of thin wet clear transparent strands like clear plastic threads, glistening, the white plate visible through them",
+  "desc": "a small bowl of cooked glass noodles: a loose tangle of colourless see-through threads like fishing line or wet cellophane strings, clear as water, glistening, the white bowl showing through every strand",
   "items": [
    "mext:02061",
    "mext:02062"
@@ -2254,7 +2254,7 @@
  {
   "key": "mext-04047",
   "ja": "ひきわり納豆",
-  "desc": "a small bowl of hikiwari natto: finely crushed fermented soybeans in small broken brown fragments like coarse crumbs, sticky and moist, stretched with white stringy threads",
+  "desc": "a small bowl of hikiwari natto: a moist sticky brown clump of tiny minced bits like coarse ground coffee or chopped nuts, mashed together into a crumbly paste, fine white sticky threads stretching up from it",
   "items": [
    "mext:04047"
   ],
@@ -2842,7 +2842,7 @@
  {
   "key": "mext-06020",
   "ja": "さやえんどう 生",
-  "desc": "a small heap of snow peas (sayaendo), very flat thin bright green pods like flat leaves, the tiny peas inside only faint bumps, a small stem tip on each pod",
+  "desc": "five raw snow peas laid flat side by side on a plate: each pod paper-thin and flat like a bright green ribbon or leaf, smooth and slightly translucent, tiny pea shapes faintly visible inside, a pointed tip and a small stem cap",
   "items": [
    "mext:06020"
   ],
@@ -3024,7 +3024,7 @@
  {
   "key": "mext-06062",
   "ja": "キャベツ ゆで",
-  "desc": "a small plate of boiled cabbage: soft limp wilted pale green leaf pieces, translucent and slumped, folded over each other, steaming and moist",
+  "desc": "a small heap of boiled cabbage pieces on a plate: limp droopy leaf squares collapsed flat in a soft pile, glossy pale yellow-green and semi-translucent like cooked onion, wet sheen, wisps of steam rising",
   "items": [
    "mext:06062"
   ],
@@ -3155,7 +3155,7 @@
  {
   "key": "mext-06088",
   "ja": "ザーサイ",
-  "desc": "a small dish of zha cai pickle: thin irregular chunky slices of crunchy pickled mustard stem, dull khaki olive-green and beige, glossy with red chili oil and red chili flakes",
+  "desc": "a small dish of zha cai: irregular knobby chunks and thin wavy shavings of pickled mustard tuber, lumpy and wrinkled like ginger root slices, dull khaki-brown and olive, glossy with red chili oil and red chili flakes",
   "items": [
    "mext:06088"
   ],
@@ -3216,7 +3216,7 @@
  {
   "key": "mext-06099",
   "ja": "しゅんぎく 生",
-  "desc": "a bunch of shungiku chrysanthemum greens, deeply lobed bright green leaves",
+  "desc": "a bunch of fresh shungiku leafy greens like a bunch of spinach: long green stems covered in deeply cut jagged feathery leaves like large flat-leaf parsley or carrot tops, all bright green leaves tied with a band",
   "items": [
    "mext:06099"
   ],

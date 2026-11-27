@@ -153,7 +153,7 @@
  {
   "key": "mext-06143",
   "ja": "福神漬",
-  "desc": "a small dish of fukujinzuke curry pickle: a heap of tiny diced pieces, all dyed deep glossy red-brown in thick sweet soy syrup, small thin slices and crescents, sticky and shiny like a relish",
+  "desc": "a close-up of a small saucer heaped with fukujinzuke relish like a chopped chutney: hundreds of tiny thin chips and crescents of radish, cucumber and lotus root, each the size of a grain of rice, all deep red-brown and glossy with syrup",
   "items": [
    "mext:06143"
   ],
@@ -508,7 +508,7 @@
  {
   "key": "mext-06207",
   "ja": "にら 生",
-  "desc": "a bunch of nira garlic chives, long flat dark green leaves",
+  "desc": "a bundle of nira laid flat side by side: long thin flat ribbon-like leaves like wide blades of grass, uniformly dark green from end to end, cut square at both ends, tied with a thin band",
   "items": [
    "mext:06207"
   ],
@@ -688,7 +688,7 @@
  {
   "key": "mext-06235",
   "ja": "はくさい 塩漬",
-  "desc": "salt-pickled napa cabbage, soft pale green and white pieces in a small dish",
+  "desc": "a small mound of salt-pickled napa cabbage cut into bite-size squares: limp wilted leaves, soft translucent pale yellow-green with pale white ribs, wet and glistening, pressed together in a small dish",
   "items": [
    "mext:06235"
   ],
@@ -877,7 +877,7 @@
  {
   "key": "mext-06354",
   "ja": "ブロッコリースプラウト",
-  "desc": "a bunch of broccoli sprouts, thin white stems with tiny green leaves",
+  "desc": "a dense tangle of tiny microgreen sprouts like cress or alfalfa sprouts in a small clear plastic pack: hundreds of hair-thin white threadlike stems, each topped with a tiny pair of round green seed leaves",
   "items": [
    "mext:06354"
   ],
@@ -924,7 +924,7 @@
  {
   "key": "mext-06072",
   "ja": "みずな 生",
-  "desc": "a bunch of mizuna, thin white stalks with feathery serrated bright green leaves",
+  "desc": "a bundle of raw mizuna greens: dozens of long pencil-thin white stems like spaghetti, each ending in small deeply jagged bright green leaves like rocket or dandelion leaves, the whole bunch long, slender and airy",
   "items": [
    "mext:06072"
   ],
@@ -942,7 +942,7 @@
  {
   "key": "mext-06280",
   "ja": "みょうが",
-  "desc": "two myoga ginger buds, plump pinkish-red and cream tear-shaped buds, one sliced thin",
+  "desc": "two myoga buds on a plate: small elongated pointed buds shaped like a closed tulip bud or a fat flame, made of tight overlapping scales, pink-red at the tip fading to cream at the base; one cut lengthwise showing pale layered insides",
   "items": [
    "mext:06280"
   ],
@@ -1002,7 +1002,7 @@
  {
   "key": "mext-06293",
   "ja": "モロヘイヤ 生",
-  "desc": "a bunch of molokhia leaves, oval serrated dark green leaves on stems",
+  "desc": "a small bunch of raw molokhia: thin green stems with smooth flat oval pointed leaves, each leaf simple with fine saw-tooth edges like a small elm or nettle leaf, deep dark green",
   "items": [
    "mext:06293"
   ],
@@ -1012,7 +1012,7 @@
  {
   "key": "mext-06306",
   "ja": "らっきょう 甘酢漬",
-  "desc": "a small dish of pickled rakkyo: plump oval shallot bulbs, glossy, pearly translucent white like jelly, wet with sweet vinegar",
+  "desc": "a small glass dish of sweet-pickled rakkyo: smooth glossy oval pickles the size of grapes, shiny translucent pale ivory like lychee flesh or jelly, slick wet surfaces, sitting in clear syrupy vinegar",
   "items": [
    "mext:06306"
   ],
@@ -1050,7 +1050,7 @@
  {
   "key": "mext-06313",
   "ja": "サラダな",
-  "desc": "a head of butter lettuce: a loose round open rosette of large soft smooth floppy pale green leaves cupped like a flower, smooth edges, tender and delicate",
+  "desc": "a round head of butter lettuce seen from above like an open green rose: large soft round cup-shaped leaves with a smooth satin surface and smooth rounded edges, pale yellow-green in the centre, deeper green outer leaves",
   "items": [
    "mext:06313"
   ],
@@ -1306,7 +1306,7 @@
  {
   "key": "mext-07022",
   "ja": "梅干し",
-  "desc": "a small dish of three umeboshi: soft deeply wrinkled shrivelled red plums, matte red-pink, wet with salt crystals, very wrinkled like raisins",
+  "desc": "three umeboshi in a small dish: small soft shrivelled dried plums, skin crumpled in many fine creases like a prune or raisin, dull matte dusty pinkish-red, a few coarse white salt crystals",
   "items": [
    "mext:07022",
    "dishes:umeboshi",
@@ -1540,7 +1540,7 @@
  {
   "key": "mext-07165",
   "ja": "デコポン（しらぬひ）",
-  "desc": "a dekopon citrus fruit: a large bumpy orange mandarin with a prominent round knob on top, like a small ball protruding at the stem end, slightly rough peel",
+  "desc": "a single dekopon citrus: a big orange mandarin with a tall raised round knob on top like a small head on a short neck, shaped like a squat gourd or snowman, bumpy orange peel, short green stem on the knob",
   "items": [
    "mext:07165"
   ],
@@ -2016,7 +2016,7 @@
  {
   "key": "mext-07117",
   "ja": "レーズン（干しぶどう）",
-  "desc": "a small pile of raisins, wrinkled dark brown dried grapes",
+  "desc": "a close-up of a small heap of about thirty raisins on a saucer beside a teaspoon: each raisin tiny, the size of a pea, shrivelled and deeply wrinkled, matte dark purple-brown, irregular rounded little shapes",
   "items": [
    "mext:07117"
   ],
@@ -2212,7 +2212,7 @@
  {
   "key": "mext-07148",
   "ja": "りんご 皮なし",
-  "desc": "peeled apple wedges on a small plate: pale ivory-cream crescents of apple flesh, the outer curve also cream with no skin, moist and crisp, a seed cavity notch on each",
+  "desc": "four peeled apple wedges on a small plate: crescent slices that are cream-white all over like pear flesh, the smooth outer curve pale ivory like the cut faces, moist and crisp, a small seed notch on each",
   "items": [
    "mext:07148"
   ],
@@ -2268,7 +2268,7 @@
  {
   "key": "mext-08003",
   "ja": "なめたけ（えのき味付け瓶詰）",
-  "desc": "a small dish of nametake, enoki mushroom pieces in a glossy thick brown soy sauce",
+  "desc": "a small dish of nametake: a sticky tangle of very thin long enoki strands like thin pale threads with pinhead caps, coated in thick glossy dark brown soy syrup like jam",
   "items": [
    "mext:08003"
   ],
@@ -2446,7 +2446,7 @@
  {
   "key": "mext-08028",
   "ja": "まいたけ 生",
-  "desc": "a cluster of maitake mushrooms, ruffled overlapping grey-brown frond-like caps",
+  "desc": "a maitake mushroom: one dense rosette of many thin wavy overlapping fan-shaped brown petals like a ruffled flower or a hen's fluffed feathers, tightly packed from a white base, frilly grey-brown edges",
   "items": [
    "mext:08028"
   ],
@@ -2512,7 +2512,7 @@
  {
   "key": "mext-08034",
   "ja": "まつたけ",
-  "desc": "two matsutake mushrooms, thick white-brown stems with dark brown caps, one cut lengthwise",
+  "desc": "two matsutake mushrooms lying side by side: long thick straight cream-white stems like fat carrots, each topped by a small tight smooth dark brown dome cap barely wider than the stem; one sliced lengthwise in half showing solid white flesh",
   "items": [
    "mext:08034"
   ],
@@ -2552,7 +2552,7 @@
  {
   "key": "mext-09012",
   "ja": "海ぶどう",
-  "desc": "sea grapes (umibudo), stalks covered in tiny glossy bright green bubble-like beads",
+  "desc": "a sprig of umibudo seaweed coiled on a small dish: thin pale green stems densely coated with hundreds of tiny glossy translucent green beads the size of caviar, like strings of green fish roe",
   "items": [
    "mext:09012"
   ],
@@ -2659,7 +2659,7 @@
  {
   "key": "mext-09050",
   "ja": "ひじき（乾）",
-  "desc": "dried hijiki seaweed, small twig-like black pieces in a small dish",
+  "desc": "a small white dish heaped with dried hijiki: tiny short jet-black twig-like bits like black tea leaves or pine needles, dry, brittle and matte black",
   "items": [
    "mext:09050"
   ],
@@ -2669,7 +2669,7 @@
  {
   "key": "mext-09051",
   "ja": "ひじき（ゆで）",
-  "desc": "soaked hijiki seaweed, glossy short black sprigs in a small dish",
+  "desc": "a small dish of boiled hijiki: a heap of short shiny jet-black little sticks like chopped black licorice or black rice grains, each the size of a matchstick tip, glossy and wet",
   "items": [
    "mext:09051"
   ],
@@ -2745,7 +2745,7 @@
  {
   "key": "mext-09044",
   "ja": "カットわかめ（乾）",
-  "desc": "a small dish of dried cut wakame: small dry hard crumpled flakes, nearly black dark green, brittle and crinkled like dried tea leaves",
+  "desc": "a close-up of a spoonful of dried cut wakame on a small saucer: tiny shrivelled black-green crumbs and curled bits like loose black tea leaves or dried herbs, matte, rough, hard and dry",
   "items": [
    "mext:09044"
   ],
@@ -2801,7 +2801,7 @@
  {
   "key": "mext-10390",
   "ja": "あじフライ",
-  "desc": "two Japanese aji fry, butterflied horse mackerel fillets in crisp golden panko, fan-shaped, with shredded cabbage",
+  "desc": "two aji fry on a plate: flat breaded fish cutlets shaped like a fan or a broad leaf, thick craggy coating of coarse golden-brown panko crumbs all over, a small tail fin at the narrow end, beside shredded cabbage and a lemon wedge",
   "items": [
    "mext:10390",
    "dishes:aji-fry",
@@ -2836,7 +2836,7 @@
  {
   "key": "mext-10006",
   "ja": "あじの開き 生",
-  "desc": "a raw aji no hiraki: a horse mackerel split open flat like an open book, head split in half, showing the pale pink raw flesh with the spine in the middle, silver skin on the outer edges",
+  "desc": "a raw horse mackerel opened flat like an open book, seen from above, lying skin-side down: two pale pink fillets side by side joined along a central spine, the head split in half at the top, tail at the bottom",
   "items": [
    "mext:10006"
   ],
@@ -2846,7 +2846,7 @@
  {
   "key": "mext-10007",
   "ja": "あじの開き 焼き",
-  "desc": "a grilled aji no hiraki on a rectangular plate: a horse mackerel split open flat like an open book, the opened flesh side up showing golden-brown grilled flesh and the spine, beside a small mound of grated daikon",
+  "desc": "a grilled aji no hiraki lying completely flat on a rectangular plate: a fish opened like an open book into a wide butterfly shape, golden-brown flesh facing up, one fillet on each side of the central spine, head split in two, grated daikon beside",
   "items": [
    "mext:10007",
    "dishes:aji-hiraki"
@@ -2979,7 +2979,7 @@
  {
   "key": "mext-10055",
   "ja": "しらす干し",
-  "desc": "a small dish of shirasu boshi: a heap of hundreds of tiny thin dried white-ivory baby fish like thin white threads, each with tiny black dots for eyes",
+  "desc": "a close-up of a small saucer of shirasu boshi: a heap of tiny dried baby fish, each a slim slightly curved pale white sliver the size of a grain of rice, clearly fish-shaped with two black dot eyes at the head end and a tiny tail",
   "items": [
    "mext:10055"
   ],
@@ -3110,7 +3110,7 @@
  {
   "key": "mext-10092",
   "ja": "かつお節（削り節）",
-  "desc": "a small heap of katsuobushi bonito flakes, thin curly pale pinkish-brown shavings",
+  "desc": "a small mound of katsuobushi bonito flakes in a dish: paper-thin wispy shavings like wood shavings, very pale beige-pink and semi-translucent like dried rose petals, delicate and crinkled, light as tissue paper",
   "items": [
    "mext:10092"
   ],
@@ -3128,7 +3128,7 @@
  {
   "key": "mext-10096",
   "ja": "かつお缶（味付けフレーク）",
-  "desc": "flaked seasoned skipjack in a small dish, brown flaky fish",
+  "desc": "an open small round tin can and a small dish heaped with seasoned canned bonito flakes: loose shredded crumbs of soft brown meat like canned tuna, moist and glossy with sweet soy sauce",
   "items": [
    "mext:10096"
   ],
@@ -3166,7 +3166,7 @@
  {
   "key": "mext-10400",
   "ja": "きす 天ぷら",
-  "desc": "kisu tempura, butterflied whiting in light crisp pale golden tempura batter",
+  "desc": "two pieces of kisu tempura on paper: each a small slender fish fillet opened flat into a wide willow-leaf shape, coated in pale golden crisp lacy batter, flat and leaf-like",
   "items": [
    "mext:10400"
   ],
@@ -3323,7 +3323,7 @@
  {
   "key": "mext-10141",
   "ja": "すじこ",
-  "desc": "a skein of sujiko: one oblong cluster of red-orange salmon eggs stuck together inside a thin membrane like a bunch of grapes, glossy, on a small dish",
+  "desc": "one sujiko skein on a small dish: an oblong slab of tiny salmon eggs packed tightly together, each egg as small as a peppercorn, hundreds in the slab, glossy red-orange, wrapped in a thin translucent membrane",
   "items": [
    "mext:10141"
   ],
@@ -3522,7 +3522,7 @@
  {
   "key": "mext-10173",
   "ja": "さんま 生",
-  "desc": "a whole raw sanma fish lying straight on a long rectangular plate: an extremely long thin needle-like silver fish, as long as a pencil-thin sword, dark blue-grey back and shiny silver belly, a sharp narrow pointed beak-like jaw",
+  "desc": "a single raw sanma lying diagonally on a long narrow plate: a very slender silver fish shaped like a long knife blade, ten times longer than tall, pointed needle-sharp jaw, dark blue back, silver belly",
   "items": [
    "mext:10173"
   ],
@@ -3644,7 +3644,7 @@
  {
   "key": "mext-10198",
   "ja": "たちうお 生",
-  "desc": "a piece of cutlassfish, long ribbon-like shiny silver fish",
+  "desc": "a raw tachiuo cutlassfish lying on a plate: a very long thin flat ribbon of shining metallic silver like a belt or sword blade, tapering to a pointed thread-like tail, long jaw with sharp small teeth",
   "items": [
    "mext:10198"
   ],
@@ -3687,7 +3687,7 @@
  {
   "key": "mext-10203",
   "ja": "たらこ 焼き",
-  "desc": "two grilled tarako on a small plate: smooth plump elongated pink-orange pouches like small sausages, lightly charred golden-brown in patches, one sliced open showing densely packed fine pale pink grainy roe like wet sand",
+  "desc": "a pair of grilled tarako on a plate: two soft flattened cod roe sacs side by side, joined at one end like a pair of leaves, pink-orange skin with light browned spots; one cut into rounds showing dense fine pale pink grainy roe like moist sand",
   "items": [
    "mext:10203"
   ],
@@ -3697,7 +3697,7 @@
  {
   "key": "mext-10204",
   "ja": "明太子",
-  "desc": "a pair of mentaiko on a small plate: two smooth elongated sausage-shaped pouches joined at one end, deep red with a thin glossy skin, one cut open showing a fine grainy pink-red paste of tiny eggs like wet sand",
+  "desc": "two mentaiko roe sacs on a small plate: smooth plump elongated pods shaped like fat peapods, soft satin-glossy pink-red surface, joined at one end; one sliced, its cut face a fine pink granular paste like wet sand",
   "items": [
    "mext:10204"
   ],
@@ -3752,7 +3752,7 @@
  {
   "key": "mext-10222",
   "ja": "数の子（生）",
-  "desc": "kazunoko herring roe, firm golden-yellow pieces with a fine grainy texture, in a small dish",
+  "desc": "two pieces of kazunoko herring roe on a small dish: each a firm elongated golden-yellow slab the size of a finger, like a small bar of pressed tiny beads, finely grainy surface, slightly translucent",
   "items": [
    "mext:10222",
    "mext:10224",
@@ -3819,7 +3819,7 @@
  {
   "key": "mext-10248",
   "ja": "ほっけ開き干し 生",
-  "desc": "a raw dried hokke opened flat: one fish split from the back and butterflied into a wide flat symmetrical shape like an open book, pale pinkish-white flesh facing up with the backbone down the centre, head split in half, grey striped skin at the edges; not a whole round fish",
+  "desc": "a raw hokke himono lying completely flat on a plate: a fish split and opened like an open book into a wide butterfly shape, one pale pinkish-white fillet on each side of the central backbone, head split in two halves, grey striped skin at the edges",
   "items": [
    "mext:10248"
   ]
@@ -3827,7 +3827,7 @@
  {
   "key": "mext-10412",
   "ja": "ほっけ開き干し 焼き",
-  "desc": "a grilled hokke fish split open and butterflied completely flat on a long plate: a wide flat oval of golden-brown grilled flesh with the spine down the middle, both halves spread open like a book, skin side underneath; not a whole round fish; a little grated daikon",
+  "desc": "an opened grilled hokke fish lying flat on a long plate like an open book: a wide flat oval of golden-brown grilled flesh, one fillet on each side of a thin central spine, the split head at the top, tail at the bottom, a small mound of grated daikon",
   "items": [
    "mext:10412",
    "dishes:hokke",

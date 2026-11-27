@@ -1715,7 +1715,7 @@
  {
   "key": "mext-17027",
   "ja": "コンソメ（固形ブイヨン）",
-  "desc": "bouillon cubes, small golden-brown square cubes, one in a cup of clear broth",
+  "desc": "four dry bouillon cubes on a small plate: hard square cubes the size of dice, golden-yellow to light brown, crumbly matte surface, one half-unwrapped from gold foil, one broken open showing granular powder inside",
   "items": [
    "mext:17027"
   ],
@@ -2844,7 +2844,7 @@
  {
   "key": "mext-18023",
   "ja": "松前漬け",
-  "desc": "matsumaezuke, thin strips of dried squid and kombu with golden herring roe in a sticky soy marinade, in a small dish",
+  "desc": "matsumaezuke in a small dish: a tangle of thin black-green kombu strips and pale cream squid strips in a glossy sticky amber marinade, studded with small chunky yellow pieces of herring roe and a few thin orange carrot strips",
   "items": [
    "mext:18023"
   ],
@@ -3202,7 +3202,7 @@
  {
   "key": "mext-18021",
   "ja": "白身魚フライ",
-  "desc": "white fish fry, a flat breaded fried fish fillet in golden panko, with tartar sauce and cabbage",
+  "desc": "two flat golden panko-breaded fried fillets on a plate, crisp crumb coating, one cut showing flaky white flesh inside, with a mound of shredded green cabbage and a dollop of tartar sauce",
   "items": [
    "mext:18021",
    "toyonaka:266174",

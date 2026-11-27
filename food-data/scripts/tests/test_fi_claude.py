@@ -81,6 +81,11 @@ class Claude(unittest.TestCase):
         self.log([self.a('k1', 'pass')], 'claude2')  # agreeing after all: the last counts
         self.assertEqual(self.state('k1'), ('ship', 0))
 
+    def test_later_pass_wins(self):
+        self.draw('k2', 1)  # rolls drawn ahead of their checks
+        self.log([self.a('k2', 'fallback', roll=0), self.a('k2', 'pass', roll=1)])
+        self.assertEqual(self.state('k2'), ('ship', 1))
+
     def test_fallback_new_desc_repeat_refs(self):
         self.log([self.a('k1', 'fallback', refs_ok=[3]), self.a('k2', 'pass', refs_ok=[0])])
         self.assertEqual(self.state('k1')[0], 'tile')
