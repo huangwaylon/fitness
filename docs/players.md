@@ -37,7 +37,7 @@ search. Parts that clipped on either body are out (`app/design/avatar/closet/exc
 設定 → 姿 opens すがた (`look/LookPage.svelte`): the stage, six tabs, no foot bar.
 - **The stage** (`look/LookStage.svelte`, `LookPreview.svelte`, `preview3d.ts`): the final form, drag to turn; a status
   pill in words (いつもの, a コーデ, アレンジ中, 住民); 元に戻す once changed; colour dots of the last item; the renderer
-  lives while the level is open.
+  (the level's only WebGL context) lives while the level is open.
 - **The tabs** (`look/tabs.ts`): コーデ · 顔 · 髪 · 服 · 小物 · 住民; opens on コーデ if any is saved, else 服. 住民 is
   `look/VillagerGrid.svelte`.
 - **Villagers**: a villager is worn like a piece; the first human pick returns to the player with this visit's edits.

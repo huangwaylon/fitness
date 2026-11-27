@@ -18,7 +18,7 @@ goal) into each person's wallet, spent on two treats. Japanese first, English pe
   number on the phone (`lib/model/`, pure functions).
 - **Principles:** zero required taps a day; both see all data; only opt-in notifications; no reduced-motion variants.
 
-Code map: README "Layout" (`deps.test.ts` enforces import direction). Helpers: `lazy` (`ui-state/reload.ts`), `quiet()`
+Code map: [architecture.md](architecture.md#code-layout) (`deps.test.ts` enforces import direction). Helpers: `lazy` (`ui-state/reload.ts`), `quiet()`
 (`lib/quiet.ts`), `lib/math.ts`, `staticUrl()`, last-writer-wins maps (`store/synced.svelte.ts`).
 <a id="maps"></a>**Maps:** controls, status and location dot live in `components/map/`; features import it, not each
 other.
@@ -61,17 +61,14 @@ villager.
 **設定** (`panel/SettingsSheet.svelte`): プロフィール, 姿, サウンド ([Sound settings](#sound-settings)), 言語, 季節
 ([Seasonal look](#seasonal-look), with [Weather](#weather)'s switch) and 図鑑 ([Zukan](#zukan)).
 
-<a id="sugata"></a>**すがた** (`look/LookPage.svelte`, `look/closet.ts`, `store/look.ts`; contract:
-[players.md](players.md)): NH's wardrobe, the whole closet free (no ベル, no unlocks) for A, B and the guest; each person
-is NH's human player ([Players](#players)) or a villager. Tabs (`look.tab.*`) コーデ (いつもの, up to 20 saved looks) · 顔
-· 髪 · 服 · 小物 · 住民. Leaving the level sends the draft once if changed, with 取り消す; no 決定. The preview is the
-level's only WebGL context.
+<a id="sugata"></a>**すがた** (`look/LookPage.svelte`; [players.md "The dresser"](players.md#the-dresser)): NH's
+wardrobe, the whole closet free for A, B and the guest; each person is NH's human player ([Players](#players)) or a
+villager. Leaving the level sends the draft once if changed, with 取り消す; no 決定.
 
 <a id="profile"></a>**プロフィール** (`panel/ProfileSection.svelte`, `model/profile.ts`): read-only sex and birth date
 for A, B and ゲスト ([backend](backend.md#pref) prefs, locked). It feeds height √(weight ÷ BMI); resting energy (`bmrOn`:
 InBody's formula on the smoothed lean line (`smoothLine`) within 60 days, else Mifflin–St Jeor; the card's dots stay
-raw); daily energy = resting + the average Move of the
-last 28 Watch-worn days (≥ 7, `activityOn`), else × 1.4, within 1.2–2.2 × resting; ごはん's default goals
+raw); daily energy = resting + the average Move of the last 28 Watch-worn days (≥ 7, `activityOn`), else × 1.4, within 1.2–2.2 × resting; ごはん's default goals
 (`contract/goals.ts` `derived`); BMI's category with Asian cut-offs (23 / 25).
 
 ### Kiroku
@@ -84,7 +81,8 @@ first, each person's ベル beside their four fruits; a day shows each goal's va
 健康 (`model/health.ts`, `components/health/*`): the health popup's first page, one person's Health data over time,
 its own chunk. Whose (a `<select>`, shared with ごはん) · 健康 | ごはん · ✕; 活動 · 体 and 1週 · 1か月 · 3か月 · 1年 (the
 guest: 活動 only). Cards: `model/health.ts` CARDS (`BarCard`: solid bars on goal days; `BodyCard`: dots and its trend line
-(`dotLine`, the line its 「N日で」 chip reads), all shown or hidden by 体重's 傾向線を表示; muscle estimated, 基礎代謝量 = 370 + 21.6 × 除脂肪体重).
+(`dotLine`, the line its 「N日で」 chip reads), all shown or hidden by 体重's 傾向線を表示; muscle estimated, 基礎代謝量 =
+370 + 21.6 × 除脂肪体重).
 
 - <a id="pace"></a>**ペース** (`model/pace.ts`, [why](decisions.md#weight-pace-a-forecast-on-request)): 体's first
   card: verdict, ETA month, progress (start and now both on `smoothLine`'s line), weekly rate, streak (none beside
@@ -272,8 +270,8 @@ stay fine; rain-only critters and fine-night shooting stars follow it.
 
 `island/FruitTree.svelte`, `world/fruitDay.ts`: one per person, four fruits filling toward the goals; a met fruit falls
 and the owner's tap (within 22u) picks it up for 60 かいがら (`contract/pocket.ts GOAL_GOODS`, key
-`fr:<person>:<fruit>`; others refused: `pickMaySend`); all four met, a gold one, 150. Other taps open the popup: goals with marks (`world/progress.ts goalMark`),
-[daily checks](#daily-checks), meals and P · F · C (`world/mealChecks.ts`).
+`fr:<person>:<fruit>`; others refused: `pickMaySend`); all four met, a gold one, 150. Other taps open the popup:
+goals with marks (`world/progress.ts goalMark`), [daily checks](#daily-checks), meals and P · F · C (`world/mealChecks.ts`).
 
 ### Daily checks
 
@@ -311,8 +309,8 @@ open, asleep where it stands otherwise (`GRACE_MS` 45 s on the relay's clock); a
 ### The guest
 
 `contract/guest.ts`, `ui-state/cast.ts` ([backend](backend.md#the-guest), [decisions](decisions.md#the-guest)): ゲスト,
-its own key ([runbook](ops/runbook.md#10-pair-a-phone)); tests `?demo&as=G`. The same app as A and B (the user,
-2026-11-25), its villager's island life a member's, except: 健康 is 活動 only (the record leaves body data out of its
+its own key ([runbook](ops/runbook.md#10-pair-a-phone)); tests `?demo&as=G`. The same app as A and B, its villager's
+island life a member's, except: 健康 is 活動 only (the record leaves body data out of its
 snapshot); ボット read-only (its bookings are on our accounts); its wallet never earns (no Health data), so its ベル tile
 reads 0 and rewards are out of reach; its harvest tap is its own recap seen (the week closes with both members').
 "The partner" cases: `ui-state/cast.ts` islandActors.
@@ -405,7 +403,7 @@ partner's: a ハイタッチ on both phones (`world/highFives.ts`).
 
 ### Visitors
 
-`island/visitor.svelte.ts`, `world/visitors.ts`: at most one at any time (the user, 2026-11-25; K.K. doesn't count),
+`island/visitor.svelte.ts`, `world/visitors.ts`: at most one at any time (K.K. doesn't count),
 each NH's 3D model, seeded by date and island seed (every phone agrees). Priority (`visitorAt`): an event's host, the
 wedding couple, Celeste, Pavé (Festivale), nobody on Saturday from 18:00 ([K.K.](#kk-on-his-stool)), Daisy Mae (Sunday
 05–12), the day's `ROTATION` visitor (Mon–Sat): NH's weekday visitors and the special characters, each once per cycle
@@ -472,14 +470,13 @@ plays ラジオ体操 on the [shared stage](#shared-music) and every awake villa
 
 - **A trip** (`travel/TripView.svelte`; /s `share/TripShare.svelte`): 日程 · 地図 · 準備 (logistics, campsites) · 持ち物.
 - **日程** (`travel/Itinerary.svelte`): every day on one page, a boarding pass each: the stub 「● 2/13（土） 3日目 タイトル」
-  (date in ink, the day's colour only the dot) held at the top, torn off along a stitch. A stop: arrival, place, one quiet
+  (date in ink, the day's colour only the dot) held at the top, torn off along a stitch (the list's pass tears down the
+  right, with a photo). A stop: arrival, place, one quiet
   line of how we got there (「車 2時間31分」, 「07:35発」 on the first leg only); 「泊」, **未予約** in bold. Notes, km,
   sun, 地図で見る, Googleマップ only on a tap; the day's tip and photo on its stub's tap. Each fact once a screen.
 - **Now:** one yuzu line on the stop we're heading to (「いま移動中 · あと1時間40分 · 181 km」), earlier lines soft; the
   page opens on it. Days below it are `content-visibility: auto` with a guessed height (WebKit: no scroll anchoring),
   never one holding an open line; the pass's side room is the section's, so its notches aren't clipped.
-- Distinct from the list's boarding pass: that one is torn down the right with a photo and sky band; the day's is torn
-  across under its stub, text only.
 
 ### Seasonal look
 
@@ -576,8 +573,7 @@ island.
 
 `sound/stage.svelte.ts`; mechanism: [sound-sync.md](sound-sync.md). Music someone starts is a **stage**, one record per
 source (the island's K.K., stretch and cake; each room's stereo), playing from where the song is now wherever audio is
-on and unlocked; mute and volume stay local. Others' sounds reach every phone by the camera's ear; UI taps, the shop,
-my wasps and previews stay mine.
+on and unlocked; mute and volume stay local. What else is shared: [sound-sync.md](sound-sync.md#what-is-shared-how).
 
 <a id="kk-slider"></a>**K.K. Slider** (`kk.ts`: the list, adding a song): his own chunk; live files on the stool,
 airchecks on stereos; never the last song twice; offered songs prefetched.

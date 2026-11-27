@@ -61,7 +61,6 @@ the record keeps each id's latest op (slot `decor|<sc>|<id>`). An old phone igno
   emptySpots`, re-applied by `site.bare` as the day, the hour and the snowboy's melt change).
 - **Arches over water** (`layout/height.ts` `standLift`): a gate, torii or gazebo whose way through spans water stands
   on its posts' banks (the highest), not the bed.
-- **Day spots** (`daySpots`): none till outdoor kinds load (no jump); always drawn, under the HUD too.
 - **The visitors' stage** (`layout/spots.ts` `stageOf`): the plaza mark if usable, else open grass near the middle;
   `washedUp` for Gulliver. Visitor marks (`plaza`, `beach-spot`): `markerSpot`, `spotWhy`; a retired `guest-spot` is
   dropped as a layout is read (`model.ts isRetired`).
@@ -72,7 +71,8 @@ the record keeps each id's latest op (slot `decor|<sc>|<id>`). An old phone igno
   through is fine. The default has no issues at all (layout.test.ts).
 - **Diff** (`layout/diff.ts` `diffLayouts`): chunks, objects and homes changed.
 - **The day's spots** (`layout/spots.ts` `daySpots`): 15 weed and 8 dig spots on open grass (`layout/clear.ts`),
-  seeded by date and island seed; `beach.ts` buries `DIGS_A_DAY` (4) fossils on them.
+  seeded by date and island seed; `beach.ts` buries `DIGS_A_DAY` (4) fossils on them. None till outdoor kinds load
+  (no jump); always drawn, under the HUD too.
 
 ## The 3D ground
 - **Geometry** `layout/mesh.ts` (NH's quadrant scheme in its header); **distance fields** `layout/fields.ts` and the
@@ -86,7 +86,7 @@ the record keeps each id's latest op (slot `decor|<sc>|<id>`). An old phone igno
   lists arcs.
 - **Baked on the GPU** (`world3d/terrain.ts`): bands of 8 tile rows, 4 draws each, culled out of view; at most
   `BAND_BUDGET` baked ([perf](ops/perf.md)). The season's palette rebakes.
-- **The water**: the sea, NH's swash (`layout/swash.ts`, design.md "The sea's wash"), rivers and falls (terrain.ts
+- **The water**: the sea, NH's swash (`layout/swash.ts`), rivers and falls (terrain.ts
   `FRESH_FRAG`). Textures: `npm run terrain-textures` → `static/terrain/nh/`.
 - Bridges and inclines: `npm run structure-models`, `world3d/structure.ts` (`structurePlaces`, `buildStructure`).
 
@@ -99,7 +99,7 @@ the record keeps each id's latest op (slot `decor|<sc>|<id>`). An old phone igno
   回す · 複製 (`edits.ts duplicate`: right, left, below or above it, where every copy fits; never a bridge or stairs) ·
   削除 are buttons too. The placing ghost is green only where validation passes the piece (`ghostAt`: `placeErrors`);
   ⌘V pastes all of a copy where it fits, or nothing.
-- **Chrome** (2026-11-25): names in kanji (`layout/labels.ts labelOf`, the table `editor/kanjiNames.ts`, the editor's
+- **Chrome:** names in kanji (`layout/labels.ts labelOf`, the table `editor/kanjiNames.ts`, the editor's
   chunk only; the world keeps the kana `ja`), a home by its owner (ウェイの家) in the palette, inspector and checks.
   The palette searches kanji, kana, romaji and English (`editor/search.ts`; "/" focuses it, Enter picks the first).
   The badge is the socket's (ライブ / 接続中… / オフライン) with the write queue's unsent layout ops (`liveBadge.ts`).
@@ -111,8 +111,7 @@ the record keeps each id's latest op (slot `decor|<sc>|<id>`). An old phone igno
   controls 44 px.
 - **Fingers** (`planFingers.ts`, the rooms' `gestures` rule, the plan's and the river tool's): a tap selects (複数:
   adds), places or dabs; one finger drags a *selected* piece, a brush stroke, a fence/crop run or a knot, else pans;
-  two pinch the zoom and pan, cancelling a stroke or move in progress. No long press, no hover. The mouse path is the
-  desktop's as before.
+  two pinch the zoom and pan, cancelling a stroke or move in progress. No long press, no hover.
 - **3D preview** (`?view=orbit` with `&eye=x,y,z&at=x,y,z`, or `?view=phone` with `world3d/islandCam.ts`): the island's
   own builders (`world3d/built.ts`); `world3d/previewDraw.test.ts` fails for an undrawn catalog kind; ≤ 30 fps.
 - **`?check`** (`world3d/drawCheck.ts`): objects the phones' 3D island can't draw, and why.
@@ -177,7 +176,7 @@ a table carries its things (`carryTops`).
 ## Phone editing
 `components/layoutEdit/IslandEdit.svelte`: the island's もようがえ in the editor's phone view, the tent's tray/bar way
 (tabs: IslandEdit `TABS`, `decor.tab.*`). Place, drag, ↻, ✕, ✓, 片付ける; others see `drag`. Anyone, guest too;
-furniture only (/editor itself does everything on a phone too). It runs over a stage `{ host, toScreen, toGround, size, moved, hide }`:
+furniture only. It runs over a stage `{ host, toScreen, toGround, size, moved, hide }`:
 `/editor/?view=phone&edit` (`&cam=<z>`; `&preview=0` a flat plan for e2e).
 
 ## How the 3D island reads it
@@ -186,4 +185,5 @@ furniture only (/editor itself does everything on a phone too). It runs over a s
 `apply(ops)`); `buildGround(layout, { renderer, look })` and `placeObjects(layout, day)`.
 - Live changes rebuild only the changed chunks and things. Camera ends from `extentOf` (Island3D `fitEnds`).
 - Gameplay: `island/site.svelte.ts` `site.on` → `world/layoutWorld.ts worldOf(layout)` → `setWorld`.
-- Walk: `nav.ts walkNav()` for taps; walkGraph.ts for idle walks (both the layout's walk grid, `layout/nav.ts`). Decorations' tap areas: island/decor.svelte.ts.
+- Walk: `nav.ts walkNav()` for taps; walkGraph.ts for idle walks (both on the layout's walk grid). Decorations' tap
+  areas: island/decor.svelte.ts.
