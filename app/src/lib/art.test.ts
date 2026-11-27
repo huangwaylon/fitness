@@ -15,9 +15,9 @@ describe('the art manifest as bundled', () => {
 });
 
 describe('ごはん’s category tiles', () => {
-  it('every category of the food data (docs/food-data.md) has a tile, its word short enough for a 40 px one', () => {
-    const doc = readFileSync(new URL('../../../docs/food-data.md', import.meta.url), 'utf8');
-    const cats = doc.match(/\| `cat` \| one of ([^|]+)\|/)![1].trim().split(/\s+/);
+  it('every category of the food data (food-data/scripts/lib.py CATS) has a tile, its word short enough for a 40 px one', () => {
+    const py = readFileSync(new URL('../../../food-data/scripts/lib.py', import.meta.url), 'utf8');
+    const cats = [...py.match(/^CATS = \(([^)]+)\)/m)![1].matchAll(/'([^']+)'/g)].map((m) => m[1]);
     expect(cats.length).toBeGreaterThan(20);
     for (const c of [...cats, 'レシピ']) expect(FOOD_CAT[c]?.word.length, c).toBeLessThanOrEqual(4);
   });
