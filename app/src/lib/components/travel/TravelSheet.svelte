@@ -9,7 +9,8 @@
   // An opening goes straight into the trip on now, else back where it was left (the trip and its page, while the app
   // runs). The island is paused under it (open.svelte.ts → the page's `paused`). Kept mounted between openings (Sheet's
   // `keep`: a reopening at once, where it was left, its scroll too), but for a trip on now (built again: today's day,
-  // the row that is now in view) and the 地図 page (a closed sheet holds no MapLibre map: let go at the close).
+  // the row that is now in view) and a trip whose 地図 was opened (a closed sheet holds no MapLibre map: let go at the
+  // close, whichever page it closes on; while open, 地図 stays made across the pages: TripView).
   import { untrack } from 'svelte';
   import '#lib/i18n/travel.ts';
   import Sheet from '../ui/Sheet.svelte';
@@ -92,7 +93,9 @@
   }
   /** Bumped by an opening onto the trip on now: its level built afresh. */
   let fresh = $state(0);
-  const keep = $derived(!(sel && tabs[sel] === 'map'));
+  /** The trip shown has made its map (TripView's onmapped): not kept at the close. */
+  let mapped = $state(false);
+  const keep = $derived(!mapped);
 
   function back() {
     cue('back');
@@ -132,7 +135,7 @@
           </div>
           <TabBar {items} value={ltab} label={t('travel.listTabs')} attr="travel-tab" panel="travel-panel" onpick={pickTab} />
         {:else if trip}
-          <TripView bind:this={view} {trip} {now} onback={back} onclose={close} bind:tab={() => tabs[trip.id] ?? 'days', (v) => (tabs[trip.id] = v)} />
+          <TripView bind:this={view} {trip} {now} onback={back} onclose={close} bind:tab={() => tabs[trip.id] ?? 'days', (v) => (tabs[trip.id] = v)} onmapped={(on) => (mapped = on)} />
         {:else}
           <div class="top"><NavBar pad title={pick(meta?.title, i18n.locale)} onback={back} onclose={close} /></div>
           <div class="scroll sheet-scroll" data-trip-view={sel}>

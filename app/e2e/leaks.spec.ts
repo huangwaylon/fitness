@@ -8,7 +8,7 @@ import { expect, test } from './fixtures.ts';
 import { BASE, loaded3d, nav } from './island.ts';
 import { measure, watch, watched, type Probe } from './memory.ts';
 import { roomUp } from './rooms.ts';
-import { fixtureTiles, mapReady, mapsDrawn, openTrip, tripsSheet } from './trips.ts';
+import { fixtureTiles, mapReady, mapsDrawn, openTrip, openTrips, tripsSheet } from './trips.ts';
 import { fromMenu } from './hud.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
@@ -204,6 +204,29 @@ test('the trip map in and out: no WebGL context or window listener left behind',
   expect([first.map, after.map], 'map contexts alive after the map closed').toEqual([0, 0]);
   expect(after.gl, 'WebGL contexts alive after three').toBeLessThanOrEqual(first.gl);
   expect(after.ls, 'window and document listeners').toBeLessThanOrEqual(first.ls);
+});
+
+// The trip map made, then another page, then the sheet closed (review 2026-11-27 F1): the sheet is kept (Sheet's `keep`)
+// but not its map. Before, only a close on 地図 itself let the map go: from 日程, the hidden map and its WebGL context
+// stayed in the closed dialog till the app was hidden. Both browsers: the map's DOM gone; Chromium (a forced GC) its context.
+test('the trip map made, 日程, the sheet closed: no map kept in the closed sheet', async ({ page, browserName }) => {
+  test.setTimeout(90_000);
+  await watch(page);
+  await mapsDrawn(page);
+  await fixtureTiles(page);
+  await page.goto(`${BASE}/${Q}`);
+  await openTrip(page);
+  await mapReady(page);
+  await tripsSheet(page).locator('[data-trip-tab="days"]').click();
+  await expect(tripsSheet(page).locator('[data-pane="days"]')).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(page.locator('dialog[open]')).toHaveCount(0);
+  await expect(page.locator('[data-travel-map], .maplibregl-canvas')).toHaveCount(0);
+  if (browserName === 'chromium') expect((await measure(page)).map, 'map contexts alive after the close').toBe(0);
+  // reopened: where it was left (日程), the map made again on 地図
+  await openTrips(page);
+  await tripsSheet(page).locator('[data-trip-tab="map"]').click();
+  await mapReady(page);
 });
 
 // The info sheets (りょこう, けっこんしき, トレイル: docs/design.md "Unified kit"), drawn, in and out three times on the

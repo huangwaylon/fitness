@@ -17,7 +17,7 @@
   // half and two quarters, 4 a 2 × 2; one with no picture, or whose sheet fails, its category's tile), drawn over the レシピ tile (cells.ts drawPlate, kept per what it holds), and a small round pot on the
   // box's corner: a recipe, not a food.
   import { FOOD_CAT, type FoodGlyph } from '#lib/art.ts';
-  import { drawCell, drawPlate, type PlateCell } from '#lib/food/cells.ts';
+  import { drawCell, drawPlate, freeCanvas, type PlateCell } from '#lib/food/cells.ts';
   import type { PlatePart } from './foodUi.ts';
 
   interface Props {
@@ -93,6 +93,10 @@
     drawPlate(pcv, cells, size).then(() => live && (plateIn = k), () => live && (plateBad = k));
     return () => void (live = false);
   });
+  // (each canvas shrunk as it goes: cells.ts freeCanvas)
+  $effect(() => freeCanvas(cv));
+  $effect(() => freeCanvas(ucv));
+  $effect(() => freeCanvas(pcv));
   const plated = $derived(isPlate && plateIn === plateId && plateBad !== plateId);
   /** Each glyph's lines on a 24 × 24 grid. */
   const GLYPH: Record<FoodGlyph, string> = {

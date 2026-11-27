@@ -36,8 +36,10 @@
     tab?: Tab;
     onback: () => void;
     onclose: () => void;
+    /** The map made (true) and let go with this view (false): the sheet keeps no map once closed. */
+    onmapped?: (on: boolean) => void;
   }
-  let { trip, now, tab = $bindable('days'), onback, onclose }: Props = $props();
+  let { trip, now, tab = $bindable('days'), onback, onclose, onmapped }: Props = $props();
 
   const note = $derived(packing.note(trip.id));
   const locked = $derived(note === null && privateKeys(JSON.stringify(trip)).length > 0);
@@ -67,6 +69,11 @@
   $effect(() => {
     if (tab !== 'map') return;
     mapMade = true;
+  });
+  $effect(() => {
+    if (!mapMade) return;
+    untrack(() => onmapped?.(true));
+    return () => untrack(() => onmapped?.(false));
   });
   const itin = $derived(itinerary(trip, i18n.locale));
   const mapProps: MapTabProps = $derived({

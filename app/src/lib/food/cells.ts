@@ -101,6 +101,13 @@ export async function drawCell(canvas: HTMLCanvasElement, cell: FoodImg, px: num
   }
 }
 
+/** A box's canvas let go (FoodThumb's, at its unmount): shrunk to 0 × 0, so Safari frees its backing store now
+ *  rather than at the next GC (a detached canvas counts toward WebKit's canvas-memory cap till then). Returned as an
+ *  effect's cleanup. */
+export const freeCanvas = (c: HTMLCanvasElement | undefined) => () => {
+  if (c) c.width = c.height = 0;
+};
+
 /** One cell of a recipe's picture box (drawPlate): its category's tile (its tint, its glyph's path on a 24 × 24 grid,
  *  in `ink`), and the ingredient's picture over it when it has one (the tile when its sheet can't be had). */
 export type PlateCell = { tint: string; glyph: string; ink: string; img?: FoodImg | null };
