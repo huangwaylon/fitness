@@ -33,8 +33,10 @@ export interface BotState<S> {
 export function useBot<S>(id: BotId, driver: BotDriver<S>, o: { skip?: () => boolean; onRead?: () => void; onStatus?: (s: S) => void } = {}): BotState<S> {
   const d = driver as BotDriver<unknown>;
   // the status is only ever replaced whole (a read, take): raw, no proxies to build each poll
-  let data = $state.raw<S | null>(recall(id, driver.parse));
-  const st = $state({ fresh: false, failed: null as string | null, readAt: data === null ? null : (recallSum(id)?.at ?? null) });
+  // (the kept status read once: the state starts from it, its time with it)
+  const kept = recall(id, driver.parse);
+  let data = $state.raw<S | null>(kept);
+  const st = $state({ fresh: false, failed: null as string | null, readAt: kept === null ? null : (recallSum(id)?.at ?? null) });
 
   function take(s: S) {
     data = s;
