@@ -1,54 +1,37 @@
 # 旅行 (trips)
 
-The travel guides (Okinawa, Seattle, New Zealand, Zao) in 「旅行」. The UI is [design.md §Trips](design.md#trips); this
-file is the data, the relay's part and the map.
+The travel guides (Okinawa, Seattle, New Zealand, Zao). The UI is [design.md §Trips](design.md#trips); this file is the
+data, the relay's part and the map.
 
 ## Rules
-
-- Everyone edits the packing list, the guest too; ticks are **per person**. No ベル tie-in.
-- Booking references, full names and personal URLs never enter the repo: a trip note on the relay, read and written by
-  all three keys.
-- Maps: MapLibre on OpenFreeMap vector tiles (not Protomaps on R2: decisions.md "The trip map"). The position never
-  leaves the phone. Nothing downloads ahead unless asked (設定 › オフライン地図).
-- A trip that's over is read-only (`components/travel/when.ts` `readOnly`): its packing list frozen as left.
+- Everyone edits the packing list, the guest too; ticks are **per person**; no ベル tie-in.
+- Booking references, full names and personal URLs never enter the repo: they are trip notes on the relay.
+- Maps: MapLibre on OpenFreeMap ([decisions](decisions.md#the-trip-map)); the position never leaves the phone; nothing
+  downloads ahead unless asked.
+- A trip that's over is read-only (`components/travel/when.ts readOnly`).
 
 ## Content
-
-`app/src/lib/travel/trips/<id>.ts` (okinawa, seattle, nz, zao), loaded by `trips/index.ts` `loadTrip(id)`; edited by
-hand. `trips.test.ts` pins each trip's counts (stops, campsites, packing) and fails an ID-like run outside `{p:}`.
+`app/src/lib/travel/trips/<id>.ts` (okinawa, seattle, nz, zao), loaded by `loadTrip(id)`, edited by hand;
+`trips.test.ts` pins each trip's counts and fails an ID-like run outside `{p:}`.
 
 ### Data shape
-
-Schema: [`types.ts`](../app/src/lib/travel/types.ts). Guide text is `{ja?, en?}`, shown in the reader's locale, else
-the other; chrome strings in `i18n/travel.{ja,en}.json`. Tokens (`travel/tokens.ts`): `{km:}`, `{m:}`, `{c:}` follow the
-device's units; `{p:key}` is a private value. Each trip's dates and `tz` drive "today". `dayColors`: one a day.
+[`types.ts`](../app/src/lib/travel/types.ts). Guide text `{ja?, en?}` (the reader's locale, else the other); chrome in
+`i18n/travel.{ja,en}.json`. Tokens (`travel/tokens.ts`): `{km:}`, `{m:}`, `{c:}` follow the device's units; `{p:key}` is
+a private value. Each trip's dates and `tz` drive "today"; `dayColors` one a day.
 
 ### Rows
-
-Every day row has a `kind` (`types.ts` `RowKind`), so 日程 and 地図 never guess from the text: `stop` (we arrive),
-`stay` (the night's stop, `booked` true/false: 「未予約」), `leg` (we set off: no line of its own; `go` gives the way and
-minutes where no routed `Leg` does, or a bus's timetable instead of free-flow), `event` (done where we are), `flight`,
-`sun` (sunrise/sunset). A note never repeats the leg's minutes or km (`trips.test.ts` `LEG_ECHO`); a walk's or a boat's
-minutes are on its `Leg`. A text's gloss follows 「 — 」 (`itinerary.ts` `DASH`).
+Each day row has a `kind` (`RowKind`): `stop`, `stay` (`booked`: else 「未予約」), `leg` (`go` gives the way and minutes
+where no routed `Leg` does), `event`, `flight`, `sun`. A note never repeats a leg's minutes or km (`LEG_ECHO`); a
+gloss follows 「 — 」 (`itinerary.ts DASH`).
 
 ## Itinerary
-
-`lib/travel/itinerary.ts` `itinerary(trip, locale)`: the days (`i`, date, title, colour), each one's stops (id = the
-place's, else `r<day>-<row>`; `kind` stop · stay · start · flight; lat/lng when on the map), legs and stay. The sheet
-(`TripView`) holds the day and stop 日程 and 地図 hand each other (`MapTabProps`): 地図で見る → 地図 on the stop; the
-map's 日程で見る → 日程 scrolled to the stop's line, opened; 地図 opens on the day being read. 日程's lines are
-`components/travel/ledger.ts` (`lines`, `nowMark`); the list is `Itinerary.svelte` ([design.md](design.md#trips)).
+`lib/travel/itinerary.ts itinerary(trip, locale)`: days, their stops, legs and stay. `TripView` holds the day and stop
+that 日程 and 地図 hand each other (地図で見る / 日程で見る); 日程's lines are `components/travel/ledger.ts`.
 
 ### Private values
-
-Only in the record: one `trip_note` row a trip (its whole `v`; the latest `at` wins); the nightly dump is the backup
-([runbook §6](ops/runbook.md#6-backups)). Unset keys show 🔒 ・・・.
-
-- **See the keys** (names only), from `relay/`: `node scripts/record.ts dump | jq -c '.rows.events[] |
-  select(.[3]=="trip_note") | [.[2], (.[4] | fromjson | .trip, (.v | keys))]'`.
-- **Set a note:** a file (mode 600, under `/tmp`) `{"rows":{"events":[["<ISO now>","A","tn-<trip>-<base36
-  ms>","trip_note","{\"trip\":\"<trip>\",\"at\":<ms>,\"v\":{…}}"]]}}` with *every* key of the trip (the row replaces
-  the note), then `node scripts/record.ts load <file>` and `rm` it. A new id each time (a load skips ids it has).
+One `trip_note` row a trip on the record (whole `v`, latest `at` wins; backed up nightly). Unset keys show 🔒 ・・・.
+List the keys with `node scripts/record.ts dump` (filter `trip_note`); set a note by `record.ts load` of a 600-mode
+`/tmp` file holding one `trip_note` event with **every** key (the row replaces the note) and a fresh id, then `rm` it.
 
 | trip | keys |
 |---|---|
@@ -57,82 +40,42 @@ Only in the record: one `trip_note` row a trip (its whole `v`; the latest `at` w
 | hiking | `kinpu`/`akigawa`/`ono` + `PlanUrl`, `Party`, `Planner` ([hiking.md](hiking.md)) |
 
 ## Packing list (relay)
-
-Contract `app/src/lib/contract/pack.ts` (shared by `relay/src/store.ts` and the phones); the phone's store
-`components/travel/packing.svelte.ts`. Row types `pack`, `pack_chk`, `pack_reset`, `trip_note`:
-[backend.md#events](backend.md#events).
-
-- The trip data's `packing` is the seed until an op touches an id; a set replaces an id's whole state, `rm` hides it
-  for good (with its ticks). Latest `at` wins, then G over B over A; ops are stamped on the relay's clock.
-- `ord` is fractional (`ordBetween`). A seed's `ord` is its index: edit seeds only by appending, never reorder.
-- A tick is packed for whoever's latest `pack_chk` is `v: 1` and later than their own `pack_reset`.
-- Caps: 300 standing items a trip (`pack full`), 300 ticks a trip and person.
+Contract `contract/pack.ts` (relay and phones); store `components/travel/packing.svelte.ts`; rows `pack`, `pack_chk`,
+`pack_reset` ([backend](backend.md#events)). The trip's `packing` seeds until an op touches an id; a set replaces an
+id's state, `rm` hides it for good; latest `at`, then G > B > A. `ord` fractional (`ordBetween`); seeds only append. A
+tick holds when a person's latest `pack_chk` is `v: 1` after their `pack_reset`. Caps: 300 items, 300 ticks a person.
 
 ## Maps
-
-`components/travel/whole/`: `AllDaysMap.svelte` (地図, the app's and /s's one trip map: mounted once a trip page,
-kept while hidden), `engine.ts` (lazy chunk), `style.ts`, `logic.ts` (focus boxes, faded days, candidates, the saved
-places' path). The shared core (basemap, fonts, location dot, `LocateDisc`, `askAgain.ts`, `cached.ts`) is
-`components/map/` ([design.md](design.md#maps)).
-
-- **Source:** `components/map/style.ts` `BASEMAP`, `https://tiles.openfreemap.org/planet`: the only third party the
-  phones contact for maps (CSP `connect-src`); it sees the IP and area, never the trip.
-- **Overlays:** every day's legs in its colour (walks and boats dashed), the stops as dots (a focused day's full, the
-  others faded; a tapped one ringed, the zoom kept), Okinawa's candidates (off at first; a campsite's dot opens its
-  card); saved places within 2 km of the focused day's path (every day's under 全体) via `PlacesLayer` (never on /s:
-  `load-budget.ts` checks).
-- **States** (`data-mode`): `loading`, `ready`, `offline` (route only), `failed` (もう一度), `lost` (WebGL context);
-  offline with the trip's area saved, 「保存した範囲のみ」.
-- **Locate:** permission on the first tap; over 50 km from every stop the map stays on the route
-  (「旅先から離れています」). Refused: MS.refused; asked again per launch unless Safari allows: MS.again. Paused while
-  the tab is hidden.
+`components/travel/whole/`: `AllDaysMap.svelte` (one map a trip page, kept while hidden; also /s), lazy `engine.ts`,
+`style.ts`, `logic.ts`; shared core in `components/map/` ([design](design.md#maps)). Tiles: `BASEMAP`
+(OpenFreeMap), the only map third party (CSP). Overlays: legs in the day's colour, stops (others faded), Okinawa's
+candidates, saved places within 2 km of the day's path (never on /s). States (`data-mode`): loading, ready, offline,
+failed, lost. Locate: permission on the first tap; over 50 km from every stop the map stays on the route.
 
 ## Photos
-
-`static/travel/<trip>/`: WebP ≤ 720 px wide, lazy (the list's covers eager); a day's photo is in its heading's details. A failed photo is the paper placeholder
-(`components/ui/photoFallback.ts`).
+`static/travel/<trip>/`: WebP ≤ 720 px, lazy; a failed one is the paper placeholder (`ui/photoFallback.ts`).
 
 ## Sharing
-
-共有リンク: `https://island-fund.pages.dev/s#<token>` shows the **whole trips page** read-only to someone without a key
-until it expires (1週間 · 1か月 · 3か月 · 1年, renewable, never unlimited) or is turned off. Contract
-`contract/share.ts` (kind registry; `trip` links are still read, no longer made).
-
-- **Shown:** every trip's guide, packing list (no ticks) and the note's non-private values. **Never:** `{p:}` values,
-  who packed what, any other feature.
-- The relay builds the snapshot (`sharedTrips`, ≤ 200 KB), dropping `SHARE_PRIVATE_NOTE_KEYS` and private-sounding keys
-  and redacting every record text (`contract/private.ts` `redactPrivate`); fail closed.
-- The token stays in the fragment; `/s` is noindex, its own shell (`build-pages/s.html`), no service worker, no key. With no worker to
-  give up for it, a guide's chunk that takes over 10 s (`trips/index.ts TRIP_WAIT_MS`) falls to the page's offline/もう一度.
+共有リンク `/s#<token>` shows the **whole trips page** read-only without a key until it expires (1週間–1年, renewable) or
+is turned off ([decisions](decisions.md#trips-and-offline)); kinds in `contract/share.ts`. Shown: guides, packing (no
+ticks), non-private note values; never `{p:}` values or who packed what. The relay builds it (`sharedTrips`, ≤ 200 KB,
+`redactPrivate`, fail closed). `/s` is its own noindex shell without a service worker or key.
 
 ### The relay's part
-
-`relay/src/share.ts`, own tables (not events, which reach the guest's phone): `share` (link, token, expiry, counters),
-`share_visit` (≤ 500 a link), `share_seen` (the day's visitor hashes, emptied at Tokyo midnight with the salt).
-
-- **API** (`/api`, any key, online only): `share_list`, `share_make` (20 live a ref, 100 in all), `share_set`,
-  `share_visits` (last 50).
-- **`POST /share`** (no key, `{"t": token}`): the Worker refuses other origins and bodies over 256 chars; `gone` for
-  off, expired or unknown; `busy` (429) past 30 reads/min or 20 misses/hour a visitor, or 600 reads/min in all.
-- **A visit:** an `ok` read, not a bot, not our phone, not the same visitor within 30 min. Kept: minute, device class,
-  country, a daily-salted hash; no IP, UA or cookie.
-- The 03:00 cron deletes links 90 days after they ended. Dumps carry `share` and `share_visit`; a restore to before a
-  revocation revives the link. Log `share {op, kind, ok, why, ms, n}`, never the token.
+`relay/src/share.ts`, own tables `share`, `share_visit` (≤ 500 a link), `share_seen` (daily-salted hashes). `/api`:
+`share_list`, `share_make` (20 a ref, 100 in all), `share_set`, `share_visits`. `POST /share {t}` (no key): our origin
+only, `gone` or `busy` (429) on rate caps. A visit: not a bot, not our phone, not the same visitor in 30 min; kept
+minute, device class, country, hash; no IP, UA or cookie. The 03:00 cron deletes links 90 days after they end.
 
 ## Offline
-
-Caches: backend.md "Service worker"; plan: `lib/offline/plan.ts` (within OpenFreeMap's 3,000 tiles and 50 MB an area).
-Saved from 設定 › オフライン地図 (`components/travel/OfflineMaps.svelte`), a row a trip; past 30 days 更新.
+Caches: [backend](backend.md#service-worker); plan `lib/offline/plan.ts` (≤ 3,000 tiles and 50 MB an area), saved from
+設定 › オフライン地図; past 30 days 更新.
 
 ## Open
-
-- Unchecked on a real iPhone: `text-wrap: pretty`, offline maps on Metal, 日程's lazy days (`content-visibility`) on a fast flick.
+- Unchecked on a real iPhone: `text-wrap: pretty`, offline maps on Metal, 日程's lazy days on a fast flick.
 - No map night tint; packing has no icon picker, note editing or cross-category moves.
 
 ## Trip facts
-
-Bind edits to the trip modules; each module's header holds its verified facts and decisions. **Place links:** a real
-place, never a coordinate: campsites the Evertrail directory's `Google maps` link, venues
-`https://www.google.com/maps/place//data=!4m2!3m1!1s<FID>`, else `?api=1&query=<name>`. Never invent an FID;
-`maps.google.com/?cid=` links fail silently. Seattle is English only, no map; its hike cards open トレイル
-([hiking.md](hiking.md#entry)).
+Each trip module's header holds its verified facts. **Place links:** a real place, never a coordinate (Evertrail's
+Google link, `maps/place//data=!4m2!3m1!1s<FID>`, else `?api=1&query=`); never invent an FID; `?cid=` fails silently.
+Seattle is English only, no map; its hikes open トレイル ([hiking](hiking.md#entry)).

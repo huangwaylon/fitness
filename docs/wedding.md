@@ -1,46 +1,30 @@
 # 結婚式 (the wedding board)
 
-The wedding planning board (ported from an Apps Script / Google Sheet app), the HUD menu's 結婚式 pill
-([design](design.md#island)). Anyone edits, the guest too. No share link, no ベル tie-in.
-
-The board's `date` setting drives the island's countdown, wedding-day events and music (`time/holidays.ts`
-`weddingDate`; `WEDDING` until the record has one).
+The wedding planning board, the menu's 結婚式 ([design](design.md#island)). Anyone edits, the guest too; no share link,
+no ベル tie-in. Its `date` drives the island's countdown, wedding-day events and music (`time/holidays.ts weddingDate`).
 
 ## The sheet
-
-`components/wedding/` ([unified kit](design.md#unified-kit)), a `lazySheet` (`open.svelte.ts`), the island paused under
-it. Tabs プラン / メモ / 設定. Rules: `lib/wedding/progress.ts`, `time/zone.ts`; store `board.svelte.ts`, view rules
-`view.ts`. Demo board `store/demo/rows.ts`, driven by `e2e/wedding-board.spec.ts`.
-
-- **Plan** (`Head`, `Plan`, `TaskRow`, `TaskForm`): tasks with a due date (required on new ones), optional start,
-  category and one-level checklist; filters すべて / 期限切れ / もうすぐ (≤ 14 days) / あとで / 完了; grouped by month. The
-  board's progress is the mean of its tasks'.
-  ＋ (a new task) sits in the title bar before ✕ on プラン, like every sheet's ＋ (no floating button).
-- **Notes** (`Notes`): one shared markdown note; the draft lives in memory (`notepad.svelte.ts`). Crossed saves show
-  both versions with これにする and ふたつ合わせる.
-- **Categories** (`lib/contract/wedCats.ts`): a Japanese starter list; free text allowed.
+`components/wedding/` (a `lazySheet`; store `board.svelte.ts`, view rules `view.ts`, progress `lib/wedding/progress.ts`;
+e2e `wedding-board.spec.ts`). Tabs プラン / メモ / 設定.
+- **Plan**: tasks with a due date, optional start, category and one-level checklist; filters すべて / 期限切れ / もうすぐ
+  (≤ 14 days) / あとで / 完了; by month; ＋ in the title bar. Progress is the mean of the tasks'.
+- **Notes**: one shared markdown note; crossed saves show both with これにする and ふたつ合わせる.
+- **Categories** (`lib/contract/wedCats.ts`): a starter list; free text allowed.
 - **設定:** names, date, time, venue, categories; deleted tasks with 元に戻す and 完全に削除.
 
 ## The record (relay)
-
-`contract/wedding.ts`, shared by the record and the phone ([backend.md](backend.md#events) has the shapes):
+`contract/wedding.ts` (caps at its top: 2,000 `wtask`, note 64,000 chars); shapes in [backend](backend.md#events).
 
 | type | data | slot |
 |---|---|---|
 | `wtask` | `{id, at, c, title, cat, due?, start?, parent?, del?}` or `{id, at, rm: true}` | `wtask\|<id>` |
 | `wdone` | `{id, at, v: 0 \| 1}` | `wdone\|<id>` |
-| `wconf` | `{k, at, v}`, `k` one of `p1`, `p2`, `date`, `time`, `venue`, `tz`, `cats` | `wconf\|<k>` |
+| `wconf` | `{k, at, v}`, `k` in `p1`, `p2`, `date`, `time`, `venue`, `tz`, `cats` | `wconf\|<k>` |
 | `wnote` | `{at, md, base?}`, kept with `was?` | `wnote` |
 
-- Latest `at` wins, then who. `rm` is final (drops the tick); `del` is a soft delete.
-- A subtask's `parent` must be a held top-level task (one level).
-- Caps: constants at the top of `contract/wedding.ts` (2,000 `wtask` rows: `wedding full`; note 64,000 chars).
-- Note conflicts: a save names its `base`; a mismatch keeps the replaced note as `was: {at, md, who}`, so neither is
-  lost.
-- `imported: true` marks rows from the Sheet; a phone may not set it.
-- The phone judges only its queued rows (`wedFold`); the admin `load` restores a dump faithfully.
+Latest `at` wins, then who; `rm` final, `del` soft; a `parent` must be a held top-level task. A note save names its
+`base`; a mismatch keeps the replaced note as `was`. `imported: true` (from the old Sheet) a phone may not set.
 
 ## Migration
-
-Loaded once from the old board (tools at git tag `wedding-import`); `relay/test/wedding.test.ts` "the imported shapes"
-keeps those rows valid. Open, outside the repo: rotate the Apps Script `APP_KEY`, archive the `/exec` deployment and the old repo.
+Loaded once from the old board (tools at git tag `wedding-import`; `relay/test/wedding.test.ts` keeps those shapes
+valid). Open, outside the repo: rotate the Apps Script `APP_KEY`, archive the old deployment and repo.
