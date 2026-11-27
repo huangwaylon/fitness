@@ -11,7 +11,7 @@ import { goesIn, isMarker, kindDef } from './catalog.ts';
 import { navOf, reachable } from './nav.ts';
 import { onBuilding, tapCovered } from './clear.ts';
 import { FIGURE_HIDES } from './hides.ts';
-import { outdoorReady, wantsOutdoor } from './outdoor.ts';
+import { outdoorFailed, outdoorReady, wantsOutdoor } from './outdoor.ts';
 
 type Pt = readonly [number, number];
 
@@ -302,9 +302,10 @@ export function washedUp(layout: Layout, date: string, seed: string): Pt | null 
 const days = new Map<string, { layout: Layout; lawn: Pt[]; dig: Pt[] }>();
 /** Today's weed spots (`lawn`, 15) and dig spots (`dig`, 8) on the layout: world points, seeded by the date. None
  *  while the layout holds a piece of the outdoor catalogue's and its table isn't in (its kinds unknown, nothing in the
- *  way: the picks made then all moved as it came in, a moment after the island opened; the user's 2026-11-26). */
+ *  way: the picks made then all moved as it came in, a moment after the island opened; the user's 2026-11-26); its load
+ *  failed (offline): picked without it, as before. */
 export function daySpots(layout: Layout, date: string, seed: string): { lawn: Pt[]; dig: Pt[] } {
-  if (!outdoorReady() && wantsOutdoor(layout)) return { lawn: [], dig: [] };
+  if (!outdoorReady() && !outdoorFailed() && wantsOutdoor(layout)) return { lawn: [], dig: [] };
   const key = `${date}|${seed}`;
   const had = days.get(key);
   if (had && had.layout === layout) return had;

@@ -73,13 +73,23 @@ export function kindOf(p: OutdoorPiece): KindDef {
   };
 }
 
+let failed = false;
+/** The table's last load failed (offline, its chunk not cached): what waits for it goes on without it. */
+export const outdoorFailed = (): boolean => failed;
 /** The table in (once): its kinds into the catalogue. */
 export const loadOutdoor: () => Promise<void> = once(() =>
-  import('./outdoor.json').then((m) => {
-    const pieces = (m.default as unknown as { pieces: Record<string, Omit<OutdoorPiece, 'code'>> }).pieces;
-    for (const [code, p] of Object.entries(pieces)) BY_KIND.set(PREFIX + code, { code, ...p });
-    addKinds([...BY_KIND.values()].map(kindOf));
-  })
+  import('./outdoor.json').then(
+    (m) => {
+      failed = false;
+      const pieces = (m.default as unknown as { pieces: Record<string, Omit<OutdoorPiece, 'code'>> }).pieces;
+      for (const [code, p] of Object.entries(pieces)) BY_KIND.set(PREFIX + code, { code, ...p });
+      addKinds([...BY_KIND.values()].map(kindOf));
+    },
+    (e: unknown) => {
+      failed = true;
+      throw e;
+    }
+  )
 );
 
 /** Whether a layout has a piece of the catalogue's. */
