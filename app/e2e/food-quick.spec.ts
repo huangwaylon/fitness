@@ -92,3 +92,22 @@ test('one tap: the generic when I have none (ビール 350ml缶), 取り消す; 
   await expect(s.locator('[data-food-summary]')).toHaveClass(/pB/);
   await expect(s.locator('[data-quick-add]')).toHaveCount(0);
 });
+
+test('one tap while the catalog loads: a second tap logs nothing more (code review 2026-11-27)', async ({ page }) => {
+  // the catalog held until both taps are in (its index first: the whole load waits on it)
+  let release!: () => void;
+  const held = new Promise<void>((r) => (release = r));
+  await page.route('**/food/index.json*', async (route) => (await held, route.continue()));
+  await openFood(page, { how: 'tap' });
+  const s = sheet(page);
+  const snack = s.locator('section[data-meal=s] [data-entry]');
+  await expect(snack).toHaveCount(0);
+  const drink = s.locator('section[data-meal=s] [data-quick-add=drink]');
+  await drink.scrollIntoViewIfNeeded();
+  await drink.tap();
+  await drink.tap();
+  release();
+  // (both taps' adds would land together, on the catalog: never 2)
+  await expect(dlg(page).locator('.banner')).toContainText('おやつに追加しました', { timeout: 15_000 });
+  await expect(snack).toHaveCount(1);
+});

@@ -420,10 +420,16 @@
     const it = itemById(held.db ?? (await foodDb().catch(() => null)), q.id);
     return it ? { f: toSnap(it, q.u), g: it.portions?.find((p) => p.label === q.u)?.g ?? q.g } : null;
   }
-  /** One tap: a new entry of mine, its banner's 取り消す removing it again. */
+  /** The one-tap adds waiting for the catalog (`meal:kind`): a second tap meanwhile logs nothing more. */
+  const quickBusy = new Set<string>();
+  /** One tap: a new entry of mine, its banner's 取り消す removing it again. On the day shown at the tap (a cold catalog
+   *  is awaited: the day may change meanwhile). */
   async function quickAdd(meal: Meal, kind: QuickKind) {
-    const u = usuals[kind] ?? (await genericOf(kind));
-    const r = u ? logFood({ d: date, m: meal, g: u.g, f: u.f }) : null;
+    const d = date, busy = `${meal}:${kind}`;
+    if (quickBusy.has(busy)) return;
+    quickBusy.add(busy);
+    const u = await Promise.resolve(usuals[kind] ?? genericOf(kind)).finally(() => quickBusy.delete(busy));
+    const r = u ? logFood({ d, m: meal, g: u.g, f: u.f }) : null;
     if (!u || !r?.ok || !r.id) return;
     const id = r.id;
     count('act:food.add.tap');
