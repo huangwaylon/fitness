@@ -18,6 +18,7 @@
   import { roomIconUrl } from './roomIcon.ts';
   import { GRID, PATHS, TILE, type Kind } from '#lib/layout/grid.ts';
   import { Layout, extentOf, fromJson, footOf, objMid, opsBetween, toJson, type Obj } from '#lib/layout/model.ts';
+  import type { LayoutOp } from '#lib/contract/layout.ts';
   import { validate, type Issue } from '#lib/layout/validate.ts';
   import { riverStems } from '#lib/layout/river.ts';
   import { resizedCodes, type Blocker, type Edge } from '#lib/layout/resize.ts';
@@ -610,16 +611,19 @@
   }
   function removeSel() {
     const fixed = [...selected].map((id) => cur.objects.get(id)).filter((o) => o && !removable(o));
-    plantsAsk(remove(store.current, selected), (next) => {
+    plantsAsk(() => remove(store.current, selected), (next) => {
       commit(next, `${selected.size - fixed.length}個削除した`);
       if (fixed.length) say(`${fixed.map((o) => labelOf(o!.k, o!.id)).join('・')}は削除できません`);
       selected = new Set([...selected].filter((id) => store.current.objects.has(id)));
     });
   }
-  /** `next` done by `go`, unless it leaves plants off their field (a field deleted or made smaller: the record keeps
-   *  them, the shop's 苗に戻す takes them back, docs/farming.md): then a sheet asks first, how many and how many ripe
-   *  (the user, 2026-11-26). */
-  function plantsAsk(next: Layout, go: (next: Layout) => void): void {
+  /** `make`'s layout done by `go`, unless it leaves plants off their field (a field deleted or made smaller: the record
+   *  keeps them, the shop's 苗に戻す takes them back, docs/farming.md): then a sheet asks first, how many and how many
+   *  ripe (the user, 2026-11-26). On 消す it's made again over the island as it is then: the other phone's edits while
+   *  the sheet was open stay (a layout made at open would send them back). */
+  function plantsAsk(make: () => Layout | null, go: (next: Layout) => void): void {
+    const next = make();
+    if (!next) return;
     const m = week.model, r = m ? plantsLeft(store.current, next, farmOfState(m.state), m.now) : null;
     if (!r?.n) return go(next);
     const ripe = `（熟した株 ${r.ripe}）`;
@@ -627,7 +631,11 @@
       ...(r.gone
         ? { title: '畑を消しますか？', verb: '消す', text: `${r.fields > 1 ? '選んだ畑' : 'この畑'}には ${r.n}株あります${ripe}。消すと株は畑の外に残ります。` }
         : { title: '畑を小さくしますか？', verb: '小さくする', text: `小さくすると ${r.n}株が畑の外に残ります${ripe}。` }),
-      go: () => go(next)
+      go: () => {
+        const now = make();
+        if (now) go(now);
+        else say('これ以上できません');
+      }
     };
     fieldAskOpen = true;
   }
@@ -651,7 +659,8 @@
   const BRUSH_NAME: Record<Kind, string> = { grass: '草', sand: '砂', dirt: '土', stone: '石', brick: 'レンガ', plank: '板', river: '川', pond: '池', sea: '海' };
   const one = $derived(selected.size === 1 ? (cur.objects.get([...selected][0]) ?? null) : null);
   function setVariant(s: string) {
-    if (one) plantsAsk(restyle(store.current, one.id, s), (next) => commit(next, '変更した'));
+    const id = one?.id;
+    if (id) plantsAsk(() => restyle(store.current, id, s), (next) => commit(next, '変更した'));
   }
   /** How many plants stand on a field (the record keeps them if it's deleted or shrunk: docs/farming.md). */
   function plantsOn(o: Obj): number {
@@ -665,11 +674,11 @@
    *  nowhere to go holds it). */
   function resizeBy(edge: Edge, by: number, moveIn = false) {
     while (Math.abs(by) > 1 && !resizedCodes(store.current, edge, by)) by -= Math.sign(by);
-    const r = resize(store.current, edge, by, moveIn);
+    let r = resize(store.current, edge, by, moveIn);
     const label = `島を${by > 0 ? '広げた' : '狭めた'}（${EDGE_NAME[edge]}${Math.abs(by) > 1 ? ` ${Math.abs(by)}マス` : ''}）`;
     if (r.layout) {
       pending = null;
-      plantsAsk(r.layout, (next) => {
+      plantsAsk(() => (r = resize(store.current, edge, by, moveIn)).layout, (next) => {
         commit(next, label);
         say(r.removed.length ? `${label} · ${r.removed.length}個片付けた` : label);
       });
@@ -748,7 +757,7 @@
     window.addEventListener('keyup', onKeyUp);
     window.addEventListener('blur', onBlur);
     if (testHooks()) window.__editor = {
-      view: () => view, layout: () => store.current, select: (ids: string[]) => (selected = new Set(ids)), issues: () => issues, auto: () => auto, undrawn: () => undrawnList,
+      view: () => view, layout: () => store.current, apply: (ops: Omit<LayoutOp, 'at'>[]) => store.apply(ops.map((o) => ({ ...o, at: store.stamp() }) as LayoutOp)).length, select: (ids: string[]) => (selected = new Set(ids)), issues: () => issues, auto: () => auto, undrawn: () => undrawnList,
       screenOf: (x: number, z: number) => {
         const [sx, sy] = toScreen(view, x, z), b = canvas!.getBoundingClientRect();
         return [b.left + sx, b.top + sy];

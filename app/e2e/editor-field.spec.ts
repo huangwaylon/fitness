@@ -17,7 +17,7 @@ const SEEDS: Seed[] = [
   ['farm', { ops: plants([P(0, 1), P(1, 1)]) }, 'A', '05:50']
 ];
 
-type E = { tileScreen(c: number, r: number): [number, number]; layout(): { objects: Map<string, { s?: string }> } };
+type E = { tileScreen(c: number, r: number): [number, number]; layout(): { objects: Map<string, { s?: string }> }; apply(ops: object[]): number };
 const field = (page: Page) => page.evaluate(() => (window as unknown as { __editor: E }).__editor.layout().objects.get('field-A')?.s ?? null);
 const tile = (page: Page) => page.evaluate(() => (window as unknown as { __editor: E }).__editor.tileScreen(10, 17));
 
@@ -63,6 +63,25 @@ test.describe('desktop', () => {
     await expect(ask(page)).toContainText('この畑には 4株あります（熟した株 2）。消すと株は畑の外に残ります。');
     await page.locator('[data-field-ask-yes]').click();
     await expect.poll(() => field(page)).toBeNull();
+  });
+});
+
+test.describe('desktop, the other phone editing meanwhile', () => {
+  test.use({ viewport: { width: 1440, height: 900 } });
+  test('an edit landing while the sheet asks stays: 消す deletes only the field, ⌘Z brings back only the field', async ({ page }) => {
+    await open(page);
+    const has = (id: string) => page.evaluate((id) => (window as unknown as { __editor: E }).__editor.layout().objects.has(id), id);
+    await page.mouse.click(...(await tile(page)));
+    await page.keyboard.press('Delete');
+    await expect(ask(page)).toBeVisible();
+    // a tree put down meanwhile (the partner's もようがえ; a layout made when the sheet opened would take it away again)
+    expect(await page.evaluate(() => (window as unknown as { __editor: E }).__editor.apply([{ sc: 'o', id: 'oak-t1', k: 'oak', x: 14, z: 24, f: 0 }]))).toBe(1);
+    await page.locator('[data-field-ask-yes]').click();
+    await expect.poll(() => field(page)).toBeNull();
+    expect(await has('oak-t1')).toBe(true);
+    await page.keyboard.press('ControlOrMeta+z');
+    await expect.poll(() => field(page)).toBe('f-2x2');
+    expect(await has('oak-t1')).toBe(true);
   });
 });
 
