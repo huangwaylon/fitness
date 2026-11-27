@@ -5,8 +5,7 @@ The ボット sheet's design ([Unified kit](design.md#unified-kit)); each bot's 
 
 **ボット** (`bots/BotsSheet.svelte`; the guest's view is read-only: `bots.viewOnly`): tabs **ジム** · **保養所** ·
 **Jobs** (`bots/registry.ts`), the last one reopening; a kept or asked `kalori` tab opens Jobs with Chain menus
-unfolded. A driver per bot (`lib/bots/types.ts`,
-`lib/<bot>/bot.ts`) words the status: tone, `needsLook`.
+unfolded. A driver per bot (`lib/bots/types.ts`, `lib/<bot>/bot.ts`) words the status: tone, `needsLook`.
 
 - **Dots** (`StatusDot`): leaf 順調 · 起動中 · 取得中; yuzu 一部不調, yuzu 「!」 遅れ · 保留 · 要対応; coral 「!」 不調 · 故障;
   sunk 待機中 · 停止中 · オフ · まだありません; hollow 不明. On a tab and the menu's ボット (the worst) only while a person must
@@ -18,14 +17,12 @@ unfolded. A driver per bot (`lib/bots/types.ts`,
 - **Page** (`BotPage`): ジム and 保養所 open with a head (空き枠の確認 / 空室の確認, the status dot inline: a tap opens the
   bot's row in Jobs; ⋯, an `ActionSheet`, only stops ask first; an act's answer under it), then `AttentionCard` (the
   act, or the sentence while a person must look; 保養所's holds), sections, 設定, くわしく (the page's history only).
-  Their status lives in Jobs (since 2026-11-25). Jobs keeps its `StatusCard` (dot · word · 「12:00時点」; the sentence).
+  Their status lives in Jobs, which keeps its `StatusCard` (dot · word · 「12:00時点」; the sentence).
 
 Calendars (`MonthCalendar`, `MonthSwitch`, `monthWeeks`): whole months from 月; past days faint, future dashed.
 
 ジム: いま空いている枠 (the last check's open slots, `/gym/config` `open`/`openAt`) with 予約ページを開く; ⋯
-今すぐ確認 (its slots land in that section) · 停止/再開 · 間隔 ›; `GymCalendar` (選択 / 完了 or long press, applied at
-once with 取り消す). Alone at
-`/gym#<key>` (`routes/gym`, bare like `/s`): LINE's menu link opens it with `LINK_KEY` (member A's, gym only), which
+今すぐ確認 (its slots land in that section) · 停止/再開 · 間隔 ›; `GymCalendar` (選択 / 完了 or long press, applied at once with 取り消す). Alone at `/gym#<key>` (`routes/gym`, bare like `/s`): LINE's menu link opens it with `LINK_KEY` (member A's, gym only), which
 leaves the URL and is kept for the tab (`lib/gym/linkKey.ts`); `gym.html` starts both reads inline (`lib/gym/early.ts`).
 
 保養所: ⋯ 開始 / 停止; holds in 確認が必要. `ItsCalendar` (a tap a night, a weekday its column) edits a 保存 draft; 設定:

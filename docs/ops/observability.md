@@ -85,33 +85,30 @@ HEALTH_TOKEN`.
 
 ## Costs
 ### The rows-read budget (the account's 5M a day)
-2026-11-25: the account read 5.0M rows on the 11-24 UTC day and every Durable Object, the log's too, threw "Exceeded
-allowed rows read" from 04:00 to 09:00 JST: the phones were offline. By Cloudflare's own count (GraphQL
-`durableObjectsPeriodicGroups`): agents' log scans 1.88M (`logs` over 5-30 days, 1.43M in three afternoon hours),
-the record 1.69M, the TEST copy's smokes 1.43M (it shares the account's quota). The rules since:
+Past 5M every Durable Object, the log's too, throws "Exceeded allowed rows read" until midnight UTC: the phones go
+offline. The heavy readers are long log scans, the record, and smokes against the test copy (it shares the quota).
 - **The guard** (log.ts `reads`, `SHED_PCT` 60; the test copy's `READS_SHED_PCT` 10): past that share of today's rows
   read (the log's and the record's, UTC) the record refuses the optional admin ops with **429 `budget`** (dumps, the
   places ops, `logs`/`logstats`, the checks: all but storeObject.ts `ESSENTIAL_OPS`), the cron's places tick waits,
   and `/health/log` skips its day scan (`shed`, counts -1). `logs` alone stops past `LOG_READS_MAX` (1M) of the log's
   own reads. The phones' `/api`, ingest and the room are never refused.
-- `logs` lists filtered by an event read only that event's rows (index `log_ev`); a report still reads every row of
-  its window: keep `--since` at a day unless the question needs more (`logs` refuses past SCAN_MAX without `--force`).
+- `logs` filtered by an event reads only that event's rows (index `log_ev`); a report reads every row of its window:
+  keep `--since` at a day unless the question needs more (`logs` refuses past SCAN_MAX without `--force`).
 - The test copy is for a few rows: no load tests, no repeated full snapshots or dumps against it.
-- Daily per object: the GraphQL query above (wrangler's login has analytics read: never print its token). At a
-  glance: ボット → Jobs → **Daily limits (Cloudflare)** (the same query, by the relay with `CF_ANALYTICS_TOKEN`, 10 min
+- Per object: GraphQL `durableObjectsPeriodicGroups` (wrangler's login has analytics read: never print its token). At
+  a glance: ボット → Jobs → **Daily limits (Cloudflare)** (the same query, by the relay with `CF_ANALYTICS_TOKEN`, 10 min
   cached, no DO rows; amber from 60 %, red and 「!」 from 85 %: [bots.md](../bots.md)).
 
 ### The rows-written budget (the account's 100k a day)
-2026-11-25 (#41): 82k by 14:00 UTC (the alert said 68 %: the relay's own count, without the test copy). By GraphQL
-hour: 41.8k at 00 UTC were one-off, `log_ev` built over the log's rows (prod 27.6k, test 13.3k: **a new index writes a
-row per existing row**, budget a migration on a big table); the rest the record's `events` (each ~8 rows: the row, its
-`id`/`slot`/`at`/`type` index entries, `ids`, a slot's replaced row; an editor session moving hundreds of pieces is
-~6k an hour) and places-details' redo (~3.5k a run). Nights are ~30 an hour.
+An `events` row writes ~8 rows (the row, its `id`/`slot`/`at`/`type` index entries, `ids`, a slot's replaced row; an
+editor session moving hundreds of pieces is ~6k an hour); **a new index writes a row per existing row** (budget a
+migration on a big table); places-details' redo ~3.5k a run. Nights are ~30 an hour.
 - **The guard** (log.ts `writes`, `WRITE_SHED_PCT` 80; the test copy's `WRITES_SHED_PCT` 20 of its own): past that share
   of the day's rows written (the account's, Cloudflare's count asked by the log every 10 min with `CF_ANALYTICS_TOKEN`,
   plus its own since; no token: its own) the log keeps only errors (`closed` till midnight UTC, as a capped day) and
   the optional admin ops that write are refused **429 `budget`** (places-details, which leaves the rest for tomorrow;
-  the checks, dumps; the read-only ops, a places pull and `ESSENTIAL_OPS` served); `/health/log` says `wshed`, `rowsPct` is the account's. The phones' writes go on.
+  the checks, dumps; the read-only ops, a places pull and `ESSENTIAL_OPS` served); `/health/log` says `wshed`,
+  `rowsPct` is the account's. The phones' writes go on.
 
 ### Request budget
 Free plan, daily: Workers 100k requests; Durable Objects 100k requests (a WebSocket connect is one, incoming messages

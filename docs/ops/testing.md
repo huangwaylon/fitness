@@ -23,7 +23,7 @@ runs a selection, the full logic tier all after each deploy), **drawn smoke** (`
 
 ## CI (`.github/workflows/pages.yml`)
 *Deploy UI* runs on a push to `main` touching `app/**` (docs only: *Docs check*, `docs.yml`; relay: *Relay checks*,
-`relay.yml`, which also deploys the relay, runbook §8; its paths kept in step by `relay/test/paths.test.ts`). Jobs wait by `needs`, never by polling the API.
+`relay.yml`, which also deploys the relay, runbook §8). Jobs wait by `needs`, never by polling the API.
 
 - `plan`: the gate's selection (`gate-plan` artifact; `scripts/e2e-impact.ts`, `e2e-flakes.ts`, `e2e-shards.ts plan`).
   `checks`: `check`, `knip`, quarantine owners, docs-check. `unit` ×3: `npx vitest run --shard`.
@@ -42,8 +42,7 @@ After a deploy, never holding one back: *e2e logic full* (`e2e-logic-full.yml`):
 auto-quarantined; red is the next push's job), `e2e-render` (drawn smoke, advisory), `coverage` (`npm run coverage`:
 files under `contract/`, `sync/`, `store/actions.ts`, `store/meals.ts` at 85 % or their floor in
 `scripts/coverage-floors.ts`), `timings` (refresh with `npm run e2e:timings`; `scripts/e2e-missed.ts` lists what the
-gate missed). *e2e flake hunt*
-(`e2e-flake-hunt.yml`, nightly, runbook §0): WebKit as an iPhone 15, logic tier ×3, no retries, failures to the `flake`
+gate missed). *e2e flake hunt* (`e2e-flake-hunt.yml`, nightly, runbook §0): WebKit as an iPhone 15, logic tier ×3, no retries, failures to the `flake`
 issue (titled by spec names, "9 tests failed: guest, gymbot, players, pond +4 more": `scripts/flake-why.ts`; the places in
 its body).
 
@@ -81,11 +80,9 @@ Sync probe: `SYNC_PROBE=1 npm run e2e -- e2e/zz-sync-probe.spec.ts --project=web
 ## Before you push
 1. `npm run verify` (scripts/verify.ts; `-- --quick`, `-- --build`): lockfile, `check`, `knip`, `knip-relay`, vitest,
    quarantine owners, docs-check (rename a heading and its citations together). `.githooks/pre-push` runs it as
-   `--push` (over 50 MB of new blobs refused unless `BIG_PUSH=1`; bypass `--no-verify`), planned by
-   `scripts/verifyPlan.ts` from the stamp a green run on a clean, committed app/ leaves (`.git/…/verify-ok`):
-   nothing for the tree already verified (`verify && push` checks once), only `vitest related` + docs-check when a
-   rebase brought just files the push didn't touch and no lockfile/config/static file, the build only when the push
-   changed what the build reads.
+   `--push` (over 50 MB of new blobs refused unless `BIG_PUSH=1`), planned by `scripts/verifyPlan.ts` from the stamp a
+   green run on a clean app/ leaves: nothing for a tree already verified, `vitest related` + docs-check when a rebase
+   brought only others' files, the build only when the push changed what the build reads.
 2. Specs, 3D, tent or sync touched: `npm run e2e:ci-like -- --changed` (or `-- e2e/x.spec.ts --repeat 5`; `--tier
    render`, `--workers 6`): CI's way, each test 5×. One failure in 5: fix or quarantine with its owner.
 3. `npm run push` (scripts/push.ts): rebase onto origin/main, push; when main moved during the hook, rebase and push

@@ -59,7 +59,7 @@ echoed and logged as `rid=`. Tokens compared in constant time. Run ids `${GITHUB
   None while MODE is off, with no date, while a lease's run works, or within 2 min of an unanswered one.
 - **The cron's dispatches** (`dispatch.ts` `dueHealth`): health.yml, its-health.yml, places-pull.yml at :15/:45;
   its-health.yml at :00/:30 too while active; places-details.yml 18:30 UTC; kalori-scrape.yml Tue from 18:41 UTC;
-  e2e-flake-hunt.yml from 19:30 UTC once a day. Results: `/health/its`'s `dispatches` (`st`, `by: app|pat`).
+  e2e-flake-hunt.yml from 19:30 UTC once a day. Results: `/health/its`'s `dispatches` (`st`, `by`: `app`).
 - **Logs** (Workers Logs 3 days, `npx wrangler tail`): `its <op> key=value`, `its refused status= why= path=`. No
   keys or tokens.
 

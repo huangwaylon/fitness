@@ -5,8 +5,8 @@ static PWA on Cloudflare Pages, https://island-fund.pages.dev/). How it works: [
 these sections by number: renumber them together.
 
 ## 0. Scheduled work
-Alerts: one issue per area, `Ops: <area>: <why>` (`.github/scripts/ops-issue.sh`), closed when healthy.
-its-bot dispatches the workflows (`its/worker/src/dispatch.ts`); schedules are the backstop. Every cron must be here.
+Alerts: one issue per area, `Ops: <area>: <why>` (`.github/scripts/ops-issue.sh`), closed when healthy. its-bot
+dispatches the workflows (`its/worker/src/dispatch.ts`); schedules are the backstop. Every cron must be here.
 ボット → Jobs shows each ([bots.md](../bots.md) "Jobs"): relay tick = Server timer, its-bot's dispatches = Job
 trigger, health.yml = Server check, its-health.yml = ITS bot check, places-pull.yml = Google Maps sync, places-details.yml =
 Place hours, relay nightly = Nightly cleanup + Backup, kalori-scrape.yml = Chain menus, pages.yml = Site deploy, relay.yml =
@@ -191,11 +191,9 @@ alert, `LOG_OFF`).
 - Chain menus (Kalori, in ボット → Jobs): §13.
 
 ## 13. Refresh Kalori
-[food-data "Kalori"](../food-data.md#kalori). `kalori-scrape.yml` (weekly): the crawl (20 shards, 8 at a time, a wip
-release keeps progress), a dated release, then the update: merged and deployed within the bands, else a held PR.
-its-bot dispatches a missed week (`dispatchKalori`). One run at a time. Pause: `gh workflow disable` (`enable`) both
-kalori workflows. `gh run cancel <id>` doesn't stop a queued retry: cancel it too. A publish keeps 3 dated releases
-(`kalori_prune.py`). The release `KALORI_TAG` names must exist, published.
+How it works: [food-data "Kalori"](../food-data.md#kalori). its-bot dispatches a missed week (`dispatchKalori`). One
+run at a time. Pause: `gh workflow disable` (`enable`) both kalori workflows. `gh run cancel <id>` doesn't stop a
+queued retry: cancel it too. The release `KALORI_TAG` names must exist, published.
 
 1. **A held update** (PR `kalori-update/<tag>`, `HELD` on the failed band; no CI): check the counts
    (~54k items), merge by hand (main's CI deploys and accepts it); reject: close it or `gh release delete <tag>

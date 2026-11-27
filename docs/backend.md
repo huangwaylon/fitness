@@ -143,7 +143,7 @@ and tab (`dev`; 4002 replaces it). Ops merge commutatively per id.
   stepped by each op in its transaction, never below 0; `ledger_log` 60 days; `ledgercheck` at 03:00. `F|field` is
   always the fold of the `farm` rows (each at its `at`); meta `farm|t6h` marks it this relay's rules': another key at
   the start (older rules, a rollback) refolds it at once, its `seq` rising. A snapshot carries it when it changed after
-  `since` or its `seq` isn't the phone's `fseq` (0: none held; a cache from before 2026-11-25 never took it); an ack
+  `since` or its `seq` isn't the phone's `fseq` (0: none held); an ack
   carries it after any `farm` event, kept or refused, with the sender's `hp` (the phone shows the field it was judged
   on). A `farm` refused whole says its first op's reason (`farm taken` · `seed` · `empty` · `ripe` · `watered` ·
   `unripe`: the `req` log's `why=farm.taken`); any op dropped logs `farm.refused {who, why, n, kept}`.
@@ -207,21 +207,18 @@ for やること is separate: `contract/push.ts`, `relay/src/pusher.ts`, `VAPID_
 
 ## Service worker
 `app/src/service-worker/` (rules and every cache's bound: `caches.ts`). Registered late (`lib/ui-state/swLate.ts`) so
-the precache never competes with the island's models; a running page takes a deploy only at a safe moment
+the precache never competes with the island's models. A running page takes a deploy only at a safe moment
 (`ui-state/update.ts`): shown again after 5 min away, before its first touch, nothing in hand (a sheet, a page but the
 island or tent, a hike, a keyboard, unsent rows); `contract/compat.ts COMPAT` incompatible or a background chunk lost:
 also as it hides, never in front (a worker change must serve the previous build's page, else bump it). The deploy
-keeps the older builds' hashed files 3 days (`scripts/deploy-keep.ts`, `_app/kept.json`), so an open older page still
-loads its lazy chunks.
-Navigations serve the cached shell and check the network in the background (`checkShell`). On activate the worker
-keeps `SHELLS_KEPT` older shells and drops from them every hashed file the current one holds (`dedupeShells`). Each
-cache is bounded in `caches.ts`: the Cache API holds the shells, audio, food data, English, offline areas and fonts; IndexedDB
-(`blobCache.ts`, fewer Cache Storage entries make a cold worker's first read fast) holds the models, art, map tiles,
-photos, ごはん's pictures and 保存した場所's (an older phone's Cache API copies move over after a launch ends; e2e reads
-them via `e2e/swFiles.ts`). A carried feature chunk (English, すごろく, the wedding board, MapLibre) fetched from the
-network gives up after 10 s with no answer (`netFallback.ts fetchWithin`, `NO_COPY_WAIT_MS`).
-Offline: what was shown once reads offline (`e2e/offline.spec.ts`); precache list `scripts/load-budget.ts` `PRECACHE`;
-saved map areas `lib/offline/plan.ts` ([design](design.md#offline-maps)).
+keeps the older builds' hashed files 3 days (`scripts/deploy-keep.ts`, `_app/kept.json`) for open older pages.
+Navigations serve the cached shell and check the network in the background (`checkShell`); activate keeps
+`SHELLS_KEPT` older shells minus the current one's files (`dedupeShells`). The Cache API holds shells, audio, food
+data, English, offline areas and fonts; IndexedDB (`blobCache.ts`: a cold worker reads it faster) the models, art, map
+tiles and photos (e2e reads them via `e2e/swFiles.ts`). A carried feature chunk (English, すごろく, the wedding board,
+MapLibre) gives up on the network after 10 s (`netFallback.ts fetchWithin`, `NO_COPY_WAIT_MS`). Offline: what was
+shown once reads offline (`e2e/offline.spec.ts`); precache list `scripts/load-budget.ts` `PRECACHE`; saved map areas
+`lib/offline/plan.ts` ([design](design.md#offline-maps)).
 
 ## Tests
 `relay/test/` (node:sqlite); the app's queue, cache, sync and store tests; `GOLDEN_UPDATE=1`; `npm run bench`
