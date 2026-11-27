@@ -1,6 +1,6 @@
 <script lang="ts">
   // A plot tap's word (docs/farming.md "Playing"): a small cream tag over the plot, 「2かぶに みずやり・3こ みのる」
-  // 「ニンジン・あと 2じかん 10ぷん」, never my villager's balloon (which stood over the field being tapped). Placed once
+  // 「ニンジン・あと 2じかん 10ぷん」 (a second line: who harvested it), never my villager's balloon (which stood over the field being tapped). Placed once
   // where the tap saw the plot (no following: the camera stays put under a tap), gone in 1.2 s, at once on the next pop,
   // and faded by a drag (the camera moving off it). Touch goes through the word. On a growing plant it carries ほる,
   // its own 44 pt button inline at the word's right end (never over the plots behind it), deaf for its first 300 ms (a
@@ -90,7 +90,7 @@
   .farm-pop.gone { animation: farm-pop-out 150ms linear both; }
   .word {
     margin: 0; padding: 6px 12px;
-    border-radius: var(--r-pill); background: var(--c-cream); color: var(--c-ink); white-space: nowrap;
+    border-radius: var(--r-pill); background: var(--c-cream); color: var(--c-ink); white-space: pre; text-align: center;
     box-shadow: 0 2px 0 var(--c-lip), 0 4px 10px rgb(60 40 20 / .16);
     font: 700 var(--fs-s)/1.2 var(--font-ui); word-break: keep-all;
   }

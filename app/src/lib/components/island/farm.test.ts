@@ -94,14 +94,15 @@ describe('the word over a plant', () => {
     if (a.a !== 'about') throw new Error(a.a);
     return aboutLine(a, 'トマト', me, nameOf);
   };
-  it('a plant growing back says who harvested it: by name, じぶんで on their own phone', () => {
-    expect(word(back)).toBe('トマト・うめが しゅうかく・あと 2じかん 20ぷん・みずやり ずみ');
-    expect(word(back, 'B')).toBe('トマト・じぶんで しゅうかく・あと 2じかん 20ぷん・みずやり ずみ');
-    expect(word({ ...back, by: 'G' })).toBe('トマト・ゲストが しゅうかく・あと 2じかん 20ぷん・みずやり ずみ');
+  it('a plant growing back: its time, its harvester on a short second line (by name, じぶんで on their own phone)', () => {
+    expect(word(back)).toBe('トマト・あと 2じかん 20ぷん\nうめが しゅうかく');
+    expect(word(back, 'B')).toBe('トマト・あと 2じかん 20ぷん\nじぶんで しゅうかく');
+    expect(word({ ...back, by: 'G' })).toBe('トマト・あと 2じかん 20ぷん\nゲストが しゅうかく');
   });
-  it('no harvester known (an older record’s plant) or a first growth: the word as before', () => {
+  it('no harvester known (an older record’s plant) or a first growth: one line, the crop and its time', () => {
     const { by: _, ...old } = back;
-    expect(word(old)).toBe('トマト・あと 2じかん 20ぷん・みずやり ずみ');
-    expect(word({ c: 'tomato', t: NOW + H, w: true, by: 'B' })).toBe('トマト・あと 1じかん・みずやり ずみ');
+    expect(word(old)).toBe('トマト・あと 2じかん 20ぷん');
+    expect(word({ c: 'tomato', t: NOW + H, w: true, by: 'B' })).toBe('トマト・あと 1じかん');
+    expect(word({ c: 'tomato', t: NOW + 10 * 60_000, w: true })).toBe('トマト・あと 10ぷん');
   });
 });

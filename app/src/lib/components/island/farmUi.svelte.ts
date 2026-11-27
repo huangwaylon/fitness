@@ -44,13 +44,13 @@ export function choose(s: Seed): void {
 /** A crop's (or its start's) name, the catch catalog's (loaded: catchLine.ts loadNames), en without its article. */
 export const cropName = (c: Crop, src: FarmSrc = 'crop'): string => t(`beach.name.${seedKey(c, src).slice('goods:'.length)}`).replace(/^(an?|some) /, '');
 
-/** The word over a plant (world kana): 「トマト・うめが しゅうかく・あと 2じかん 20ぷん・みずやり ずみ」, its harvester
- *  only while it grows back (じぶんで: this phone's player; none on a plant harvested before 2026-11-26). `crop` its
- *  name, `nameOf` a player's name as the app spells it. */
+/** The word over a plant (world kana), short enough for an iPhone 15 at a glance (the user, 2026-11-27): 「トマト・あと
+ *  2じかん 20ぷん」, and while it grows back its harvester on a short second line, 「うめが しゅうかく」 (じぶんで: this
+ *  phone's player; none on a plant harvested before 2026-11-26). No watered note: a tap only words a watered plant (an
+ *  unwatered one in its 3 × 3 takes the can). `crop` its name, `nameOf` a player's name as the app spells it. */
 export function aboutLine(a: Extract<FarmTap, { a: 'about' }>, crop: string, me: Who, nameOf: (w: Who) => string): string {
   const { h, m } = leftHM(a.left);
-  const left = t(h && m ? 'world.farm.inHM' : h ? 'world.farm.inH' : 'world.farm.inM', { h, m });
-  if (!a.by) return t(a.watered ? 'world.farm.leftWet' : 'world.farm.left', { name: crop, left });
-  const by = a.by === me ? t('world.farm.byMe') : t('world.farm.by', { who: nameOf(a.by) });
-  return t(a.watered ? 'world.farm.leftByWet' : 'world.farm.leftBy', { name: crop, by, left });
+  const line = t('world.farm.left', { name: crop, left: t(h && m ? 'world.farm.inHM' : h ? 'world.farm.inH' : 'world.farm.inM', { h, m }) });
+  if (!a.by) return line;
+  return `${line}\n${a.by === me ? t('world.farm.byMe') : t('world.farm.by', { who: nameOf(a.by) })}`;
 }

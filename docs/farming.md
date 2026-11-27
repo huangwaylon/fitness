@@ -32,8 +32,8 @@ placed only in /editor. Reach 3 × 3; starts always in stock; pumpkin colour is 
 
 ## Playing
 A plot's tap acts in place (`world/farmTap.ts`) over P and its 3 × 3, first match: harvest ripe plants (P first);
-water growing unwatered ones; plant the held crop on an empty plot (取り消す); else a word over the plant (crop, last
-harvester, time to ripe, watered: `aboutLine`) with ほる. `FarmPicker.svelte` opens when the crop is ambiguous; empty
+water growing unwatered ones; plant the held crop on an empty plot (取り消す); else a word over the plant (`aboutLine`,
+fits an iPhone 15: 「トマト・あと 2じかん」, growing back a second line 「うめが しゅうかく」) with ほる. `FarmPicker.svelte` opens when the crop is ambiguous; empty
 plots show ＋ while I hold starts. Stages 0–2 by thirds of a growth, the ripe plant by yield, wet soil while watered;
 one timer to the next stage. A partner's watering shows at once (live `act` `water`, `island/farmLive.svelte.ts`);
 their plants and harvests on the next sync. Shop: うる 野菜 / 苗, かう 苗 (fills free plots), 「畑の外の株」 with 苗に戻す.

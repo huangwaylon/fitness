@@ -221,7 +221,7 @@ test('six hours on: ripe, watered by うめ while growing it gives three, harves
   await expect.poll(() => pops(page)).toEqual(['2かぶに みずやり・3こ みのる']);
   // watered now: a word with its time to ripe (19 minutes less the seconds since, up to ten)
   await tapWorld(page, plot(1).x, plot(1).z);
-  await expect.poll(() => pops(page)).toEqual(['2かぶに みずやり・3こ みのる', 'トマト・あと 20ぷん・みずやり ずみ']);
+  await expect.poll(() => pops(page)).toEqual(['2かぶに みずやり・3こ みのる', 'トマト・あと 20ぷん']);
   await expect.poll(async () => (await farmRows(page)).filter((o) => o.o === 'water').map((o) => o.p).sort()).toEqual([plot(0).p, plot(1).p].sort());
 });
 
@@ -260,7 +260,7 @@ test('a plot under a goal tree’s canopy is the plot’s; the canopy off the fi
   await expect(page.locator('.detail')).toHaveCount(1);
 });
 
-test('a plant growing back says who harvested it: うめ’s by her name, mine as じぶんで (the user, 2026-11-26)', async ({ page }) => {
+test('a plant growing back says who harvested it on a short second line: うめ’s by her name, mine as じぶんで, and fits an iPhone 15 (the user, 2026-11-26, 2026-11-27)', async ({ page }) => {
   await seed(page, D, [
     FIELD, ...POCKET,
     // both ripe at 11:30-ish; うめ harvested the second at 11:35 (a seed ahead of the page's clock: kept at its time)
@@ -279,9 +279,19 @@ test('a plant growing back says who harvested it: うめ’s by her name, mine a
   await tapWorld(page, plot(0).x, plot(0).z);
   await expect.poll(() => pops(page)).toEqual(['2かぶに みずやり・3こ みのる']);
   await tapWorld(page, plot(0).x, plot(0).z);
-  await expect.poll(() => pops(page).then((p) => p.at(-1))).toBe('トマト・じぶんで しゅうかく・あと 6じかん・みずやり ずみ');
+  await expect.poll(() => pops(page).then((p) => p.at(-1))).toBe('トマト・あと 6じかん\nじぶんで しゅうかく');
   await tapWorld(page, plot(1).x, plot(1).z);
-  await expect.poll(() => pops(page).then((p) => p.at(-1))).toBe('トマト・うめが しゅうかく・あと 6じかん・みずやり ずみ');
+  await expect.poll(() => pops(page).then((p) => p.at(-1))).toBe('トマト・あと 6じかん\nうめが しゅうかく');
+  // short enough for an iPhone 15 (the user, 2026-11-27): the tag with ほる inside the 393 px screen, two lines at most
+  const tag = page.locator('.farm-pop'), word = page.locator('[data-farm-pop]');
+  await expect(word).toHaveText('トマト・あと 6じかん\nうめが しゅうかく');
+  const [b, lh] = [(await tag.boundingBox())!, await word.evaluate((el) => parseFloat(getComputedStyle(el).lineHeight))];
+  expect(page.viewportSize()!.width).toBe(393);
+  expect(b.x).toBeGreaterThanOrEqual(0);
+  expect(b.x + b.width).toBeLessThanOrEqual(393);
+  expect(b.width).toBeLessThan(393 - 16);
+  expect(await word.evaluate((el) => el.scrollWidth <= el.clientWidth)).toBe(true);
+  expect((await word.boundingBox())!.height).toBeLessThan(lh * 2 + 12 + 4);
 });
 
 test('a first tap on a growing plant names its crop (the names load first) and its time to ripe in hours and minutes', async ({ page }) => {
@@ -297,7 +307,7 @@ test('a first tap on a growing plant names its crop (the names load first) and i
   await islandUp(page);
   await quiet(page);
   await tapWorld(page, plot(0).x, plot(0).z);
-  await expect.poll(() => pops(page)).toEqual(['カボチャ・あと 5じかん 30ぷん・みずやり ずみ']);
+  await expect.poll(() => pops(page)).toEqual(['カボチャ・あと 5じかん 30ぷん']);
   expect((await pops(page)).join()).not.toMatch(/beach\.name\./);
 });
 
@@ -363,7 +373,7 @@ test('the partner’s watering plays on my island at once: a drop over each plan
   await expect.poll(drops, { timeout: 5000 }).toBe(2);
   // watered: my tap is a word, and sends nothing (her ops are the record's)
   await tapWorld(page, plot(1).x, plot(1).z);
-  await expect.poll(() => pops(page)).toEqual(['トマト・あと 5じかん 30ぷん・みずやり ずみ']);
+  await expect.poll(() => pops(page)).toEqual(['トマト・あと 5じかん 30ぷん']);
   expect(await farmRows(page)).toEqual([]);
 });
 
@@ -381,7 +391,7 @@ test('a growing plant’s word offers ほる to anyone (44 pt, at the word’s r
   await tapWorld(page, plot(0).x, plot(0).z);
   const dig = page.locator('[data-farm-dig]');
   await expect(dig).toBeVisible();
-  await expect(page.locator('[data-farm-pop]')).toHaveText('カボチャ・あと 5じかん 40ぷん・みずやり ずみ');
+  await expect(page.locator('[data-farm-pop]')).toHaveText('カボチャ・あと 5じかん 40ぷん');
   const [d, w] = [await dig.boundingBox(), await page.locator('[data-farm-pop]').boundingBox()];
   expect(Math.min(d!.width, d!.height)).toBeGreaterThanOrEqual(44);
   // inline at the word's right end, not over the plots behind it

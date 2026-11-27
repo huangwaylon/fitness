@@ -29,8 +29,8 @@ export type FarmTap =
   | { a: 'pick'; out?: Crop }
   /** Nothing to plant held at all. */
   | { a: 'none' }
-  /** A word about P's plant: its crop, ms to ripe, watered this growth, who harvested it (growing back). */
-  | { a: 'about'; c: Crop; left: number; watered: boolean; by?: Who };
+  /** A word about P's plant (watered: else the can): its crop, ms to ripe, who harvested it (growing back). */
+  | { a: 'about'; c: Crop; left: number; by?: Who };
 
 /** A plot (its id and tile) and its plant, if any. */
 export interface PlotAt extends PlotTile { plant?: Plot }
@@ -61,7 +61,7 @@ export function farmTap(i: FarmTapIn): FarmTap {
   if (ripe.length) return { a: 'harvest', ops: nearest(ripe, c, r).map((n) => ({ p: n.p, c: n.plant.c, n: yieldOf(n.plant, i.wet) })) };
   if (pl) {
     const dry = i.around.filter((n) => n.plant && needsWater(n.plant, now)).map((n) => n.p);
-    return dry.length ? { a: 'water', ps: dry } : { a: 'about', c: pl.c, left: msLeft(pl, now), watered: !!pl.w, ...(pl.r && pl.by ? { by: pl.by } : {}) };
+    return dry.length ? { a: 'water', ps: dry } : { a: 'about', c: pl.c, left: msLeft(pl, now), ...(pl.r && pl.by ? { by: pl.by } : {}) };
   }
   const s = i.seed ? (i.have(seedKey(i.seed.c, i.seed.src)) > 0 ? i.seed : null) : i.kinds.length === 1 && i.kinds[0].src === 'start' ? i.kinds[0] : null;
   if (!s) return i.kinds.length ? { a: 'pick', ...(i.seed ? { out: i.seed.c } : {}) } : { a: 'none' };

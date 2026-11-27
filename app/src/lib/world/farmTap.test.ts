@@ -44,8 +44,8 @@ describe('a tap on a plot', () => {
     expect(farmTap({ ...base, ...at({ [id(0, 0)]: young }), kinds: [tom], have: () => 1 })).toEqual({ a: 'plant', ps: [P], c: 'tomato', src: 'start' });
   });
 
-  it('all watered: a word with the time to ripe and the watering', () => {
-    expect(farmTap({ ...base, ...at({ [P]: watered }) })).toEqual({ a: 'about', c: 'carrot', left: 5 * H, watered: true });
+  it('all watered: a word with the time to ripe', () => {
+    expect(farmTap({ ...base, ...at({ [P]: watered }) })).toEqual({ a: 'about', c: 'carrot', left: 5 * H });
   });
 
   it('planting is a 3 × 3’s empty plots, the tapped one first, then the nearest, up to what I hold and one event', () => {
