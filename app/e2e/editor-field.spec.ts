@@ -83,6 +83,16 @@ test.describe('desktop, the other phone editing meanwhile', () => {
     await expect.poll(() => field(page)).toBe('f-2x2');
     expect(await has('oak-t1')).toBe(true);
   });
+  test('やめる on a smaller size puts the field’s size back in the box', async ({ page }) => {
+    await open(page);
+    await page.mouse.click(...(await tile(page)));
+    await page.locator('[data-field-w]').fill('1');
+    await page.locator('[data-field-w]').press('Enter');
+    await expect(ask(page)).toBeVisible();
+    await page.locator('[data-field-ask-no]').click();
+    await expect(ask(page)).toBeHidden();
+    await expect(page.locator('[data-field-w]')).toHaveValue('2');
+  });
 });
 
 test.describe('iPhone 15', () => {

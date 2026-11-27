@@ -88,6 +88,8 @@
   let confirmReset = $state(false);
   /** An edit that leaves plants off their field, asked first (plantsAsk). */
   let fieldAsk = $state<{ title: string; text: string; verb: string; go: () => void } | null>(null), fieldAskOpen = $state(false);
+  /** Bumped as the sheet closes: the size inputs drawn again with the field's size (after やめる, not the number typed). */
+  let fieldAskRev = $state(0);
   let picking = $state(false);
 
   /** The layout drawn: the store's, or a stroke's in progress. */
@@ -944,7 +946,7 @@
 </div>
 {#if picking}<HomePicker bind:open={picking} who={me} />{/if}
 <ResetConfirm bind:open={confirmReset} onconfirm={resetAll} />
-<Sheet name="editor.field" bind:open={fieldAskOpen} label={fieldAsk?.title ?? ''} title={fieldAsk?.title}
+<Sheet name="editor.field" bind:open={fieldAskOpen} onclose={() => fieldAskRev++} label={fieldAsk?.title ?? ''} title={fieldAsk?.title}
   confirm={{ verb: fieldAsk?.verb ?? '', danger: true, cancel: 'やめる', focusNo: true, sfx: 'tick', yes: 'field-ask-yes', no: 'field-ask-no', onyes: () => ((fieldAskOpen = false), fieldAsk?.go()) }}>
   <div class="field-ask" data-field-ask>
     <p><Phrases text={fieldAsk?.text ?? ''} /></p>
@@ -995,8 +997,10 @@
           {@const f = fieldOf(one.s)}
           {@const planted = plantsOn(one)}
           <!-- a field (layout/field.ts, docs/farming.md): its size -->
+          {#key fieldAskRev}
           <label class="row small">横 <input data-field-w type="number" min="1" max={FIELD_MAX} value={f.w} onchange={(e) => setVariant(fieldS({ ...f, w: Number((e.target as HTMLInputElement).value) || 1 }))} /></label>
           <label class="row small">奥行き <input data-field-d type="number" min="1" max={FIELD_MAX} value={f.d} onchange={(e) => setVariant(fieldS({ ...f, d: Number((e.target as HTMLInputElement).value) || 1 }))} /></label>
+          {/key}
           {#if planted}<p class="small" data-field-plants><Phrases text={`この畑には ${planted}株あります。`} /></p>{/if}
         {:else if d?.variants && one.k !== 'goal-tree' && one.k !== 'spot'}
           <label class="row small">種類
