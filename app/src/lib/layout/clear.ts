@@ -9,11 +9,11 @@
 // and what lies there already (put before this rule, or a building placed or moved since in the もようがえ over it) is
 // drawn and tapped at the free spot `offBuildings` gives it. A function of the layout and the point alone, so every
 // phone holding the layout puts it in the same place, and the stored point (the put's `at`) stays as it was.
-import { tileAt, tileX, tileZ } from './grid.ts';
+import { TIERS, TIER_H, tileAt, tileX, tileZ } from './grid.ts';
 import { doorOf, objTiles, type Layout, type Obj } from './model.ts';
 import { goesIn, isMarker, kindDef } from './catalog.ts';
 import { levelAt, walkable, type Box, type LayoutNav } from './nav.ts';
-import { BUILDING_HIDES, frontRows } from './hides.ts';
+import { BUILDING_HIDES, blockRows, frontRows } from './hides.ts';
 
 /** What lies there keeps this far off (u): about half a find (a present is 30u across). */
 const KEEP = 10;
@@ -82,6 +82,27 @@ export function tapCovered(layout: Layout, which: keyof typeof covered = 'all'):
   }
   covered[which].set(layout, taken);
   return taken;
+}
+
+const shadows = new WeakMap<Layout, Set<string>>();
+/** The tiles ("c,r") a block's art stands up over behind its round (tapCovered's row behind it): its own columns as far
+ *  as it covers them on screen at every zoom (hides.ts blockRows: its height, on a table's top the table's too, less the
+ *  ground's rise there), where the day's dig spots and weeds keep off too (spots.ts daySpots; the visitors' stage, a
+ *  figure taller than most, needn't). Prod 2026-11-28: a dig spot two rows behind the climbing wall, up the cliff,
+ *  peeked over its top, and the wall's tap area took the taps. */
+export function blockShadow(layout: Layout): Set<string> {
+  const had = shadows.get(layout);
+  if (had) return had;
+  const out = new Set<string>();
+  for (const o of layout.objects.values()) {
+    const def = kindDef(o.k);
+    if (!def?.block || def.group === 'tree' || def.group === 'bush' || o.k === 'home' || isMarker(o.k)) continue;
+    const h = def.h + (o.on ? (kindDef(layout.objects.get(o.on)?.k ?? '')?.h ?? 0) : 0), far = blockRows(h, -(TIERS - 1) * TIER_H);
+    for (const [c, r] of objTiles(layout, o))
+      for (let j = 2; j <= far; j++) if (j <= blockRows(h, (layout.tier(c, r + j) - layout.tier(c, r)) * TIER_H)) out.add(`${c},${r + j}`);
+  }
+  shadows.set(layout, out);
+  return out;
 }
 
 /**

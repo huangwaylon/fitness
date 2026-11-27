@@ -3,7 +3,7 @@ import { defaultLayout, extentOf, fromJson, layoutOf, objMid, objTiles, toJson, 
 import { beachOk, daySpots, markerOf, openGrass, plazaOk, spotWhy, stageOf, washedUp } from './spots.ts';
 import { validate } from './validate.ts';
 import { frontRows } from './hides.ts';
-import { tapCovered } from './clear.ts';
+import { blockShadow, tapCovered } from './clear.ts';
 import { navOf, reachable } from './nav.ts';
 import RECORD from './record-2026-11-03.json' with { type: 'json' };
 import { layoutOpOf, mergeLayout } from '#lib/contract/layout.ts';
@@ -73,6 +73,33 @@ describe('what one stands before keeps the day’s spots off the ground its art 
     expect(m.kind(8, 12)).toBe('grass');
     for (let i = -1; i <= 1; i++) expect(tapCovered(m).has(`${8 + i},12`), `${8 + i},12`).toBe(true);
     expect(openGrass(m).some(([c, r]) => r === 12 && Math.abs(c - 8) <= 1)).toBe(false);
+  });
+  // (prod 2026-11-28: a dig spot two rows behind the climbing wall, a tier up, peeked over its top and the wall took
+  // its taps; a block's art covers its columns behind it as far as hides.ts blockRows has it, at every zoom)
+  test('a tall block (the climbing wall, 90u) keeps them off its columns behind it: five rows on its own tier, three a tier up, six a tier down', () => {
+    const wall = { id: 'o-wall', k: 'climbing-wall', x: 8, z: 8, f: 0 as const }, cols = [8, 9];
+    const flat = withChanges(l, { set: [wall] });
+    for (const c of cols) for (let r = 10; r <= 13; r++) expect(blockShadow(flat).has(`${c},${r}`), `flat ${c},${r}`).toBe(true);
+    // (the ground two rows behind it and on a tier up, as on prod: up the cliff)
+    const tiles: [number, number, number][] = [];
+    for (let c = 4; c <= 13; c++) for (let r = 10; r <= 16; r++) tiles.push([c, r, codeOf('grass', 1)]);
+    const up = withChanges(l, { tiles, set: [wall] });
+    for (const c of cols) {
+      for (let r = 10; r <= 11; r++) expect(blockShadow(up).has(`${c},${r}`), `up ${c},${r}`).toBe(true);
+      expect(blockShadow(up).has(`${c},12`), `up ${c},12`).toBe(false);
+    }
+    for (let d = 1; d <= 30; d++) {
+      const date = new Date(Date.UTC(2026, 10, d)).toISOString().slice(0, 10), { dig, lawn } = daySpots(up, date, 'island-fund');
+      for (const [x, z] of [...dig, ...lawn]) expect(blockShadow(up).has(tileAt(x, z).join(',')), `${date} ${x},${z}`).toBe(false);
+    }
+    // (on a tier with the ground behind it a tier down: further, six rows)
+    const raised: [number, number, number][] = [];
+    for (let c = 4; c <= 13; c++) for (let r = 6; r <= 9; r++) raised.push([c, r, codeOf('grass', 1)]);
+    const down = withChanges(l, { tiles: raised, set: [wall] });
+    for (const c of cols) {
+      for (let r = 10; r <= 14; r++) expect(blockShadow(down).has(`${c},${r}`), `down ${c},${r}`).toBe(true);
+      expect(blockShadow(down).has(`${c},15`), `down ${c},15`).toBe(false);
+    }
   });
 });
 

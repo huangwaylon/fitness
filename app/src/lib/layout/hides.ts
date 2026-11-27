@@ -4,7 +4,8 @@
 //   - a building's model hides the strip behind it from finds (clear.ts buildingZones: BUILDING_HIDES)
 //   - a figure standing behind a thing is hidden by it (spots.ts's visitors' stage: FIGURE_HIDES)
 //   - what one stands before to use (the board, K.K.: catalog `front`) covers rows behind it at every zoom, where the
-//     day's spots keep off (clear.ts tapCovered: rowsBehind of its art's height)
+//     day's spots keep off (clear.ts tapCovered: rowsBehind of its art's height); so does any other block's tap area
+//     over its own columns (clear.ts blockShadow, blockRows: its height less the ground's rise behind it)
 // Pure.
 import { TILE } from './grid.ts';
 import { kindDef } from './catalog.ts';
@@ -29,6 +30,12 @@ export const FRONT_ART_H: Readonly<Record<string, number>> = { board: 60 };
 
 /** How many rows behind it a thing `artH` tall covers on screen at every zoom (fully in the lowest: PITCH.near). */
 const rowsBehind = (artH: number): number => Math.ceil((behindOf(artH, PITCH.near) + GUARD_U) / TILE);
+
+/** How many rows behind it a block `h` tall covers on screen at every zoom, over ground `rise` u above its own (a tier
+ *  up behind it shows over it sooner, one down later): one at least (its tap area's own round). The climbing wall's 90u:
+ *  five rows on its own tier, three a tier up (prod 2026-11-28: a dig spot two rows behind it, up the cliff, peeked over
+ *  it but its tap area took the tap). */
+export const blockRows = (h: number, rise = 0): number => Math.max(1, rowsBehind(h - rise));
 
 /** The rows a `front` kind's art covers behind it: the board's three, K.K.'s four (75u on his stool). */
 export const frontRows = (k: string): number => rowsBehind(FRONT_ART_H[k] ?? kindDef(k)?.h ?? 0);

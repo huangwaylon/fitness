@@ -9,7 +9,7 @@ import { GRID, PATHS, TILE, idx, isWater, kindOf, onGrid, tileAt, tileMid, tileX
 import { doorOf, extentOf, footOf, objMid, objTiles, originOf, type Layout, type Obj } from './model.ts';
 import { goesIn, isMarker, kindDef } from './catalog.ts';
 import { navOf, reachable } from './nav.ts';
-import { onBuilding, tapCovered } from './clear.ts';
+import { blockShadow, onBuilding, tapCovered } from './clear.ts';
 import { FIGURE_HIDES } from './hides.ts';
 import { outdoorFailed, outdoorReady, wantsOutdoor } from './outdoor.ts';
 
@@ -311,7 +311,9 @@ export function daySpots(layout: Layout, date: string, seed: string): { lawn: Pt
   if (had && had.layout === layout) return had;
   // (the visitors' stage and the tiles round it stay clear, and a few behind it: a figure there covers their tap)
   const keep = [stageOf(layout)].flatMap((p) => (p ? [tileAt(p[0], p[1])] : []));
-  const tiles = openGrass(layout).filter(([c, r]) => keep.every(([sc, sr]) => Math.abs(c - sc) > 1 || r - sr > 3 || sr - r > 2));
+  // (nor where a tall block's art stands up over the ground behind it: clear.ts blockShadow)
+  const shade = blockShadow(layout);
+  const tiles = openGrass(layout).filter(([c, r]) => !shade.has(`${c},${r}`) && keep.every(([sc, sr]) => Math.abs(c - sc) > 1 || r - sr > 3 || sr - r > 2));
   const rand = seeded(`${seed}|${date}|layout-spots`);
   const jit = (t: [number, number]): Pt => {
     const [x, z] = tileMid(t[0], t[1]);

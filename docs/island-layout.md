@@ -61,8 +61,10 @@ each id's latest (`decor|<sc>|<id>`); an old phone ignores unknown scopes.
   on the grid, on land, one tier; a piece with a way through (`pa`) only by its posts, which may span water. `overlap`:
   solids never share ground, nothing on stairs or a deck. The default has none (layout.test.ts).
 - **Diff** (`layout/diff.ts` `diffLayouts`): chunks, objects, homes.
-- **The day's spots** (`spots.ts` `daySpots`): 15 weed and 8 dig spots on open grass (`layout/clear.ts`), seeded by
-  date; `beach.ts` buries `DIGS_A_DAY` (4) fossils there; none till outdoor kinds load, then always drawn.
+- **The day's spots** (`spots.ts` `daySpots`): up to 15 weed and 8 dig spots on open grass (`layout/clear.ts`), seeded
+  by date; `beach.ts` buries `DIGS_A_DAY` (4) fossils there; none till outdoor kinds load, then always drawn. Open
+  grass keeps off what things' tap areas cover (`clear.ts tapCovered`): a block's own columns behind it as far as its
+  height reaches, less a tier's rise there (`hides.ts blockRows`: the climbing wall's 90u five rows, three a tier up).
 
 ## The 3D ground
 - **Geometry** `layout/mesh.ts`; **distance fields** `layout/fields.ts`; **bands** `layout/bands.ts`; built in a
