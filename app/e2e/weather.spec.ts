@@ -2,7 +2,7 @@
 // in the 3D island's world (world3d/precip.ts: `__world3d.precip()`, one draw call an effect), under every control, the ambience gets its rain, footsteps splash, no shooting stars or fireflies;
 // the rainbow, the fog and the aurora show at their moments. Screenshots at 390 and 320.
 import { expect, test, type Page } from './fixtures.ts';
-import { islandUp } from './island.ts';
+import { islandUp, quiet } from './island.ts';
 
 
 async function open(page: Page, q: string, sound = false) {
@@ -106,7 +106,9 @@ test.describe('the day itself', () => {
     const s = (await page.locator('.if-scene').boundingBox())!;
     await page.mouse.click(s.x + s.width / 2, s.y + 60); // a tap on open sky unlocks audio
     await expect.poll(() => page.evaluate(() => (window as { __ambient?: string[] }).__ambient), { timeout: 8000 }).toEqual(['waves', 'rain']);
-    // the partner's outing: its footsteps
+    // the partner's outing: its footsteps (the opening beats over first: a beat played after the outing set off cancels
+    // its step timers, so it slid to its stop without a step; on a warm worker the outing set off before the beat came)
+    await quiet(page);
     await expect.poll(() => page.evaluate(() => (window as unknown as { __world: { wander(): boolean } }).__world.wander()), { timeout: 30_000 }).toBe(true);
     await expect
       .poll(() => page.evaluate(() => ((window as { __cues?: string[] }).__cues ?? []).filter((c) => c.startsWith('footstep-'))), { timeout: 30_000 })
