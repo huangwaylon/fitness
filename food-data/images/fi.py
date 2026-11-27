@@ -24,7 +24,7 @@ the mflux tool's Python (gen) are the only non-stdlib parts.
 
 gen: PROMPT / PROMPT_V with the row's desc, seed crc32(key) % 100000 + roll, STEPS steps at GEN_PX (~15-50 s an image
 on a shared GPU), cached in $FOOD_IMG_RAW/gen/ (a re-run skips what exists: resumable). A failed check re-rolls at most
-MAX_ROLL times, then the row goes back to its tile. pack: the background evened to PAPER (a per-channel gain from the
+MAX_ROLL times; the wrong food (fallback) is the tile, rolls spent on flaws ship the last (a near miss). pack: the background evened to PAPER (a per-channel gain from the
 border's median), webp sheets: thumbnails T_COLS x T_COLS cells of T_PX (q T_QUALITY) per search neighbourhood
 (FAMILY, else the category), details D_COLS x D_COLS of D_PX (q QUALITY) per category, popular items first; a product
 uses its picture's cell in its own neighbourhood, else a cell in a product sheet (p-*); names carry the content hash.
@@ -127,8 +127,10 @@ def verdict_at(mine, roll):
 def state(row, vs):
     """A row's pipeline state: ('gen', roll) to generate, ('check', roll) for a Claude check (only with FI_CHECKS=1:
     otherwise an unchecked row ships, index `checked: false`, the user 2026-11-06), ('ship', roll), or ('tile', why).
-    A roll's verdict (verdict_at): pass ships it; reroll draws the next roll (at most MAX_ROLL re-rolls, then the tile);
-    fallback is the tile. Only verdicts on the row's current description count."""
+    A roll's verdict (verdict_at): pass ships it; reroll draws the next roll (at most MAX_ROLL re-rolls); fallback (the
+    wrong food) is the tile. Rolls spent on rerolls only (the right food with a flaw: a cut, peel, shape) ship the last
+    roll, a near miss (the user 2026-11-27: a recognisable picture beats the tile). Only verdicts on the row's current
+    description count."""
     h = desc_hash(row)
     mine = [v for v in vs.get(row['key'], []) if v.get('h') == h]
     roll = 0
@@ -140,9 +142,19 @@ def state(row, vs):
             return ('check', roll) if CHECKS else ('ship', roll)
         if v['verdict'] == 'pass':
             return ('ship', roll)
-        if v['verdict'] == 'fallback' or roll >= MAX_ROLL:
+        if v['verdict'] == 'fallback':
             return ('tile', f'roll {roll}: {v.get("why", "")}'[:120])
+        if roll >= MAX_ROLL:
+            return ('ship', roll)  # a near miss
         roll += 1
+
+
+def near_miss(row, vs):
+    """Whether a shipped row ships a near miss (its last roll's verdict a reroll, rolls spent)."""
+    st, roll = state(row, vs)
+    h = desc_hash(row)
+    v = verdict_at([v for v in vs.get(row['key'], []) if v.get('h') == h], roll) if st == 'ship' else None
+    return bool(v) and v['verdict'] == 'reroll'
 
 
 def checked(row, vs):
@@ -1071,7 +1083,7 @@ def cmd_pack():
             p.unlink()
     shipped = [{'key': k, 'ja': ship[k]['ja'], 'desc': ship[k]['desc'], 'items': ship[k]['items'], 'roll': state(ship[k], vs)[1],
                 'seed': seed(k, state(ship[k], vs)[1]), 'prompt': desc_hash(ship[k]), 'model': model_of(gen_path(ship[k], state(ship[k], vs)[1])),
-                'checked': checked(ship[k], vs)} for k in sorted(set(keys) | {k for _, k in pkeys})]
+                'checked': checked(ship[k], vs), 'near': near_miss(ship[k], vs)} for k in sorted(set(keys) | {k for _, k in pkeys})]
     (HERE / 'shipped.json').write_text(json.dumps(shipped, ensure_ascii=False, indent=0) + '\n')
     total = sum((OUT / n).stat().st_size for n in keep)
     print(f'pack: {len(keys)} pictures for {len(ids)} foods and {len(prod)} products, {len(sheets)} sheets, {total / 1e6:.2f} MB')

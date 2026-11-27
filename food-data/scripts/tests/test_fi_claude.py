@@ -65,7 +65,11 @@ class Claude(unittest.TestCase):
         self.log([self.a('k2', 'reroll')])
         self.draw('k2', 2)
         self.log([self.a('k2', 'reroll', why='still')])
-        self.assertEqual(self.state('k2'), ('tile', 'roll 2: still'))
+        self.assertEqual(self.state('k2'), ('ship', 2))  # rolls spent on rerolls: the last ships, a near miss
+        self.assertTrue(fi.near_miss(self.rows()['k2'], fi.verdicts()))
+        self.assertFalse(fi.near_miss(self.rows()['k1'], fi.verdicts()))
+        self.log([self.a('k2', 'fallback', why='a lookalike after all')])  # the wrong food: the tile
+        self.assertEqual(self.state('k2'), ('tile', 'roll 2: a lookalike after all'))
         v = fi.verdicts()['k1'][0]
         self.assertEqual((v['check'], v['roll'], v['strength'], v['model']), ('claude', 0, 'weak', 'c1'))
 
