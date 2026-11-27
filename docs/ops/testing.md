@@ -1,109 +1,83 @@
 # Testing: the tiers, CI and stable e2e specs
 
-What gates a deploy and how to write specs that stay green. The relay's checks:
-[runbook §8](runbook.md#8-deploy-the-live-relay).
+What gates a deploy and how to write specs that stay green. The relay's checks: [runbook §8](runbook.md#8-deploy-the-live-relay).
 
 ## Why the tiers
-CI's Linux runners have no GPU (SwiftShader: seconds a frame), so the gate runs the game without drawing (logic mode);
-drawing is judged on the iOS Simulator and the phones. Tiers: **unit** (vitest, `src/**/*.test.ts`: every rule and
-simulation), **logic-mode e2e** (Playwright, the real app with gameplay and 3D tap areas live, nothing drawn: the gate
-runs a selection, the full logic tier all after each deploy), **drawn smoke** (`@render`, `@smoke`, advisory).
+CI's runners have no GPU, so the gate runs the game without drawing (logic mode); drawing is judged on the iOS
+Simulator and the phones. **Unit** (vitest, `src/**/*.test.ts`): every rule and simulation, with a seed and a date.
+**Logic-mode e2e** (Playwright, the real app, gameplay and 3D tap areas live, nothing drawn): the wiring; the gate runs
+a selection, the full tier all after each deploy. **Drawn smoke** (`@render`, `@smoke`): advisory. The World steps
+itself every 33 ms when no frame drew (`simTick`).
 
-- A rule belongs in a unit test with a seed and a date (beach.ts, critters.ts, events.ts, daySeed.ts); the e2e checks
-  the wiring. Positions are functions of time; the World steps itself every 33 ms when no frame drew
-  (camera.svelte.ts `simTick`).
 - **The test API.** Specs act and query by id through hooks (`__world3d`, `__world`, `__villagers3`, `__tent`,
-  `__fish`; wrapped by e2e/island.ts), never pixels: `__world3d.pick(cx, cy)` (what a tap hits), `box(kind, id)`, and
-  the rest in island/probe.ts. Tap areas come from world3d/things3.ts via world3d/pick3d.ts (probe.spec, probe3d.spec).
-  A new interaction comes with its hook; `elementFromPoint` or a fixed coordinate in a spec means one is missing.
-- **Two phones** are two tabs of one context synced by `sync/live-local.ts` (a BroadcastChannel as the room), neither
-  drawing. The real relay: `RELAY_E2E=1`, `e2e/sync-harness.spec.ts`.
-- A lean gate (~3 min to live), fixed forward: a red gate or full logic tier is the next push's first job. A spec's
-  owner is whoever last changed its area; fix flakes at their cause, never loosen an assertion.
+  `__fish`; wrapped by e2e/island.ts), never pixels: `__world3d.pick(cx, cy)`, `box(kind, id)`, the rest in
+  island/probe.ts. A new interaction comes with its hook; `elementFromPoint` or a fixed coordinate means one is missing.
+- **Two phones** are two tabs synced by `sync/live-local.ts` (a BroadcastChannel as the room). The real relay:
+  `RELAY_E2E=1`, `e2e/sync-harness.spec.ts`.
+- The gate is lean (~3 min to live) and fixed forward: a red gate or full tier is the next push's first job; fix flakes
+  at their cause, never loosen an assertion.
 
 ## CI (`.github/workflows/pages.yml`)
-*Deploy UI* runs on a push to `main` touching `app/**` (docs only: *Docs check*, `docs.yml`; relay: *Relay checks*,
-`relay.yml`, which also deploys the relay, runbook §8). Jobs wait by `needs`, never by polling the API.
+*Deploy UI* runs on a push touching `app/**` (docs: `docs.yml`; relay: `relay.yml`, runbook §8). Jobs wait by `needs`.
 
-- `plan`: the gate's selection (`gate-plan` artifact; `scripts/e2e-impact.ts`, `e2e-flakes.ts`, `e2e-shards.ts plan`).
-  `checks`: `check`, `knip`, quarantine owners, docs-check. `unit` ×3: `npx vitest run --shard`.
-- `e2e-gate` ×4: Chromium, logic mode, `--grep-invert "@render|@quarantine"`, against `scripts/serve-build.ts`; shards
-  split by `e2e/timings.json`; each builds with its budgets, shard 1's `build-pages/` is the `site` artifact.
-- `deploy`: when every job in its `GATE` env succeeded (`scripts/deploy-gate.ts`), `site` to Cloudflare Pages; then
-  https://island-fund.pages.dev must serve it (`_app/version.json`, 6 min) with its CSP, else **Deploy not served**
-  (red; only the deployment URL serving it: a **Pages alias lag** warning). One run at a time; `scripts/deploy-order.ts`
-  never deploys older over newer; `scripts/deploy-quiet.ts` first waits till 20 min after the live deployment (the run
-  queued behind carries what's pushed meanwhile; an `Urgent:` trailer line in a commit since the live one, or a
-  dispatch with `urgent`, deploys at once); `scripts/deploy-keep.ts` copies the live site's older hashed files into the
-  deploy (3 days, 3,000 at most); `scripts/relay-first.ts` waits up to 15 min for the live relay to have the last relay
-  commit. `contract/compat.test.ts` pins `LIVE_V`, `LIVE_VS`, `ROOM_PROTOCOL` per `COMPAT`.
+- `plan` (`scripts/e2e-impact.ts`, `e2e-flakes.ts`, `e2e-shards.ts`); `checks` (`check`, `knip`, quarantine owners,
+  docs-check); `unit` ×3; `e2e-gate` ×4 (Chromium, logic mode, no `@render|@quarantine`, against
+  `scripts/serve-build.ts`, split by `e2e/timings.json`; shard 1's build is the `site` artifact).
+- `deploy` (`scripts/deploy-gate.ts`): `site` to Pages, then the live URL must serve it with its CSP within 6 min, else
+  **Deploy not served**. Before it: `deploy-order.ts` (never older over newer), `deploy-quiet.ts` (20 min after the live
+  deploy unless an `Urgent:` trailer or `urgent` dispatch), `deploy-keep.ts` (older hashed files, 3 days, ≤ 3,000),
+  `relay-first.ts` (≤ 15 min for the relay). `contract/compat.test.ts` pins `LIVE_V`, `LIVE_VS`, `ROOM_PROTOCOL` per `COMPAT`.
 
-After a deploy, never holding one back: *e2e logic full* (`e2e-logic-full.yml`): `e2e-logic` ×6 (every test incl.
-auto-quarantined; red is the next push's job), `e2e-render` (drawn smoke, advisory), `coverage` (`npm run coverage`:
-files under `contract/`, `sync/`, `store/actions.ts`, `store/meals.ts` at 85 % or their floor in
-`scripts/coverage-floors.ts`), `timings` (refresh with `npm run e2e:timings`; `scripts/e2e-missed.ts` lists what the
-gate missed). *e2e flake hunt* (`e2e-flake-hunt.yml`, nightly, runbook §0): WebKit as an iPhone 15, logic tier ×3, no retries, failures to the `flake`
-issue (titled by spec names, "9 tests failed: guest, gymbot, players, pond +4 more": `scripts/flake-why.ts`; the places in
-its body).
+After a deploy, *e2e logic full* (`e2e-logic-full.yml`): `e2e-logic` ×6 (every test), `e2e-render` (advisory),
+`coverage` (`contract/`, `sync/`, `store/actions.ts`, `store/meals.ts` at 85 % or `scripts/coverage-floors.ts`),
+`timings` (`npm run e2e:timings`; `scripts/e2e-missed.ts`). *e2e flake hunt* (nightly): WebKit as an iPhone 15, logic
+tier ×3, no retries, failures to the `flake` issue (`scripts/flake-why.ts`).
 
-- **The gate** (`npm run e2e:impact` previews): the gate set `e2e/gate.json` (15 fast, stable files); the specs the push
-  **changed**, each test 3× unretried (`chromium-x3`, `E2E_X3`: one failure is red); the specs its files **reach** (a
-  changed helper's importers, over `MAX_IMPORTERS` 10 or fixtures.ts: the gate set; src/content via `e2e/impact.json`;
-  specs spelling a changed i18n string). Base: the live commit. Over `CAP_MS` (~1550 s) reached specs drop first, then
-  changed ones run once (also over `MAX_CHANGED` 8). Unmapped directories are listed with why (src/lib/e2e-impact.test.ts).
-- **Flakes**: CI `retries: 1`; passing on retry is flaky (e2e/reporters/flaky.ts → `flaky-<shard>`; `npm run
-  e2e:flakes`). Flaky on 2+ commits in 48 h: auto-quarantined out of the gate (max 5, never the gate set) till its spec
-  changes (scripts/e2e-flakes.ts). Locally no retry.
-- **Tags**: `@render` drawn only; `@smoke` both; `@quarantine` out of gate and full tier, with a `quarantine`
-  annotation (owner, why); `@logic` never draws; `@chromium` not on WebKit (say why).
-- **Logic mode** (`E2E_RENDER=none`; src/lib/ui-state/testMode.ts): engines run every frame, never draw
-  (`__world3d.stats().drawn` false); maps are stubs (`e2e.render` `map` draws them, e2e/trips.ts).
-- `BASE_PATH=/x` for build and e2e alike. `csp.spec.ts` fails on any CSP violation (`scripts/headers.ts`). Map tiles
-  are answered locally (`e2e/mapTiles.ts`).
+- **The gate** (`npm run e2e:impact` previews): `e2e/gate.json` (15 stable files); the specs the push **changed**, each
+  3× unretried (`chromium-x3`); the specs its files **reach** (a helper's importers, over `MAX_IMPORTERS` 10 or
+  fixtures.ts: the gate set; `e2e/impact.json`; specs spelling a changed i18n string). Over `CAP_MS` (~1550 s) reached
+  specs drop first, then changed ones run once (also over `MAX_CHANGED` 8).
+- **Flakes**: CI `retries: 1`; passing on retry is flaky (`npm run e2e:flakes`). Flaky on 2+ commits in 48 h:
+  auto-quarantined out of the gate (max 5, never the gate set) till its spec changes. Locally no retry.
+- **Tags**: `@render` drawn only; `@smoke` both; `@quarantine` out of gate and full tier (annotation: owner, why);
+  `@logic` never draws; `@chromium` not on WebKit (say why).
+- **Logic mode** (`E2E_RENDER=none`, `ui-state/testMode.ts`): engines run, never draw; maps are stubs.
+- `BASE_PATH=/x` for build and e2e alike; `csp.spec.ts` fails on any CSP violation; map tiles answered locally.
 
 ## CI cost
-Queue time is the cost: batch pushes, measure locally. Heavy dispatch-only runs go in 02:00–07:00 JST, never
-03:00–03:45 (runbook §0).
+Queue time is the cost: batch pushes, measure locally. Heavy dispatch-only runs in 02:00–07:00 JST, never 03:00–03:45.
 
 ## Run it locally
 ```sh
-cd app && npm run build                                # e2e test the build
+cd app && npm run build                                # e2e tests the build
 npx playwright install webkit                          # once per Playwright version
 npm run e2e -- --project=webkit                        # own port per checkout (E2E_PORT=…)
 npm run e2e -- e2e/x.spec.ts --project=webkit --repeat-each=10           # hunt a flake
-E2E_SWIFTSHADER=1 npm run e2e -- e2e/world3d.spec.ts --project=chromium  # software GL, as CI
 E2E_RENDER=none npm run e2e -- --project=chromium      # the logic tier
 ```
-Sync probe: `SYNC_PROBE=1 npm run e2e -- e2e/zz-sync-probe.spec.ts --project=webkit --workers=3` (~15 min, prints
-`[probe-summary]`, never asserts). Local WebKit loses WebGL after a test with sound: one worker per test.
+`SYNC_PROBE=1 npm run e2e -- e2e/zz-sync-probe.spec.ts` prints `[probe-summary]`, never asserts. Local WebKit loses
+WebGL after a test with sound: one worker per test.
 
 ## Before you push
-1. `npm run verify` (scripts/verify.ts; `-- --quick`, `-- --build`): lockfile, `check`, `knip`, `knip-relay`, vitest,
-   quarantine owners, docs-check (rename a heading and its citations together). `.githooks/pre-push` runs it as
-   `--push` (over 50 MB of new blobs refused unless `BIG_PUSH=1`), planned by `scripts/verifyPlan.ts` from the stamp a
-   green run on a clean app/ leaves: nothing for a tree already verified, `vitest related` + docs-check when a rebase
-   brought only others' files, the build only when the push changed what the build reads.
-2. Specs, 3D, tent or sync touched: `npm run e2e:ci-like -- --changed` (or `-- e2e/x.spec.ts --repeat 5`; `--tier
-   render`, `--workers 6`): CI's way, each test 5×. One failure in 5: fix or quarantine with its owner.
-3. `npm run push` (scripts/push.ts): rebase onto origin/main, push; when main moved during the hook, rebase and push
-   again (the hook's second run is the quick one). Then `gh run watch`, then the full logic tier.
+1. `npm run verify` (`-- --quick`, `-- --build`): lockfile, `check`, `knip`, vitest, quarantine owners, docs-check
+   (rename a heading and its citations together). `.githooks/pre-push` runs it planned by `scripts/verifyPlan.ts`
+   (nothing for a verified tree; >50 MB of new blobs needs `BIG_PUSH=1`).
+2. Specs, 3D, tent or sync touched: `npm run e2e:ci-like -- --changed` (each test 5×; one failure: fix or quarantine).
+3. `npm run push`: rebase, push, again if main moved. Then `gh run watch`, then the full tier.
 
 ## Hermetic
-Every e2e is sealed (e2e/fixtures.ts header). Import Playwright from `./fixtures.ts` (`src/lib/e2e-hermetic.test.ts`).
-The clock is pinned at `PINNED_DATE` (Wednesday noon, clear, no event; `?date=` wins; `test.use({ ownClock: true })`).
-Ambient life is off (`localStorage['e2e.ambient']`; villagers sleep unless `?awake`; `test.use({ ambient: 'on' })`).
-The tests' relay (liveRoom.ts, record.ts) runs on that clock: `island.now()`, `rec.now()`, never `Date.now()`. No
-network (mock with `page.route`; unit tests: src/no-network.setup.ts), no `Math.random` (pin `?seed=`, `?critter=`…),
-a context per test, service workers blocked, silent audio. Island taps are frame-locked (e2e/island.ts `tapAt`); after
-a goto wait with `islandUp`. Odd vitest after a rebase: `npx vitest run --clearCache`.
+Every e2e is sealed (e2e/fixtures.ts header; import Playwright from it). The clock is pinned at `PINNED_DATE`
+(Wednesday noon, clear; `?date=` wins; `ownClock`); ambient life off (`ambient: 'on'`, `?awake`); the tests' relay
+uses `island.now()` / `rec.now()`. No network (`page.route`; unit: src/no-network.setup.ts), no `Math.random` (pin
+`?seed=`…), a context per test, no service workers, silent audio. Island taps are frame-locked (`tapAt`); after a goto
+wait with `islandUp`.
 
 ## Test mode
-`?demo`: made-up rows (`store/demo/`), the players as two tabs, the hooks. Only in the dev server or with
-`localStorage['e2e.testMode'] = '1'` (`ui-state/testMode.ts`; `test.use({ testMode: false })`). Tests only, never a
-product feature.
+`?demo`: made-up rows (`store/demo/`), the hooks; only in the dev server or with `localStorage['e2e.testMode'] = '1'`.
+Tests only, never a product feature.
 
 ## URL params
-Read by `world/devHooks.ts` (seasonal: `ui-state/preview.ts`); in dev or test mode, except `?date`, `?theme`, `?season`.
+Read by `world/devHooks.ts`; dev or test mode only, except `?date`, `?theme`, `?season`.
 
 | Param | Effect |
 |---|---|
@@ -121,41 +95,31 @@ Anywhere: `?panel=rewards`, `?dpr=`, `?aa=0|1`, `?shadows=0|1`, `?ambient=<fps>`
 quirk). Editor: [island-layout.md](../island-layout.md).
 
 ## Guardrails
-`src/lib/e2e-budgets.test.ts` caps per file in `e2e/budgets.json`: `waits` (`waitForTimeout(`, setTimeout promises),
-`wallClock` (`performance.now(`, `requestAnimationFrame(`), `longTests` (`test.setTimeout(` over 30 s, `test.slow(`),
-`textSelectors` (`getByText(`, `hasText:`). Lower with `UPDATE_BUDGETS=1 npx vitest run src/lib/e2e-budgets`.
+`src/lib/e2e-budgets.test.ts` caps per file (`e2e/budgets.json`): `waits`, `wallClock`, `longTests` (over 30 s),
+`textSelectors`. Lower with `UPDATE_BUDGETS=1 npx vitest run src/lib/e2e-budgets`.
 
 ## Writing a stable spec
-Run a new spec `--repeat-each=10` and its file `--workers=8`.
-1. **Never tap where something can wander**: read and tap in one frame (`tapAt`) or pin the scene.
-2. **Wait on state, not time**: `expect.poll`, `__world.idle()`, `__world3d.camStill()`, `data-*`; type hooks
-   yourself (`unknown` on `Window`, `src/app.d.ts`).
-3. **Step the clock**: `page.clock.install({ time })` before the goto, then `runFor(ms)`.
-4. **Find by role or test id**, never position or `nth()`.
-5. **WebKit is the browser**: whole-px scroll, no wheel (`scrollBy`), no CDP.
-6. **Two phones**: `bringToFront()` the acting tab, poll the other.
-7. **Toasts cover the tabs**; tap a pill only at rest (`e2e/hud.ts` `unfoldMenu`).
-8. **Clean, short tests**; never loosen an assertion.
-9. **Fishing** via e2e/island.ts `toTheWater`, `castIn`, `reelOnBite`; `__fish.why()`.
-10. **Route failing chunks** just before the one tap (`e2e/stale.spec.ts`).
-11. **Phone width** (390/393 px); screenshots only under `SHOTS=<dir>`.
+Run a new spec `--repeat-each=10` and its file `--workers=8`. Read and tap in one frame (`tapAt`) or pin the scene;
+wait on state (`expect.poll`, `__world.idle()`, `__world3d.camStill()`, `data-*`), never time; step the clock
+(`page.clock.install` before the goto, then `runFor`); find by role or test id, never `nth()`; WebKit is the browser
+(whole-px scroll, `scrollBy`, no CDP); two phones: `bringToFront()` the acting tab, poll the other; tap a pill only at
+rest (`e2e/hud.ts unfoldMenu`); fish via e2e/island.ts `toTheWater`, `castIn`, `reelOnBite`; route failing chunks just
+before the tap (`e2e/stale.spec.ts`); phone width 390/393 px; screenshots only under `SHOTS=<dir>`.
 
 ## Memory
-`e2e/leaks.spec.ts` (`@chromium`) and `e2e/leaks-sheets.spec.ts` check after round trips and a forced GC that no
-WebGL context, listener, poll timer or editor buffer remains (`e2e/memory.ts`); a paired phone's page warms up
-~4 MB in its first seconds, so wait it out (`warmedUp`) before the first round. Hunt: `npm run leak -- <flow> [cycles] --snap`.
-Page-wide holds keep components (clear in cleanup; vite.config.ts `preloadListenersOff`); end renderers with
-world3d/stage.ts `endRenderer`; MapLibre via components/map/gl.ts `removeMap`. Warm-up climbs ~10 trips: judge 20+.
+`e2e/leaks.spec.ts` and `e2e/leaks-sheets.spec.ts` check after round trips and a forced GC that no WebGL context,
+listener, timer or editor buffer remains (`e2e/memory.ts`; wait out the warm-up, `warmedUp`; judge 20+ trips). Hunt:
+`npm run leak -- <flow> [cycles] --snap`. End renderers with world3d/stage.ts `endRenderer`, maps with
+components/map/gl.ts `removeMap`.
 
 ## Load budget
 `npm run build` ends with `scripts/load-budget.ts`: first load ≤ 375 KB JS and 70 KB CSS gzipped, with no three.js,
-MapLibre or feature sheet; the precache ≤ 3.6 MB; plus share page, `/gym` and English caps. Over fails the build.
-Timing: [perf.md](perf.md#measuring).
+MapLibre or feature sheet; precache ≤ 3.6 MB; plus share page, `/gym` and English caps. Timing: [perf.md](perf.md#measuring).
 
 ## Unused assets
-`npm run unused` (`scripts/unused-assets.ts`, read-only): safe/used/unsure. Confirm with `node scripts/serve-build.ts
-<port>`, `npm run unused:probe -- <port> /tmp/seen.txt`, `npm run unused -- --seen=/tmp/seen.txt`.
+`npm run unused` (read-only: safe/used/unsure); confirm with `npm run unused:probe -- <port> /tmp/seen.txt` against
+`node scripts/serve-build.ts <port>`, then `npm run unused -- --seen=/tmp/seen.txt`.
 
 ## The iOS Simulator check (the real target, on the Mac)
-`npm run ios:check` (scripts/ios-sim-check.ts: island frames, けんこう, ごはん, errors and shots in
-`test-results/ios-sim/`) and `npm run ios:indoor` (scripts/ios-sim-indoor.ts: tent, houses, museum, shop). On demand.
+`npm run ios:check` (island frames, けんこう, ごはん, errors and shots in `test-results/ios-sim/`) and `npm run ios:indoor`
+(tent, houses, museum, shop). On demand.
