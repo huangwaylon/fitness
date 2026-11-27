@@ -170,14 +170,16 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
    *  04:15 each tick's catch-up, `late`): the stored ledgers' check (store.ts ledgerCheck: a drift logged
    *  `ledger.drift`, never fixed), the ended 共有リンク's sweep (share.ts sweep), the island days before yesterday
    *  (store.ts islandPrune, with the old farm_water rows), the shop's old rows and day tallies (ledgerPrune), the
-   *  removals past their keep (tombPrune), each prune PRUNE_BATCH rows a run. A job that threw: `do.error`; the day's
+   *  removals past their keep (tombPrune), each prune PRUNE_BATCH rows a run, none over the budget. A job that threw: `do.error`; the day's
    *  counts once, `cron.nightly`, when the last one finishes. */
   async nightly(late = false): Promise<{ ok: true; ran: string[]; failed: string[]; left: string[] }> {
-    // (the prunes only once this slot's backup is up: every row they delete is in a dump; till then they're left,
-    // and nightlyH shows it)
+    // (the prunes only once this slot's backup is up: every row they delete is in a dump; and not past the write guard
+    // or the read budget, log.ts reads(): each deletes up to PRUNE_BATCH rows a tick, a backlog's catch-up thousands
+    // a tick, code review 2026-11-27. Till then they're left, and nightlyH shows it)
     const t0 = Date.now();
     const s = (await this.ctx.storage.get<ArchiveState>(ARCHIVE)) ?? NO_STATE;
-    const r = this.core.nightly(late, s.ok === slotOf(Date.now()), {
+    const prune = s.ok === slotOf(Date.now()) && !(await this.budget()).shed;
+    const r = this.core.nightly(late, prune, {
       // (once a job a Tokyo day while it keeps failing: nightly.ts failDay; nightlyH carries it on)
       fail: (job, e) => {
         console.warn(`${job}-fail`, errName(e));

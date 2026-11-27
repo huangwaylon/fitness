@@ -237,6 +237,10 @@ describe('IslandStore', () => {
     // (the prunes wait for this slot's backup)
     expect(await s.nightly()).toEqual({ ok: true, ran: ['ledgercheck', 'sharesweep'], failed: [], left: ['islandprune', 'ledgerprune', 'tombprune'] });
     await st.storage.put('archive', { ok: slotOf(NOW), okAt: NOW, fails: 0, lastAt: NOW });
+    // (nor past the write guard: a prune's catch-up deletes thousands of rows a tick; code review 2026-11-27)
+    reads = { n: 1_200_000, pct: 24, shed: true, rshed: false, logsShed: false };
+    expect(await s.nightly(true)).toEqual({ ok: true, ran: [], failed: [], left: ['islandprune', 'ledgerprune', 'tombprune'] });
+    reads = { n: 1_200_000, pct: 24, shed: false, rshed: false, logsShed: false };
     expect(await s.nightly(true)).toEqual({ ok: true, ran: ['islandprune', 'ledgerprune', 'tombprune'], failed: [], left: [] });
     await settle();
     expect(added().filter((x) => x.e === 'ledger.drift').map((x) => [x.l, x.d?.part])).toEqual([[2, 'p'], [2, 'z']]);

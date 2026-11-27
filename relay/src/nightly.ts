@@ -34,7 +34,8 @@ const metaKey = (j: Job) => `nightly|${j}`;
 
 export interface NightlyDeps {
   now(): number;
-  /** This slot's backup is up (archive.ts: the state's `ok` is today's slot): else the prunes wait. */
+  /** This slot's backup is up (archive.ts: the state's `ok` is today's slot) and the day isn't over the budget
+   *  (storeObject.ts nightly): else the prunes wait. */
   backedUp: boolean;
   /** The jobs' meta rows (one indexed range of `meta`). */
   stamps(): Map<string, string>;
