@@ -1,3 +1,5 @@
+// ESL REVIEW 2026-11-28: keep 17, fix 0, retire 1, new 1 (p1 retired: its premise is the excluded 163.8–166 s
+//   ethnic line, so the seg alone has no subject for "don't make it far in politics"; at2 new, the I group's second)
 // R4 REVIEW 2026-11-18: keep 8, rewrite 8, retire 1, new 3, ctx 4, tx 4, qa 14
 // A2 REVIEW 2026-11-17: keep 10, rewrite 8, retire 6, new 0
 // “Leslie and Tom's "Joint" Mission | Parks and Recreation” (the official Parks and Recreation channel, Season 2):
@@ -10,6 +12,7 @@
 // give opposite meanings). Named in the audio: Tom (10.9 s, 23.8 s), Leslie (30.8 s, 134.7 s), "Tom Haverford" (99.7 s,
 // 161.6 s), Andy (189.3 s).
 // SKIP 109–131.5: the camera test (crosstalk, unclear whisper) and the sung "shovel guitar" bit.
+// EXCLUDE 55–61 (Tom's "roll it up into a joint and smoke it" drug joke; no item ever played it)
 // EXCLUDE 141.5–153.95 (ethnic joke: Leslie assumes Tom is from abroad, "conceived in Libya")
 // EXCLUDE 163.8–165.98 ("brown guys with funny-sounding Muslim names")
 import type { Clip } from '../types.ts';
@@ -194,6 +197,16 @@ export const jointMission: Clip = {
       mean: 'for about an hour ＝ 約1時間。have been 〜ing ＝ 今も続いている。',
       trap: 'for は弱く「フォ」なので four に聞こえやすい。half（ハーフ）や two は聞こえない。about のあとは an hour。',
       use: 'I’ve been here for about an hour.（ここに1時間くらいいるよ）' },
+    { id: 'at2', skill: 'attitude', level: 'B2', point: 'shovel', reveals: ['hour'], seg: [131.6, 138.4],
+      stem: 'How does Tom feel about Leslie’s shovel guitar?',
+      ja: 'レスリーのシャベルギターを、トムはどう思っている？',
+      choices: ['He is tired of it', 'He wants to play it too', 'He thinks it sounds great'], a: 0,
+      choicesJa: ['もううんざりしている', '自分も弾きたい', 'いい音だと思っている'],
+      cue: 'カメラに話すトムの文の最後の一語', line: 'Leslie’s been playing shovel guitar for about an hour *now*.',
+      said: 'シャベルをギターのように弾いて歌うレスリーの横で、トムがカメラに「もう1時間くらい弾いてる」と言う。',
+      mean: '最後の now ＝「もう〜も」。長すぎる、という気持ち。ほめる言葉はない。',
+      trap: 'play（弾く）が何度も聞こえるので、トムも弾きたいと考えがち。トムは長さだけを言う。',
+      use: 'We’ve been waiting for an hour now.（もう1時間も待ってるよ）' },
     { id: 'g2', skill: 'gist', level: 'B1', point: 'talk', seg: [141.0, 171.0], retired: true,
       stem: 'What does Tom talk about while they wait?',
       ja: '待っている間、トムは何について話す？',
@@ -247,7 +260,7 @@ export const jointMission: Clip = {
       mean: 'make it far in 〜 ＝ 文字どおりは「〜で遠くまで行く」→「〜の世界で成功する」。名前の響きが選挙に不利だと考えた。',
       trap: 'funny-sounding（変な響き）から、言いにくいからと考えがち。文の最後まで聞く。',
       use: 'I want to go far in this company.（この会社で上に行きたい）' },
-    { id: 'p1', skill: 'pragma', level: 'B2', point: 'obama', ctx: true, reveals: ['politics', 'renamed'], seg: [166.0, 175.4],
+    { id: 'p1', skill: 'pragma', level: 'B2', point: 'obama', ctx: true, retired: true, reveals: ['politics', 'renamed'], seg: [166.0, 175.4],
       stem: 'What does Leslie mean by “What about Barack Obama?”',
       ja: 'レスリーの「What about Barack Obama?」はどういう意味？',
       choices: ['Obama proves you wrong', 'I really like Obama', 'Tell me about Obama'], a: 0,

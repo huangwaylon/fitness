@@ -1,3 +1,4 @@
+// ESL REVIEW 2026-11-28: keep 20, fix 2, retire 2, new 1 (pr3 and h4 turned on the pot-smoking story: content rule; agree new for Q4; runup: a distractor lengthened, the key was longest in 8 of 19; lucky B1 -> B2 (appreciate) for the level shares)
 // R4 REVIEW 2026-11-18: keep 6, rewrite 15, retire 1, new 7, ctx 5, tx 5, qa 7
 // A2 REVIEW 2026-11-17: keep 14, rewrite 4, retire 4, new 1 (nt1, nt2 stay retired)
 // “Leslie discovers the truth about her heroes | Parks and Recreation” (the official Parks and Recreation channel,
@@ -7,6 +8,9 @@
 // EXCLUDE 52–61 (a sexual brag and insults)
 // EXCLUDE 133.5–151 (Clarence's sexist reasoning)
 // EXCLUDE 191–197 (Clarence on bears)
+// EXCLUDE 249–273.3 (the parole jab and the pot-smoking story: “he smoked pot in the office”, “marijuana is
+//   illegal”, “pot isn't”; json3 249.3–271.9 s; drug jokes are left out as elsewhere, pr3 and h4 retired with it)
+// SKIP 248.6–276.8: the drug talk above, then Ron's “I can't hear hippies” reply to it
 // SKIP 276.8–297.6: whisper repeats Ron's last line over the end music
 // EAR CHECK: 16–25 s a1 x1 — “Right. How long is this gonna take?” is taken as David's (Leslie has just greeted him
 //   by name; nobody names the speaker)
@@ -60,7 +64,7 @@ export const heroes: Clip = {
       trap: 'list から買い物リストを連想しやすい。人生の夢のリスト。',
       use: 'Seeing Mt. Fuji is on my bucket list.（富士山を見るのが夢の一つ）' },
 
-    { id: 'lucky', skill: 'pragma', level: 'B1', point: 'moment', seg: [42, 51.5],
+    { id: 'lucky', skill: 'pragma', level: 'B2', point: 'moment', seg: [42, 51.5],
       stem: 'What does Leslie ask everyone to do?', ja: 'レスリーはみんなに何をしようと言う？',
       choices: ['Stop and feel thankful', 'Start eating right away', 'Take a group photo'], a: 0,
       choicesJa: ['少し立ち止まって感謝する', 'すぐに食べ始める', 'みんなで写真をとる'],
@@ -84,7 +88,7 @@ export const heroes: Clip = {
 
     { id: 'runup', skill: 'detail', level: 'B1', point: 'longer', reveals: ['breakfast'], seg: [66, 77],
       stem: 'Why does Leslie send the others ahead?', ja: 'レスリーは、なぜみんなを先に行かせる？',
-      choices: ['Things are going too slowly', 'Ron is too hungry to wait', 'The food is getting cold'], a: 0,
+      choices: ['Things are going too slowly', 'Ron is much too hungry to wait', 'The food is getting cold'], a: 0,
       choicesJa: ['思ったより時間がかかっている', 'ロンが空腹で待てない', '食べ物が冷めてしまう'],
       cue: '「oh boy」のあと',
       line: '*This is taking a lot longer than I thought it would.* Can you guys run up ahead…?',
@@ -313,6 +317,17 @@ export const heroes: Clip = {
       trap: 'pencil（鉛筆）から、絵や文房具の話を連想しやすい。',
       use: 'Golf isn’t really my thing.（ゴルフはあまり好きじゃない）' },
 
+    { id: 'agree', skill: 'attitude', level: 'B2', point: 'agree', ctx: true, seg: [239.6, 246.2],
+      stem: 'How does Leslie react to what Michael says?', ja: 'マイケルの言葉に、レスリーはどう反応する？',
+      choices: ['She agrees with him', 'She is bored by him', 'She thinks he is wrong'], a: 0,
+      choicesJa: ['彼に賛成している', '彼の話に退屈している', '彼の考えはちがうと思う'],
+      cue: '「best part of the job」のあとの返事',
+      line: 'Michael: That was the best part of the job. / Leslie: *Oh, isn’t it? I totally agree.*',
+      said: '「公園が一番よかった」に、レスリーが「ですよね！大賛成」と返す。',
+      mean: 'Isn’t it? ＝ ここは「ですよね」と強くうなずく返し。I totally agree ＝ 大賛成。',
+      trap: '質問の形なので疑っているように聞こえるが、続く totally agree が本音。',
+      use: 'I totally agree.（本当にそう思う）' },
+
     { id: 'a5', skill: 'attitude', level: 'C1', point: 'goodness', seg: [244.15, 251.25], retired: true,
       stem: 'When Ron repeats Leslie’s thanks to Michael, is he sincere?',
       choices: ['No; he’s setting up a dig at Michael', 'No; he’s mocking Leslie’s gushing thanks',
@@ -324,7 +339,7 @@ export const heroes: Clip = {
       trap: '同じ言葉のくり返しは賛成に聞こえやすい。皮肉かどうかは、すぐあとの一言で決まる。',
       use: 'Oh, by the way, how’s the diet going?（ところで、ダイエットはどう？）' },
 
-    { id: 'pr3', skill: 'pragma', level: 'B2', point: 'fairness', seg: [254.8, 264.19],
+    { id: 'pr3', skill: 'pragma', level: 'B2', point: 'fairness', seg: [254.8, 264.19], retired: true,
       stem: 'What does Michael mean by “In fairness to me”?', ja: 'マイケルの「In fairness to me」の意味は？',
       choices: ['Let me give my side', 'I’m sorry about that', 'Ron is telling a lie'], a: 0,
       choicesJa: ['私の言い分も言わせて', 'それは悪かった', 'ロンはうそをついている'],
@@ -335,7 +350,7 @@ export const heroes: Clip = {
       trap: '昔の悪い話なので謝ると考えがち。続く a different time は言い訳。',
       use: 'In fairness, it was my first day.（言わせてもらうと、初日だったので）' },
 
-    { id: 'h4', skill: 'humor', level: 'B2', point: 'hippies', ctx: true, seg: [272, 278],
+    { id: 'h4', skill: 'humor', level: 'B2', point: 'hippies', ctx: true, seg: [272, 278], retired: true,
       stem: 'What does Ron mean by “I *can’t hear* hippies”?', ja: 'ロンの「I can’t hear hippies」の意味は？',
       choices: ['I won’t listen to you', 'My ears don’t work well', 'Please speak louder'], a: 0,
       choicesJa: ['お前の話は聞かない', '耳が悪い', 'もっと大きな声で'],

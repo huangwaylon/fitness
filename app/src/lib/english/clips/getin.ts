@@ -1,3 +1,4 @@
+// ESL REVIEW 2026-11-28: keep 20, fix 1, retire 0, new 0 (g3's line quoted “Who’s they?”, past its seg)
 // R4 REVIEW 2026-11-18: keep 14, rewrite 5, retire 0, new 1, ctx 4, tx 6, qa 30
 // A2 REVIEW 2026-11-17: keep 7, rewrite 12, retire 5, new 0
 // “GET IN - The Office US” (the official The Office channel, BEST OF SEASON 5): Dwight, sure a conspiracy is behind his
@@ -27,7 +28,7 @@ export const getIn: Clip = {
       choices: ['Someone may be listening to them', 'Jim may tell their boss everything', 'The car may break down soon'], a: 0,
       choicesJa: ['だれかに話を聞かれているかも', 'ジムが上司に全部話すかも', '車がもうすぐこわれるかも'],
       cue: '「They might be」のあと',
-      line: 'Get in! … *They might be listening to us.* — Who’s they?',
+      line: 'Get in! … *They might be listening to us.*',
       said: 'ジムを車に乗せたドワイトが「聞かれてるかもしれない」と2回言う。',
       mean: 'might be 〜ing ＝ 〜しているかもしれない。だれかに見はられていると本気で思っている。',
       trap: 'Get in!（乗れ！）から、どこかへ出かける話と考えがち。車は話をかくすための場所。',

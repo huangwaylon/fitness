@@ -1,3 +1,5 @@
+// ESL REVIEW 2026-11-28: keep 18, fix 0, retire 0, new 0 (the untested “yabos” trade now under EXCLUDE: no item
+//   played it)
 // R4 REVIEW 2026-11-18: keep 5, rewrite 13, retire 0, new 0, ctx 5, tx 7, qa 9
 // A2 REVIEW 2026-11-17: keep 5, rewrite 8, retire 10, new 1
 // A2 LATE: a legal hearing about a punch; fast talk, legal words (recant, testimony, pull quote), few everyday chunks
@@ -8,6 +10,7 @@
 // (56.8 s), "Ron" (44.8 s), "Ms. Ludgate" (59.4 s: April says "Keep going, Tom"), "Mr. Swanson" (78.8 s) and
 // "Swanson" (111.4 s, Jamm's "see you in court"). Untested: the dental/"yabos" trade (20–26 s), the pool story's
 // teller, and who says "Yeah, but who cares?" (i2 says "the reply"). R4 restored h1, h2, p2, i2 as context items.
+// EXCLUDE 20.65–25.6 (the dental/“yabos” trade, a breast-implant joke; json3 20.68–24.56 s)
 import type { Clip } from '../types.ts';
 
 export const ronNoRegret: Clip = {

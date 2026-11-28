@@ -1,3 +1,5 @@
+// ESL REVIEW 2026-11-28: keep 13, fix 2, retire 0, new 0 (s1: “mad at you” is said in its seg too, the stem now
+//   quotes the reply; d4: nothing shows the man is a stranger)
 // R4 REVIEW 2026-11-18: keep 5, rewrite 3, retire 7, new 7, ctx 4, tx 14, qa 21
 // A2 REVIEW 2026-11-17: keep 4, rewrite 10, retire 7, new 1
 // “Leslie and Ann's Big Fight | Parks and Recreation” (the official Parks and Recreation channel, Season 3): at a bar,
@@ -141,7 +143,7 @@ export const bigFight: Clip = {
       use: 'I’m not mad at you. Really.（あなたに怒ってないよ。ほんとに）' },
 
     { id: 's1', skill: 'sound', level: 'B2', point: 'atall', seg: [42.85, 48.6],
-      stem: 'Fill the gap: “I’m not mad ___.”', ja: '空所に入るのは？',
+      stem: 'Fill the gap: “I’m not mad ___.” — “Neither am I.”', ja: '空所に入るのは？',
       choices: ['at all', 'at you', 'after all'], a: 0,
       choicesJa: ['全然', 'あなたに', '結局'],
       cue: '「Neither am I」の直前',
@@ -220,7 +222,7 @@ export const bigFight: Clip = {
       use: 'No offense. — None taken.（悪気はないよ。—気にしてないよ）' },
 
     { id: 'd4', skill: 'detail', level: 'B1', point: 'yelling', seg: [71.5, 74.5],
-      stem: 'Why does a stranger come over to Ann?', ja: '知らない男の人は、なぜアンのところに来た？',
+      stem: 'Why does a man come over to Ann?', ja: '男の人は、なぜアンのところに来た？',
       choices: ['He heard yelling', 'He wants to dance', 'He heard she was drunk'], a: 0,
       choicesJa: ['大声が聞こえたから', '踊りたいから', '酔っていると聞いたから'],
       cue: '「are you okay?」のあと',

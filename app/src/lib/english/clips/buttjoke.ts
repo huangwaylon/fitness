@@ -1,3 +1,5 @@
+// ESL REVIEW 2026-11-28: keep 16, fix 1, retire 0, new 0 (d2's choices made parallel noun phrases; title = the idiom
+//   "butt of the joke", no potty humor in the dialogue; the on-screen banner 0–3 s and 102.7–120 s music/applause unchecked by ear)
 // R4 REVIEW 2026-11-18: keep 11, rewrite 6, retire 2, new 0, ctx 3, tx 5, qa 16
 // A2 REVIEW 2026-11-17: keep 6, rewrite 10, retire 5, new 3
 // “Butt of the Joke (Episode Highlight) | Parks and Recreation” (the official Parks and Recreation channel, Season 2):
@@ -135,8 +137,8 @@ export const buttOfJoke: Clip = {
     { id: 'd2', skill: 'detail', level: 'B1', point: 'license', seg: [51.3, 57.6],
       stem: 'What is Jerry’s talk about?',
       ja: 'ジェリーの発表は何について？',
-      choices: ['Which parks will close soon', 'The new licensing system', 'Where to fish this spring'], a: 1,
-      choicesJa: ['どの公園が閉まるか', '新しい許可証の仕組み', '今年の春の釣り場'],
+      choices: ['The parks closing this year', 'The new licensing system', 'The best places to fish'], a: 1,
+      choicesJa: ['今年閉まる公園', '新しい許可証の仕組み', '一番いい釣り場'],
       cue: '「anyway」のあと',
       line: 'anyway, here’s the info about *the new licensing system*.',
       said: '「では、新しい許可証の仕組みの資料です」と言う。',

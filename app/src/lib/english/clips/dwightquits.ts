@@ -1,3 +1,4 @@
+// ESL REVIEW 2026-11-28: keep 15, fix 0, retire 0, new 0
 // R4 REVIEW 2026-11-18: keep 6, rewrite 6, retire 4, new 3, ctx 3, tx 3, qa 11
 // A2 REVIEW 2026-11-17: keep 7, rewrite 9, retire 1, new 0
 // “Dwight Quits Dunder Mifflin - The Office US” (the official The Office channel, BEST OF SEASON 3): Dwight makes a

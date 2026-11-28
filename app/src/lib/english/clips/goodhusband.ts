@@ -1,3 +1,4 @@
+// ESL REVIEW 2026-11-28: keep 15, fix 1, retire 0, new 0
 // R4 REVIEW 2026-11-18: keep 4, rewrite 9, retire 4, new 4, ctx 4, tx 22, qa 6
 // A2 REVIEW 2026-11-17: keep 8, rewrite 11, retire 4, new 2
 // “Chris' guide to being a good husband | Parks and recreation” (the official Parks and Recreation channel, Season 6):
@@ -83,7 +84,7 @@ export const goodHusband: Clip = {
       trap: '本の話のあとなので、本でうつになったと取りやすい。最後の anxiety まで聞く。',
       use: 'I have pre-vacation stress.（休み前のストレスがある）' },
 
-    { id: 'c1', skill: 'pragma', level: 'B1', point: 'better', seg: [27.4, 34.5],
+    { id: 'c1', skill: 'pragma', level: 'B1', point: 'better', seg: [27.4, 33.55],
       stem: 'Why does Chris ask, “Is that better?”',
       ja: 'クリスはなぜ「Is that better?」と聞く？',
       choices: ['To check she feels okay', 'To ask for a better idea', 'To ask about the cream'], a: 0,

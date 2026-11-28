@@ -1,3 +1,4 @@
+// ESL REVIEW 2026-11-28: keep 24, fix 0, retire 0, new 0 (h2 is tagged humor but asks a detail: left, detail is at 5)
 // R4 REVIEW 2026-11-18: keep 9, rewrite 11, retire 1, new 4, ctx 6, tx 21, qa 10
 // A2 REVIEW 2026-11-17: keep 5, rewrite 13, retire 3, new 2
 // “Parks and Recreation | Donna, Ben and Gary's Big Day (Episode Highlight)” (the official Parks and Recreation

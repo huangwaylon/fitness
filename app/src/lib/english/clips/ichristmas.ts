@@ -1,3 +1,5 @@
+// ESL REVIEW 2026-11-28: keep 21, fix 0, retire 0, new 0 (english-captions/ has no json3 for 7Bq_mRcIWso: segments checked
+// against whisper only)
 // R4 REVIEW 2026-11-18: keep 5, rewrite 10, retire 2, new 6, ctx 6, tx 20, qa 10
 // A2 REVIEW 2026-11-17: keep 7, rewrite 9, retire 8, new 1
 // “Top 5 Weirdest Moments from iChristmas | iCarly” (NickRewind, official YouTube channel): a narrator walks through

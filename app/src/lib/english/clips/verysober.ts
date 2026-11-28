@@ -1,3 +1,4 @@
+// ESL REVIEW 2026-11-28: keep 23, fix 0, retire 0, new 0
 // R4 REVIEW 2026-11-18: keep 5, rewrite 11, retire 1, new 8, ctx 7, tx 13, qa 25
 // A2 REVIEW 2026-11-17: keep 8, rewrite 8, retire 4, new 1
 // “Leslie and Ben are very sober | Parks and Recreation” (the official Parks and Recreation channel, Season 6): out of

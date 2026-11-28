@@ -1,3 +1,4 @@
+// ESL REVIEW 2026-11-28: keep 21, fix 0, retire 0, new 0
 // R4 REVIEW 2026-11-18: keep 5, rewrite 14, retire 2, new 2, ctx 4, tx 19, qa 24
 // A2 REVIEW 2026-11-17: keep 3, rewrite 16, retire 4, new 1
 // “Threat Level Midnight Read Through - The Office US” (the official The Office channel, BEST OF SEASON 2): Jim

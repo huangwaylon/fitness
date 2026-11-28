@@ -1,3 +1,5 @@
+// ESL REVIEW 2026-11-28: keep 19, fix 1, retire 0, new 0 (n3 seg end 50.1 -> 49.9: “14.” opens the json3 event at 49.6 and
+// whisper has “My mom had just killed herself” from 50.3, the EXCLUDE; the player's 0.4 s overrun reached into it)
 // R4 REVIEW 2026-11-18: keep 7, rewrite 11, retire 2, new 2, ctx 5, tx 7, qa 10
 // A2 REVIEW 2026-11-17: keep 1, rewrite 7, retire 0, new 12
 // “Rachel Gets a Job at Central Perk | Friends” (official Friends channel, Best of Season 1): Rachel's job hunt,
@@ -128,7 +130,7 @@ export const centralperk: Clip = {
       mean: '文字どおりは「〜に休みをあげて」。責めるのを一休み→「大目に見てあげて」。',
       trap: 'break ＝「休憩」から、休みの話と考えがち。続く it’s hard（大変）が手がかり。',
       use: 'Give me a break, it’s my first day.（初日なんだから大目に見て）' },
-    { id: 'n3', skill: 'number', level: 'B1', point: 'n3', seg: [45.8, 50.1], stem: 'How old was Phoebe when she came to the city?', keep: true,
+    { id: 'n3', skill: 'number', level: 'B1', point: 'n3', seg: [45.8, 49.9], stem: 'How old was Phoebe when she came to the city?', keep: true,
       ja: 'フィービーがこの街に来たのは何歳のとき？',
       choices: ['14', '15', '40', '13'], a: 0,
       choicesJa: ['14歳', '15歳', '40歳', '13歳'],

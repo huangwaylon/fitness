@@ -1,3 +1,4 @@
+// ESL REVIEW 2026-11-28: keep 15, fix 0, retire 0, new 0
 // R4 REVIEW 2026-11-18: keep 4, rewrite 10, retire 1, new 1, ctx 4, tx 14, qa 6
 // A2 REVIEW 2026-11-17: keep 4, rewrite 11, retire 4, new 0
 // “Animal Control Suck | Parks and Recreation” (the official Parks and Recreation channel, Season 5): a stoner guide

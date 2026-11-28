@@ -1,3 +1,4 @@
+// ESL REVIEW 2026-11-28: keep 14, fix 0, retire 0, new 0
 // R4 REVIEW 2026-11-18: keep 9, rewrite 2, retire 3, new 5, ctx 6, tx 15, qa 11
 // A2 REVIEW 2026-11-17: keep 7, rewrite 13, retire 3, new 0
 // “Ron Swanson Can't Handle Whiners | Parks and Recreation” (the official Parks and Recreation channel, Season 6): the

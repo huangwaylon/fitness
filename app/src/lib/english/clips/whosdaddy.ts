@@ -1,3 +1,4 @@
+// ESL REVIEW 2026-11-28: keep 18, fix 0, retire 0, new 0
 // R4 REVIEW 2026-11-18: keep 7, rewrite 9, retire 0, new 2, ctx 4, tx 10, qa 28
 // A2 REVIEW 2026-11-17: keep 5, rewrite 8, retire 10, new 3
 // “Who's Your Daddy?  - The Office US” (the official The Office channel, BEST OF SEASON 5): Jan, expecting a baby by a

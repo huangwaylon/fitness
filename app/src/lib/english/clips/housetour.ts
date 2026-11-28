@@ -1,3 +1,4 @@
+// ESL REVIEW 2026-11-28: keep 19, fix 2, retire 0, new 0
 // R4 REVIEW 2026-11-18: keep 5, rewrite 11, retire 0, new 5, ctx 5, tx 8, qa 9
 // A2 REVIEW 2026-11-17: keep 8, rewrite 8, retire 8, new 0
 // “House Tour from Hell - The Office US” (the official The Office channel, BEST OF SEASON 4 - The Office US): Jim and
@@ -157,8 +158,8 @@ export const housetour: Clip = {
     { id: 'pr2', skill: 'pragma', level: 'B2', point: 'poof', ctx: true, seg: [106.4, 115.6],
       stem: 'What does the guest mean by “Just like that?”',
       ja: 'お客さんの「Just like that?」はどういう意味？',
-      choices: ['He doubts it works so fast', 'He wants her to show him', 'He wants her to say it again'], a: 0,
-      choicesJa: ['そんなにすぐ効くか疑っている', 'やって見せてほしい', 'もう一度言ってほしい'],
+      choices: ['Does it work that fast?', 'Can you show me how?', 'Can you say that again?'], a: 0,
+      choicesJa: ['そんなにすぐ効くの？', 'やり方を見せて', 'もう一度言って'],
       cue: '「poof, goes away」への返事',
       line: 'Jan: And it just, *poof*, goes away. / *Just like that?* / Jan: Just like that.',
       said: '「ぱっと消えるの」に「そんな簡単に？」と聞き返し、「そう、簡単に」と返る。',
@@ -169,8 +170,8 @@ export const housetour: Clip = {
     { id: 'h2', skill: 'detail', level: 'B1', point: 'eggshell', reveals: ['soft'], seg: [114.8, 126],
       stem: 'What happened with the new wall color?',
       ja: '新しい壁の色はどうなった？',
-      choices: ['It was the same as before', 'It was much too dark for her', 'It was the wrong color'], a: 0,
-      choicesJa: ['前と同じだった', '彼女には暗すぎた', 'ちがう色だった'],
+      choices: ['It was the same as before', 'It was much too dark for her', 'It came out too yellow'], a: 0,
+      choicesJa: ['前と同じだった', '彼女には暗すぎた', '黄色すぎた'],
       cue: '「Guess what?」のあと。',
       line: 'I had it painted in eggshell white. Guess what? White and eggshell white are *exactly the same color*.',
       said: '「白をやわらかくしたくてエッグシェルホワイト（卵の殻の白）にしたら、なんと同じ色だった」と話す。',

@@ -1,3 +1,4 @@
+// ESL REVIEW 2026-11-28: keep 13, fix 1, retire 0, new 0 (d3's key “She tried to steal her umbrella”: whose; now “Rachel’s”)
 // R4 REVIEW 2026-11-18: keep 5, rewrite 8, retire 4, new 1, ctx 4, tx 3, qa 15
 // A2 REVIEW 2026-11-17: keep 3, rewrite 14, retire 1, new 0
 // “Joey Stinks | Friends” (the official Friends channel, Best of Season 4): Joey overslept and wants to run to the set
@@ -244,7 +245,7 @@ export const joeyStinks: Clip = {
     { id: 'd3', skill: 'detail', level: 'B1', point: 'umbrella', reveals: ['clocked', 'punch'], seg: [53.2, 60.0],
       stem: 'Why did Rachel finally hit someone?',
       ja: 'レイチェルは結局なぜ人を殴った？',
-      choices: ['She tried to steal her umbrella', 'She pushed in front of Rachel', 'She used Rachel’s name'], a: 0,
+      choices: ['She tried to steal Rachel’s umbrella', 'She pushed in front of Rachel', 'She used Rachel’s name'], a: 0,
       choicesJa: ['傘を盗もうとしたから', 'レイチェルの前に割りこんだから', 'レイチェルの名前を使ったから'],
       cue: '「so I clocked her」の前',
       line: '*tried to steal my umbrella*, so I clocked her.',

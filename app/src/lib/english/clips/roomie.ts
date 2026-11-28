@@ -1,3 +1,5 @@
+// ESL REVIEW 2026-11-28: keep 18, fix 1, retire 0, new 0 (x1's cue pointed at “move in tonight?”, said at 77.8 s,
+//   before its seg)
 // R4 REVIEW 2026-11-18: keep 8, rewrite 8, retire 0, new 3, ctx 7, tx 18, qa 6
 // A2 REVIEW 2026-11-17: keep 5, rewrite 10, retire 6, new 1 (c1, c2 stay retired)
 // “You Want My Gum? | Parks and Recreation” (the official Parks and Recreation channel, Season 3): Ben, sick of seven
@@ -126,8 +128,8 @@ export const roomie: Clip = {
       use: 'Don’t worry, she’s lying again.（気にしないで、彼女またうそついてるから）' },
     { id: 'x1', skill: 'dict', level: 'B1', point: 'great', seg: [82.9, 86.2],
       stem: 'Type Ben’s answer: “Yeah, sure, ___.” (3 words)', ja: 'ベンの答え「Yeah, sure, ___」の3語を書こう', answer: "that'd be great",
-      cue: '「move in tonight?」のあと',
-      line: 'So, you want to move in tonight? — Yeah, sure, *that’d be great*.',
+      cue: '「Yeah, sure」のすぐあと',
+      line: 'Yeah, sure, *that’d be great*.',
       said: '「今夜引っ越してくる？」に、ベンが「うん、いいよ。それは助かる」と言う。',
       mean: 'That’d be great ＝ それは助かる、うれしい。that’d ＝ that would。申し出を受ける決まり文句。',
       trap: 'that’d の d はほとんど聞こえず、that be に聞こえやすい。would（’d）を入れて書く。',

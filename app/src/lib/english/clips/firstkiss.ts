@@ -1,3 +1,4 @@
+// ESL REVIEW 2026-11-28: keep 19, fix 1, retire 1, new 1
 // R4 REVIEW 2026-11-18: keep 8, rewrite 9, retire 1, new 3, ctx 6, tx 12, qa 30
 // A2 REVIEW 2026-11-17: keep 14, rewrite 4, retire 4, new 0 (f5 stays retired)
 // “Ben and Leslie's First Kiss | Parks and Recreation” (the official Parks and Recreation channel, Season 3): after
@@ -7,6 +8,7 @@
 // Whisper loops from ≈160 s (its times run 1 s a line, then the talking head repeats from 192 s), so timings after
 // that are the captions' / the scenes file's. The sources differ at 28.6 s, 124.2 s, 136–138 s, 199.9 s and 208.7 s;
 // no key rests on those words.
+// EXCLUDE 60.1–62.75: the "I'm not buying cocaine" joke and "the whiz palace" (drugs, potty talk; json3 words); f2 retired, i1 starts after
 // SKIP 162–206.3: "Well… well" pauses, Chris's bladder and urethra talk (bodily), good-nights; whisper's times unreliable here
 // SKIP 228.6–252.5: no talk after "Okay" (a silent kiss, then music)
 // EAR CHECK: k3 (≈224 s) — who brings the receipts and who says "He took off"; the item names neither.
@@ -20,6 +22,16 @@ export const benLeslieKiss: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
+    { id: 'e1', skill: 'detail', level: 'B1', point: 'aboutpawnee', seg: [2.5, 9.6],
+      stem: 'What did Ben like in Leslie’s presentation?', ja: 'ベンは、レスリーの発表の何がよかったと言う？',
+      choices: ['Her words about Pawnee', 'Her photos of the parks', 'Her jokes about the mayor'], a: 0,
+      choicesJa: ['ポーニーについての話', '公園の写真', '市長についての冗談'],
+      cue: '「presentation today」のあとの文',
+      line: 'You were really great in that presentation today. … I like the *stuff you said about Pawnee*.',
+      said: 'ベンが「今日の発表、すごくよかった。ポーニーについての話がよかった」と言う。',
+      mean: 'the stuff you said ＝ 君が言ったこと。stuff は「もの・こと」のくだけた言い方。',
+      trap: 'great（すごい）だけでは何がよかったか分からない。I like the stuff のあとを聞く。',
+      use: 'I like the stuff you said about the trip.（旅行の話、よかったよ）' },
     { id: 'g1', skill: 'gist', level: 'B1', point: 'admit', seg: [22.6, 49.5],
       stem: 'What does Ben want to do?', ja: 'ベンは何をしたい？',
       choices: ['Talk about their feelings', 'Talk more about her speech', 'Talk about the budget'], a: 0,
@@ -64,7 +76,7 @@ export const benLeslieKiss: Clip = {
       trap: 'me（僕）から、ほかの人のことを連想しやすい。2人の気持ちの話。',
       use: 'It’s not just me, right? It’s cold.（寒いの、私だけじゃないよね？）' },
 
-    { id: 'f2', skill: 'detail', level: 'B1', point: 'porcelain', seg: [55.3, 63.3],
+    { id: 'f2', skill: 'detail', level: 'B1', point: 'porcelain', seg: [55.3, 63.3], retired: true,
       stem: 'Where does Leslie say she is going?', ja: 'レスリーはどこへ行くと言う？',
       choices: ['To the bathroom', 'To the gift shop', 'To the hotel bar'], a: 0,
       choicesJa: ['トイレ', 'おみやげ屋', 'ホテルのバー'],
@@ -75,7 +87,7 @@ export const benLeslieKiss: Clip = {
       trap: 'porcelain（陶器）から、お店に行くと考えがち。言い直しの bathroom が決め手。',
       use: 'Excuse me, where’s the bathroom?（すみません、トイレはどこですか）' },
 
-    { id: 'i1', skill: 'infer', level: 'B2', point: 'notcalling', reveals: ['code', 'porcelain'], seg: [61.12, 69.6],
+    { id: 'i1', skill: 'infer', level: 'B2', point: 'notcalling', reveals: ['code', 'porcelain'], seg: [62.8, 69.6],
       stem: 'What does Leslie do right after “I’m not calling Ann”?', ja: '「I’m not calling Ann」の直後、レスリーは何をする？',
       choices: ['She calls Ann', 'She goes back to Ben', 'She goes home'], a: 0,
       choicesJa: ['アンに電話する', 'ベンの所に戻る', '家に帰る'],
