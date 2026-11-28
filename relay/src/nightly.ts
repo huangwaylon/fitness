@@ -6,7 +6,7 @@
 // Workers runtime (test/nightly.test.ts).
 import { localDateAt } from '../../app/src/lib/contract/tokyo.ts';
 
-const NIGHTLY = ['ledgercheck', 'sharesweep', 'islandprune', 'ledgerprune', 'tombprune'] as const;
+const NIGHTLY = ['ledgercheck', 'fincheck', 'sharesweep', 'islandprune', 'ledgerprune', 'tombprune'] as const;
 export type Job = (typeof NIGHTLY)[number];
 /** The jobs that delete record rows: run only once the slot's backup is up (`backedUp`), so every row they take is in
  *  a dump (none of them ever touches `metrics`: test/store.test.ts "metrics are never deleted"). */
@@ -94,7 +94,7 @@ export function runNightly(d: NightlyDeps, late: boolean): { ran: Job[]; failed:
   const left = NIGHTLY.filter((j) => !isDone(j));
   if (ran.length && !left.length) {
     const n = (j: Job) => st.get(j)?.n ?? 0;
-    d.done({ drift: n('ledgercheck'), swept: n('sharesweep'), island: n('islandprune'), ledger: n('ledgerprune'), tomb: n('tombprune'), late, ms: d.now() - t0 });
+    d.done({ drift: n('ledgercheck'), fin: n('fincheck'), swept: n('sharesweep'), island: n('islandprune'), ledger: n('ledgerprune'), tomb: n('tombprune'), late, ms: d.now() - t0 });
   }
   return { ran, failed, left };
 }

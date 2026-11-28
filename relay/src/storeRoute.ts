@@ -11,6 +11,7 @@
 // I/O, so this is the round trip to the object, its queue and its work) and handed to `onReq` with the record's meta
 // (reqMeta.ts): the relay's `req` event in the log (docs/ops/observability.md).
 import { corsRoute, keyOwner, type Keys } from './auth.ts';
+import type { Who } from '../../app/src/lib/contract/api.ts';
 import { SIG_HEADER, TIME_HEADER, VIA_HEADER, sigShaped, verifyAdmin } from './sign.ts';
 import { textCapped } from './body.ts';
 import { MAX_BODY_CHARS } from '../../app/src/lib/contract/api.ts';
@@ -38,18 +39,33 @@ const KEYLESS_MAX = 512;
 
 /**
  * Whether a body may go on to the record (the Worker's check, before it spends a Durable Object request): one of its
- * first 8 `"key"` members is a person's key, or it has none and is small (keyless `health`). A bounded scan, not a
- * parse: the record parses and checks the key again. Refused: `ok` false and the first key it presented, if any.
+ * first 8 `"key"` members is a person's key (`who`), or it has none and is small (keyless `health`, `pairredeem`). A
+ * bounded scan, not a parse: the record parses and checks the key again. Refused: `ok` false and the first key it
+ * presented, if any.
  */
-function keyGate(text: string, keys: Keys): { ok: boolean; seen?: string } {
+function keyGate(text: string, keys: Keys): { ok: boolean; seen?: string; who?: Who } {
   let n = 0, seen: string | undefined;
   for (const m of text.matchAll(KEY_FIELD)) {
-    if (keyOwner(m[1], keys)) return { ok: true };
+    const who = keyOwner(m[1], keys);
+    if (who) return { ok: true, who };
     seen ??= m[1];
     if (++n >= 8) return { ok: false, seen };
   }
   return { ok: n === 0 && text.length <= KEYLESS_MAX, seen };
 }
+
+/** A literal as JSON may spell it: each letter or `_` itself or its `\u00XX` escape (any case), for finGate. */
+const jsonLit = (s: string): string => [...s].map((c) => `(?:${c}|\\\\u00${c.charCodeAt(0).toString(16)})`).join('');
+/** The shared money in a body (contract/guest.ts membersOnly): an op of a `fin_*` type, the money's snapshot (`kinds`
+ *  fin), its history (`finlog`), a pairing code asked for. */
+const FIN_GATE = new RegExp(`"${jsonLit('type')}"\\s*:\\s*"${jsonLit('fin_')}|"${jsonLit('kinds')}"\\s*:\\s*"${jsonLit('fin')}|"${jsonLit('action')}"\\s*:\\s*"(?:${jsonLit('paircode')}|${jsonLit('finlog')})"`, 'i');
+
+/**
+ * Whether a body asks for the shared money (finGate's first layer: the guest's key is refused it here, before the
+ * record parses the batch; the record's own rule, contract/guest.ts, is the second). A scan of the text, escapes too, so
+ * no spelling of `fin_` slips by; a member's body is never scanned. @public (test/finance.test.ts)
+ */
+export const finGate = (text: string): boolean => FIN_GATE.test(text);
 
 /** A presented key's hash as the log keeps it (`kh`): the first 4 hex of its SHA-256 (lower case, as keys compare), never
  *  the key. */
@@ -98,6 +114,11 @@ export async function apiRoute(req: Request, allowed: string, store: () => Store
   if (!gate.ok) {
     onReq?.({ ...bare('unauthorized', text.length), ...callerOf(text), ...(gate.seen ? { kh: await keyHash(gate.seen) } : {}) }, Date.now() - t0);
     return json('{"ok":false,"error":"unauthorized"}');
+  }
+  // the guest's key and the shared money: refused here, before the record parses a byte (finGate)
+  if (gate.who === 'G' && finGate(text)) {
+    onReq?.({ ...bare('forbidden', text.length), ...callerOf(text), role: 'G', why: 'fin' }, Date.now() - t0);
+    return json('{"ok":false,"error":"forbidden","detail":"members only"}');
   }
   try {
     const r = await store().apiMeta(text);

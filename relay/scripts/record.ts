@@ -41,6 +41,12 @@
 //                       (contract/bodyEst.ts; that day's again replaces it): it calibrates that person's estimates; the
 //                       day needs its lean mass row.
 //                       Values only on the record, never in the repo or a log
+//   fin-import [dry] <file.json>   the shared money's rows from a file (docs/finance.md "Import": a JSON array of
+//                       {type, data}, data a contract payload) into the record in chunks, each row marked imp: 1; checked
+//                       here first (one refused row: nothing sent); idempotent by id (a re-run: all duplicates); refused
+//                       past half the day's rows written (run it early in the UTC day); `dry`: counted, nothing written.
+//                       Prints counts and the file's per-person balance (this terminal only: never a log)
+//   fincheck            the money's nightly check now: live entries, the balance from the slots and from fin_log's replay
 //   places              行きたい場所's cron tick now (the categories), counts printed
 //   places-pull [--recent] [--force]   the list fetched here into the relay (the whole once in 20 h, else or with
 //                       --recent the newest 50), unless a pull just did (Google refuses Cloudflare; places-pull.yml)
@@ -57,6 +63,8 @@ import { homedir } from 'node:os';
 import { signed, TEST } from './admin.ts';
 import { openDump } from '../src/archive.ts';
 import { DET_BATCH, getList, PLACES_ALL, PLACES_POLL } from '../src/places.ts';
+import { FIN_IMPORT_MAX } from '../src/finance.ts';
+import { finClean, finConfigOf, finEntryOf, finNet, finTemplateOf, isFinType, type FinEntry } from '../../app/src/lib/contract/finance.ts';
 
 const args = process.argv.slice(2).filter((a: string) => a !== '--test' && a !== '--dry-run');
 
@@ -84,7 +92,7 @@ async function dump(): Promise<Record<string, unknown>> {
   for (let tries = 0; tries < 3; tries++) {
     const rows = { metrics: [] as unknown[], events: [] as unknown[], uploads: [] as unknown[], held: [] as unknown[], share: [] as unknown[], share_visit: [] as unknown[], places: [] as unknown[] };
     // (the stored ledger, src/ledger.ts: whole on the first page)
-    const ledger = { ledger: [] as unknown[], ledger_log: [] as unknown[] };
+    const ledger = { ledger: [] as unknown[], ledger_log: [] as unknown[], fin_log: [] as unknown[] };
     let after: unknown, rev: unknown = null, pages = 0;
     do {
       const r = (await signed({ op: 'dump', limit: DUMP_PAGE, ...(after ? { after } : {}) })) as { ok: boolean; rev: string; next?: string; rows: typeof rows };
@@ -92,7 +100,7 @@ async function dump(): Promise<Record<string, unknown>> {
       if (rev !== null && r.rev !== rev) break;
       rev = r.rev;
       for (const k of ['metrics', 'events', 'uploads', 'held', 'share', 'share_visit', 'places'] as const) rows[k].push(...(r.rows[k] ?? []));
-      for (const k of ['ledger', 'ledger_log'] as const) ledger[k].push(...((r.rows as Record<string, unknown[] | undefined>)[k] ?? []));
+      for (const k of ['ledger', 'ledger_log', 'fin_log'] as const) ledger[k].push(...((r.rows as Record<string, unknown[] | undefined>)[k] ?? []));
       after = r.next;
       pages++;
     } while (after);
@@ -118,7 +126,7 @@ async function dump(): Promise<Record<string, unknown>> {
 }
 
 /** Rows into the record in `at` order, CHUNK at a time (the object's CPU per request stays small). */
-async function load(rows: { metrics?: unknown[][]; events?: unknown[][]; uploads?: unknown[][]; held?: unknown[][]; img?: unknown[][]; share?: unknown[][]; share_visit?: unknown[][]; places?: unknown[][] }): Promise<void> {
+async function load(rows: { metrics?: unknown[][]; events?: unknown[][]; uploads?: unknown[][]; held?: unknown[][]; img?: unknown[][]; share?: unknown[][]; share_visit?: unknown[][]; places?: unknown[][]; fin_log?: unknown[][] }): Promise<void> {
   // the pictures first (an op naming one shows it at once), IMG_CHUNK a request (~87 kB each as base64)
   for (let i = 0; i < (rows.img ?? []).length; i += IMG_CHUNK) {
     const r = (await signed({ op: 'imgload', img: rows.img!.slice(i, i + IMG_CHUNK) })) as { ok: boolean; added: number; had: number; skipped: number };
@@ -145,10 +153,10 @@ async function load(rows: { metrics?: unknown[][]; events?: unknown[][]; uploads
     last = r.counts;
   }
   // 共有リンク's links, then their visits (by id: idempotent; a restore to before a revocation revives it: runbook §6);
-  // 行きたい場所's places (by id; the next tick syncs the list again)
-  for (const tab of ['share', 'share_visit', 'places'] as const) {
+  // 行きたい場所's places (by id; the next tick syncs the list again); the shared money's log (by seq)
+  for (const tab of ['share', 'share_visit', 'places', 'fin_log'] as const) {
     for (let i = 0; i < (rows[tab] ?? []).length; i += CHUNK) {
-      const r = (await signed({ op: 'load', rows: { [tab]: rows[tab]!.slice(i, i + CHUNK) } })) as { ok: boolean; share?: number; share_visit?: number; places?: number; skipped: number; counts: unknown };
+      const r = (await signed({ op: 'load', rows: { [tab]: rows[tab]!.slice(i, i + CHUNK) } })) as { ok: boolean; share?: number; share_visit?: number; places?: number; fin_log?: number; skipped: number; counts: unknown };
       if (!r.ok) throw new Error(`load ${tab}: ${JSON.stringify(r)}`);
       console.log(tab, JSON.stringify({ added: r[tab] ?? 0, skipped: r.skipped }));
       last = r.counts;
@@ -194,7 +202,7 @@ async function verifyDump(day?: string): Promise<void> {
   const bytes = gh('release', 'download', ARCHIVE_TAG, '-p', name, '-O', '-');
   const d = await readDump(new Uint8Array(bytes.buffer, bytes.byteOffset, bytes.length));
   const n = (k: string) => d.rows[k]?.length ?? 0;
-  const dump = { metrics: n('metrics'), events: n('events'), uploads: n('uploads'), held: n('held'), img: n('img'), share: n('share'), share_visit: n('share_visit'), places: n('places') };
+  const dump = { metrics: n('metrics'), events: n('events'), uploads: n('uploads'), held: n('held'), img: n('img'), share: n('share'), share_visit: n('share_visit'), places: n('places'), fin_log: n('fin_log') };
   const live = (await signed({ op: 'counts' })) as { counts: Record<string, number>; rev: string };
   console.log(`${name} (${Math.round(bytes.length / 1024)} kB): rev ${d.rev}, ${JSON.stringify(dump)}`);
   console.log(`the live record: rev ${live.rev}, ${JSON.stringify(live.counts)}`);
@@ -222,6 +230,58 @@ async function verifyDump(day?: string): Promise<void> {
     console.log(`${file} (${Math.round(b.length / 1024)} kB): ${JSON.stringify(said)}${good ? '' : ' CHECK: not its state'}`);
     if (!good) process.exitCode = 1;
   }
+}
+
+/** Rows a `fin_import` request (the relay takes FIN_IMPORT_MAX). */
+const FIN_IMPORT_CHUNK = Math.min(200, FIN_IMPORT_MAX);
+
+/**
+ * `fin-import [dry] <file.json>` (docs/finance.md "Import"): the file checked here as the relay will check it (every
+ * row a `{type, data}` the contract takes, an entry with `imp: 1` added), then sent FIN_IMPORT_CHUNK rows a request.
+ * The relay keeps each once (by id: a re-run is all duplicates) and refuses a chunk past half the day's rows written
+ * (429 `budget`: stopped, the rest for a re-run tomorrow). Prints counts and the file's balance per person, on this
+ * terminal only (never an amount in a log, a commit or a workflow).
+ */
+async function finImport(file: string, dry: boolean): Promise<void> {
+  const rows = JSON.parse(readFileSync(file, 'utf8')) as unknown;
+  if (!Array.isArray(rows)) throw new Error('fin-import: the file is not a JSON array of {type, data}');
+  const types: Record<string, number> = { fin_e: 0, fin_t: 0, fin_c: 0 };
+  const entries: FinEntry[] = [], refused: number[] = [];
+  for (const [i, r] of rows.entries()) {
+    const o = (r && typeof r === 'object' ? r : {}) as { type?: unknown; data?: unknown };
+    const data = o.data && typeof o.data === 'object' && !Array.isArray(o.data) ? (o.data as Record<string, unknown>) : null;
+    if (!isFinType(o.type) || !data) {
+      refused.push(i);
+      continue;
+    }
+    const d = { ...finClean(o.type, data), ...(o.type === 'fin_e' ? { imp: 1 } : {}) };
+    const e = o.type === 'fin_e' ? finEntryOf(d, { imp: true }) : null;
+    if (o.type === 'fin_e' ? !e : o.type === 'fin_t' ? !finTemplateOf(d) : !finConfigOf(d)) refused.push(i);
+    else (types[o.type]++, e && entries.push(e));
+  }
+  if (refused.length) {
+    console.error(`fin-import: ${refused.length} rows the contract refuses (rows ${refused.slice(0, 20).join(', ')}${refused.length > 20 ? ', …' : ''}); nothing sent`);
+    process.exitCode = 1;
+    return;
+  }
+  const sum = { added: 0, dup: 0, bad: 0 };
+  let sent = 0;
+  for (; sent < rows.length; sent += FIN_IMPORT_CHUNK) {
+    const r = (await signed({ op: 'fin_import', rows: rows.slice(sent, sent + FIN_IMPORT_CHUNK), ...(dry ? { dry: true } : {}) }).catch((e: Error) => {
+      if (!/^\/admin: 429 .*"budget"/.test(e.message)) throw e;
+      return null;
+    })) as ({ ok: boolean } & Partial<typeof sum>) | null;
+    if (!r) {
+      console.error(`fin-import: stopped, the day's rows written are past half the Free plan's; ${rows.length - sent} rows left (run it again after 00:00 UTC: what's in is skipped)`);
+      process.exitCode = 1;
+      break;
+    }
+    if (!r.ok) throw new Error(`fin_import: ${JSON.stringify(r)}`);
+    for (const k of Object.keys(sum) as (keyof typeof sum)[]) sum[k] += r[k] ?? 0;
+  }
+  const net = finNet(entries), yen = (v: number) => `${v < 0 ? '-' : '+'}¥${Math.abs(v).toLocaleString('en-US')}`;
+  console.log(`fin-import${dry ? ' (dry: nothing written)' : ''}: ${rows.length} rows (${types.fin_e} entries, ${types.fin_t} templates, ${types.fin_c} config), ${Math.min(sent, rows.length)} sent: added ${sum.added}, duplicates ${sum.dup}, refused ${sum.bad}`);
+  console.log(`the file's balance, all time (live entries ${entries.filter((e) => e.del === undefined).length}): A ${yen(net)}, B ${yen(-net)}${net === 0 ? ' (even)' : net > 0 ? ' (B owes A)' : ' (A owes B)'}`);
 }
 
 /** `img-set <A|B|G> <custom id> <file> [--ig] [--dry-run]`: a picture on that person's custom food as its owner would
@@ -346,7 +406,17 @@ switch (cmd) {
   case 'load':
     await load((await readDump(readFileSync(arg))).rows);
     break;
+  case 'fin-import': {
+    const dry = arg === 'dry', file = dry ? args[2] : arg;
+    if (!file) throw new Error('fin-import [dry] <file.json>');
+    await finImport(file, dry);
+    break;
+  }
+  // (the balance on this terminal only: never logged)
+  case 'fincheck':
+    console.log(JSON.stringify(await signed({ op: 'fincheck' })));
+    break;
   default:
-    console.error('commands: counts | backup | bookmark [ms] | restore <bookmark> | rev | dump | load <file> | verify-dump [date] | held [person] | promote <person> <date> <metric> [value] | shopcheck [fix] | decorcheck [fix] | adjust <who> <v> <note> | img-set <who> <custom> <file> [--ig] [--dry-run] | island-prune [dry] | ledger [who] | ledgercheck | ledger-retire [dry] | wallet | walletset <who> <h> <note> | inbody <person> <date> <muscle_kg> <smm_kg> | places | places-pull [--recent] [--force] | places-details <file> | places-ids <file> | tomb-prune [dry] | todo-migrate [dry]  [--test]');
+    console.error('commands: counts | backup | bookmark [ms] | restore <bookmark> | rev | dump | load <file> | verify-dump [date] | held [person] | promote <person> <date> <metric> [value] | shopcheck [fix] | decorcheck [fix] | adjust <who> <v> <note> | img-set <who> <custom> <file> [--ig] [--dry-run] | island-prune [dry] | ledger [who] | ledgercheck | ledger-retire [dry] | wallet | walletset <who> <h> <note> | inbody <person> <date> <muscle_kg> <smm_kg> | places | places-pull [--recent] [--force] | places-details <file> | places-ids <file> | tomb-prune [dry] | todo-migrate [dry] | fin-import [dry] <file.json> | fincheck  [--test]');
     process.exit(1);
 }

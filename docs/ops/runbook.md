@@ -75,7 +75,7 @@ PITR keeps 30 days.
   [--test]`; check `verify-dump [date]`; read: `gh release download dumps -R huangwaylon/fitness-archive -p <name>`,
   then `record.ts load` or `age -d -i ~/.config/island-fund/archive-age.key <name> | gunzip`.
 
-**Restore:** a bookmark from before the bad change (§9), or `load <file>` into an empty record, then `rev`; re-check
+**Restore:** a bookmark from before the bad change (§9), or `load <file>` into an empty record, then `rev`; then `fincheck` (the money's count and balance, [finance](../finance.md#the-nightly-check)); re-check
 each trip's 共有リンク (a restore revives links turned off since). **A bot:** from its decrypted file (`rm` it after),
 its README's "Operations".
 
@@ -133,6 +133,7 @@ every command.
 | `todo-migrate [dry]` | the one-off fold of やること's lists ([todo](../todo.md#the-move-from-lists)); rerun after `load`ing a dump from before 2026-11-25 |
 | `img-set <A\|B\|G> <id> <file> [--ig] [--dry-run]`, `inbody <A\|B> <date> <muscle_kg> <smm_kg>` | a custom food's picture (384 px, stripped); an InBody sheet |
 | `held [A\|B]`, `promote <person> <date> <metric> [value]` | held-back zeros; promote one |
+| `fin-import [dry] <file.json>`, `fincheck` | the shared money's one-off import (early in the UTC day, `dry` first; the file never in the repo) and its nightly check now ([finance](../finance.md#import)) |
 
 <a id="saved-places"></a>**Saved places** ([backend](../backend.md#saved-places)): `places-pull.yml` runs
 `places-pull [--recent] [--force]` (signed with `RELAY_PLACES_KEY`); `places-ids` / `places-details <file>` feed

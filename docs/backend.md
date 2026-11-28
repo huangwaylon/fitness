@@ -48,6 +48,7 @@ and `harvest` touch ベル.
 | `todo` | `todo.ts` | [todo.md](todo.md) |
 | `hike`, `hike_trk`, `hike_start` | `hike.ts`, `hikeStart.ts` | [hiking.md](hiking.md) |
 | `check` | `checks.ts` | [daily checks](design.md#daily-checks) |
+| `fin_e`, `fin_t`, `fin_c` | `finance.ts` | [finance.md](finance.md): members only, soft delete by `del`, `fin_log` |
 
 <a id="pref"></a>**`pref`** `{key, value, person?}` (`PREF_KEYS`): cosmetic (`locale`, `villager*`, `look`, `menu*`,
 `tentFavs`); goals (`goals.ts` GOALS; each person's own, else `forbidden`); the profile (`sex`, `birth`,
@@ -67,6 +68,7 @@ relay first. **The look** ([players.md](players.md), `contract/look.ts`): `look`
 | `events` | `events: [{id, type, data, group?}]` (≤ `EVENTS_MAX`, group ≤ `GROUP_MAX`) | `{ok, results, wallets?, ledgers?, field?}` |
 | `snapshot` | `since?`, `fseq?`, `page?` (≤ `SNAPSHOT_PAGE_MAX`), `after?` | `{ok, me, now, rev, rows, next?, wallets?, ledgers?, field?}` |
 | `uploads` / `whoami` / `health` | (`health`: no key) | last 20 audit rows / `{me, build}` / `{build}` |
+| `paircode` / `pairredeem` / `finlog` | the money's ([finance](finance.md#api)); `snapshot` `kinds: 'fin'` its rows alone | |
 
 <a id="groups"></a>A **group** (the shop's 全部, a room's change) commits all or none (`detail: 'group'`). **Keys:**
 `KEY_A`, `KEY_B`, `KEY_C` (guest `G`), constant-time; `storeRoute.ts keyGate` refuses keyless calls before the object.
@@ -143,7 +145,8 @@ the room (`sync/wx.ts`), never from the record; admin op `wx`. Tests: `relay/tes
 ## The guest
 A third player, `KEY_C` (unset = none), who `G` ([decisions](decisions.md#the-guest)). One rule (`contract/guest.ts`):
 no body data out (`rowsFor`: weight, body fat, BMI, lean, `inbody`, からだ goals) or in (`ingest`, `uploads`
-`forbidden`; `guestMayWrite`). Its ベル wallet earns nothing. Members draw its villager as `third`
+`forbidden`; `guestMayWrite`); none of the shared money at all (`membersOnly`, refused first by the Worker's gate:
+[finance](finance.md#members-only)). Its ベル wallet earns nothing. Members draw its villager as `third`
 (`ui-state/cast.ts`). Tests: `guest.test.ts`, `e2e/guest.spec.ts`.
 
 ## Ambient life

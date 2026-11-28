@@ -56,6 +56,9 @@ const QUIET_OK = new Set(['places_ingest']);
  *  bookmark, an epoch, a load, the corrections, the counts, a backup by hand, the weather, a purge. */
 const ESSENTIAL_OPS: ReadonlySet<string> = new Set(['restore', 'bookmark', 'rev', 'load', 'adjust', 'walletset', 'inbody', 'promote', 'counts', 'backup', 'wx', 'logpurge']);
 
+/** The money's import (fin_import) stops past this share of the day's rows written (the account's: log.ts writes). */
+const FIN_IMPORT_WRITES_PCT = 50;
+
 export class IslandStore extends DurableObject<Env> implements StoreRoom {
   private core: StoreCore;
   /** The rows each request wrote and read (reqMeta.ts countingSql): the log's `req` `rw`, `rr`. */
@@ -82,7 +85,8 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
       // a stored row that isn't JSON, skipped by a fold: a warning in the log (storeBase.ts rowRec)
       corrupt: (where) => this.log([{ e: 'store.corrupt', l: 2, d: { where } }]),
       // the stored ledger's (storeShop.ts ledgerReady, ledgerCheck): a seed is news (info), a drift the admin's to settle (warn)
-      log: (e, d) => this.log([{ e, l: e === 'ledger.drift' ? 2 : 1, d }]),
+      // (the money check's drift an error: finance.ts check)
+      log: (e, d) => this.log([{ e, l: e === 'ledger.drift' ? 2 : e === 'fin.check' && d.drift === true ? 3 : 1, d }]),
       // a kept `todo` row may move the next reminder: the alarm again (after the write's transaction)
       onTodo: () => this.ctx.waitUntil(this.arm())
     });
@@ -453,7 +457,10 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
    *   `imggc`: the 03:00 sweep now;
    * - `backup`: the daily backup now (archive.ts), whether or not today's is up (it replaces it); its outcome;
    * - `wx {refresh?, s?, fx?}`: the room's real weather (index.ts wxAdmin): fetch it now, put a fixture timeline in, or
-   *   say how it is.
+   *   say how it is;
+   * - `fin_import {rows, dry?}`: the shared money's rows (finance.ts importRows: `imp: 1`, idempotent by id), refused
+   *   past FIN_IMPORT_WRITES_PCT of the day's rows written; `fincheck`: the nightly check now (its balance the
+   *   operator's alone: never logged).
    */
   private async admin(o: Record<string, unknown>): Promise<Record<string, unknown>> {
     const storage = this.ctx.storage;
@@ -557,6 +564,14 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
       // the decor caps' kept counts against the rows' (`fix`: the rows' taken)
       case 'decorcheck':
         return this.core.decorCheck(o);
+      // the shared money (finance.ts): an import's chunk, only while the day's writes are under half the Free plan's
+      case 'fin_import': {
+        const w = await logDo(this.env).writes().catch(() => null);
+        if (!w || w.pct >= FIN_IMPORT_WRITES_PCT) return { ok: false, error: 'budget', pct: w?.pct ?? -1 };
+        return this.core.fin.importRows(o);
+      }
+      case 'fincheck':
+        return { ok: true, ...this.core.fin.check() };
       case 'load': {
         const r = this.core.load(o);
         await this.arm();

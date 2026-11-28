@@ -320,6 +320,25 @@ if (KEY_C) {
   for (const c of [ga, gb, g]) c.ws.close(1000);
 }
 
+// The shared money (docs/finance.md): a member's entry (one slot, deleted: it never counts) and its own snapshot; a
+// pairing code redeemed; the guest refused every part of it and served none of it. A few rows a run.
+{
+  const api = (key: string | null, action: string, extra: object = {}) =>
+    fetch(new URL('/api', http), { method: 'POST', headers: { Origin: ORIGIN }, body: JSON.stringify({ ...(key ? { key } : {}), action, ...extra }) }).then((r) => r.json() as Promise<Record<string, any>>);
+  const e = { id: 'smoke1', k: 'x', d: '2026-11-28', amt: 1, payer: 'A', ps: 5000, desc: 'smoke', cat: '', del: Date.now() };
+  check((await api(KEY_A, 'event', { id: `smoke-fin-${Date.now().toString(36)}`, type: 'fin_e', data: e })).ok === true, "a member's money entry is taken");
+  const since = new Date(Date.now() - 120_000).toISOString(), fin = await api(KEY_B, 'snapshot', { kinds: 'fin', since });
+  check(fin.ok === true && fin.rows.metrics.length === 0 && fin.rows.events.every((r: unknown[]) => String(r[3]).startsWith('fin_')) && fin.rows.events.some((r: unknown[]) => r[3] === 'fin_e'), "the money's snapshot holds its rows alone");
+  const pc = await api(KEY_A, 'paircode');
+  check(pc.ok === true && (await api(null, 'pairredeem', { code: pc.code })).key === KEY_A, "a pairing code redeems for its member's key, once");
+  if (KEY_C) {
+    for (const [action, extra] of [['event', { id: 'smoke-gfin', type: 'fin_e', data: e }], ['snapshot', { kinds: 'fin' }], ['paircode', {}], ['finlog', {}]] as const) {
+      check((await api(KEY_C, action, extra)).error === 'forbidden', `the guest's ${action === 'snapshot' ? 'money snapshot' : action} is forbidden`);
+    }
+    check(!/"fin_/.test(JSON.stringify(await api(KEY_C, 'snapshot', { since }))), "the guest's snapshot has no money row");
+  }
+}
+
 // The record's paged snapshot (docs/backend.md "Snapshot size"): the pages together are the whole snapshot.
 {
   const api = (key: string, action: string, extra: object = {}) =>

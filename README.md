@@ -68,7 +68,7 @@ every link, anchor, path, code citation, cron and size budget.
 | [island-layout.md](docs/island-layout.md) · [world3d-assets.md](docs/world3d-assets.md) | The editable layout and /editor · the 3D model pipeline |
 | [players.md](docs/players.md) · [farming.md](docs/farming.md) · [sound-sync.md](docs/sound-sync.md) · [board.md](docs/board.md) | Looks and すがた · the fields · music in step · the bulletin board |
 | [food-data.md](docs/food-data.md) | ごはん's food catalog and pictures |
-| [travel.md](docs/travel.md) · [hiking.md](docs/hiking.md) · [places.md](docs/places.md) · [wedding.md](docs/wedding.md) · [todo.md](docs/todo.md) | 旅行 · 登山 · 保存した場所 · 結婚式 · やること |
+| [travel.md](docs/travel.md) · [hiking.md](docs/hiking.md) · [places.md](docs/places.md) · [wedding.md](docs/wedding.md) · [todo.md](docs/todo.md) · [finance.md](docs/finance.md) | 旅行 · 登山 · 保存した場所 · 結婚式 · やること · お金 |
 | [english.md](docs/english.md) · [sugoroku.md](docs/sugoroku.md) · [speech-test.md](docs/speech-test.md) | English Study · 英語すごろく · the speech test |
 | [bots.md](docs/bots.md) · [gym/README.md](gym/README.md) · [its/README.md](its/README.md) ([SITE.md](its/SITE.md), [runner](its/runner/README.md)) | The ボット sheet · the two bots |
 | [ops/runbook.md](docs/ops/runbook.md) | Scheduled work, deploys, keys, backups, recovery |

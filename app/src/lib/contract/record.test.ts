@@ -291,3 +291,26 @@ describe('eventSlot: the other slots', () => {
     expect(eventSlot('wtask', 'A', 'A', { id: 'a1' }, at)).toEqual(expect.any(String));
   });
 });
+
+describe('the shared money (contract/finance.ts) in the record’s rules', () => {
+  const NOW = Date.parse('2026-11-28T03:00:00.000Z');
+  const e = { id: 'e1', k: 'x', d: '2026-11-28', amt: 1200, payer: 'A', ps: 5000, desc: 'lunch', cat: 'Dining' };
+  it('takes a well-formed entry, template and config; never an entry marked `imp` (the import’s alone), nor junk', () => {
+    expect(validEventData('fin_e', e, NOW)).toBe(true);
+    expect(validEventData('fin_e', { ...e, del: NOW }, NOW)).toBe(true);
+    expect(validEventData('fin_e', { ...e, imp: 1 }, NOW)).toBe(false);
+    expect(validEventData('fin_e', { ...e, amt: 1.5 }, NOW)).toBe(false);
+    expect(validEventData('fin_e', { ...e, extra: 1 }, NOW)).toBe(false);
+    expect(validEventData('fin_t', { id: 't1', desc: 'rent', cat: '', payer: 'B', amt: null, ps: null, months: [], day: 27, from: '2026-01', to: null }, NOW)).toBe(true);
+    expect(validEventData('fin_t', { id: 't#1', desc: 'rent', cat: '', payer: 'B', amt: null, ps: null, months: [], day: 27, from: '2026-01', to: null }, NOW)).toBe(false);
+    expect(validEventData('fin_c', { id: 'cfg', cats: ['Other'], split: { A: 8000, B: 5000 }, notes: [] }, NOW)).toBe(true);
+    expect(validEventData('fin_c', { id: 'cfg', cats: [], split: { A: 8000, B: 5000 }, notes: [] }, NOW)).toBe(false);
+  });
+  it('a slot per type and id, the config’s one', () => {
+    expect(eventSlot('fin_e', 'A', 'A', e, NOW)).toBe('fin_e|e1');
+    expect(eventSlot('fin_e', 'B', 'B', { ...e, id: 'tpl#2026-11' }, NOW)).toBe('fin_e|tpl#2026-11');
+    expect(eventSlot('fin_t', 'A', 'A', { id: 't1' }, NOW)).toBe('fin_t|t1');
+    expect(eventSlot('fin_c', 'B', 'B', { id: 'cfg' }, NOW)).toBe('fin_c|cfg');
+    expect(eventSlot('fin_c', 'B', 'B', { id: 'other' }, NOW)).toBeNull();
+  });
+});

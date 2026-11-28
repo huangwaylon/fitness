@@ -235,7 +235,7 @@ describe('IslandStore', () => {
     expect((await admin(s, { op: 'wallet' })).body).toMatchObject({ ok: true, A: { h: 100, fold: 100 } });
     calls = {};
     // (the prunes wait for this slot's backup)
-    expect(await s.nightly()).toEqual({ ok: true, ran: ['ledgercheck', 'sharesweep'], failed: [], left: ['islandprune', 'ledgerprune', 'tombprune'] });
+    expect(await s.nightly()).toEqual({ ok: true, ran: ['ledgercheck', 'fincheck', 'sharesweep'], failed: [], left: ['islandprune', 'ledgerprune', 'tombprune'] });
     await st.storage.put('archive', { ok: slotOf(NOW), okAt: NOW, fails: 0, lastAt: NOW });
     // (nor past the write guard: a prune's catch-up deletes thousands of rows a tick; code review 2026-11-27)
     reads = { n: 1_200_000, pct: 24, shed: true, rshed: false, logsShed: false };
@@ -245,14 +245,14 @@ describe('IslandStore', () => {
     await settle();
     expect(added().filter((x) => x.e === 'ledger.drift').map((x) => [x.l, x.d?.part])).toEqual([[2, 'p'], [2, 'z']]);
     expect(added().filter((x) => x.e === 'ledger.seed').map((x) => x.d?.who)).toEqual(['B', 'G']);
-    expect(added().filter((x) => x.e === 'cron.nightly')).toEqual([{ e: 'cron.nightly', l: 1, d: { drift: 2, swept: 0, island: 0, ledger: 0, tomb: 0, late: true, ms: 0 } }]);
+    expect(added().filter((x) => x.e === 'cron.nightly')).toEqual([{ e: 'cron.nightly', l: 1, d: { drift: 2, fin: 0, swept: 0, island: 0, ledger: 0, tomb: 0, late: true, ms: 0 } }]);
     // done today: a tick's catch-up runs nothing and says nothing; /health/log's ages
     calls = {};
     expect(await s.nightly(true)).toMatchObject({ ran: [], left: [] });
     await settle();
     expect(calls['LOG.add']).toBeUndefined();
     vi.setSystemTime(NOW + 3 * 3_600_000);
-    expect(s.nightlyStatus()).toEqual({ nightlyH: 3, nightly: { ledgercheck: 3, sharesweep: 3, islandprune: 3, ledgerprune: 3, tombprune: 3 } });
+    expect(s.nightlyStatus()).toEqual({ nightlyH: 3, nightly: { ledgercheck: 3, fincheck: 3, sharesweep: 3, islandprune: 3, ledgerprune: 3, tombprune: 3 }, finDrift: 0 });
   });
 
   it('the backup: the record’s dump up first, then the bots’ state; a bot failing is a warning of its own, never the record’s', async () => {

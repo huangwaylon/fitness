@@ -355,6 +355,13 @@ describe('the room with three villagers (v3)', () => {
     expect(room.notify({ what: 'event', who: 'G', at: '2026-11-02T03:00:01.000Z', rev: 'e1' })).toBe(3);
     for (const s of [a, b, g]) expect(of(s, 'changed')).toHaveLength(2);
   });
+
+  it('a write of the members’ money alone (the record’s `guest` false) reaches the members only, unless a new epoch', () => {
+    const a = join(KEY_A), b = join(KEY_B), g = join(KEY_C);
+    expect(room.notify({ what: 'event', who: 'A', at: '2026-11-02T03:00:00.000Z', rev: 'e1' }, false)).toBe(2);
+    expect([a, b, g].map((s) => of(s, 'changed').length)).toEqual([1, 1, 0]);
+    expect(room.notify({ what: 'event', who: 'A', at: '2026-11-02T03:00:01.000Z', rev: 'e2' }, false)).toBe(3);
+  });
 });
 
 // The island's layout (docs/island-layout.md "Ops"): the outdoors (`sc` o, c, r) the members' alone; a home's look

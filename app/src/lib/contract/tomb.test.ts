@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { expiresKind, isExpiringRemoval, lateOp, tombCut } from './tomb.ts';
 import { newPostId } from './board.ts';
+import { EVENT_TYPES } from './api.ts';
 
 const NOW = Date.parse('2026-11-24T03:00:00.000Z');
 const DAY = 86_400_000;
@@ -29,5 +30,19 @@ describe('removals expire', () => {
     // (an id that isn't a time, or one in the future: its at alone)
     expect(lateOp('decor', { sc: 't', id: 'dtentwall', at: NOW }, NOW)).toBe(false);
     expect(lateOp('decor', { sc: 'o', id: 'oz', at: 1e12 }, NOW)).toBe(false);
+  });
+});
+
+describe('the shared money never expires (its delete is `del`, never a removal)', () => {
+  it('no fin_* type is a kind whose removal expires, nor a late op, however old (a pinned clock 61 and 400 days on)', () => {
+    const fin = EVENT_TYPES.filter((t) => t.startsWith('fin_'));
+    expect(fin.length).toBeGreaterThan(0);
+    for (const t of fin) {
+      for (const d of [{ id: 'e1' }, { id: 'e1', rm: true, at: NOW - 400 * DAY }, { id: 'e1', del: NOW - 61 * DAY }]) {
+        expect(expiresKind(t, d), t).toBe(false);
+        expect(isExpiringRemoval(t, d), t).toBe(false);
+        expect(lateOp(t, d, NOW + 61 * DAY), t).toBe(false);
+      }
+    }
   });
 });

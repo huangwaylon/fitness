@@ -567,14 +567,15 @@ export class RoomCore<S extends Sock> {
     return to.length;
   }
 
-  /** Whether the guest hears of this change: an event's, a member's ingest that brought activity rows (the record says
+  /** Whether the guest hears of this change: an event's (but a write of the members' money alone: `guest` false, the
+   *  record's word, store.ts), a member's ingest that brought activity rows (the record says
    *  so: `guest`; the guest's snapshot holds them, so it reaches the mark), or a new epoch (its cache refetched). Never
    *  an ingest of からだ rows alone: when one ran is the member's (docs/backend.md#the-guest), and the guest's
    *  snapshot, which holds none of them, could never reach its mark. (An admin load at the same epoch, told as an
    *  ingest: the guest has them at its next poll.) */
   private guestNotice(n: Notice, guest?: boolean): boolean {
     const was = this.recG ?? this.rec;
-    return n.what !== 'ingest' || guest === true || (was !== null && n.rev !== was.rev);
+    return (n.what !== 'ingest' && guest !== false) || guest === true || (was !== null && n.rev !== was.rev);
   }
 
   /** A socket closed (or errored). Its person's partner hears they left, unless another socket of theirs is open.

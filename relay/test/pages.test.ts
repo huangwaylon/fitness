@@ -144,12 +144,12 @@ describe('the paged snapshot', () => {
     load();
     a('ingest', { dates: 'Oct 1, 2026', steps: '5' });
     const whole = store.dump().rows;
-    const rows = { metrics: [] as unknown[][], events: [] as unknown[][], uploads: [] as unknown[][], share: [] as unknown[][], share_visit: [] as unknown[][], places: [] as unknown[][], ledger: [] as unknown[][], ledger_log: [] as unknown[][] };
+    const rows = { metrics: [] as unknown[][], events: [] as unknown[][], uploads: [] as unknown[][], share: [] as unknown[][], share_visit: [] as unknown[][], places: [] as unknown[][], ledger: [] as unknown[][], ledger_log: [] as unknown[][], fin_log: [] as unknown[][] };
     let after: string | undefined, pages = 0;
     do {
       const r = store.dumpPage({ limit: 1500, ...(after ? { after } : {}) });
       if (!r.ok) throw new Error('refused');
-      for (const k of ['metrics', 'events', 'uploads', 'share', 'share_visit', 'places', 'ledger', 'ledger_log'] as const) rows[k].push(...r.rows[k]);
+      for (const k of ['metrics', 'events', 'uploads', 'share', 'share_visit', 'places', 'ledger', 'ledger_log', 'fin_log'] as const) rows[k].push(...r.rows[k]);
       after = r.next;
       pages++;
     } while (after);

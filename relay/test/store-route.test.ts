@@ -113,7 +113,7 @@ describe('/admin', () => {
   it('takes an op signed by who holds both keys (a load: a dump’s rows, idempotent); refuses an unsigned, stale or tampered one', async () => {
     const body = JSON.stringify({ op: 'load', rows: { metrics: [['2026-11-01T00:00:00.000Z', 'A', '2026-11-01', 'steps', 1]] } });
     const ok = await adminRoute(await signed(body), () => room, { KEY_A, KEY_B }, () => NOW);
-    expect(await ok.json()).toEqual({ ok: true, metrics: 1, events: 0, uploads: 0, skipped: 0, counts: { metrics: 1, events: 0, ids: 0, uploads: 0, img: 0, share: 0, share_visit: 0, places: 0 } });
+    expect(await ok.json()).toEqual({ ok: true, metrics: 1, events: 0, uploads: 0, skipped: 0, counts: { metrics: 1, events: 0, ids: 0, uploads: 0, img: 0, share: 0, share_visit: 0, places: 0, fin_log: 0 } });
     expect(await (await adminRoute(await signed(body), () => room, { KEY_A, KEY_B }, () => NOW)).json()).toMatchObject({ metrics: 0 }); // again: nothing new
     // a load that added rows tells the phones (once: the second added nothing)
     expect(told).toEqual([{ what: 'ingest', who: 'A', at: '2026-11-01T00:00:00.000Z', rev: 'e1' }]);

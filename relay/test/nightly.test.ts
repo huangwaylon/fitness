@@ -39,13 +39,13 @@ describe('the nightly jobs', () => {
 
   it('runs each job once a day; a prune’s backlog a batch a run, finished by the ticks’ catch-up; the day’s line once', () => {
     backlog(PRUNE_BATCH + 500);
-    expect(run()).toEqual({ ran: ['ledgercheck', 'sharesweep', 'islandprune', 'ledgerprune', 'tombprune'], failed: [], left: ['islandprune'] });
+    expect(run()).toEqual({ ran: ['ledgercheck', 'fincheck', 'sharesweep', 'islandprune', 'ledgerprune', 'tombprune'], failed: [], left: ['islandprune'] });
     expect(islandRows()).toBe(500);
     expect(lines).toEqual([]);
     now = T0 + 75 * 60_000; // 04:15
     expect(run(true)).toEqual({ ran: ['islandprune'], failed: [], left: [] });
     expect(islandRows()).toBe(0);
-    expect(lines).toEqual([{ drift: 0, swept: 0, island: PRUNE_BATCH + 500, ledger: 0, tomb: 0, late: true, ms: 0 }]);
+    expect(lines).toEqual([{ drift: 0, fin: 0, swept: 0, island: PRUNE_BATCH + 500, ledger: 0, tomb: 0, late: true, ms: 0 }]);
     // done today: the next ticks run nothing
     now += 30 * 60_000;
     expect(run(true)).toEqual({ ran: [], failed: [], left: [] });
@@ -89,7 +89,7 @@ describe('the nightly jobs', () => {
 
   it('the prunes wait for the night’s backup: the others run, the prunes on the first tick after it is up', () => {
     backlog(10);
-    expect(run(false, false)).toEqual({ ran: ['ledgercheck', 'sharesweep'], failed: [], left: ['islandprune', 'ledgerprune', 'tombprune'] });
+    expect(run(false, false)).toEqual({ ran: ['ledgercheck', 'fincheck', 'sharesweep'], failed: [], left: ['islandprune', 'ledgerprune', 'tombprune'] });
     expect(islandRows()).toBe(10);
     now = T0 + 75 * 60_000;
     expect(run(true, false).ran).toEqual([]);
@@ -103,14 +103,14 @@ describe('the nightly jobs', () => {
   it('a missed 03:00: the first tick from 04:15 runs them all', () => {
     run();
     now = T0 + 24 * H + 75 * 60_000;
-    expect(run(true).ran).toHaveLength(5);
+    expect(run(true).ran).toHaveLength(6);
   });
 
   it('the ages for /health/log: hours since each finished, the oldest as nightlyH; -1 for one never done', () => {
-    expect(store.nightlyStatus()).toEqual({ nightlyH: -1, nightly: { ledgercheck: -1, sharesweep: -1, islandprune: -1, ledgerprune: -1, tombprune: -1 } });
+    expect(store.nightlyStatus()).toEqual({ nightlyH: -1, nightly: { ledgercheck: -1, fincheck: -1, sharesweep: -1, islandprune: -1, ledgerprune: -1, tombprune: -1 }, finDrift: 0 });
     run();
     now = T0 + 26.5 * H;
-    expect(store.nightlyStatus()).toEqual({ nightlyH: 26.5, nightly: { ledgercheck: 26.5, sharesweep: 26.5, islandprune: 26.5, ledgerprune: 26.5, tombprune: 26.5 } });
+    expect(store.nightlyStatus()).toEqual({ nightlyH: 26.5, nightly: { ledgercheck: 26.5, fincheck: 26.5, sharesweep: 26.5, islandprune: 26.5, ledgerprune: 26.5, tombprune: 26.5 }, finDrift: 0 });
     // a stamp unreadable is none
     db.sql.exec("UPDATE meta SET v = 'x' WHERE k = 'nightly|tombprune'");
     expect(store.nightlyStatus()).toMatchObject({ nightlyH: -1, nightly: { tombprune: -1 } });

@@ -14,6 +14,7 @@ import { isWedType, WedBook, wedRowOf, wedSlot } from '../../app/src/lib/contrac
 import { ShareCore } from './share.ts';
 import { PlacesCore } from './places.ts';
 import { LedgerStore } from './ledger.ts';
+import type { FinCore } from './finance.ts';
 import { imgRows } from './img.ts';
 import type { Bind } from './storeSchema.ts';
 import { StoreBase, fail, type Rec } from './storeBase.ts';
@@ -36,10 +37,12 @@ export interface ImportRows {
   /** The stored ledger's rows and its log (ledger.ts). */
   ledger?: unknown[][];
   ledger_log?: unknown[][];
+  /** The shared money's log (finance.ts dumpRows: `[seq, at, who, type, id, before, after]`). */
+  fin_log?: unknown[][];
 }
 
 export interface ImportResult {
-  metrics: number; events: number; uploads: number; skipped: number; held?: number; share?: number; share_visit?: number; places?: number;
+  metrics: number; events: number; uploads: number; skipped: number; held?: number; share?: number; share_visit?: number; places?: number; fin_log?: number;
   /** Of `skipped`: a `pref` row of a key the model no longer reads, a profile row its locked slot already holds. */
   refused?: { prefKey: number; profileLocked: number };
 }
@@ -53,7 +56,7 @@ const DUMP_TEXT_PAGE = 2000;
 export const IMG_DUMP_PAGE = 20;
 
 export class StoreDump {
-  constructor(private readonly b: StoreBase, private readonly books: StoreBooks, private readonly shop: StoreShop, private readonly share: ShareCore, private readonly places: PlacesCore, private readonly ledger: LedgerStore) {}
+  constructor(private readonly b: StoreBase, private readonly books: StoreBooks, private readonly shop: StoreShop, private readonly share: ShareCore, private readonly places: PlacesCore, private readonly ledger: LedgerStore, private readonly fin: FinCore) {}
 
   // ---------------------------------------------------------------- import
 
@@ -96,6 +99,12 @@ export class StoreDump {
         out.skipped += sh.skipped;
       }
       if (rows.ledger) this.ledger.load(rows.ledger, rows.ledger_log);
+      // (the money's log by its seq: what the log has is kept)
+      if (rows.fin_log) {
+        const f = this.fin.load(rows.fin_log);
+        out.fin_log = f.fin_log;
+        out.skipped += f.skipped;
+      }
       if (rows.places) {
         const pl = this.places.load(rows.places);
         out.places = pl.places;
@@ -263,12 +272,12 @@ export class StoreDump {
   /** Row counts per table (the import's check, the runbook). */
   counts(): Record<string, number> {
     const n = (t: string) => Number(this.b.io.sql.exec<{ n: number }>(`SELECT count(*) AS n FROM ${t}`).toArray()[0]?.n ?? 0);
-    return { metrics: n('metrics'), events: n('events'), ids: n('ids'), uploads: n('uploads'), img: n('food_img'), share: n('share'), share_visit: n('share_visit'), places: n('places') };
+    return { metrics: n('metrics'), events: n('events'), ids: n('ids'), uploads: n('uploads'), img: n('food_img'), share: n('share'), share_visit: n('share_visit'), places: n('places'), fin_log: n('fin_log') };
   }
 
   /** Every row, as `load` takes them (the backup, docs/ops/runbook.md#6-backups): the load of a dump is the record. */
   dump(): { rows: DumpRows } {
-    return { rows: { ...rowsSince(this.b.io.sql, ''), uploads: this.b.uploadRows(), ...this.heldDump(), ...this.share.dumpRows(), places: this.places.dumpRows(), ledger: this.ledger.rows(), ledger_log: this.ledger.logRows() } };
+    return { rows: { ...rowsSince(this.b.io.sql, ''), uploads: this.b.uploadRows(), ...this.heldDump(), ...this.share.dumpRows(), places: this.places.dumpRows(), ledger: this.ledger.rows(), ledger_log: this.ledger.logRows(), fin_log: this.fin.dumpRows() } };
   }
 
   /**
@@ -314,7 +323,7 @@ export class StoreDump {
       if (rs.length < IMG_DUMP_PAGE) break;
       after = String(rs[rs.length - 1][2]);
     }
-    yield `],"ledger":${JSON.stringify(this.ledger.rows())},"ledger_log":${JSON.stringify(this.ledger.logRows())}}}\n`;
+    yield `],"ledger":${JSON.stringify(this.ledger.rows())},"ledger_log":${JSON.stringify(this.ledger.logRows())},"fin_log":${JSON.stringify(this.fin.dumpRows())}}}\n`;
     if (this.b.rev() !== rev) throw Object.assign(new Error('a new epoch under the dump'), { name: 'epoch' });
   }
 
@@ -335,6 +344,6 @@ export class StoreDump {
     const limit = o.limit === undefined ? SNAPSHOT_PAGE_MAX : o.limit;
     if (after === undefined || !isPageSize(limit)) return fail('bad_request');
     const p = rowsPage(this.b.io.sql, '', after, limit);
-    return { ok: true, rows: { ...p.rows, uploads: after ? [] : this.b.uploadRows(), ...(after ? { share: [], share_visit: [], places: [], ledger: [], ledger_log: [] } : { ...this.heldDump(), ...this.share.dumpRows(), places: this.places.dumpRows(), ledger: this.ledger.rows(), ledger_log: this.ledger.logRows() }) }, ...(p.next ? { next: p.next } : {}) };
+    return { ok: true, rows: { ...p.rows, uploads: after ? [] : this.b.uploadRows(), ...(after ? { share: [], share_visit: [], places: [], ledger: [], ledger_log: [], fin_log: [] } : { ...this.heldDump(), ...this.share.dumpRows(), places: this.places.dumpRows(), ledger: this.ledger.rows(), ledger_log: this.ledger.logRows(), fin_log: this.fin.dumpRows() }) }, ...(p.next ? { next: p.next } : {}) };
   }
 }

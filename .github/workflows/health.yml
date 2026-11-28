@@ -121,7 +121,7 @@ jobs:
           # the thresholds (the last 6 hours): errors (not while leaving), the record's `unavailable`, a cap reached,
           # the day's events past half the cap, the day's rows written past half the Free plan's 100k (read: 5M; the
           # field absent on an older relay: not), the prune dead (an event older than 32 days), no good record backup in
-          # 30 h (backupH: -1 none in the log; none run yet: not), a nightly job, the saved places' pull
+          # 30 h (backupH: -1 none in the log; none run yet: not), a nightly job, the saved places' pull, the money check's drift (finDrift)
           why=$(echo "$s" | jq -r '[
             (if .e6h > 20 then "\(.e6h) errors in 6 h" else empty end),
             (if .unavailable6h > 5 then "the record answered unavailable \(.unavailable6h) times in 6 h" else empty end),
@@ -132,7 +132,8 @@ jobs:
             (if .oldestDays > 32 then "the oldest event is \(.oldestDays) days old (the prune)" else empty end),
             (if (.backupH // 0) > 30 or ((.backupH // 0) < 0 and (.backupSt // "none") != "none") then "no record backup in 30 h (last: \(.backupSt))" else empty end),
             (if (.nightlyH // 0) > 30 or (.nightlyH // 0) < 0 then "a nightly job not done in 30 h (nightlyH \(.nightlyH); /health/log .nightly; runbook §6)" else empty end),
-            (if (.placesH // 0) >= 3 or (.placesH // 0) < 0 then "the saved places not pulled in 3 h (places-pull.yml: its-bot'"'"'s dispatch; runbook §9)" else empty end)
+            (if (.placesH // 0) >= 3 or (.placesH // 0) < 0 then "the saved places not pulled in 3 h (places-pull.yml: its-bot'"'"'s dispatch; runbook §9)" else empty end),
+            (if (.finDrift // 0) > 0 then "the money check drifted: the slots'"'"' balance or count is not fin_log'"'"'s (record.ts fincheck; docs/finance.md)" else empty end)
           ] | join("; ")')
           [ "$(echo "$s" | jq '.phones24h')" = 0 ] && echo "::warning::no phone events in 24 h: the phones' log may be broken, or nobody opened the app"
           counts=$(echo "$s" | jq -r '"errors 1 h \(.e1h), 6 h \(.e6h); warnings 6 h \(.w6h); unavailable 6 h \(.unavailable6h); phones 24 h \(.phones24h); today \(.today) (\(.budgetPct) %); rows written \(.rowsPct // 0) %, read \(.rowsReadPct // "?") %; oldest \(.oldestDays) d; backup \(.backupH // "?") h ago (\(.backupSt // "?")); nightly \(.nightlyH // "?") h; places pulled \(.placesH // "?") h ago; "')

@@ -8,8 +8,9 @@ import { isRec } from './guards.ts';
 /** The people (types.ts), for the relay: it imports only contract/ (deps.test). @public (relay/) */
 export type { PersonId, Who };
 
-/** The event types the server accepts and the model reads (anything else is refused with `bad_request`). */
-export const EVENT_TYPES = ['spend', 'spend_void', 'harvest', 'pref', 'find', 'tally', 'island', 'decor', 'board', 'food', 'food_repeat', 'food_recipe', 'food_custom', 'sell', 'buy', 'tally_back', 'listen', 'pack', 'pack_chk', 'pack_reset', 'trip_note', 'wtask', 'wdone', 'wconf', 'wnote', 'farm', 'buy_starts', 'wet', 'farm_water', 'room_save', 'eflag', 'eflag_done', 'sg_reward', 'shop_adjust', 'check', 'inbody', 'todo', 'hike', 'hike_trk', 'hike_start'] as const;
+/** The event types the server accepts and the model reads (anything else is refused with `bad_request`). Every
+ *  finance type starts with `fin_` (contract/finance.ts FIN_TYPES; members only: contract/guest.ts keys on the prefix). */
+export const EVENT_TYPES = ['spend', 'spend_void', 'harvest', 'pref', 'find', 'tally', 'island', 'decor', 'board', 'food', 'food_repeat', 'food_recipe', 'food_custom', 'sell', 'buy', 'tally_back', 'listen', 'pack', 'pack_chk', 'pack_reset', 'trip_note', 'wtask', 'wdone', 'wconf', 'wnote', 'farm', 'buy_starts', 'wet', 'farm_water', 'room_save', 'eflag', 'eflag_done', 'sg_reward', 'shop_adjust', 'check', 'inbody', 'todo', 'hike', 'hike_trk', 'hike_start', 'fin_e', 'fin_t', 'fin_c'] as const;
 export type EventType = (typeof EVENT_TYPES)[number];
 
 /**

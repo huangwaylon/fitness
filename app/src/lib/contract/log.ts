@@ -14,7 +14,7 @@ export const LOG_V = 1;
 export type LogLevel = 0 | 1 | 2 | 3;
 
 /** The record's API actions (relay/src/store.ts route), and `other`. @public (relay/src/reqMeta.ts) */
-export const LOG_ACTIONS = ['health', 'ingest', 'event', 'events', 'snapshot', 'uploads', 'whoami', 'share_list', 'share_make', 'share_set', 'share_visits', 'other'] as const;
+export const LOG_ACTIONS = ['health', 'ingest', 'event', 'events', 'snapshot', 'uploads', 'whoami', 'share_list', 'share_make', 'share_set', 'share_visits', 'paircode', 'pairredeem', 'finlog', 'other'] as const;
 /** A request's outcome: `ok`, the record's error codes, the phone's own (`offline`, `http`, `json`), `none` (no answer). @public (relay/src/reqMeta.ts) */
 export const LOG_STATUS = ['ok', 'unauthorized', 'forbidden', 'bad_request', 'too_large', 'busy', 'unavailable', 'offline', 'http', 'json', 'none'] as const;
 /** The app's routes (their first segment). */
@@ -273,9 +273,10 @@ export const LOG_EVENTS = {
   // the last good list kept); the cron's only on a change of state (cronLog): its categoriser failing or the list
   // stale (warn), well again (info); counts only, never a place
   "cron.places": { src: 'r', f: { ok: 'b', full: 'b', why: ['blocked', 'http', 'parse', 'count', 'coords', 'timeout', 'too_large', 'mass_delete', 'fetch', 'no_list', 'stale'], n: 'n', added: 'n', changed: 'n', gone: 'n', ruled: 'n', ai: 'n', aiFail: 'n', ms: 'n' } },
-  // the record's nightly jobs (relay/src/nightly.ts), once a day when the last finishes: the day's ledger drifts, links
+  // the record's nightly jobs (relay/src/nightly.ts), once a day when the last finishes: the day's ledger drifts, the
+  // money check's (fin: 1 drifted), links
   // swept, rows pruned (island days, shop rows + tallies, removals), late: finished by a tick's catch-up
-  "cron.nightly": { src: 'r', f: { drift: 'n', swept: 'n', island: 'n', ledger: 'n', tomb: 'n', late: 'b', ms: 'n' } },
+  "cron.nightly": { src: 'r', f: { drift: 'n', fin: 'n', swept: 'n', island: 'n', ledger: 'n', tomb: 'n', late: 'b', ms: 'n' } },
   // the record's daily backup (relay/src/archive.ts): st ok / no_token / empty / github (step, http) / an error's class;
   // its size, rows, the dumps kept and deleted, wall ms (the whole, the dump, the encryption, GitHub's), the record's
   // rows written (0) and read, whose token (by: the GitHub App's, the PAT); then the bots' state (archive.ts runBots): its, gym each ok / none / no_token / http_<n> /
@@ -290,7 +291,7 @@ export const LOG_EVENTS = {
   "do.error": { src: 'r', f: { where: 't', name: 't', msg: 'msg' } },
   // (2026-11-24) the record's alarm found lost (missing, or this many s past due) and set again by the cron's armCheck
   "do.alarm": { src: 'r', f: { why: ['missing', 'late'], lateS: 'n' } },
-  "store.corrupt": { src: 'r', f: { where: ['spend', 'board', 'food', 'tally', 'shop', 'decor', 'pack'] } },
+  "store.corrupt": { src: 'r', f: { where: ['spend', 'board', 'food', 'tally', 'shop', 'decor', 'pack', 'fin'] } },
   // the かいがら wallet (relay/src/store.ts): one seeded from the fold of the rows (absent, or kept by a relay that
   // can't be read), and the daily check's (walletcheck) stored value that isn't the fold's; never fixed by itself
   "wallet.seed": { src: 'r', f: { who: ['A', 'B', 'G'], h: 'n' } },
@@ -323,6 +324,13 @@ export const LOG_EVENTS = {
   "hike.import": { src: 'r', f: { ms: 'n', ok: 'b', err: ['unauthorized', 'bad_request', 'bad_link', 'not_found', 'too_large', 'capped', 'timeout', 'upstream'], pts: 'n', kept: 'n' } },
   // やること's move from lists to one list (relay/src/store.ts todoMigrate, the admin's todo_migrate): counts only
   "todo.migrate": { src: 'r', f: { dry: 'b', lists: 'n', items: 'n', done: 'n', orphans: 'n', cut: 'n', due: 'n', rem: 'n' } },
+  // the shared money (relay/src/finance.ts; docs/finance.md), counts only, never an amount, a description or a
+  // category: the nightly check (n live entries, drift: the slots' balance or live count not the log's replay; error
+  // when it drifts), the admin's import (rows added, duplicates, refused; dry: counted only), a pairing code minted or
+  // redeemed (why: the refusal's)
+  "fin.check": { src: 'r', f: { n: 'n', drift: 'b', logN: 'n', ms: 'n' } },
+  "fin.import": { src: 'r', f: { dry: 'b', added: 'n', dup: 'n', bad: 'n', ms: 'n' } },
+  "fin.pair": { src: 'r', f: { op: ['mint', 'redeem'], ok: 'b', why: ['code', 'busy', 'many'] } },
   // やること's reminders and the phones' subscriptions (relay/src/pusher.ts): a push's outcome, a subscription kept,
   // forgotten or dropped (its push service's 404/410), a reminder missed by more than 10 min; `ep` 6 hex of the
   // endpoint's SHA-256, never the endpoint or the item's text

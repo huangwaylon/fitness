@@ -48,7 +48,10 @@ Changing one is a conscious decision: edit the line, don't let it drift.
 - **No Mac recurring jobs:** Cloudflare crons, DO alarms, Actions only ([runbook §0](ops/runbook.md#0-scheduled-work)).
 
 ## Players and privacy
-- **No privacy between us,** except the members' bodies to the guest.
+- **No privacy between us,** except the members' bodies and finances to the guest.
+- **The shared money on the record:** `fin_*` events, members only at two layers (the Worker's gate, the record's
+  rule), soft delete by `del` kept for good, an append-only `fin_log`, a nightly `fincheck`
+  ([finance](finance.md)). Why: one store, backed up nightly; the guest never sees it even via the cache.
 - <a id="the-guest"></a>**The guest:** the same app as a member, its villager and own wallet too, but never the
   members' からだ figures, enforced by the record (`contract/guest.ts`, [backend](backend.md#the-guest)); its wallet
   earns nothing without Health data. Why: a UI-only rule would leak via the cache.

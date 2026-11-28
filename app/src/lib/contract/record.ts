@@ -29,6 +29,7 @@ import { menuHiddenOk, menuIdsOk, menuIdsRead } from './menu.ts';
 import { localDateAt, nextDay } from './tokyo.ts';
 import { farmOf } from './farm.ts';
 import { CHECK_PAST_DAYS, checkOf, checkSlot } from './checks.ts';
+import { finConfigOf, finEntryOf, finSlot, finTemplateOf, isFinType } from './finance.ts';
 import type { LocalDate, ShopItemId, Who } from '../types.ts';
 
 type Rec = Record<string, unknown>;
@@ -55,6 +56,9 @@ export function validEventData(type: string, d: Rec, now: number): boolean {
   if (type === 'hike_trk') return hikeTrkOf(d) !== null;
   // a trail's start time moved, or back to its plan's (contract/hikeStart.ts)
   if (type === 'hike_start') return hikeStartOf(d) !== null;
+  // the shared money (contract/finance.ts: its texts already clean, finClean): an entry (never `imp`, the import's
+  // mark: the admin's alone, relay/src/finance.ts), a recurring template, the config; members only (contract/guest.ts)
+  if (isFinType(type)) return type === 'fin_e' ? finEntryOf(d) !== null : type === 'fin_t' ? finTemplateOf(d) !== null : finConfigOf(d) !== null;
   switch (type) {
     case 'spend':
       return spendOf(d, now) !== null;
@@ -263,7 +267,9 @@ export function prefTaken(key: unknown, v: unknown): boolean {
  * - a `food` op: its entry's id, a `food_repeat` op its repeat's, a `food_recipe` op its recipe's, a `food_custom` op
  *   its custom food's (`foodAccept` decides whether it replaces);
  * - a `room_save`: its room and slot (the latest to arrive wins, contract/roomSave.ts);
- * - a `check`: its sender, day and check (contract/checks.ts: the latest wins).
+ * - a `check`: its sender, day and check (contract/checks.ts: the latest wins);
+ * - a `fin_e`, a `fin_t`: its id; the `fin_c` its one slot (contract/finance.ts finSlot: the latest to arrive wins; a
+ *   delete is the payload's `del`, never a removal, so contract/tomb.ts never lets one go).
  * A pref the model would ignore takes no slot, so it never replaces one it takes. `subject`: `eventSubject`.
  */
 export function eventSlot(type: EventType | string, sender: Who, subject: Who, d: Rec, at: number): string | null {
@@ -273,6 +279,7 @@ export function eventSlot(type: EventType | string, sender: Who, subject: Who, d
   if (type === 'hike') return hikeSlot(d);
   if (type === 'hike_trk') return hikeTrkSlot(d);
   if (type === 'hike_start') return hikeStartSlot(d);
+  if (isFinType(type)) return finSlot(type, d);
   switch (type) {
     case 'tally':
     case 'tally_back':

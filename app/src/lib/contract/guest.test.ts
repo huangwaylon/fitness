@@ -1,12 +1,19 @@
 // The guest's rules (contract/guest.ts, docs/backend.md#the-guest, 2026-11-24): everything a member writes but a からだ
-// goal; every row but the body data (the からだ rows, the InBody sheets, the からだ goals).
+// goal and the shared money; every row but the body data (the からだ rows, the InBody sheets, the からだ goals) and the
+// money's.
 import { describe, expect, it } from 'vitest';
 import { EVENT_TYPES, type EventRow, type MetricRow, type SnapshotRows } from './api.ts';
-import { guestMayWrite, rowsFor } from './guest.ts';
+import { guestMayWrite, membersOnly, rowsFor } from './guest.ts';
+import { FIN_TYPES } from './finance.ts';
+import { isShareKind, SHARE_KINDS } from './share.ts';
+
+/** Every finance type the record accepts, read off EVENT_TYPES itself (not FIN_TYPES): a type added later is checked
+ *  here the day it's added. */
+const FIN_IN_EVENT_TYPES = EVENT_TYPES.filter((t) => t.startsWith('fin_'));
 
 describe('guestMayWrite', () => {
-  it('takes every event type a member writes (the ベル’s too: its wallet earns none, model/bells.ts)', () => {
-    for (const t of EVENT_TYPES) expect(guestMayWrite(t, {}), t).toBe(true);
+  it('takes every event type a member writes (the ベル’s too: its wallet earns none, model/bells.ts) but the shared money’s', () => {
+    for (const t of EVENT_TYPES) expect(guestMayWrite(t, {}), t).toBe(!t.startsWith('fin_'));
   });
 
   it('every pref but a からだ goal (body data): its own or a member’s activity and meal goals, cosmetic, the island’s', () => {
@@ -63,5 +70,51 @@ describe('rowsFor the guest', () => {
   it('a profile row naming no one it may (the guest’s sent by a member, an unknown person): no one gets it', () => {
     const odd = { metrics: [], events: [e('A', 'x1', 'pref', { key: 'sex', value: 'm', person: 'G' }), e('G', 'x2', 'pref', { key: 'birth', value: '2000-01-01', person: 'Z' })] };
     for (const who of ['A', 'B', 'G'] as const) expect(rowsFor(who, odd).events).toEqual([]);
+  });
+});
+
+describe('the shared money: members only (2026-11-28)', () => {
+  const at = '2026-11-28T03:00:00.000Z';
+  const sample: Record<string, object> = {
+    fin_e: { id: 'e1', k: 'x', d: '2026-11-28', amt: 1200, payer: 'A', ps: 5000, desc: 'x', cat: 'y' },
+    fin_t: { id: 't1', desc: 'rent', cat: '', payer: 'B', amt: null, ps: null, months: [], day: 27, from: '2026-01', to: null },
+    fin_c: { id: 'cfg', cats: ['Other'], split: { A: 5000, B: 5000 }, notes: [] }
+  };
+
+  it('EVENT_TYPES’s every fin_* type is the contract’s (FIN_TYPES), and there is at least one', () => {
+    expect(FIN_IN_EVENT_TYPES.length).toBeGreaterThan(0);
+    expect([...FIN_IN_EVENT_TYPES].sort()).toEqual([...FIN_TYPES].sort());
+    for (const t of FIN_TYPES) expect(t.startsWith('fin_'), t).toBe(true);
+  });
+
+  it('the guest can write none of them, whatever the data; a member’s every one (enumerated from EVENT_TYPES)', () => {
+    for (const t of FIN_IN_EVENT_TYPES) {
+      expect(membersOnly(t), t).toBe(true);
+      for (const d of [{}, sample[t] ?? {}, { key: 'locale' }]) expect(guestMayWrite(t, d as Record<string, unknown>), t).toBe(false);
+    }
+    expect(EVENT_TYPES.filter((t) => membersOnly(t))).toEqual(FIN_IN_EVENT_TYPES);
+    // (a type named later is the members' by its prefix, before anyone lists it)
+    expect(membersOnly('fin_later')).toBe(true);
+    expect(membersOnly('food')).toBe(false);
+    expect(membersOnly(undefined)).toBe(false);
+  });
+
+  it('the guest gets none of their rows, a member every one, in a snapshot and in a delta alike', () => {
+    const events: EventRow[] = [
+      [at, 'A', 'p1', 'pref', JSON.stringify({ key: 'locale', value: 'ja' })],
+      ...FIN_IN_EVENT_TYPES.map((t, i): EventRow => [at, i % 2 ? 'B' : 'A', `f${i}`, t, JSON.stringify(sample[t] ?? {})]),
+      // (an unreadable one too: dropped by its type, never parsed)
+      [at, 'A', 'fx', FIN_IN_EVENT_TYPES[0], '{not json']
+    ];
+    const rows: SnapshotRows = { metrics: [], events };
+    const g = rowsFor('G', rows);
+    expect(g.events.map((r) => r[3])).toEqual(['pref']);
+    expect(g.events.some((r) => membersOnly(r[3]))).toBe(false);
+    for (const me of ['A', 'B'] as const) expect(rowsFor(me, rows).events).toEqual(events);
+  });
+
+  it('no share link carries them: no share kind is the money’s, none reads a fin_* table', () => {
+    for (const t of [...FIN_IN_EVENT_TYPES, 'fin', 'money']) expect(isShareKind(t), t).toBe(false);
+    expect(JSON.stringify(SHARE_KINDS)).not.toMatch(/fin_/);
   });
 });

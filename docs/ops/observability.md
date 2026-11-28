@@ -42,7 +42,8 @@ agents, the record's `detail` / `warnings`. `js.error` messages scrubbed (120 ch
 - Recovered failures: warn `do.error`; a cron's or job's: error (a job's once a day), scrubbed `msg`; a lost alarm
   `do.alarm`. `cron.backup` carries the App's mint failure and the bots' counts. `dv` joins `ws.hello`, `room.*`,
   `ws.close`. `cron.places`: a pull's change or refusal. `cf.usage`: Jobs' usage read failing or well again.
-- **Nightly jobs** (`nightly.ts`): ledger check, link sweep, prunes; one `cron.nightly`; `/health/log` `nightlyH`.
+- **Nightly jobs** (`nightly.ts`): ledger check, the money check (`fin.check`, an error on a drift; `finDrift`), link
+  sweep, prunes; one `cron.nightly`; `/health/log` `nightlyH`.
 - **Caps** (UTC day, `LOG_CAPS`, 8,000 total): over one, dropped, `log.cap` once. Retention: `relay/src/log.ts` header.
 
 ## Reading
@@ -64,7 +65,7 @@ which build), then `--level warn`, `--sid`, `--rid`; live `npx wrangler tail`. O
 `health.yml` ([runbook §0](runbook.md#0-scheduled-work), §2) reads `/health/log` and opens `alert` when, in the last
 6 h: errors > 20, `unavailable` > 5, a cap reached, the day's events > 50 % of the cap, rows written or read > 50 % of
 the Free plan's, the oldest event > 32 days, no backup or nightly in 30 h (`backupH`, `nightlyH`), the list unpulled
-3 h (`placesH`), or the relay, record or site down. A green run closes it. Token: `openssl rand -hex 32` → `npx
+3 h (`placesH`), the money check drifted (`finDrift`), or the relay, record or site down. A green run closes it. Token: `openssl rand -hex 32` → `npx
 wrangler secret put HEALTH_TOKEN` (and `--env test`), `gh secret set HEALTH_TOKEN`.
 
 ## Costs

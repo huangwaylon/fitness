@@ -79,6 +79,12 @@ export class IslandLog extends DurableObject<Env> {
     return this.core.reads();
   }
 
+  /** Today's rows written against the Free plan's (log.ts writes): the money's import asks before each chunk. */
+  writes(): ReturnType<LogCore['writes']> {
+    this.usage();
+    return this.core.writes();
+  }
+
   /** The record's rows outside a `req` (storeObject.ts meter): counted, no event. */
   meter(m: { rw?: number; rr?: number }): void {
     this.core.meter(m);

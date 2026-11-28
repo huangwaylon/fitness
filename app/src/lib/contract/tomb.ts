@@ -21,7 +21,8 @@ const TOMB_KEEP_DAYS = 60;
 const DAY_MS = 86_400_000;
 /** An op on an empty slot whose item is older than this is too late (TOMB_KEEP_DAYS less AHEAD_MS). */
 const LATE_MS = TOMB_KEEP_DAYS * DAY_MS - AHEAD_MS;
-/** The types whose removals expire. */
+/** The types whose removals expire. Never the shared money's (`fin_*`, contract/finance.ts): its delete is the
+ *  payload's `del`, reversible and kept for good, so it is neither pruned nor ever a late op (tomb.test.ts). */
 const TYPES: readonly string[] = ['decor', 'board', 'food', 'food_repeat', 'food_recipe', 'food_custom', 'pack', 'wtask', 'todo', 'hike', 'room_save'];
 /** The types whose ids carry the time they were made at. */
 const ID_TIMED: readonly string[] = ['decor', 'board', 'pack', 'todo', 'hike'];

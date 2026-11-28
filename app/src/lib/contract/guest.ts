@@ -1,8 +1,10 @@
 // The guest (docs/design.md "The guest", docs/backend.md#the-guest): a third key, KEY_C, who plays the same app as the
 // members (the user, 2026-11-24). One rule applies to that key alone, kept by the record (relay/src/store.ts: what it
 // accepts from the guest and what its snapshot leaves out) and the demo (`?demo&as=G`): it never sees the members'
-// bodies (weight, body fat, BMI, lean mass, the InBody sheets and the からだ goals), nor writes a からだ goal. Every
-// other rule is everyone's alike (its ベル: a wallet that earns none, having no Health data: model/bells.ts). Pure.
+// bodies (weight, body fat, BMI, lean mass, the InBody sheets and the からだ goals), nor writes a からだ goal; and the
+// couple's shared money (every `fin_*` type, contract/finance.ts: 2026-11-28) is never the guest's to read or write at
+// all (the relay's gate refuses it before the record parses: relay/src/storeRoute.ts finGate). Every other rule is
+// everyone's alike (its ベル: a wallet that earns none, having no Health data: model/bells.ts). Pure.
 import { GOAL_FROM_KEY, isActivityMetric, isPersonId, PROFILE_PREF_KEYS, type EventRow, type SnapshotRows } from './api.ts';
 import { isRec } from './guards.ts';
 import type { Who } from '../types.ts';
@@ -15,11 +17,16 @@ type Rec = Record<string, unknown>;
  *  weight goal's start (`goalWeightFrom`): body data, never the guest's to read or write. */
 const BODY_GOAL_KEYS: readonly unknown[] = [...goalKeysOf('body'), GOAL_FROM_KEY];
 
+/** Whether an event type is the members' alone (never read or written by the guest): the shared money's, every type
+ *  named `fin_*` (by its prefix, so a type added later is covered before anyone lists it: guest.test.ts enumerates
+ *  EVENT_TYPES). @public (relay/src/store.ts) */
+export const membersOnly = (type: unknown): boolean => typeof type === 'string' && type.startsWith('fin_');
+
 /**
  * Whether the guest may write this event: anything a member may (the record's own rules then apply to it as to anyone)
- * but a からだ goal: the record answers `forbidden`. @public (relay/src/store.ts)
+ * but a からだ goal and the shared money: the record answers `forbidden`. @public (relay/src/store.ts)
  */
-export const guestMayWrite = (type: string, d: Rec): boolean => !(type === 'pref' && BODY_GOAL_KEYS.includes(d.key));
+export const guestMayWrite = (type: string, d: Rec): boolean => !membersOnly(type) && !(type === 'pref' && BODY_GOAL_KEYS.includes(d.key));
 
 /** A `pref` row's data: null for any other row, false for an unreadable one. */
 function prefData(r: EventRow): Rec | null | false {
@@ -60,8 +67,8 @@ function listenFor(me: Who, r: EventRow): EventRow | null {
 
 /**
  * The rows `me`'s phone gets (every `snapshot` and delta, relay/src/store.ts): everything, the others' English Study rows
- * as their summaries (listenFor); the guest's without the body data: only the activity metrics (steps, Move, Exercise,
- * Stand), no InBody sheet, no からだ goal. @public (relay/src/store.ts)
+ * as their summaries (listenFor); the guest's without the body data (only the activity metrics: steps, Move, Exercise,
+ * Stand; no InBody sheet, no からだ goal) and without the shared money (membersOnly). @public (relay/src/store.ts)
  */
 export function rowsFor(me: Who, rows: SnapshotRows): SnapshotRows {
   const guest = me === 'G';
@@ -69,7 +76,7 @@ export function rowsFor(me: Who, rows: SnapshotRows): SnapshotRows {
   const events: EventRow[] = [];
   for (const r of rows.events) {
     const d = prefData(r);
-    const out = (d === null || d === false || profileSeen(r, d)) && !(guest && bodyEvent(r, d)) ? listenFor(me, r) : null;
+    const out = (d === null || d === false || profileSeen(r, d)) && !(guest && (bodyEvent(r, d) || membersOnly(r[3]))) ? listenFor(me, r) : null;
     if (out !== r) changed = true;
     if (out) events.push(out);
   }

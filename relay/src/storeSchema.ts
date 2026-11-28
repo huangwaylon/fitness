@@ -5,6 +5,7 @@ import { inbodyOf } from '../../app/src/lib/contract/bodyEst.ts';
 import { isRec } from '../../app/src/lib/contract/guards.ts';
 import { IMG_TABLE } from './img.ts';
 import { LEDGER_TABLES } from './ledger.ts';
+import { FIN_TABLES } from './finance.ts';
 import { addDetCols, dropOsmCols, PLACES_TABLES } from './places.ts';
 import { SHARE_TABLES } from './share.ts';
 
@@ -123,6 +124,11 @@ export const MIGRATIONS: readonly ((sql: Sql) => void)[] = [
   // 13 (2026-11-24): 行きたい場所: each card's openings (places.ts place_opens: the details queue's order)
   (sql) => {
     for (const q of PLACES_TABLES) sql.exec(q);
+  },
+  // 14 (2026-11-28): the shared money (finance.ts): its append-only log and the pairing codes; two new tables, empty,
+  // and no index on `events` (its rows read by events_type_person and events_at)
+  (sql) => {
+    for (const q of FIN_TABLES) sql.exec(q);
   }
 ];
 export const SCHEMA_V = MIGRATIONS.length;

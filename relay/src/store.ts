@@ -17,6 +17,8 @@
 // - `since` is answered from the `at` index. A row that arrives out of `at` order (an admin `load` of rows older
 //   than the record's) is marked `late` with its arrival time, and a poll also returns the late rows that arrived after
 //   `since` (less LATE_MARGIN_MS), so no phone misses one.
+// - The shared money (`fin_*`, finance.ts): members only (the guest neither reads nor writes it, nor hears of its
+//   writes); each op kept also a row of the append-only `fin_log`, in its transaction.
 import { parseShortcut } from './parse.ts';
 import { auditNotes, auditRow } from './audit.ts';
 import { eventSlot } from '../../app/src/lib/contract/record.ts';
@@ -39,7 +41,9 @@ import { PLACES_OPS, verifyAdmin } from './sign.ts';
 import { errName } from './log.ts';
 import { isLogId, scrubMsg } from '../../app/src/lib/contract/log.ts';
 import { roleOfKey } from './auth.ts';
-import { guestMayWrite, rowsFor } from '../../app/src/lib/contract/guest.ts';
+import { guestMayWrite, membersOnly, rowsFor } from '../../app/src/lib/contract/guest.ts';
+import { finClean, isFinType } from '../../app/src/lib/contract/finance.ts';
+import { FinCore } from './finance.ts';
 import { saveName } from '../../app/src/lib/contract/roomSave.ts';
 import { isExpiringRemoval, lateOp, tombCut } from '../../app/src/lib/contract/tomb.ts';
 import { isShopEvent, rewardOf } from '../../app/src/lib/contract/shop.ts';
@@ -108,6 +112,8 @@ export class StoreCore {
   readonly places: PlacesCore;
   /** The stored ledger (ledger.ts): each person's parts, the ops' log. */
   readonly ledger: LedgerStore;
+  /** The shared money (finance.ts): its log, its snapshot, pairing, the nightly check, the import. */
+  readonly fin: FinCore;
 
   constructor(io0: StoreIO) {
     const base = (this.base = new StoreBase(io0));
@@ -126,7 +132,8 @@ export class StoreCore {
       }
     });
     this.shop = new StoreShop(base, this.ledger);
-    this.dumper = new StoreDump(base, this.books, this.shop, this.share, this.places, this.ledger);
+    this.fin = new FinCore(base);
+    this.dumper = new StoreDump(base, this.books, this.shop, this.share, this.places, this.ledger, this.fin);
   }
 
   /** The schema's version (the migrations run): `counts` says it. */
@@ -234,7 +241,7 @@ export class StoreCore {
   /** The admin `load {rows}`: rows that already have their `at` (a dump's), by the record's rules. */
   load(o: Rec): Record<string, unknown> {
     const rows = o.rows;
-    if (!isRec(rows) || !(['metrics', 'events', 'uploads', 'held', 'share', 'share_visit', 'places', 'ledger', 'ledger_log'] as const).every((k) => rows[k] === undefined || Array.isArray(rows[k]))) return { ok: false, error: 'bad_request' };
+    if (!isRec(rows) || !(['metrics', 'events', 'uploads', 'held', 'share', 'share_visit', 'places', 'ledger', 'ledger_log', 'fin_log'] as const).every((k) => rows[k] === undefined || Array.isArray(rows[k]))) return { ok: false, error: 'bad_request' };
     const r = this.dumper.import(rows as ImportRows);
     if (r.metrics + r.events) this.base.tellAll();
     return { ok: true, ...r, counts: this.dumper.counts() };
@@ -243,11 +250,15 @@ export class StoreCore {
   private route(body: unknown, bytes: number): Reply {
     if (!isRec(body)) return fail('bad_request');
     if (body.action === 'health' && body.key === undefined) return { ok: true, build: this.io.build ?? 'dev' };
+    // a pairing code redeemed by a device that has no key yet (finance.ts redeem: its own rate, its own refusals)
+    if (body.action === 'pairredeem') return this.fin.redeem(body);
     const me = roleOfKey(body.key, this.io.keys);
     if (!me) return fail('unauthorized');
     if (!this.underRateLimit(me, body.action === 'snapshot' && body.page !== undefined && body.after !== undefined)) return fail('busy');
     // the guest (docs/backend.md#the-guest): no Health data in, no audit to read (the uploads hold the members' bodies)
     if (me === 'G' && (body.action === 'ingest' || body.action === 'uploads')) return fail('forbidden');
+    // the shared money is the members' (contract/guest.ts membersOnly): no pairing code for the guest, no money's snapshot
+    if (me === 'G' && (body.action === 'paircode' || body.action === 'finlog' || (body.action === 'snapshot' && body.kinds !== undefined))) return fail('forbidden');
     if (isShareAction(body.action)) return this.shareAct(me, body.action, body);
     switch (body.action) {
       case 'ingest': return this.ingest(me as PersonId, body, bytes);
@@ -256,6 +267,8 @@ export class StoreCore {
       case 'snapshot': return this.snapshot(me, body);
       case 'uploads': return this.uploads(me);
       case 'whoami': return { ok: true, me, build: this.io.build ?? 'dev' };
+      case 'paircode': return this.fin.mint(me as PersonId);
+      case 'finlog': return this.fin.history(body);
       default: return fail('bad_request');
     }
   }
@@ -291,6 +304,8 @@ export class StoreCore {
     // the stored field's `seq` the phone holds (0: none; absent: an app from before 2026-11-25, by `since` alone)
     if (body.fseq !== undefined && !(Number.isInteger(body.fseq) && (body.fseq as number) >= 0)) return fail('bad_request');
     const fseq = body.fseq as number | undefined;
+    // the shared money's rows alone (`kinds: 'fin'`: the /money app; members only, route): no metrics, wallets or ledgers
+    if (body.kinds !== undefined && body.kinds !== 'fin') return fail('bad_request');
     // every row but, for the guest, the body data (contract/guest.ts rowsFor)
     // (and the かいがら: the relay's wallets, the phones' number since 2026-11-18, walletsFor; with a first fetch or
     // rows only, as a wallet moves only with a row kept, so a poll with nothing new still reads nothing; read before
@@ -309,6 +324,10 @@ export class StoreCore {
     // everything (an older build too: it starts over on any rev but its cache's)
     const cut = this.base.meta(TOMB_META);
     if (since && cut && since < cut) return { ...head(), rev: `${this.base.rev()}${TOMB_REV}`, rows: { metrics: [], events: [] } };
+    if (body.kinds === 'fin') {
+      const f = this.fin.rows(since, page?.after ?? null, page ? page.limit : null);
+      return { ...head(), rows: { metrics: [], events: f.events }, ...(f.next ? { next: f.next } : {}) };
+    }
     if (!page) {
       const rows = rowsSince(this.io.sql, since), w = wallets(rows);
       return { ...head(), rows: rowsFor(me, rows), ...w, ...ledgers() };
@@ -427,7 +446,8 @@ export class StoreCore {
   private event(me: Who, body: Rec): Reply {
     this.ledger.written.clear();
     const r = this.keep(me, body);
-    if (r.ok && r.at) this.io.notify({ what: 'event', who: me, at: r.at, rev: this.base.rev(), ...(this.sid ? { sid: this.sid } : {}), ...(calmType(body.type) ? { calm: true } : {}) });
+    // (the guest never hears of the money's: room.ts guestNotice)
+    if (r.ok && r.at) this.io.notify({ what: 'event', who: me, at: r.at, rev: this.base.rev(), ...(this.sid ? { sid: this.sid } : {}), ...(calmType(body.type) ? { calm: true } : {}) }, membersOnly(body.type) ? false : undefined);
     const { at: _at, ...reply } = r;
     const touched = walletsTouched(me, [body]);
     return { ...reply, ...(touched.size ? { wallets: this.shop.walletsFor(me, touched) } : {}), ...this.shop.ledgersMoved(touched, body.type === 'farm') };
@@ -445,7 +465,7 @@ export class StoreCore {
     const oneGroup = Array.isArray(list) && list.length <= GROUP_MAX && !!groupOf(list[0]) && list.every((e) => groupOf(e) === groupOf(list[0]));
     if (!Array.isArray(list) || !list.length || (list.length > EVENTS_MAX && !oneGroup)) return fail('bad_request');
     this.ledger.written.clear();
-    let last: string | null = null, calm = true;
+    let last: string | null = null, calm = true, forG = false;
     const results: (Reply & { id: string | null })[] = [];
     for (let i = 0; i < list.length; ) {
       const g = groupOf(list[i]);
@@ -455,13 +475,13 @@ export class StoreCore {
       const rs = g ? this.group(me, part) : [this.keepOne(me, part[0])];
       for (const [k, r] of rs.entries()) {
         const e = part[k];
-        if (r.ok && r.at) (last = r.at), (calm &&= isRec(e) && calmType(e.type));
+        if (r.ok && r.at) (last = r.at), (calm &&= isRec(e) && calmType(e.type)), (forG ||= !(isRec(e) && membersOnly(e.type)));
         const { at, ...rest } = r;
         results.push({ id: isRec(e) && typeof e.id === 'string' ? e.id : null, ...rest, ...(at ? { at } : {}) });
       }
       i = j;
     }
-    if (last) this.io.notify({ what: 'event', who: me, at: last, rev: this.base.rev(), ...(this.sid ? { sid: this.sid } : {}), ...(calm ? { calm: true } : {}) });
+    if (last) this.io.notify({ what: 'event', who: me, at: last, rev: this.base.rev(), ...(this.sid ? { sid: this.sid } : {}), ...(calm ? { calm: true } : {}) }, forG ? undefined : false);
     // (the wallets the batch may have moved, kept or refused: a phone keeps each one's highest `seq`)
     const touched = walletsTouched(me, list);
     return { ok: true, results, ...(touched.size ? { wallets: this.shop.walletsFor(me, touched) } : {}), ...this.shop.ledgersMoved(touched, list.some((e) => isRec(e) && e.type === 'farm')) };
@@ -535,7 +555,9 @@ export class StoreCore {
       // トレイル's hikes: the name and area one clean line, the notes clean (contract/hike.ts hikeClean)
       : body.type === 'hike' ? hikeClean(sent)
       // a saved room's name: one clean line (contract/roomSave.ts saveName)
-      : body.type === 'room_save' && typeof sent.name === 'string' ? { ...sent, name: saveName(sent.name) } : sent;
+      : body.type === 'room_save' && typeof sent.name === 'string' ? { ...sent, name: saveName(sent.name) }
+      // the shared money's texts: one clean line each (contract/finance.ts finClean)
+      : isFinType(body.type) ? finClean(body.type, sent) : sent;
     // the profile is locked (2026-11-15): no one sets or clears a sex or a birth date; a change
     // takes a code change (docs/backend.md `pref`). An older app drops it as any `forbidden`.
     if (body.type === 'pref' && PROFILE_PREF_KEYS.includes(data.key as string)) return fail('forbidden', 'profile locked');
@@ -653,10 +675,15 @@ export class StoreCore {
       const wasDecor = type === 'decor' && slot ? this.io.sql.exec<{ person: string; data: string }>('SELECT person, data FROM events WHERE slot = ?', slot).toArray()[0] ?? null : null;
       // the stored ledger (ledgerNote): a tally's or a give-back's growth is the kept row less the one it replaces
       const was = (type === 'tally' || type === 'tally_back') && slot ? this.books.slotTally(slot) : null;
+      // the money's log (finance.ts note): the slot's data before this op
+      const finWas = isFinType(type) && slot ? this.base.slotRow(slot)?.data ?? null : null;
+      // an imported entry stays marked through a phone's edit (`imp`: the import's alone, never a phone's to set or drop)
+      if (type === 'fin_e' && finWas !== null && this.base.rowRec(finWas, 'fin')?.imp === 1) kept = JSON.stringify({ ...data, imp: 1 });
       // (each ledger it moves seeded first, before this row is in: ledgerReady)
       const ledgers = type === 'tally' || type === 'tally_back' || type === 'farm' || isShopEvent(type) ? [me] : rewardTo;
       for (const who of ledgers) this.shop.ledgerReady(who);
       this.base.put(id, at, by, type, kept, slot, null);
+      if (isFinType(type)) this.fin.note(at, me, type, String(data.id), finWas, kept);
       if (farm) this.shop.farmNote(farm.f, at);
       if (type === 'tally' || type === 'tally_back' || type === 'farm' || type === 'sg_reward' || isShopEvent(type)) this.shop.ledgerNote(me, id, at, type, kept, was, rewardTo, farm);
       if (type === 'decor') this.books.decorNote(me, data, wasDecor);
@@ -722,6 +749,7 @@ export class StoreCore {
       now: this.io.now, backedUp, stamps: () => this.nightlyStamps(), setMeta: (k, v) => this.base.setMeta(k, v), ...hooks,
       jobs: {
         ledgercheck: () => ({ n: this.shop.ledgerCheck().drift.length }),
+        fincheck: () => ({ n: this.fin.check().drift ? 1 : 0 }),
         sharesweep: () => this.share.sweep(),
         islandprune: () => {
           const r = this.shop.islandPrune();
@@ -739,9 +767,10 @@ export class StoreCore {
     }, late);
   }
 
-  /** `/health/log`'s nightly ages (nightly.ts nightlyAges). */
-  nightlyStatus(): ReturnType<typeof nightlyAges> {
-    return nightlyAges(this.nightlyStamps(), this.io.now());
+  /** `/health/log`'s nightly ages (nightly.ts nightlyAges) and whether the last money check drifted (`finDrift` 1:
+   *  health.yml's alert). */
+  nightlyStatus(): ReturnType<typeof nightlyAges> & { finDrift: number } {
+    return { ...nightlyAges(this.nightlyStamps(), this.io.now()), finDrift: this.fin.lastDrift() };
   }
 
   /** The nightly jobs' meta rows: one range of meta's key. */

@@ -753,7 +753,11 @@ const ON_EVENT: Record<Exclude<EventType, RawEvent>, OnEvent> = {
         if (id === 'weight') p.goalWeightSet = localDateAt(at);
       }
     }
-  }
+  },
+  // the shared money (contract/finance.ts): nothing of the island's; read from the rows by its own model (lib/finance/)
+  fin_e() {},
+  fin_t() {},
+  fin_c() {}
 };
 
 /**
