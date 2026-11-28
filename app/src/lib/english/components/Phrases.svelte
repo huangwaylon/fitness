@@ -1,7 +1,8 @@
 <script lang="ts">
   // フレーズ (docs/english.md "フレーズ"): English Study's second tab, the deck (deck.ts) one card at a time, SET a set.
   // The card is PhraseCard's: its head the clip's thumbnail with 1/5 and show · title; on its back a say-it hint, then
-  // ☆ (ui/Icon) 復習に入れる beside 次へ ›. After SET: 「5枚見たよ · これまで N」, もう5枚 / ホームへ.
+  // 次へ ›. After SET: 「5枚見たよ · これまで N」, もう5枚 / ホームへ. (Its ☆ 復習に入れる fed the self-rated
+  // フレーズの復習, retired for 聞けたセリフ on 2026-11-28: shelf.ts.)
   // Never a score. The place is this phone's (deck.ts), so the tab comes back to the same card, face down.
   import { onMount, untrack } from 'svelte';
   import LoadError from '#lib/components/ui/LoadError.svelte';
@@ -15,7 +16,6 @@
   import { reloadOnRepeat } from '#lib/ui-state/reload.ts';
   import { LIBRARY, loadShard, metaById } from '../data.ts';
   import { cursorOf, heldOf, keyOf, newSet, nextShard, onCard, ordered, passed, revealed, saveCursor, SET, shardAt, type Cursor } from '../deck.ts';
-  import { mineOf, saved, saveMine, unsaved } from '../phrase-review.ts';
   import { keyWordsOf, markedIn, splitUse } from '../phrases.ts';
   import { dailyOf, studyOf } from '../progress.ts';
   import { skipsOf } from '../prefs.ts';
@@ -40,7 +40,6 @@
   let cards = $state.raw<PhraseEntry[]>([]);
   let status = $state<'loading' | 'ok' | 'failed'>('loading');
   let fails = 0;
-  let review = $state.raw(untrack(() => mineOf(me)));
 
   const ended = $derived(c.set.length >= SET);
   const card = $derived(status === 'ok' && !ended ? cards[c.i] : undefined);
@@ -49,7 +48,6 @@
     const m = metaById(card[0]), u = splitUse(card[4]);
     return { k: keyOf(card), m, ja: u.ja, en: markedIn(u.en, keyWordsOf(card[5])), mean: card[6], line: card[5], seg: [card[2], card[3]] as const };
   });
-  const isSaved = $derived(!!view && !!review.k?.[view.k]);
 
   function move(to: Cursor): void {
     c = to;
@@ -102,13 +100,6 @@
     move(newSet(c));
     void settle();
   }
-  function save(): void {
-    if (!view) return;
-    const was = mineOf(me);
-    review = was.k?.[view.k] ? unsaved(was, view.k) : saved(was, view.k, today);
-    saveMine(me, review);
-    if (review.k?.[view.k]) count('act:english.deck.save');
-  }
 </script>
 
 <section class="screen" data-en-phrases-tab>
@@ -133,10 +124,7 @@
         {/snippet}
         {#snippet actions()}
           <p class="say">{s('deckSay')}</p>
-          <div class="pair save">
-            <button type="button" class="btn paper" data-sfx="tick" data-en-deck-save aria-pressed={isSaved} onclick={save}><Icon name="star" size={20} soft={isSaved} />{isSaved ? s('deckSaved') : s('deckSave')}</button>
-            <button type="button" class="btn" data-sfx="page" data-en-deck-next onclick={next}>{s('next')}<Icon name="chevron-right" /></button>
-          </div>
+          <button type="button" class="btn" data-sfx="page" data-en-deck-next onclick={next}>{s('next')}<Icon name="chevron-right" /></button>
         {/snippet}
       </PhraseCard>
     {:else if status === 'failed'}
@@ -162,7 +150,6 @@
   .btn { margin: 0; }
   .say { font-size: var(--fs-s); color: var(--text-soft); }
   .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 2px; }
-  .pair.save { grid-template-columns: 3fr 2fr; }
   .pair .btn { white-space: nowrap; padding-inline: 8px; }
   .done { font-weight: 700; text-align: center; padding: 8px 0; }
   .wait { color: var(--text-soft); text-align: center; padding: 24px 0; }

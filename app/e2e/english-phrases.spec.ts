@@ -1,9 +1,8 @@
 // English Study's フレーズ tab and library (docs/english.md "The page"): the deck's cards, one embed a set, a deck
-// file that fails, フレーズの復習 on home, the library 20 at a time and 場面で選ぶ. Helpers: e2e/english.ts.
+// file that fails, the library 20 at a time and 場面で選ぶ. Helpers: e2e/english.ts.
 import { expect, test, type Page } from './fixtures.ts';
 import { fakeYoutube, ytCommands } from './youtube.ts';
 import { PLAN, cardAt, from, sheet, lesson, open, start, tabOf, deckCard, back, shownCard } from './english.ts';
-import { waitress } from '../src/lib/english/clips/waitress.ts';
 import { CLIPS } from '../src/lib/english/clips/index.ts';
 import { shownOf } from '../src/lib/english/collections.ts';
 import { metaOf } from '../src/lib/english/catalog.ts';
@@ -65,14 +64,14 @@ test('フレーズ: the tab bar on ホーム and フレーズ only; a card face 
 
 test.describe('393×659', () => {
   test.use({ viewport: { width: 393, height: 659 }, hasTouch: true });
-  test('フレーズ at 393×659: once turned, ☆ 復習に入れる and 次へ come up above the tab bar (the player pushed them under it)', async ({ page }) => {
+  test('フレーズ at 393×659: once turned, 次へ comes up above the tab bar (the player pushed it under it)', async ({ page }) => {
     await fakeYoutube(page);
     await open(page);
     await tabOf(page, 'phrases').tap();
     await deckCard(page).locator('[data-en-deck-show]').tap();
     await expect(deckCard(page)).toHaveAttribute('data-face', 'back');
     const bar = (await sheet(page).locator('[role="tablist"]').boundingBox())!;
-    for (const b of ['[data-en-deck-save]', '[data-en-deck-next]'])
+    for (const b of ['[data-en-deck-next]'])
       await expect.poll(async () => { const r = (await deckCard(page).locator(b).boundingBox())!; return r.y + r.height <= bar.y; }, { message: b }).toBe(true);
   });
 });
@@ -174,15 +173,9 @@ test('フレーズ: one embed a set — 5 cards, one frame throughout, each next
   await expect.poll(() => live(page)).toEqual(base);
 });
 
-test('フレーズ: the same card face down after a lesson; ☆ 復習に入れる saves it apart from its schedule, home’s review has a saved one the next day; 5 a set, never two of one clip, then 5枚見たよ with もう5枚 / ホームへ', async ({ page }) => {
+test('フレーズ: the same card face down after a lesson; 5 a set, never two of one clip, then 5枚見たよ with もう5枚 / ホームへ', async ({ page }) => {
   await fakeYoutube(page, { dur: 3000 });
-  // a phrase saved yesterday, never met: due today on home; one whose question is gone since: out of the list
-  const q = waitress.questions.find((x) => !x.retired && x.use && x.line)!;
-  await page.addInitScript((k) => {
-    if (localStorage.getItem('island.english.phrases') === null) localStorage.setItem('island.english.phrases', JSON.stringify({ A: { s: {}, k: { [k]: '2026-11-03', 'waitress/zzgone': '2026-11-03' } } }));
-  }, `waitress/${q.id}`);
   await open(page);
-  await expect(sheet(page).locator('[data-en-pr]')).toHaveAttribute('data-en-pr', `waitress/${q.id}`);
   await tabOf(page, 'phrases').click();
   const card = deckCard(page);
   const first = await shownCard(page);
@@ -196,17 +189,7 @@ test('フレーズ: the same card face down after a lesson; ☆ 復習に入れ�
   await expect(card).toHaveAttribute('data-en-deck', first.k);
   await expect(card).toHaveAttribute('data-face', 'front');
   await expect(page.locator('[data-yt-frame]')).toHaveCount(0);
-  // ☆: saved (today), tapped again: out; its schedule (`s`) never touched
   await card.locator('[data-en-deck-show]').click();
-  const star = card.locator('[data-en-deck-save]');
-  const mine = () => page.evaluate(() => JSON.parse(localStorage.getItem('island.english.phrases') ?? '{}').A);
-  await star.click();
-  await expect(star).toHaveAttribute('aria-pressed', 'true');
-  await expect(star).toHaveText('復習に入れたよ');
-  expect(await mine()).toEqual({ s: {}, k: { [`waitress/${q.id}`]: '2026-11-03', [first.k]: '2026-11-04' } });
-  await star.click();
-  await expect(star).toHaveText('復習に入れる');
-  expect((await mine()).k).toEqual({ [`waitress/${q.id}`]: '2026-11-03' });
   // the set: 5 cards, no two of one clip
   const keys = [first.k];
   await card.locator('[data-en-deck-next]').click();
@@ -229,44 +212,6 @@ test('フレーズ: the same card face down after a lesson; ☆ 復習に入れ�
   await end.locator('[data-en-deck-more]').click();
   await expect(card).toContainText('1/5');
   expect(keys).not.toContain((await shownCard(page)).k);
-});
-
-test('フレーズの復習: yesterday’s phrases above today’s clip, the Japanese and the clip’s line on a tap, its segment played; 覚えた / もう一度 only space them; 今日はスキップ for today', async ({ page }) => {
-  await fakeYoutube(page);
-  // yesterday's finished play of waitress, two choice questions with phrases met (the pinned day is 2026-11-04)
-  const qs = waitress.questions.filter((q) => !q.retired && q.line && q.use && q.a !== undefined).slice(0, 2); // choice items: the seeded answers are [id, 1, a, 0]
-  await page.addInitScript((r) => {
-    if (localStorage.getItem('island-demo.events')) return;
-    const at = Date.parse('2026-11-03T20:00:00+09:00');
-    const data = { d: '2026-11-03', g: 'tvseed1', gm: 'tv', u: 'waitress', lv: 7, n: 1, ms: 60000, f: 1, r };
-    localStorage.setItem('island-demo.events', JSON.stringify({ day: '2026-11-04', events: [{ id: 'seed-listen', type: 'listen', data, queuedAt: at, tries: 0, nextAt: 0, ackedAt: at, person: 'A' }] }));
-  }, qs.map((q) => [q.id, 1, q.a, 0]));
-  await open(page);
-  const card = sheet(page).locator('[data-en-pr]');
-  // never shown before, met the same day: in key order
-  const order = qs.toSorted((a, b) => (a.id < b.id ? -1 : 1));
-  await expect(card).toHaveAttribute('data-en-pr', `waitress/${order[0].id}`);
-  await expect(card).toContainText('1/2');
-  await expect(card.locator('.en')).toHaveText(splitUse(order[0].use).en);
-  await expect(sheet(page).locator('[data-en-today] [data-en-start]')).toBeVisible();
-  await card.locator('[data-en-pr-show]').click();
-  await expect(card.locator('[data-en-pr-ja]')).toHaveText(splitUse(order[0].use).ja);
-  await expect(card.locator('.line')).toHaveText(order[0].line!.replace(/\*/g, ''));
-  await expect(card.locator('[data-yt-state]')).toHaveAttribute('data-yt-state', 'ready');
-  const n0 = (await ytCommands(page)).length;
-  await card.locator('[data-en-pr-hear]').click();
-  await expect.poll(async () => (await from(page, n0, 'seekTo'))[0]?.[1]).toEqual([order[0].seg[0], true]);
-  expect(await card.evaluate((el) => /不正解|間違|×|%|ざんねん/.test(el.textContent ?? ''))).toBe(false);
-  await card.locator('[data-en-pr-kept]').click();
-  await expect(card).toHaveAttribute('data-en-pr', `waitress/${order[1].id}`);
-  await card.locator('[data-en-pr-skip]').click();
-  await expect(card).toHaveCount(0);
-  const kept = await page.evaluate(() => JSON.parse(localStorage.getItem('island.english.phrases') ?? '{}').A);
-  expect(kept).toEqual({ s: { [`waitress/${order[0].id}`]: ['2026-11-04', 1] }, day: ['2026-11-04', 3] });
-  // skipped for today: none after a reload
-  await open(page);
-  await expect(sheet(page).locator('[data-en-today]')).toBeVisible();
-  await expect(sheet(page).locator('[data-en-pr]')).toHaveCount(0);
 });
 
 test('the library: すべて 20 at a time with もっと見る, one chip row of the shows only, a lesson opened there goes back to it; a play left part-way first, 途中', async ({ page }) => {

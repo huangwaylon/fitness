@@ -1,6 +1,5 @@
 // R4 REVIEW 2026-11-18: keep 3, rewrite 10, retire 1, new 1, ctx 3, tx 9, qa 7
 // A2 REVIEW 2026-11-17: keep 9, rewrite 4, retire 5, new 1
-// A2 RAMP: one of the plan's first 30; detail/gist keys may reuse a heard word (clips.test RAMP, review 11-24 #8)
 // “Rachel Needs a Job | Friends” (the official Friends channel, Best of Season 3): Rachel asks her friends to help mail
 // her resumes, snaps at Chandler's jokes and Ross's reassurance, decides to call Gunther and take back her notice, and
 // Joey walks in with good news at the worst moment.

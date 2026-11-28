@@ -136,6 +136,24 @@ export interface JaTranscriptFile {
   lines: readonly Required<Pick<TranscriptLine, 't' | 'ja'>>[];
 }
 
+/** A line of 聞き取りチャレンジ (docs/english.md "Catch the line"; catch-build.ts, from a live question's line and the
+ *  clip's auto captions' word times): 3–6 chunks said within 6 s. */
+export interface CatchLine {
+  /** The question whose line it is (a shelf card's key: `clip/q`). */
+  q: string;
+  /** The line alone, s into the video (the player plays 0.4 s past its end). */
+  seg: readonly [number, number];
+  /** Its chunks, in the order said. */
+  tiles: readonly string[];
+  /** Each chunk's start, s into the video (the karaoke replay lights it then). */
+  t: readonly number[];
+  /** Its Japanese (the one 「…」 the question's `said` quotes). */
+  ja: string;
+  /** 1–2 distractor chunks. */
+  x: readonly string[];
+}
+
 /** A clip's bank as the build writes it (vite.config.ts english-data, catalog.ts bankOf): the clip (a retired
- *  question cut to its phrase), and its scenes (and beats) and transcript lines when it has the files. */
-export type Bank = Clip & { scenes?: readonly Scene[]; beats?: readonly Beat[]; lines?: readonly TranscriptLine[] };
+ *  question cut to its phrase), and its scenes (and beats) and transcript lines when it has the files, and its catch
+ *  lines when its captions have any. */
+export type Bank = Clip & { scenes?: readonly Scene[]; beats?: readonly Beat[]; lines?: readonly TranscriptLine[]; catch?: readonly CatchLine[] };

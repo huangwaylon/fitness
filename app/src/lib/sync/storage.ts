@@ -171,10 +171,10 @@ export const DEVICE = {
   englishCcSize: 'island.english.ccSize',
   /** localStorage: `true` | `false`: 体重's 〰 傾向線 on this phone (components/health/prefs.ts; on by default). */
   weightLine: 'island.health.weightLine',
-  /** localStorage: `{[who]: {s: {[clip/id]: [day, step]}, k?: {[clip/id]: day}, day?: [day, n]}}`: English Study's
-   *  フレーズの復習 on this phone (lib/english/phrase-review.ts): each phrase's last showing and step, the ones フレーズ's ☆
-   *  saved (the day), and today's count. */
-  englishPhrases: 'island.english.phrases',
+  /** localStorage: `{[who]: {lines: {[clip/q]: {video, title, line, first, last?, step, heard?}}, day?: [day, n]}}`:
+   *  English Study's 聞けたセリフ on this phone (lib/english/shelf.ts): each line caught in 聞き取りチャレンジ as caught, how,
+   *  its step back and its first 聞けた; today's returns. */
+  englishCaught: 'island.english.caught',
   /** localStorage: `{[who]: {r, k, i, set, n, rev?}}`: where English Study's フレーズ deck is on this phone
    *  (lib/english/deck.ts): the round, the shard, the card, this set's clips, the cards revealed so far. */
   englishDeck: 'island.english.deck',
@@ -291,12 +291,13 @@ let listener: ((p: StorageProblem) => void) | null = null;
 
 /** localStorage keys of what's gone: ききみみ's (its levels, timer, games copy, ずかん, story, stages… and its mic's),
  *  retired with it on 2026-11-16; ボット's メニュー tab's last status (its row is 定期処理's since 2026-11-24); the live
- *  socket's ticketless fallback (2026-11-24); the やること list a close left (one list since 2026-11-25). Each load
+ *  socket's ticketless fallback (2026-11-24); the やること list a close left (one list since 2026-11-25); English Study's
+ *  self-rated フレーズの復習 (聞けたセリフ since 2026-11-28, lib/english/shelf.ts). Each load
  *  removes them (routes/+layout.ts; nothing once they're gone). */
 const RETIRED = ['island.kikimimiLv', 'island.kikimimiTimer', 'island.kikimimiGames', 'island.kikimimiRecent', 'island.kikiZukan',
   'island.kikiWeekGoal', 'island.kikiSame', 'island.kikiJa', 'island.kikiStory', 'island.kikiOnboarded', 'island.kikiStage',
   'island.kikiLandmarks', 'island.kikiMada', 'island.kikiTiles', 'island.mic', 'island.micProbe', 'island.botsLast.kalori',
-  'island.liveTicket', 'island.todoLeft'] as const;
+  'island.liveTicket', 'island.todoLeft', 'island.english.phrases'] as const;
 
 /** The retired keys removed from this phone's localStorage (none there: nothing happens). */
 export function clearRetired(kv: KV | null = local): void {

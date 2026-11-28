@@ -2,7 +2,6 @@
 // f3 starts after “themselves”; p2's said had 「ううん」 for a No that means 座ってない; i1 line no longer quotes “Phoebe”)
 // R4 REVIEW 2026-11-18: keep 6, rewrite 4, retire 5, new 2, ctx 4, tx 8, qa 6
 // A2 REVIEW 2026-11-17: keep 5, rewrite 9, retire 4, new 1
-// A2 RAMP: one of the plan's first 30; detail/gist keys may reuse a heard word (clips.test RAMP, review 11-24 #8)
 // “Phoebe the Stockbroker | Friends” (the official Friends channel, Best of Season 6): a friend reads out a list of
 // errands and gets teased, then Phoebe learns she has lost millions on the market and talks herself into a heart attack.
 // Segments from the captions, words from whisper (2026-11-16). Untested on purpose: whose list it is (backstory),

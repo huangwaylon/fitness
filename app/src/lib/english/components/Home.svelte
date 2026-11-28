@@ -1,11 +1,11 @@
 <script lang="ts">
-  // English Study's home (docs/english.md "The page"): three cards, under フレーズの復習's when phrases are due
-  // (PhraseReview). 今日の動画: the first clip in the shared plan
+  // English Study's home (docs/english.md "The page"): three cards, under 聞けたセリフ's returns when lines are back
+  // (ShelfReturn). 今日の動画: the first clip in the shared plan
   // (plan.ts: the library's order) neither finished nor skipped (progress.ts dailyOf: once today's is finished, the
   // next; 別の動画にする shows the next and skips this one for 14
   // days: prefs.ts), its thumbnail, one meta line and
   // the one button (始める, 続きから, もう一度（新しい質問）). 今週 (WeekProgress; これまで N本 › the history level), then
-  // これまでの記録's own row (always: History says when it's empty). ライブラリ: at most five rows (a play left
+  // これまでの記録's and 聞けたセリフ's rows (always: each says when it's empty). ライブラリ: at most five rows (a play left
   // part-way, a finished clip offered again at most once a week (progress.ts reviewOf), the next clips in order, すべて見る ›
   // the library level). ⚙: 難しめ and 報告した内容. After 7+ days away, once: おかえり. Today's bank (and the
   // next, part-way and offered ones', and フレーズ's deck file) is fetched ahead while idle.
@@ -16,7 +16,7 @@
   import Icon from '#lib/components/ui/Icon.svelte';
   import WeekProgress from './WeekProgress.svelte';
   import ClipRow from './ClipRow.svelte';
-  import PhraseReview from './PhraseReview.svelte';
+  import ShelfReturn from './ShelfReturn.svelte';
   import Thumb from './Thumb.svelte';
   import { week } from '#lib/store/week.svelte.ts';
   import { localDateAt } from '#lib/time/dates.ts';
@@ -25,12 +25,13 @@
   import { backShown, loadSaved, markBack, partWay, partWays } from '../session.ts';
   import { skip, skipsOf } from '../prefs.ts';
   import { cursorOf, shardAt } from '../deck.ts';
+  import { heardCount, shelfOf } from '../shelf.ts';
   import { clock, s } from '../i18n.ts';
   import { online } from '#lib/ui-state/online.svelte.ts';
   import type { ClipMeta as Clip } from '../catalog.ts';
   import type { Who } from '#lib/types.ts';
 
-  let { onopen, onlibrary, onhistory, onsettings, onclose }: { onopen: (id: string) => void; onlibrary: () => void; onhistory: () => void; onsettings: () => void; onclose: () => void } = $props();
+  let { onopen, onlibrary, onhistory, onshelf, onsettings, onclose }: { onopen: (id: string) => void; onlibrary: () => void; onhistory: () => void; onshelf: () => void; onsettings: () => void; onclose: () => void } = $props();
 
   const m = $derived(week.model);
   const me = $derived<Who>(m?.me ?? 'A');
@@ -97,6 +98,8 @@
     // current deck file ahead, once home is idle (their lessons and the tab then open with no wait, offline too)
     prefetch([shown, upNext[0], part?.clip, review], shardAt(me, cursorOf(me)));
   });
+  /** 聞けたセリフ's count (lines heard on a return: it only grows). */
+  const heard = untrack(() => heardCount(shelfOf(me)));
   const meta = (c: Clip) => [c.show, s(`band.${c.band}`), ...c.tags.slice(0, 1), s('qs', { n: c.n })].join(' · ');
 </script>
 
@@ -108,7 +111,7 @@
   </div>
   <div class="body sheet-scroll">
     {#if back}<p class="back" data-en-back><Phrases text={s('back')} /></p>{/if}
-    <PhraseReview {rows} {me} {today} />
+    {#key me}<ShelfReturn {me} {today} {onshelf} />{/key}
     <article class="card pad today" data-en-today={shown.id}>
       <Thumb hero video={shown.video} show={shown.show} len={clock(shown.dur)} />
       <p class="kicker">{allDone && !other ? s('allDone') : doneToday && !other ? s('todayDone') : s('today')}{#if doneToday && !other && !allDone}<Icon name="check" size={14} stroke={2.6} />{/if}</p>
@@ -124,6 +127,11 @@
     <div class="card dense hist">
       <button type="button" class="row go" data-sfx="page" data-en-hist-entry onclick={onhistory}>
         <span class="txt"><span class="name">{s('history')}</span><span class="sub">{s('historySub')}</span></span>
+        <Icon name="chevron-right" size={22} stroke={2.6} />
+      </button>
+      <button type="button" class="row go" data-sfx="page" data-en-shelf-entry onclick={onshelf}>
+        <span class="txt"><span class="name">{s('shelfTitle')}</span><span class="sub">{s('shelfRowSub')}</span></span>
+        <span class="cnt" data-en-shelf-n>{heard}</span>
         <Icon name="chevron-right" size={22} stroke={2.6} />
       </button>
     </div>
@@ -161,5 +169,6 @@
   .go .txt { flex: 1; min-width: 0; display: grid; gap: 1px; }
   .go .name { font: 700 var(--fs-body)/1.3 var(--font-ui); }
   .go .sub { font-size: var(--fs-s); color: var(--text-soft); }
+  .cnt { font: 700 var(--fs-talk)/1 var(--font-num); font-variant-numeric: tabular-nums; color: var(--c-ink); }
   .kicker :global(svg) { margin-left: 4px; vertical-align: -2px; }
 </style>

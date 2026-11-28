@@ -1,16 +1,13 @@
 // A play's questions, drawn from the clip's bank (docs/english.md "Content", question-framework §3.3), pure and seeded:
-// the same draw comes back on a resume or the other phone. 5 items a play (a lesson ≈ 5 min, the A2 learners' 4–5 active
-// minutes, 11-28; room for the line-catch step beside them): a gist (a set-up
+// the same draw comes back on a resume or the other phone. 6 items under 90 s, 7 under 180 s, else 8: a gist (a set-up
 // one, not one giving the ending away), then the best set of the rest (a bounded search): unseen items before
 // any repeat, then the group quotas (form-heavy for an A2 learner; play 2 and later trade a form item for an
 // interpretive one), then a context item (`ctx`), then spread over the clip (most of its parts, no two on much the
 // same lines), new points first, a B1 opening; then an easy opening (a B1 listening item, detail, number or who, among the first three
 // lines; else never a dictation) and the rest in clip order, the gist too (the A2 learners, 11-16..22, got half the gists and a third of the
 // pragma items played first, 85 % of the detail and every number item). One gist a play (a second only to fill a small bank).
-// The C levels only with `harder` (⚙ 難しめ): then ≤ 1 C1 and ≤ 1 C2 a play, a C2 wanted while one is unseen. Never two
-// items on one point, nor one that gives another away (`reveals`); ≤ 1 dictation, predict, and pragma or humor (one of
-// the two). The plan's first EARLY clips (`early`) never draw pragma, humor, marker, predict nor a C level: the owner
-// 11-28 found the questions "vague and hard to answer correctly" (first try: pragma ~33 %, chance with 3 choices).
+// At most one C1 a play. The native tier (C2) only with `harder` (⚙ 難しめ): then ≤ 1 a play, wanted while one
+// is unseen. Never two items on one point, nor one that gives another away (`reveals`); ≤ 1 dictation, humor, predict, pragma.
 import type { EventRow } from '#lib/contract/api.ts';
 import { listenOf } from '#lib/contract/listen.ts';
 import { seeded, shuffle } from '#lib/random.ts';
@@ -25,12 +22,6 @@ export const GROUP_OF: Record<Skill, Group> = {
 
 /** Skills a play takes at most one of: a pragma item too (the A2 learners got a third of them first time, 11-16..22). */
 const ONE = new Set<Skill>(['dict', 'humor', 'predict', 'pragma']);
-/** Skills a play takes one of between them (both read a scene's subtext, the hardest for an A2 ear). */
-const SUBTEXT = new Set<Skill>(['pragma', 'humor']);
-/** The plan's first clips that draw only the plainer items (`early`). */
-export const EARLY = 60;
-/** Skills an `early` draw never takes. */
-const NOT_EARLY = new Set<Skill>(['pragma', 'humor', 'marker', 'predict']);
 
 /** An item's past: the play it was last seen in (1-based) and whether it was right first then. */
 export type History = Record<string, { play: number; ok: boolean }>;
@@ -48,11 +39,11 @@ export function historyOf(rows: readonly EventRow[], me: Who, clip: string): { p
   return { plays, seen };
 }
 
-/** How many items a play asks, whatever the clip's length. */
-export const DRAW_SIZE = 5;
+/** How many items a play asks. */
+export const drawSize = (dur: number): number => (dur < 90 ? 6 : dur < 180 ? 7 : 8);
 
-/** L / I / F a play takes after the gist: play 1, then play 2 and later (an interpretive item for a form one). */
-const QUOTAS: [number, number, number][] = [[2, 1, 1], [1, 2, 1]];
+/** L / I / F a play takes (after the gist). */
+const QUOTAS: Record<number, [number, number, number][]> = { 6: [[2, 1, 2], [2, 2, 1]], 7: [[2, 1, 3], [2, 2, 2]], 8: [[3, 1, 3], [2, 2, 3]] };
 
 /** The seed of `who`'s play of `clip`. */
 export const seedOf = (who: Who, clip: string, play: number): string => `${who}:${clip}:${play}`;
@@ -69,11 +60,9 @@ function clash(a: Question, b: Question): boolean {
  * The questions of play `play` (1-based) of `clip`, given what was seen before (`seen`), drawn with `seed`. Fewer
  * than the size only when the bank has fewer that fit together.
  */
-export function draw(clip: Clip, seen: History, play: number, seed: string, opts: { harder?: boolean; early?: boolean } = {}): Question[] {
-  const harder = !!opts.harder && !opts.early;
-  const cLevel = (q: Question) => q.level === 'C1' || q.level === 'C2';
-  const all = clip.questions.filter((q) => !q.retired && (harder || !cLevel(q)) && !(opts.early && NOT_EARLY.has(q.skill)));
-  const n = Math.min(DRAW_SIZE, all.length);
+export function draw(clip: Clip, seen: History, play: number, seed: string, opts: { harder?: boolean } = {}): Question[] {
+  const all = clip.questions.filter((q) => !q.retired);
+  const n = Math.min(drawSize(clip.dur), all.length);
   const rand = seeded(seed);
   const r = new Map(all.map((q) => [q.id, rand()]));
   const lastPoints = new Set(all.filter((q) => seen[q.id]?.play === play - 1).map((q) => q.point));
@@ -92,7 +81,7 @@ export function draw(clip: Clip, seen: History, play: number, seed: string, opts
     (seen[a.id] ? 1 : 0) - (seen[b.id] ? 1 : 0) || (seen[a.id]?.play ?? 0) - (seen[b.id]?.play ?? 0) || setup(a) - setup(b) ||
     (a.reveals?.length ?? 0) - (b.reveals?.length ?? 0) || r.get(a.id)! - r.get(b.id)!);
   const head = gists[0];
-  const quota = QUOTAS[play === 1 ? 0 : 1];
+  const quota = QUOTAS[drawSize(clip.dur)][play === 1 ? 0 : 1];
   const unseen = (q: Question) => !seen[q.id];
   const missed = (q: Question) => play >= 3 && !!seen[q.id] && !seen[q.id].ok;
   /** An item's cost (lower first): unseen on a new point, unseen, (from play 3) missed first time, then seen longest
@@ -103,9 +92,9 @@ export function draw(clip: Clip, seen: History, play: number, seed: string, opts
   const pool = all.filter((q) => q !== head && !(head && clash(head, q))).sort((a, b) => cost(a) - cost(b));
   const k = n - (head ? 1 : 0);
   // the native tier (native-level.md §5) only with `harder`: ≤ 1 a play, wanted while one is unseen
-  const c2Max = harder ? 1 : 0;
+  const c2Max = opts.harder ? 1 : 0;
   const c2Counts = (q: Question) => q.level === 'C2' && unseen(q);
-  const wantC2 = harder && pool.some(c2Counts);
+  const wantC2 = !!opts.harder && pool.some(c2Counts);
   // what's left from each place in the pool: unseen items, an unseen C2 item, a ctx item, and each group's items
   const after = pool.map((_, i) => {
     const left = pool.slice(i);
@@ -116,7 +105,7 @@ export function draw(clip: Clip, seen: History, play: number, seed: string, opts
   // the fewest past two of a skill (or past one gist); a wanted C2; the most unseen (a repeat only when too few unseen
   // fit); the quotas met (short, a group borrows); a context item (`ctx`) when one fits; the spread (bins hit less
   // `near` pairs: the whole clip, not one scene); the least cost. Always, never relaxed: one item a point, no reveals or
-  // continuation clash, ≤ 1 dict and predict, ≤ 1 pragma or humor, ≤ 1 C1, the C2 limit.
+  // continuation clash, ≤ 1 dict, humor, predict and pragma, ≤ 1 C1, the C2 limit.
   type Score = [number, number, number, number, number, number, number, number];
   const better = (a: Score, b: Score) => {
     for (let i = 0; i < 8; i++) if (a[i] !== b[i]) return i < 7 ? a[i] > b[i] : a[i] < b[i];
@@ -133,7 +122,7 @@ export function draw(clip: Clip, seen: History, play: number, seed: string, opts
   const score = (): Score => [chosen.length, -over, wantC2 && c2Got > 0 ? 1 : 0, fresh, -short(), ctx > 0 ? 1 : 0, hit - pairs, total];
   const fits = (q: Question, perSkill = false) =>
     !chosen.includes(q) && !chosen.some((c) => clash(c, q)) &&
-    !(ONE.has(q.skill) && (skills.get(q.skill) ?? 0) >= 1) && !(SUBTEXT.has(q.skill) && chosen.some((c) => SUBTEXT.has(c.skill))) &&
+    !(ONE.has(q.skill) && (skills.get(q.skill) ?? 0) >= 1) &&
     !(perSkill && (skills.get(q.skill) ?? 0) >= 2) && !(q.level === 'C1' && c1 >= 1) && !(q.level === 'C2' && c2 >= c2Max);
   /** Adds an item; returns its undo. */
   const add = (q: Question) => {

@@ -1,8 +1,7 @@
 // English Study's shared plan (docs/english.md "The plan"): the one order every phone offers the clips in, today's clip
 // being the first in it I've neither finished nor skipped, so both members meet the same clip most days without either
 // seeing the other's. A slow ramp (each clip's ease: its wpm and how little of its bank is B1, as ranks in the
-// library; for the A1–A2 learner, slow and plain first), the openers before them (a short clip of a show they know,
-// not fast: the owner 11-28 left after a week, "it wasn't fun and engaging enough") and the `late` clips (a bank's `// A2 LATE:` line) after the
+// library; for the A1–A2 learner, slow and plain first) and the `late` clips (a bank's `// A2 LATE:` line) after the
 // others, with variety (never three of a show or of a situation in a row where a near clip avoids it; the shows at about their
 // share). plan-order.ts keeps the order once written (scripts/english-plan.ts), so a clip added later goes after the
 // planned ones and nobody's today jumps back; the build orders the library's index by planOf (vite.config.ts
@@ -10,15 +9,10 @@
 import { PLANNED } from './plan-order.ts';
 import type { Clip } from './types.ts';
 
-type PlanClip = Pick<Clip, 'id' | 'wpm' | 'dur' | 'band' | 'tags' | 'show' | 'questions'>;
+type PlanClip = Pick<Clip, 'id' | 'wpm' | 'dur' | 'tags' | 'show' | 'questions'>;
 
 /** How far ahead of the ramp a clip may come for variety (clips). */
 const WINDOW = 5;
-
-/** The shows a Japanese adult has most likely met (Friends a classic of English study in Japan). */
-const WELL_KNOWN = new Set<Clip['show']>(['Friends', 'The Office']);
-/** An opener: ≤ 90 s, a well-known show, not a fast speech band. First in a plan, by ease among them. */
-export const opener = (c: Pick<Clip, 'dur' | 'band' | 'show'>): boolean => c.dur <= 90 && c.band !== 'fast' && WELL_KNOWN.has(c.show);
 
 /** Each clip's ease, 0 (easiest) to 1: its wpm's rank (0.6), its length's (0.2: the review 11-24, an A2 learner's
  *  clip ≤ 2:30 when one can be; the plan written before it keeps its order) and the rank of its live non-C2 items'
@@ -41,7 +35,7 @@ function easeOf(clips: readonly PlanClip[]): Map<string, number> {
 
 /**
  * `clips` in the plan's order: the `planned` ids first as they are (those still in `clips`), then the rest by ease
- * (the openers before, the `late` ids after all the others), each next pick the one of the nearest WINDOW that keeps the most variety
+ * (the `late` ids after all the others), each next pick the one of the nearest WINDOW that keeps the most variety
  * after what came before.
  */
 export function planOf<C extends PlanClip>(clips: readonly C[], planned: readonly string[] = PLANNED, late: ReadonlySet<string> = new Set()): C[] {
@@ -53,8 +47,7 @@ export function planOf<C extends PlanClip>(clips: readonly C[], planned: readonl
   for (const c of clips) share.set(c.show, (share.get(c.show) ?? 0) + 1 / clips.length);
   const count = new Map<string, number>();
   for (const c of out) count.set(c.show, (count.get(c.show) ?? 0) + 1);
-  const early = rest.filter((c) => !late.has(c.id));
-  for (const pool of [early.filter(opener), early.filter((c) => !opener(c)), rest.filter((c) => late.has(c.id))]) {
+  for (const pool of [rest.filter((c) => !late.has(c.id)), rest.filter((c) => late.has(c.id))]) {
     while (pool.length) {
       const [a, b] = [out.at(-1), out.at(-2)];
       const cost = (c: C, i: number) => {

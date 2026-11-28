@@ -16,6 +16,7 @@
   import Scenes from './Scenes.svelte';
   import KeyedText from './KeyedText.svelte';
   import StudySheet from './StudySheet.svelte';
+  import CatchRound from './CatchRound.svelte';
   import NavButton from '#lib/components/ui/NavButton.svelte';
   import { week } from '#lib/store/week.svelte.ts';
   import { videoFocus } from '#lib/sound/sound.svelte.ts';
@@ -24,10 +25,10 @@
   import { TV_GM } from '#lib/contract/listen.ts';
   import type { CcMode, YtPlayer } from '../player.svelte.ts';
   import { againOf, answersOf, blank, dictate, heard, pick, reveal, review, settled, stepped, unansweredOf, type QState, type Review } from '../lesson.ts';
-  import { choiceOrder, draw, EARLY, historyOf, seedOf } from '../draw.ts';
+  import { choiceOrder, draw, historyOf, seedOf } from '../draw.ts';
   import { newActive, sent, tick, touched, type Active } from '../active.ts';
   import { loadSaved, partWay, save } from '../session.ts';
-  import { bankNow, LIBRARY, loadBank } from '../data.ts';
+  import { bankNow, loadBank } from '../data.ts';
   import { harderOn, scenesOn, setScenes } from '../prefs.ts';
   import { reloadOnRepeat } from '#lib/ui-state/reload.ts';
   import { tapGuard } from '#lib/ui-state/tapGuard.ts';
@@ -40,7 +41,7 @@
   import type { Bank, Question } from '../types.ts';
   import type { LocalDate, Who } from '#lib/types.ts';
 
-  let { clip, onback, onclose, onphrases }: { clip: ClipMeta; onback: () => void; onclose: () => void; onphrases?: () => void } = $props();
+  let { clip, onback, onclose, onphrases, onshelf }: { clip: ClipMeta; onback: () => void; onclose: () => void; onphrases?: () => void; onshelf?: () => void } = $props();
 
   const who: Who = untrack(() => week.model?.me ?? 'A');
   /** This lesson's clip, as mounted ({#key id}: one clip per instance): what the leaving save and row are of, the
@@ -70,7 +71,7 @@
   let at = $state(resume ? saved!.at : -1);
   let st = $state<QState[]>([]);
   function begin(c: Bank): void {
-    qs = resume ? saved!.ids.flatMap((id) => c.questions.filter((q) => q.id === id)) : draw(c, past.seen, play, seed, { harder: harderOn(), early: LIBRARY.findIndex((m) => m.id === id) < EARLY });
+    qs = resume ? saved!.ids.flatMap((id) => c.questions.filter((q) => q.id === id)) : draw(c, past.seen, play, seed, { harder: harderOn() });
     st = resume && qs.length === saved!.ids.length ? saved!.st : qs.map(blank);
     if (resume && qs.length !== saved!.ids.length) at = -1;
     full = c;
@@ -416,6 +417,8 @@
         </article>
       {/key}
     {:else}
+      <!-- 聞き取りチャレンジ (CatchRound: the clip's caption-checked lines, on this player) over まとめ -->
+      {#if full && !rv}<CatchRound bank={full} title={clip.title} {player} drawn={new Set(qs.map((x) => x.id))} {seed} {who} today={dayNow()} {onshelf} />{/if}
       <article class="card pad" data-en-end>
         <p class="lead"><b>{s('endHead')}</b><span class="meta"><Phrases text={s('endDone')} /></span></p>
         {#if wk > 0}<p class="wk" data-en-end-week={wk}><span class="dots" aria-hidden="true">{#each { length: WEEK_TARGET } as _, i (i)}<i class:on={i < wk}></i>{/each}</span>{wk >= WEEK_TARGET ? s('endWeekMet', { k: wk }) : s('endWeek', { k: wk })}</p>{/if}
@@ -512,8 +515,7 @@
   .why dt { font: 700 var(--fs-s)/1.4 var(--font-ui); color: var(--text-soft); }
   .why dd { margin: 0 0 4px; }
   .phrase { padding: 8px 10px; border-radius: var(--r-row); background: var(--card); font-size: var(--fs-body); }
-  .today { display: grid; gap: 2px; background: var(--ok-bg); box-shadow: inset 0 0 0 2px var(--ok-edge); }
-  .today span { font-weight: 700; }
+  .today { display: grid; gap: 2px; }
   .today small { font-size: var(--fs-s); color: var(--text-soft); }
   .phrase b { font: 700 var(--fs-s)/1.4 var(--font-ui); color: var(--text-soft); margin-right: 4px; }
   .more summary { display: flex; align-items: center; gap: 4px; min-height: var(--hit); margin: -6px 0; list-style: none; cursor: pointer;

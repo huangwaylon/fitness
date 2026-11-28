@@ -7,8 +7,10 @@ import { DEVICE } from '#lib/sync/storage.ts';
 import { perPlayer } from './per-player.ts';
 import { SHARDS, type PhraseEntry } from './catalog.ts';
 import { fnv1a } from '#lib/random.ts';
-import type { Key } from './phrase-review.ts';
 import type { Who } from '#lib/types.ts';
+
+/** A question of a clip: `clip/id`. */
+export type Key = `${string}/${string}`;
 
 /** Cards a set: then 「5枚見ました」 with もう5枚. */
 export const SET = 5;

@@ -3,6 +3,7 @@
 // before "some of the time" (123 s), which played and pulled toward a distractor; k10 ends before the 188 s drink joke
 // R4 REVIEW 2026-11-18: keep 10, rewrite 6, retire 5, new 10, ctx 6, tx 2, qa 12
 // A2 REVIEW 2026-11-17: keep 9, rewrite 9, retire 5, new 0
+// A2 RAMP: one of the plan's first 30; detail/gist keys may reuse a heard word (clips.test RAMP, review 11-24 #8)
 // “Lewbert, Guppy, and Chuck RETURN to iCarly | Full Scene | NickRewind” (NickRewind, Best of iCarly): a mock trial.
 // Lewbert sues Carly: he cross-examines Freddie, then Guppy and Chuck; Carly's side calls Mrs. Benson, who melts when
 // Lewbert woos her, and Lewbert ends by asking for even more.

@@ -1,6 +1,6 @@
 <script lang="ts">
   // English Study's sheet (docs/english.md "The page"), its own chunk: a full sheet on the unified kit, three tabs (ホーム,
-  // フレーズ, すごろく: the kit's TabBar, shown on them only) and the levels pushed over them: the library, これまでの記録 (home's row, 今週's link) and a
+  // フレーズ, すごろく: the kit's TabBar, shown on them only) and the levels pushed over them: the library, 聞けたセリフ (home's row, a return's or まとめ's link), これまでの記録 (home's row, 今週's link) and a
   // play's page, a clip's lesson (‹ back to where it was opened from) and ⚙. Each opening starts on home (a lesson left part-way resumes from its card:
   // lib/english/session.ts; フレーズ at its card: deck.ts). The island is paused under it (+page's sheetOpen).
   import Sheet from '#lib/components/ui/Sheet.svelte';
@@ -15,6 +15,7 @@
   import Lesson from './Lesson.svelte';
   import Settings from './Settings.svelte';
   import History from './History.svelte';
+  import Shelf from './Shelf.svelte';
   import HistoryPlay from './HistoryPlay.svelte';
   import { metaById } from '../data.ts';
   import { s } from '../i18n.ts';
@@ -25,7 +26,7 @@
   type Tab = 'home' | 'phrases' | 'game';
   /** A lesson's opener: home, the library, or a play's page in これまでの記録 (its key). */
   type From = 'home' | 'library' | { play: string };
-  type Level = { k: Tab } | { k: 'library' } | { k: 'history' } | { k: 'play'; key: string } | { k: 'lesson'; id: string; from: From } | { k: 'settings' };
+  type Level = { k: Tab } | { k: 'library' } | { k: 'history' } | { k: 'play'; key: string } | { k: 'lesson'; id: string; from: From } | { k: 'settings' } | { k: 'shelf' };
   let level = $state<Level>({ k: 'home' });
   /** The library's chip, collection and rows shown, kept while one of its lessons is open. */
   let filter = $state('');
@@ -70,9 +71,11 @@
   <div class="en" lang={i18n.locale} data-english data-level={level.k}>
     <div class="panel" id="en-panel" role={tab ? 'tabpanel' : undefined} aria-labelledby={tab ? `en-tab-${tab}` : undefined}>
       {#if clip}
-        {#key clip.id}<Lesson {clip} onback={back} onclose={close} onphrases={() => (level = { k: 'phrases' })} />{/key}
+        {#key clip.id}<Lesson {clip} onback={back} onclose={close} onphrases={() => (level = { k: 'phrases' })} onshelf={() => (level = { k: 'shelf' })} />{/key}
       {:else if level.k === 'settings'}
         <Settings onback={home} onclose={close} />
+      {:else if level.k === 'shelf'}
+        <Shelf onback={home} onclose={close} />
       {:else if level.k === 'history'}
         <History bind:count={histCount} bind:scroll={histScroll} onopen={(key) => (level = { k: 'play', key })} onback={home} onclose={close} />
       {:else if level.k === 'play'}
@@ -88,7 +91,7 @@
       {:else if level.k === 'phrases'}
         <Phrases onhome={home} onclose={close} />
       {:else}
-        <Home onopen={lessonFrom('home')} onlibrary={() => (level = { k: 'library' })} onhistory={() => (tally('act:english.history.open'), (level = { k: 'history' }))} onsettings={() => (level = { k: 'settings' })} onclose={close} />
+        <Home onopen={lessonFrom('home')} onlibrary={() => (level = { k: 'library' })} onhistory={() => (tally('act:english.history.open'), (level = { k: 'history' }))} onshelf={() => (tally('act:english.shelf.open'), (level = { k: 'shelf' }))} onsettings={() => (level = { k: 'settings' })} onclose={close} />
       {/if}
     </div>
     {#if tab}<TabBar items={TABS} value={tab} label={s('tabs')} attr="en-tab" panel="en-panel" onpick={(k) => (level = { k })} />{/if}

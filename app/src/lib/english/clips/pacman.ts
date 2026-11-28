@@ -1,6 +1,5 @@
 // R4 REVIEW 2026-11-18: keep 6, rewrite 8, retire 0, new 0, ctx 4, tx 1, qa 15
 // A2 REVIEW 2026-11-17: keep 6, rewrite 8, retire 3, new 0
-// A2 RAMP: one of the plan's first 30; detail/gist keys may reuse a heard word (clips.test RAMP, review 11-24 #8)
 // “Phoebe Is Hogging Ms. Pac-Man | Friends” (the official Friends channel, Best of Season 8): Phoebe won't give up
 // the arcade game, Monica wants her turn, Chandler calls it stupid, and when the friend who gave it offers to take it
 // back, the answer is a firm no and a hint to go home.

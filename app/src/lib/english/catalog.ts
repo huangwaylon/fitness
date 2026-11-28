@@ -2,11 +2,11 @@
 // bank. The build makes it from clips/index.ts's CLIPS (vite.config.ts english-data: the module
 // `clips/index.ts?english-index`, in the sheet's chunk) and writes each bank as a file of its own, fetched when a
 // lesson opens (data.ts). Pure.
-import { DRAW_SIZE } from './draw.ts';
+import { drawSize } from './draw.ts';
 import { fnv1a } from '#lib/random.ts';
-import { clipHash, scenesHash, transcriptHash } from './hash.ts';
+import { clipHash, fnv, scenesHash, transcriptHash } from './hash.ts';
 import { keyWordsOf, splitUse, wordsOf } from './phrases.ts';
-import type { Band, Bank, Clip, Question, ScenesFile, TranscriptLine } from './types.ts';
+import type { Band, Bank, CatchLine, Clip, Question, ScenesFile, TranscriptLine } from './types.ts';
 
 /** The show, short (a row's sub line, a chip). */
 export type Show = 'Friends' | 'The Office' | 'Parks' | 'iCarly';
@@ -21,7 +21,7 @@ export interface ClipMeta {
   dur: number;
   band: Band;
   tags: readonly string[];
-  /** A play's questions (draw.ts DRAW_SIZE, or the live items if fewer). */
+  /** A play's questions (draw.ts drawSize, or the live items if fewer). */
   n: number;
   /** The bank's live items (home's もう一度 prefers a clip with many not met yet). */
   items: number;
@@ -31,6 +31,8 @@ export interface ClipMeta {
   sv?: string;
   /** Its transcript's version (hash.ts transcriptHash), when it has one: in its bank file's name too. */
   tv?: string;
+  /** Its catch lines' version, when it has any (聞き取りチャレンジ: catch-build.ts): in its bank file's name too. */
+  cv?: string;
   credit: string;
 }
 
@@ -40,7 +42,7 @@ export function metaOf(c: Clip): ClipMeta {
   const items = c.questions.filter((q) => !q.retired).length;
   return {
     id: c.id, video: c.video, title: c.title, show: SHORT[c.show], dur: c.dur, band: c.band, tags: c.tags,
-    n: Math.min(DRAW_SIZE, items), items, v: clipHash(c), credit: c.credit
+    n: Math.min(drawSize(c.dur), items), items, v: clipHash(c), credit: c.credit
   };
 }
 
@@ -50,21 +52,25 @@ export const withScenes = (m: ClipMeta, sf: Pick<ScenesFile, 'scenes' | 'beats'>
 /** A clip's entry with its transcript's version, when it has one (vite.config.ts english-data). */
 export const withTranscript = (m: ClipMeta, lines: readonly TranscriptLine[] | undefined): ClipMeta => (lines ? { ...m, tv: transcriptHash(lines) } : m);
 
+/** A clip's entry with its catch lines' version, when it has any (vite.config.ts english-data). */
+export const withCatch = (m: ClipMeta, lines: readonly CatchLine[] | undefined): ClipMeta => (lines?.length ? { ...m, cv: fnv(JSON.stringify(lines)) } : m);
+
 /** A bank's file, under the base path: its name carries its version (and its scenes', its transcript's), so a cached copy is never stale and a page left
  *  from an older build asks for a file the deploy took away (data.ts: then a reload). */
-export const bankPath = (m: Pick<ClipMeta, 'id' | 'v' | 'sv' | 'tv'>): string => `english/c/${m.id}.${m.v}${m.sv ?? ''}${m.tv ?? ''}.json`;
+export const bankPath = (m: Pick<ClipMeta, 'id' | 'v' | 'sv' | 'tv' | 'cv'>): string => `english/c/${m.id}.${m.v}${m.sv ?? ''}${m.tv ?? ''}${m.cv ?? ''}.json`;
 
 /** What a retired question keeps in its bank file: この動画のセリフと解説's line and notes (phrases.ts momentsOf), its id and
  *  `retired` (a saved ☆ on it let go: PhraseReview). Nothing else reads one: a draw, the plan and the deck skip them, a
  *  flag is only on a drawn one and a saved place is dropped with its clip's version. */
 const RETIRED_KEEPS = ['id', 'retired', 'seg', 'line', 'said', 'mean', 'use'] as const;
 
-/** A clip's bank as its file holds it (vite.config.ts english-data): the clip with its scenes (and beats) and transcript
- *  lines when it has them, its retired questions cut to RETIRED_KEEPS (one without a line dropped: no phrase shows it). */
-export function bankOf(c: Clip, sf: Pick<ScenesFile, 'scenes' | 'beats'> | undefined, lines: readonly TranscriptLine[] | undefined): Bank {
+/** A clip's bank as its file holds it (vite.config.ts english-data): the clip with its scenes (and beats), transcript
+ *  lines and catch lines when it has them, its retired questions cut to RETIRED_KEEPS (one without a line dropped: no
+ *  phrase shows it). */
+export function bankOf(c: Clip, sf: Pick<ScenesFile, 'scenes' | 'beats'> | undefined, lines: readonly TranscriptLine[] | undefined, caught?: readonly CatchLine[]): Bank {
   const questions = c.questions.flatMap((q) =>
     !q.retired ? [q] : q.line ? [Object.fromEntries(RETIRED_KEEPS.filter((k) => q[k] !== undefined).map((k) => [k, q[k]])) as unknown as Question] : []);
-  return { ...c, questions, ...(sf && { ...sf }), ...(lines && { lines }) };
+  return { ...c, questions, ...(sf && { ...sf }), ...(lines && { lines }), ...(caught?.length && { catch: caught }) };
 }
 
 /** A card of フレーズ's deck (docs/english.md "フレーズ"): a question's phrase, where it's heard and its 意味,

@@ -1,6 +1,6 @@
 # English Study
 
-The leaf menu's 英語 opens **English Study**: one real TV clip a day, ~5–10 min: watch, answer 5 questions with
+The leaf menu's 英語 opens **English Study**: one real TV clip a day, ~15 min: watch, answer 6–8 questions with
 replays of the exact segment, read short Japanese notes. Solo; the guest has its own progress. Code
 `app/src/lib/english/` (strings `i18n.ts`). Copy casual (〜よう, 〜だよ, never です/ます) with sheet kanji; never red, ×, a
 sound, a score or a percentage; nothing locked ([decisions](decisions.md#english-and-food-data)).
@@ -10,13 +10,11 @@ A clip (`types.ts` Clip, one file each in `clips/`) is an official YouTube video
 questions, Japanese notes (言っていること / 意味 / 迷いやすい点 / 使えるフレーズ), a `cue` for a second listen. A question quotes
 one short line at most (*key words* starred); no audio ships. Each question has a never-reused `id`, `skill`, `level`
 (B1–C2), `point`, `reveals`, optional `ctx`; `retired` takes it out (never deleted).
-- **The draw** (`draw.ts`, pure, seeded by player, clip and play): 5 items (the owner 11-28: lessons ran 4–5 active
-  minutes), an easy opening (a B1 listening item in the first three, never a dictation), one gist, ≤ 1 each of
-  dictation, predict, and pragma or humor, unseen first; C1/C2 only with ⚙ 難しめの質問を増やす (then ≤ 1 each). The plan's
-  first 60 clips (`EARLY`) never draw pragma, humor, marker, predict nor a C level. Numbers in `draw.test.ts`.
+- **The draw** (`draw.ts`, pure, seeded by player, clip and play): 6–8 items, an easy opening (a B1 listening item in
+  the first three, never a dictation), one gist, ≤ 1 C1 and ≤ 1 each of dictation, humor, predict, pragma, unseen
+  first; C2 only with ⚙ 難しめの質問を増やす. Numbers in `draw.test.ts`.
 - **The plan** (`plan.ts`, kept in `plan-order.ts`, `npm run english:plan`): one clip order on every phone, a slow ramp
-  by ease, the openers first (`opener`: ≤ 90 s, Friends or The Office, not fast; `-- --openers` moved them to the front
-  11-28), `// A2 LATE:` banks last, varied by show; new clips go after it.
+  by ease, `// A2 LATE:` banks last, varied by show; new clips go after it.
 - **Rules** (`clips.test.ts`, its markers `// SKIP`, `// EXCLUDE`, `// SWEAR-OK`): for an A2 learner, B1 the bulk, 3
   parallel choices, the key never the longest; `// A2 RAMP` (first 30 banks) eases distractors; notes never say 不正解,
   間違い or 残念. Tools: `npm run english:wpm` (speed bands), `english:segs` (segments from json3 word times).
@@ -36,21 +34,35 @@ Tabs **ホーム · フレーズ · すごろく** ([sugoroku.md](sugoroku.md));
 - **The library**: すべて, 短い動画 (≤ 2:30), by show; 場面で選ぶ (`collections.ts`).
 - **Lesson**: the player pinned on top; 質問へ, ‹ 前へ / 次へ ›, まとめ always open; a card fits above the fold at
   393×852; 訳を見る records nothing. ツール (`StudySheet.svelte`): 字幕, size, speed, あらすじ, セリフ, phrases, ⚑.
-- **A card**: the stem in English (訳を見る its Japanese); a meaning item's choices (gist, infer, pragma, attitude, who,
-  humor) in Japanese, their English under them once answered; the others' in English. Answered: 意味 and 使えるフレーズ,
-  言っていること / 迷いやすい点 one tap away (詳しく), whatever the pick.
 - **A miss**: the segment again, the `cue`, 答えを見る; a second miss shows 「答えはこれ」. ◎ first try, ○ second.
-- **まとめ** writes the row ([Progress](#progress)), 今日のフレーズ (the first scene to hear again's `use`, else the first
-  phrase item's), lists scenes to hear again; おわる ignores a tap within 600 ms
+- **まとめ** writes the row ([Progress](#progress)), lists scenes to hear again; おわる ignores a tap within 600 ms
   (`ui-state/tapGuard.ts`). ふりかえり replays the scenes, records nothing.
 
-## Phrase review
-`phrase-review.ts`: questions' `use` from my finished plays and ☆ cards, back after 1, 3, 7, 14, then 30 days, ≤ 3 a
-day; もう一度 / 覚えた / 今日はスキップ. Kept per player on the phone (`island.english.phrases`).
+## Catch the line
+聞き取りチャレンジ (`catch.ts`, `CatchRound.svelte` over まとめ, `CatchLine.svelte`): ≤ 2 of the clip's lines not on the
+shelf yet, one at a time on the lesson's player: played with no text, then its tiles tapped in the order heard. A tile
+out of order hops back, the next is placed for them and the line plays again at 0.75×; complete, the line at full speed
+with its tiles lit in time (the reward), then its Japanese. The lines (`catch-build.ts`, in the bank as `catch`, its
+version in the file name): a live question's `line`, one speaker's one sentence of 3–10 words, every word found in order
+in `english-captions/<video>.en.json3` near its segment and said within 6 s; the segment cut from the caption words'
+times; its Japanese the one 「…」 its `said` quotes. **Tiles are chunks**, not words: a weak word (a, the, my, to, of,
+in…) goes with the word after it, ≤ 6 tiles (the shortest weak-ended pair joined), so no tile is a sound an A2 ear can't
+hear alone. 1–2 distractors: a near pair swapped into one chunk (can/can't, him/them, is/was), never a homophone
+(to/too, your/you're), else a word of another line. ~940 lines, 340 of the 400 clips.
+
+## 聞けたセリフ
+`shelf.ts`, kept per player on the phone (`island.english.caught`: no relay change; each player studies on their own
+phone): every caught line as caught (the line itself, so it plays offline and never shifts under a content edit) and how
+(the day, ×0.75, hints). It comes back 3, 7, then 21 days after last met, ≤ 3 a day, first on home (`ShelfReturn`): full
+speed, no text, rebuilt from tiles. **聞けた only when caught first try at full speed with no tile given** on a return
+(replays allowed; the lesson's own catch never counts); its step moves on, and the count only grows. Any other return:
+back in 3 days, nothing said but that. The page (`Shelf.svelte`, home's row): the count, then each card: the line, its
+Japanese, then → now (11/1 ×0.75・ヒント1 › 11/4 そのまま一回で), ▶ its segment. Replaced the self-rated フレーズの復習
+(2026-11-28; its key is cleared, フレーズ's ☆ went with it).
 
 ## フレーズ
 **The deck** (`catalog.ts deckOf`): a live B1 question's `use`, segment ≤ 15 s, one card per phrase, in `SHARDS` (12)
-files ≤ 32 KB gzipped. The page (`deck.ts`): 5 a set, seeded, today's and the next 2 plan clips skipped; ☆ 復習に入れる.
+files ≤ 32 KB gzipped. The page (`deck.ts`): 5 a set, seeded, today's and the next 2 plan clips skipped.
 
 ## The player
 youtube-nocookie over postMessage (no `iframe_api` script: CSP); a segment pauses 0.4 s past its end;

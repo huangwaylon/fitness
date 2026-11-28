@@ -10,10 +10,11 @@ import { carried, contentHash, precachable } from './src/service-worker/caches.t
 import { basisModuleCode } from './src/lib/components/world3d/basisModule.ts';
 import { catalogNameKeys, pack, packRefs, tentCodes, tentNameKeys } from './src/lib/packedKeys.ts';
 import { encodeLine } from './src/lib/travel/polyline.ts';
-import { bankOf, bankPath, deckOf, metaOf, shardPath, shardsOf, withScenes, withTranscript } from './src/lib/english/catalog.ts';
+import { bankOf, bankPath, deckOf, metaOf, shardPath, shardsOf, withCatch, withScenes, withTranscript } from './src/lib/english/catalog.ts';
+import { captionWords, catchLinesOf } from './src/lib/english/catch-build.ts';
 import { fnv } from './src/lib/english/hash.ts';
 import { planOf } from './src/lib/english/plan.ts';
-import type { Bank, Clip, JaTranscriptFile, ScenesFile, TranscriptFile, TranscriptLine } from './src/lib/english/types.ts';
+import type { Bank, CatchLine, Clip, JaTranscriptFile, ScenesFile, TranscriptFile, TranscriptLine } from './src/lib/english/types.ts';
 
 /** The app version (the log's `build`, names the SW cache, and in _app/version.json for Kit's update check): the build date (UTC) + the commit, e.g. `2026-10-29.ef93d8b`. Deterministic per commit and day. */
 function appVersion(): string {
@@ -224,14 +225,16 @@ const globsUncached: Plugin = {
  *  has them in its bank (`scenes`, and `beats` when the file has them), their version in the file's name. A clip with
  *  transcripts/<video>.en.json (セリフ) has its lines in its bank too, each with the ja file's translation when in,
  *  held to the clip's length, their version in the file's name as well. フレーズ's deck (catalog.ts deckOf) is SHARDS
- *  files, `english/p/<n>.<v>.json` (shardPath), their versions the index module's `DECK`. The clips are read fresh (Vite's module runner)
+ *  files, `english/p/<n>.<v>.json` (shardPath), their versions the index module's `DECK`. 聞き取りチャレンジ's lines
+ *  (catch-build.ts) come from the repo's english-captions/<video>.en.json3 (none there: none), in the bank and its
+ *  version in the file's name as well. The clips are read fresh (Vite's module runner)
  *  once a build, and in dev again after one of them changes. */
 const ENGLISH_INDEX = '/src/lib/english/clips/index.ts?english-index';
 const ENGLISH_BANK = /\/english\/c\/([\w-]+)\.[0-9a-z]+\.json$/;
 const ENGLISH_SHARD = /\/english\/p\/(\d+)\.[0-9a-z]+\.json$/;
 const englishData = (): Plugin => {
   let root = process.cwd();
-  type Data = { clips: Clip[]; deps: string[]; scenes: Map<string, Pick<ScenesFile, 'scenes' | 'beats'>>; lines: Map<string, TranscriptLine[]>; shards: string[]; deck: string[] };
+  type Data = { clips: Clip[]; deps: string[]; scenes: Map<string, Pick<ScenesFile, 'scenes' | 'beats'>>; lines: Map<string, TranscriptLine[]>; caught: Map<string, CatchLine[]>; shards: string[]; deck: string[] };
   let clips: Promise<Data> | null = null;
   const scenesDir = () => join(root, 'src/lib/english/scenes');
   const transcriptsDir = () => join(root, 'src/lib/english/transcripts');
@@ -262,13 +265,22 @@ const englishData = (): Plugin => {
       return lines.length ? [[c.video, lines] as const] : [];
     }));
   };
+  /** clip id → its catch lines, from its video's captions (the repo's english-captions/, beside app/). */
+  const readCatch = (clips: readonly Clip[]) => {
+    const dir = join(root, '../english-captions');
+    return new Map(clips.flatMap((c) => {
+      const f = join(dir, `${c.video}.en.json3`);
+      const lines = existsSync(f) ? catchLinesOf(c, captionWords(JSON.parse(readFileSync(f, 'utf8')))) : [];
+      return lines.length ? [[c.id, lines] as const] : [];
+    }));
+  };
   const read = () =>
     (clips ??= runnerImport<{ CLIPS: Clip[] }>(join(root, 'src/lib/english/clips/index.ts')).then(({ module, dependencies }) => {
       const shards = shardsOf(deckOf(planOf(module.CLIPS))).map((s) => JSON.stringify(s));
-      return { clips: module.CLIPS, deps: dependencies, scenes: readScenes(), lines: readTranscripts(module.CLIPS), shards, deck: shards.map(fnv) };
+      return { clips: module.CLIPS, deps: dependencies, scenes: readScenes(), lines: readTranscripts(module.CLIPS), caught: readCatch(module.CLIPS), shards, deck: shards.map(fnv) };
     }));
-  const meta = (d: Data, c: Clip) => withTranscript(withScenes(metaOf(c), d.scenes.get(c.video)), d.lines.get(c.video));
-  const bank = (d: Data, c: Clip): Bank => bankOf(c, d.scenes.get(c.video), d.lines.get(c.video));
+  const meta = (d: Data, c: Clip) => withCatch(withTranscript(withScenes(metaOf(c), d.scenes.get(c.video)), d.lines.get(c.video)), d.caught.get(c.id));
+  const bank = (d: Data, c: Clip): Bank => bankOf(c, d.scenes.get(c.video), d.lines.get(c.video), d.caught.get(c.id));
   return {
     name: 'english-data',
     enforce: 'pre',
