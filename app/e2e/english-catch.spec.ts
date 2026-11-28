@@ -37,11 +37,11 @@ test('聞き取りチャレンジ at まとめ: no text first, a tile out of ord
   await expect(card.locator('[data-tile]')).toHaveCount(LINE.tiles.length + LINE.x.length);
   // the first chunk, then a distractor: it hops back, the second chunk is placed for them, the line again at 0.75×
   await card.locator(`[data-tile="${LINE.tiles[0]}"]`).tap();
-  await expect(card.locator('[data-slot="0"]')).toHaveText(LINE.tiles[0]);
+  await expect(card.locator('[data-en-slot="0"]')).toHaveText(LINE.tiles[0]);
   const n1 = (await ytCommands(page)).length;
   await card.locator(`[data-tile="${LINE.x[0]}"]`).tap();
-  await expect(card.locator('[data-slot="1"]')).toHaveText(LINE.tiles[1]);
-  await expect(card.locator('[data-slot="1"]')).toHaveClass(/given/);
+  await expect(card.locator('[data-en-slot="1"]')).toHaveText(LINE.tiles[1]);
+  await expect(card.locator('[data-en-slot="1"]')).toHaveClass(/given/);
   await expect(card.locator('[data-en-catch-help]')).toBeVisible();
   await expect.poll(async () => (await ytCommands(page)).slice(n1).map((c) => c[0])).toEqual(expect.arrayContaining(['setPlaybackRate', 'seekTo', 'playVideo']));
   expect((await ytCommands(page)).slice(n1).find((c) => c[0] === 'setPlaybackRate')?.[1]).toEqual([0.75]);

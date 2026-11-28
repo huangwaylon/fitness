@@ -90,7 +90,7 @@
     <p class="slots" lang="en" aria-live="polite" data-en-catch-slots>
       {#each line.tiles as _, k (k)}
         {@const i = placed(k)}
-        <span class="slot" class:filled={i !== undefined} class:given={c.given.includes(k)} class:lit={complete && k <= lit} data-slot={k}>{i !== undefined ? c.all[i] : ''}</span>
+        <span class="slot" class:filled={i !== undefined} class:given={c.given.includes(k)} class:lit={complete && k <= lit} data-en-slot={k}>{i !== undefined ? c.all[i] : ''}</span>
       {/each}
     </p>
     {#if !complete}
