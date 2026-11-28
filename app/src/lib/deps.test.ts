@@ -40,6 +40,8 @@ const ALLOW: Record<string, string[]> = {
   config: ['types'],
   scoring: ['types', 'time', 'config'],
   model: DOMAIN,
+  // the couple's money (/money): pure figures over the contract's ops (contract/finance.ts)
+  finance: ['types', 'contract'],
   // the island's layout (docs/island-layout.md): pure, over the contract's ops
   layout: ['contract', 'random'],
   // the meal log's food catalog (lib/food/index.ts): pure but for its loader, over the contract's snapshot

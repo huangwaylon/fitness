@@ -240,6 +240,7 @@
     "src/lib/model/fixtures": "the model's unit-test fixtures",
     "src/routes/dev/characters": "a dev page: not in the app",
     "src/routes/dev/kit": "a dev page: not in the app",
+    "src/lib/finance": "the /money app's pure money figures (unit-tested): no page reads them yet",
     "src/routes/world3d": "the 3D island POC's old address: the island itself (boot, the gate set)"
   }
 }
