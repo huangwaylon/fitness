@@ -1,0 +1,73 @@
+# Dependabot's PRs merged with no person (no PR waits on a human; docs/ops/runbook.md §0): when a check
+# workflow finishes green on one, every workflow run on its head commit is looked at; all done and green, the PR is
+# squash-merged at that commit (--match-head-commit: never a newer, unchecked one), then the deploys its checks
+# covered are dispatched. Event-driven only (one short run per check completion, a few API calls; no polling).
+# workflow_run runs main's copy of this file with the repo's token (a Dependabot-triggered pull_request run gets a
+# read-only one) and never checks out the PR's code. A merge with GITHUB_TOKEN starts no push workflow, hence the
+# dispatch (relay.yml and pages.yml deploy on workflow_dispatch; the rest are checks only). GITHUB_TOKEN can't merge a
+# change to .github/workflows (the monthly github-actions PR): that merge fails and the PR gets a comment.
+# Red checks: left open (Dependabot's next run supersedes or rebases it).
+name: Dependabot merge
+
+on:
+  workflow_run:
+    workflows: ['Deploy UI', 'Relay checks', 'Gym bot checks', 'ITS booker checks', 'Food data checks', 'Docs check']
+    types: [completed]
+
+permissions:
+  contents: write       # the merge
+  pull-requests: write  # the merge, a comment when it fails
+  actions: write        # the runs on the commit; the deploys' dispatch
+
+# (one at a time per commit: two checks ending together merge once)
+concurrency:
+  group: automerge-${{ github.event.workflow_run.head_sha }}
+  cancel-in-progress: false
+
+jobs:
+  merge:
+    if: >-
+      github.event.workflow_run.event == 'pull_request' && github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.actor.login == 'dependabot[bot]' &&
+      github.event.workflow_run.head_repository.full_name == github.repository &&
+      startsWith(github.event.workflow_run.head_branch, 'dependabot/')
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+      SHA: ${{ github.event.workflow_run.head_sha }}
+    steps:
+      - name: All green, then merge and dispatch the deploys
+        run: |
+          # the open PR whose head is this commit, opened by Dependabot
+          pr=$(gh api "repos/$GH_REPO/commits/$SHA/pulls" \
+            --jq '[.[] | select(.state == "open" and .user.login == "dependabot[bot]" and .head.sha == env.SHA)][0].number // empty')
+          [ -n "$pr" ] || { echo "no open Dependabot PR at $SHA (merged, closed or pushed again)"; exit 0; }
+          # every workflow's latest pull_request run on the commit: all completed, none red
+          gh api "repos/$GH_REPO/actions/runs?head_sha=$SHA&event=pull_request&per_page=100" \
+            --jq '[.workflow_runs | group_by(.workflow_id)[] | max_by(.run_number)
+                   | {name, path, status, conclusion}]' > runs.json
+          jq -r '.[] | "\(.name): \(.status) \(.conclusion // "")"' runs.json
+          waiting=$(jq '[.[] | select(.status != "completed")] | length' runs.json)
+          red=$(jq '[.[] | select(.status == "completed" and (.conclusion | IN("success", "skipped", "neutral") | not))] | length' runs.json)
+          if [ "$(jq length runs.json)" = 0 ] || [ "$waiting" != 0 ]; then echo "#$pr: checks still running; the last to finish merges"; exit 0; fi
+          if [ "$red" != 0 ]; then echo "::warning::#$pr: a check is red, not merged"; exit 0; fi
+          if ! gh pr merge "$pr" --squash --match-head-commit "$SHA" 2> err.txt; then
+            cat err.txt
+            mark='<!-- automerge-failed -->'
+            if ! gh api "repos/$GH_REPO/issues/$pr/comments" --jq '.[].body' | grep -qF "$mark"; then
+              { echo "$mark"; echo "Checks green, but the automatic merge failed ([run]($GITHUB_SERVER_URL/$GH_REPO/actions/runs/$GITHUB_RUN_ID)):"
+                echo; echo '```'; head -c 1500 err.txt; echo; echo '```'
+                echo "A change to .github/workflows needs a token with the workflows permission (GITHUB_TOKEN has none)."; } > body.md
+              gh pr comment "$pr" --body-file body.md
+            fi
+            echo "::error::#$pr: green but not merged"; exit 1
+          fi
+          echo "merged #$pr at $SHA" | tee -a "$GITHUB_STEP_SUMMARY"
+          # the deploys whose checks ran on the PR (a GITHUB_TOKEN merge pushes without starting them)
+          for wf in relay.yml pages.yml; do
+            if jq -e --arg p ".github/workflows/$wf" 'any(.[]; .path == $p)' runs.json > /dev/null; then
+              gh workflow run "$wf" --ref main && echo "dispatched $wf" | tee -a "$GITHUB_STEP_SUMMARY"
+            fi
+          done

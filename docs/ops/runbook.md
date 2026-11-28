@@ -24,6 +24,7 @@ dispatches the workflows (`dispatch.ts`); schedules are the backstop. Every cron
 | kalori-scrape.yml [Chain menus] | `41 17 * * 2` | Wed 02:41; its-bot if missed | §13 | status.json |
 | kalori-watch.yml | `29 */6 * * *` | schedule only | §13: late, stuck, the deploy | → `kalori-alert` |
 | Deploy UI [Site deploy], e2e logic full [Full test run], Relay checks [Relay deploy] | — | a push | testing.md, §8 | the red run, mailed |
+| automerge.yml | — | a check's end on a Dependabot PR | merges it when every check is green, dispatches relay.yml / pages.yml; no PR waits on a person | red: left open; a failed merge comments |
 | restore drill | — | by hand, monthly | §6 | — |
 
 ## 1. Deploy the UI
@@ -160,8 +161,9 @@ The same with `KEY_C` (§3), no Shortcut. Send them:
 How it works: [food-data "Kalori"](../food-data.md#kalori). One run at a time; its-bot dispatches a missed week. Pause:
 `gh workflow disable` both kalori workflows (cancel a queued retry too). The `KALORI_TAG` release must be published.
 
-1. **A held update** (PR `kalori-update/<tag>`, no CI): check the counts (~54k items), merge by hand; reject: close it,
-   `gh release delete <tag> --cleanup-tag`.
+1. **Past the bands** merges anyway (no PR waits on anyone); status.json notes the bands. Reject a release: undo (2),
+   `gh release delete <tag> --cleanup-tag`. **Held** (`tests`, `main_moved`): branch `kalori-update/<tag>`, no PR; the next
+   weekly run redoes it, or dispatch now.
 2. **Undo an automatic merge:** `git revert` "Kalori: <tag> (auto)", push, `gh workflow run pages.yml --ref main`, then
    `GH_REPO=huangwaylon/fitness .github/scripts/kalori-status.sh undo --tag <tag> --fetch-py
    food-data/scripts/fetch.py --kalori app/static/food/kalori.json`.
@@ -176,7 +178,7 @@ How it works: [food-data "Kalori"](../food-data.md#kalori). One run at a time; i
 | `drift`, `nonut` | fix fixtures (`food-data/scripts/tests/fixtures/`) and parsers, bump `PARSER_VERSION` (`RECORDS_FROM` if records change), dispatch |
 | `limits`, `incomplete` | dispatch (recurring: lower `total_rate`) |
 | `diff_gate` (> 15 % changed or 5 % gone) | if right, dispatch with `allow_big_diff` |
-| `band_*`, `tests`, `main_moved` | held (1); `main_moved`: redo locally (3) |
+| `tests`, `main_moved` | held (1): fix a red test; `main_moved` redoes itself next week (or dispatch) |
 | `crash`, `publish`, `update`, `reverted` | the job's log, fix, dispatch or (3) |
 | `deploy_failed` | `gh run rerun <id>` or undo (2) |
 | `late` (none in 8 days), `stuck` (a run > 2 days, or `running` 8 h with no run) | `gh run cancel <id>` if stuck; dispatch |
