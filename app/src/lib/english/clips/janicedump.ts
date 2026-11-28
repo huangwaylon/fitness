@@ -9,6 +9,7 @@
 // whisper (45 s, captions "was"; 23 s whisper "Boss, we need to talk", captions "yeah of course we need to talk").
 // Untested: 87–90 s "Oh. My. God." (a catchphrase, not asked); whisper repeats "I'm not going to be okay" over the
 // music at 95–107 s (a hallucination, the captions have nothing).
+// CHECKS 2026-11-28: blind check: p2 p3 rewritten so listening decides.
 import type { Clip } from '../types.ts';
 
 export const janicedump: Clip = {
@@ -159,15 +160,15 @@ export const janicedump: Clip = {
       use: 'Everyone has their day in the sun.（だれにでも輝く時がある）' },
 
     { id: 'p2', skill: 'pragma', level: 'B2', point: 'sweet', seg: [43.7, 55.7],
-      stem: 'Why does Janice say “You’re a very sweet person” first?',
-      ja: 'ジャニスはなぜ先に「とても優しい人ね」と言う？',
-      choices: ['To soften the bad news', 'To say the problem is small', 'To say it’s her fault'], a: 0,
-      choicesJa: ['悪い知らせをやわらげるため', '問題は小さいと言うため', '自分のせいだと言うため'],
+      stem: 'How does Janice begin what she has to say?',
+      ja: 'ジャニスは、言いたいことをどう切り出す？',
+      choices: ['She says something kind', 'She makes a small joke', 'She says she’s sorry'], a: 0,
+      choicesJa: ['優しいことを言う', 'ちょっとした冗談を言う', 'ごめんなさいと言う'],
       cue: '「Unfortunately」の前後。',
       line: 'You’re a very *sweet person*… *Unfortunately*, I just don’t think…',
       said: '「とても優しい人ね」とほめてから、「でも、あいにく」と本題に入る。',
       mean: 'ほめてから unfortunately（あいにく）で悪い話。断るときによく使う流れ。',
-      trap: '決め手は Unfortunately（あいにく）のあと。sweet だけ聞くと、いい話に聞こえる。',
+      trap: 'Unfortunately を sorry と勘違いしやすい。先に来るのは sweet person というほめ言葉で、あいにくはそのあと。',
       use: 'You’re very kind. Unfortunately, I can’t.（優しいね。でもあいにく無理なの）' },
 
     { id: 'g1', skill: 'gist', level: 'B1', point: 'reason', reveals: ['whiny', 'second'], seg: [44.6, 71.2],
@@ -219,15 +220,15 @@ export const janicedump: Clip = {
       use: 'Are you okay? — I am now.（大丈夫？—今はね）' },
 
     { id: 'p3', skill: 'pragma', level: 'B1', point: 'hearing', seg: [58.3, 63.8],
-      stem: 'What does Ross mean by “let me make sure”?',
-      ja: 'ロスはなぜ「let me make sure」と言う？',
-      choices: ['I want to check I understood', 'I can’t hear you very well', 'I agree with you on this'], a: 0,
-      choicesJa: ['正しく分かったか確かめたい', 'よく聞こえない', 'この点は賛成だ'],
+      stem: 'What does Ross do after Janice gives her reason?',
+      ja: 'ジャニスが理由を言ったあと、ロスはどうする？',
+      choices: ['He checks he heard it right', 'He says sorry for it', 'He agrees and says goodbye'], a: 0,
+      choicesJa: ['正しく聞こえたか確かめる', 'そのことをあやまる', '納得して別れを言う'],
       cue: 'ジャニスの理由のあと。',
       line: '*Let me make sure I’m hearing this right.*',
       said: '「ちゃんと分かってるか確かめさせて」と前置きする。',
       mean: 'Let me make sure 〜 ＝ 〜か確かめさせて。信じられない話を聞き返す前置き。',
-      trap: 'hearing から、耳が聞こえない話を連想しやすい。ここは「意味を正しく受け取ったか」。',
+      trap: '理由を言われたので、あやまると考えがち。make sure I’m hearing this right は「ちゃんと聞こえたか確かめる」。',
       use: 'Let me make sure I understand.（ちゃんと分かってるか確認させて）' },
 
     { id: 'i2', skill: 'infer', level: 'B2', point: 'whiny', reveals: ['reason'], seg: [59.2, 71.1],

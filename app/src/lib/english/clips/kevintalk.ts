@@ -7,6 +7,7 @@
 // "word code", and the "see world" mix-up shows his method costs time. He agrees to talk normally.
 // Only Kevin is named, so the others are "a coworker". Kevin's broken English is never a key to type or copy (x1
 // retired); notes give the normal sentence. Untested on purpose: 20–27 s, 56–58 s, 83–93 s, 117–122 s, 142–153 s.
+// CHECKS 2026-11-28: blind check: g1, f2, m1, h3 rewritten so listening decides.
 import type { Clip } from '../types.ts';
 
 export const kevinTalk: Clip = {
@@ -116,13 +117,13 @@ export const kevinTalk: Clip = {
 
     { id: 'g1', skill: 'gist', level: 'B1', point: 'why', reveals: ['mechanic'], seg: [50.2, 69.3],
       stem: 'Why does Kevin talk this way?', ja: 'ケビンはなぜこんな話し方をする？',
-      choices: ['To save time', 'To be friendly', 'To sound smart'], a: 0,
-      choicesJa: ['時間を節約するため', '親しみやすくするため', '頭がよく見えるため'],
+      choices: ['To save time', 'To rest his voice', 'To sound smart'], a: 0,
+      choicesJa: ['時間を節約するため', '声を休めるため', '頭がよく見えるため'],
       cue: '「So me think」のあと',
       line: 'So me think, why *waste time* say lot word when few word do trick?',
       said: 'ケビンが「少ない言葉で足りるのに、なぜ時間をむだにする？」と言う。',
       mean: 'waste time ＝ 時間をむだにする。言葉を減らせば時間の節約になる、という考え。',
-      trap: '整備士と親友だという話から、親しみの話と考えがち。理由は why waste time（なぜ時間をむだに）。',
+      trap: '短い片言なので、のどが悪くて声を休めていると考えがち。理由は why waste time（なぜ時間をむだに）。',
       use: 'Let’s not waste time.（時間をむだにしないようにしよう）' },
 
     { id: 'd3', skill: 'detail', level: 'B1', point: 'mechanic', seg: [50.5, 60.1],
@@ -137,14 +138,14 @@ export const kevinTalk: Clip = {
       use: 'My mechanic doesn’t speak English.（私の整備士は英語を話さない）' },
 
     { id: 'f2', skill: 'phrase', level: 'B2', point: 'trick', seg: [59.95, 69.3],
-      stem: 'What does Kevin’s “few word *do trick*” mean?', ja: 'ケビンの「few word do trick」はどういう意味？',
-      choices: ['Work well enough', 'Make people laugh', 'Do some magic'], a: 0,
-      choicesJa: ['十分うまくいく', '人を笑わせる', '手品をする'],
+      stem: 'What does Kevin think a few words can do?', ja: 'ケビンは、少ない言葉で何ができると思っている？',
+      choices: ['Say all he needs', 'Fool other people', 'Make him look cool'], a: 0,
+      choicesJa: ['必要なことは全部言える', '人をだませる', '自分がかっこよく見える'],
       cue: '最後の「when few word」のあと',
       line: 'why waste time say lot word when *few word do trick*?',
       said: 'ケビンが「少ない言葉で用が足りるのに」と言う。',
       mean: 'do the trick ＝ うまくいく、役に立つ（決まり文句）。trick ＝ 文字どおり「手品」。',
-      trap: 'trick（手品、いたずら）から、手品の話を連想しやすい。do the trick で「うまくいく」。',
+      trap: 'trick（いたずら、だます）が聞こえ、人をだます話と考えがち。do the trick で「うまくいく、足りる」。',
       use: 'A cup of tea will do the trick.（紅茶1杯で元気になるよ）' },
 
     { id: 'p1', skill: 'pragma', level: 'B2', point: 'appreciate', seg: [64.3, 74.9],
@@ -181,14 +182,14 @@ export const kevinTalk: Clip = {
       use: 'What’s the dress code?（服装の決まりは何ですか）' },
 
     { id: 'm1', ctx: true, skill: 'marker', level: 'B2', point: 'though', reveals: ['hour'], seg: [90.8, 99],
-      stem: 'What does “*though*” show in “Does it save time, though?”', ja: '「Does it save time, though?」の though は何を表す？',
-      choices: ['Doubt about Kevin’s point', 'Interest in the time saved', 'Agreement with Kevin'], a: 0,
-      choicesJa: ['ケビンの言い分を疑っている', '節約した時間に興味がある', 'ケビンへの賛成'],
+      stem: 'What does the coworker think of Kevin’s “save time”?', ja: 'ケビンの「時間の節約」を、同僚はどう思っている？',
+      choices: ['It isn’t really true', 'It is a smart idea', 'He wants to try it too'], a: 0,
+      choicesJa: ['本当は節約になっていない', '頭のいい考えだ', '自分も試してみたい'],
       cue: '「But save time」のあと',
       line: 'Kevin: But save time. More success. / Does it save time, *though*? Because we’ve been here for about an hour.',
       said: '同僚が「でも本当に時間の節約になってる？もう1時間くらいここにいるよ」と言う。',
       mean: '文の最後の though ＝ でも、本当に？ 相手の言い分を疑う時に使う。',
-      trap: 'though は小さく言うので、聞き落としやすい。疑いの合図。',
+      trap: 'save time を聞き返す形なので、感心していると考えがち。小さく言う最後の though は疑いの合図。',
       use: 'Is it really cheaper, though?（でも、本当に安いの？）' },
 
     { id: 'n1', skill: 'number', level: 'B1', point: 'hour', seg: [93.74, 99],
@@ -236,14 +237,14 @@ export const kevinTalk: Clip = {
       use: 'I want to see the world.（世界を見て回りたい）' },
 
     { id: 'h3', skill: 'infer', level: 'B1', point: 'method', reveals: ['seeworld', 'scene'], seg: [121.5, 133.5],
-      stem: 'Why is “see world” a problem?', ja: '「see world」の何が問題？',
-      choices: ['It can mean two things', 'It is far too long', 'Kevin can’t say it'], a: 0,
-      choicesJa: ['2つの意味に取れる', '長すぎる', 'ケビンが言えない'],
+      stem: 'What is the coworker still not sure about?', ja: '同僚がまだ分からないのは何？',
+      choices: ['Which words Kevin means', 'Where Kevin wants to go', 'Why Kevin speaks this way'], a: 0,
+      choicesJa: ['ケビンがどちらの言葉のつもりか', 'ケビンがどこへ行きたいか', 'ケビンがなぜこう話すか'],
       cue: '「No, see, right there」のあと',
       line: 'I still don’t know if you’re saying *see world or see the world*… it’s *taken a lot of time to explain* it.',
       said: '同僚が「どっちの意味か、まだわからない。説明にも時間がかかった」と言う。',
       mean: '言葉を減らすと意味が2つに取れて、かえって時間がかかる。',
-      trap: '短い言い方なので「長すぎる」は外れ。短すぎて、see world と see the world の2つに取れるのが問題。',
+      trap: 'world（世界）から、行きたい場所の話と考えがち。分からないのは see world か see the world か。',
       use: 'That’s the problem right there.（まさにそこが問題だ）' },
 
     { id: 'a2', skill: 'pragma', level: 'B1', point: 'normal', seg: [130.3, 138.8],

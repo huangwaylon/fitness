@@ -10,6 +10,7 @@
 // Dwight and Andy name themselves at 8.5 and 10.8 s; Michael says "Thank you, Andy" at 61.5 s; no key turns on which
 // voice owns which car, nor on who says the closing line. OPEN: d2 (Jim) is guessable for fans of the show.
 // SKIP 154.8–177.2: music to the end
+// CHECKS 2026-11-28: blind check: f4 pr3 s1 f6 rewritten so listening decides.
 import type { Clip } from '../types.ts';
 
 export const dwightVsAndy: Clip = {
@@ -19,25 +20,25 @@ export const dwightVsAndy: Clip = {
   credit: 'The Office (official YouTube channel)',
   questions: [
     { id: 'f4', skill: 'phrase', level: 'B1', point: 'appreciate', seg: [0, 5.1],
-      stem: 'What does “I appreciate it” mean?', ja: '“I appreciate it” はどういう意味？',
-      choices: ['I’m grateful', 'I don’t need it', 'I’ll pay for it'], a: 0,
-      choicesJa: ['感謝している', 'それはいらない', 'それは私が払う'],
-      cue: '「thank you」のあと',
+      stem: 'What does the speaker say to Michael at the very start?', ja: '最初に、話し手はマイケルに何と言う？',
+      choices: ['He thanks Michael', 'He says sorry', 'He asks for more'], a: 0,
+      choicesJa: ['マイケルにお礼を言う', 'あやまる', 'もっとほしいと言う'],
+      cue: 'いちばん最初のせりふ',
       line: 'Michael Scott, thank you. *I appreciate it*, Mike.',
       said: '「マイケル・スコット、ありがとう。感謝してるよ」と言う。',
       mean: 'I appreciate it ＝ ありがたい、感謝します。thank you のあとに重ねて、気持ちを強める。',
-      trap: 'appreciate を「評価する」と思いやすい。人の親切に言うときは「ありがとう」。',
+      trap: 'appreciate を知らないと、ほかの返事に聞こえるが、thank you と同じ「ありがとう」を重ねている。',
       use: 'Thanks for waiting. I appreciate it.（待ってくれてありがとう。助かります）' },
 
     { id: 'pr3', skill: 'pragma', level: 'B1', point: 'introduced', seg: [5.2, 14.1],
-      stem: 'What does “I don’t believe we’ve been introduced” mean?', ja: '「I don’t believe we’ve been introduced」はどういう意味？',
-      choices: ['We haven’t met yet', 'I don’t trust you', 'I forgot your name'], a: 0,
-      choicesJa: ['まだ会ったことがないですね', 'あなたを信用していない', '名前を忘れた'],
+      stem: 'What does Dwight do right after “Hello”?', ja: '「Hello」のすぐあと、ドワイトは何をする？',
+      choices: ['He gives his name and job', 'He asks for Andy’s name', 'He says they’ve met before'], a: 0,
+      choicesJa: ['自分の名前と役職を言う', 'アンディの名前を聞く', '前に会ったと言う'],
       cue: '「Hello」のあと',
       line: '*I don’t believe we’ve been introduced.* Dwight Schrute, assistant regional manager.',
       said: '「まだ紹介されていませんね。ドワイト・シュルート、地域マネージャー補佐です」と名乗る。',
       mean: '直訳は「紹介されていないと思う」。初対面で自分から名乗るときの、ていねいな前置き。',
-      trap: 'don’t believe（信じない）から、疑っていると思いやすい。I don’t believe 〜 は「〜ないと思う」。',
+      trap: 'introduced から、相手の名前を聞くと考えがち。I don’t believe 〜 は前置きで、自分から名乗る。',
       use: 'Hi, I don’t think we’ve met. I’m Ken.（はじめまして、ケンです）' },
 
     { id: 'd1', skill: 'detail', level: 'B1', point: 'title', seg: [8.3, 16.3],
@@ -293,24 +294,24 @@ export const dwightVsAndy: Clip = {
 
     { id: 's1', skill: 'sound', level: 'B2', point: 'ifidiot', seg: [130.2, 134.5],
       stem: 'Fill the gap: “If I were an idiot, ___ driving a Trans Am.”', ja: '空所に入るのは？ “If I were an idiot, ___ driving a Trans Am.”',
-      choices: ['I’d be', 'I’ll be', 'I’m'], a: 0,
-      choicesJa: ['〜しているだろう', '〜しているつもりだ', '〜している'],
+      choices: ['I’d be', 'I wouldn’t be', 'I could be'], a: 0,
+      choicesJa: ['〜しているだろう', '〜していないだろう', '〜しているかもしれない'],
       cue: '「idiot」のあと',
       line: 'If I were an idiot, *I’d be* driving a Trans Am.',
       said: '「僕がばかなら、トランザムに乗ってるさ」と言い返す。',
       mean: 'I’d be ＝ 〜しているだろう。I’d の d はほとんど聞こえず、be につながる。',
-      trap: '「アイル」と l が残れば I’ll be、be がなく「アイム」なら I’m、「アイ（ドゥ）ビー」なら I’d be。',
+      trap: 'どれも文法は合うが、「ウドゥント」なら wouldn’t、「クッ」なら could。短い「アイ（ドゥ）ビー」は I’d be。',
       use: 'If I were you, I’d take the train.（私なら電車で行くな）' },
 
     { id: 'f6', skill: 'phrase', level: 'B1', point: 'comeback', seg: [142.5, 148.5],
-      stem: 'What does “comeback” mean in “Nice comeback”?', ja: '“Nice comeback” の comeback はどういう意味？',
-      choices: ['A clever reply', 'A return to work', 'A second try'], a: 0,
-      choicesJa: ['うまい言い返し', '仕事への復帰', '2回目の挑戦'],
-      cue: '「You’re the idiot!」のあと',
+      stem: 'Which line gets called a “comeback”?', ja: '“comeback” と呼ばれるのは、どのせりふ？',
+      choices: ['“You’re the idiot!”', '“Nice try, buddy!”', '“Get a real car!”'], a: 0,
+      choicesJa: ['「お前こそばかだ！」', '「惜しかったな！」', '「ちゃんとした車を買え！」'],
+      cue: '「Nice comeback!」の直前と直後',
       line: 'You’re the idiot! — *Nice comeback!* — I was making fun of your *comeback*!',
       said: '「お前こそばかだ！」に「いい言い返しだな！」と返す。',
       mean: 'comeback ＝ 言い返し。悪口にうまく返す一言。Nice comeback はここでは皮肉で、本当は逆の意味。',
-      trap: 'カタカナのカムバック（復帰）を連想しやすい。けんかの中の comeback は「言い返し」。',
+      trap: '車の悪口の流れなので、車の一言と勘違いしやすい。comeback は直前の「言い返し」のこと。',
       use: 'I never think of a good comeback in time.（いい言い返しがいつも間に合わない）' },
 
     { id: 'f7', skill: 'phrase', level: 'B2', point: 'bestof', seg: [151.5, 155.5],

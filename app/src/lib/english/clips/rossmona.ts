@@ -7,6 +7,7 @@
 // Mona about the baby's week, floats "Joey's" idea that Rachel move in with him, then laughs it off once Mona pictures
 // it. Not settled by either source: who says "Yeah, right." (17.9 s) and "What?" (21.3 s); 28–33 s; Ross's non-word
 // reply at 46 s.
+// CHECKS 2026-11-28: blind check: f1 rewritten so listening decides.
 import type { Clip } from '../types.ts';
 
 export const rossMona: Clip = {
@@ -145,14 +146,14 @@ export const rossMona: Clip = {
       use: 'Yeah, right. Like that’ll happen.（まさか。ありえないって）' },
 
     { id: 'f1', skill: 'phrase', level: 'B2', point: 'cracks', seg: [19.8, 26.4],
-      stem: 'What does “Joey *cracks me up*” mean?', ja: '「Joey cracks me up」の意味は？',
-      choices: ['Joey makes me laugh', 'Joey makes me angry', 'Joey makes me sad'], a: 0,
-      choicesJa: ['ジョーイは笑わせてくれる', 'ジョーイには腹が立つ', 'ジョーイは悲しくさせる'],
+      stem: 'Right after “What?”, what does Ross say about Joey?', ja: '「What?」のすぐあと、ロスはジョーイについて何と言う？',
+      choices: ['Joey makes him laugh', 'Joey gets on his nerves', 'Joey really means well'], a: 0,
+      choicesJa: ['ジョーイには笑わせられる', 'ジョーイにはいらいらする', 'ジョーイは悪気はない'],
       cue: '「What?」のあと',
       line: 'What? — Joey *cracks me up*.',
       said: 'ロスが「ジョーイには笑っちゃうよ」と言う。',
       mean: 'crack ＝ ひびが入る。笑いで顔がくずれる→ crack 人 up ＝ 人を大笑いさせる。ここは案を笑い飛ばす。',
-      trap: 'crack（割れる、ひびが入る）から、悪い意味を連想しやすい。crack up は大笑い。',
+      trap: 'crack（割れる、ひびが入る）から、いらいらする話と考えがち。crack up は大笑い。',
       use: 'You crack me up!（あなたって、ほんと笑える！）' },
 
     { id: 'm1', skill: 'marker', level: 'B2', point: 'itslike', reveals: ['whydont', 'awkward'], retired: true, seg: [21.7, 28.1],

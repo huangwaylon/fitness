@@ -10,6 +10,7 @@
 // the blanket count (18–24 s), "I love amenities. — I know." (55–56 s: who says which isn't settled), and "There's
 // another soft one" (62–64 s).
 // EAR CHECK: 42.2 s nt2 — the stress in “this is always here” falls on “always” (ship only once confirmed)
+// CHECKS 2026-11-28: blind check: f1, s2 rewritten so listening decides.
 import type { Clip } from '../types.ts';
 
 export const tomsApartment: Clip = {
@@ -20,15 +21,15 @@ export const tomsApartment: Clip = {
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
     { id: 'f1', skill: 'phrase', level: 'B2', point: 'coast', reveals: ['gone'], ctx: true, seg: [0, 8.0],
-      stem: 'What does Leslie mean by “Is the coast clear?”',
-      ja: 'レスリーの「Is the coast clear?」はどういう意味？',
-      choices: ['Is anyone else here?', 'Is the weather nice?', 'Is the beach near here?'], a: 0,
-      choicesJa: ['ほかにだれかいる？', '天気はいい？', '海はこの近く？'],
+      stem: 'What does Leslie want to know as she comes in?',
+      ja: '入ってきたレスリーは何を知りたい？',
+      choices: ['If anyone else is there', 'If the door is locked', 'If Ann is ready to go'], a: 0,
+      choicesJa: ['ほかにだれかいるか', 'ドアに鍵がかかっているか', 'アンの準備ができたか'],
       cue: '最初の一文と、アンの「Come in」',
       line: 'Leslie: *Is the coast clear?* … Is he gone? / Ann: Yeah, *he’s gone*. Come in.',
       said: '入ってくるなり「だれもいない？」と小声で聞き、アンは「出かけた。入って」と答える。',
       mean: 'The coast is clear ＝ 文字どおりは「海岸に敵がいない」。見張りの言葉から→「じゃまな人はいない、今なら安全」。',
-      trap: 'coast（海岸）や clear（晴れ）から、海や天気を連想しやすい。アンの he’s gone が答え。',
+      trap: 'coast や clear から海や天気を連想しやすい。続く Is he gone? が手がかり。',
       use: 'Is the coast clear? Can I come out?（もう大丈夫？出ていい？）' },
 
     { id: 'i1', skill: 'gist', level: 'B2', point: 'sneak', reveals: ['gotta'], seg: [0, 15.0],
@@ -58,13 +59,13 @@ export const tomsApartment: Clip = {
     { id: 's2', skill: 'sound', level: 'B1', point: 'gotta', seg: [2.7, 7.7],
       stem: 'Fill the gap: “Come in. You ___ see this.”',
       ja: 'すき間をうめよう：「Come in. You ___ see this.」',
-      choices: ['gotta', 'gonna', 'wanna'], a: 0,
-      choicesJa: ['〜しなきゃ（gotta）', '〜するつもり（gonna）', '〜したい（wanna）'],
+      choices: ['gotta', 'have to', 'need to'], a: 0,
+      choicesJa: ['〜しなきゃ（gotta）', '〜しなきゃ（have to）', '〜する必要がある（need to）'],
       cue: '「Come in」のあと',
       line: 'Come in. You *gotta* see this.',
       said: '「入って。これ見てよ」と言う。',
       mean: 'gotta ＝ got to（〜しなきゃ）。t が軽い「ラ」の音になり「ガラ」と聞こえる。',
-      trap: 'gonna は「ガナ」、wanna は「ワナ」。「ガラ」と聞こえたら gotta。',
+      trap: 'どれも意味が合い入りそうに思えるが、聞こえたのは「ガラ」の2音。have to なら「ハフタ」。',
       use: 'You gotta try this cake.（このケーキ、食べてみて）' },
 
     { id: 'n1', skill: 'number', level: 'B1', point: 'weeks', seg: [6.2, 14.5], retired: true, keep: true,

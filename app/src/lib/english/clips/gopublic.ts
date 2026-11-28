@@ -12,6 +12,7 @@
 // SKIP 226–248.5: the drones' shape again (innuendo) and music; pr2/p3 cover the clean lines just before
 // EAR CHECK: 67.6–68.1 s nt2 — "you planning on" (both sources): no "are" before it, not even a reduced 're
 // EAR CHECK: 61.7 s s1 — "'Cause I'm" (whisper "'Cause I'm", captions "cuz I'm"): the m of I'm merges into "just"
+// CHECKS 2026-11-28: blind check: i1, f1, f2, h2, f3, a2 rewritten so listening decides.
 import type { Clip } from '../types.ts';
 
 export const goPublic: Clip = {
@@ -43,14 +44,14 @@ export const goPublic: Clip = {
       use: 'I’m stuck in traffic.（渋滞で動けないの）' },
 
     { id: 'i1', ctx: true, skill: 'infer', level: 'B2', point: 'eyes', seg: [21.8, 30.1],
-      stem: 'What does “You *said it with your eyes*” mean?', ja: '「You said it with your eyes」の意味は？',
-      choices: ['Your face showed it', 'You said it quietly', 'Your voice showed it'], a: 0,
-      choicesJa: ['顔に出ていた', '小さな声で言った', '声に出ていた'],
+      stem: 'What is the reply to “I didn’t say anything”?', ja: '「I didn’t say anything」への返事は？',
+      choices: ['Your face showed it', 'You said it last night', 'You wrote it in a text'], a: 0,
+      choicesJa: ['顔に出ていた', '昨日の夜に言った', 'メッセージに書いた'],
       cue: '「I didn’t say anything」への返事',
       line: 'I didn’t say anything. / You *said it with your eyes*.',
       said: '「何も言ってないって」に「目で言ってたよ」と返す。',
       mean: '文字どおりは「目で言った」。言葉にしなくても、目つきや顔で気持ちが伝わっていた、ということ。',
-      trap: 'said it（言った）から、声で言ったと考えがち。決め手は with のあとの eyes（目）。',
+      trap: 'said it（言った）から、前に言ったことを責めていると考えがち。決め手は with のあとの eyes（目）。',
       use: 'You don’t have to say it. I can see it in your eyes.（言わなくても、目を見れば分かる）' },
 
     { id: 'a1', skill: 'attitude', level: 'B2', point: 'ground', seg: [27.1, 33.8], retired: true,
@@ -98,14 +99,14 @@ export const goPublic: Clip = {
       use: 'She dumped him by text.（彼女はメールで彼をふった）' },
 
     { id: 'f1', skill: 'phrase', level: 'B2', point: 'piledon', seg: [52.3, 61.2],
-      stem: 'What does “the Internet *piled on*” mean?', ja: '「the Internet piled on」の意味は？',
-      choices: ['Many people attacked her', 'Many people helped her', 'Many people stopped watching'], a: 0,
-      choicesJa: ['大勢が彼女を攻撃した', '大勢が彼女を助けた', '大勢が見るのをやめた'],
+      stem: 'After the breakup, who “piled on,” as Carly tells it?', ja: 'カーリーの話では、別れのあと piled on したのはだれ？',
+      choices: ['Lots of people online', 'Beau and his friends', 'Kids at her school'], a: 0,
+      choicesJa: ['ネット上の大勢の人', 'ボーとその友だち', '学校の子たち'],
       cue: '「during that livestream」のあと',
-      line: 'he dumped me during that livestream, and the Internet *piled on*.',
+      line: 'he dumped me during that livestream, and *the Internet piled on*.',
       said: 'カーリーが「そしてネットでみんなに叩かれたの」と言う。',
       mean: 'pile on ＝ 文字どおりは「上に次々重なる」。倒れた人に大勢がのしかかる→寄ってたかって責める。ネットの炎上によく使う。',
-      trap: 'pile（積み重なる）から、人が集まって味方になると思いやすい。集まって攻める意味。',
+      trap: 'ボーの話の流れで、彼とその友だちと考えがち。piled on の前の the Internet を聞く。',
       use: 'Don’t pile on him. He feels bad already.（寄ってたかって責めないで）' },
 
     { id: 's1', skill: 'sound', level: 'B2', point: 'cause', seg: [58.2, 67.6],
@@ -162,14 +163,14 @@ export const goPublic: Clip = {
       use: 'Not to state the obvious, but it’s raining.（言うまでもないけど、雨だよ）' },
 
     { id: 'f2', skill: 'phrase', level: 'B2', point: 'take', seg: [82.8, 91.5],
-      stem: 'What does “I can *take* whatever they throw…” mean?', ja: '「I can take whatever they throw…」はどういう意味？',
-      choices: ['He can handle it all', 'He can stop it all', 'He can delete it all'], a: 0,
-      choicesJa: ['全部受け止められる', '全部止められる', '全部消せる'],
+      stem: 'What does Freddie say he can do?', ja: 'フレディは、自分に何ができると言う？',
+      choices: ['Handle anything people say', 'Make the mean people stop', 'Delete all the mean comments'], a: 0,
+      choicesJa: ['何を言われても耐えられる', '意地悪な人を止められる', '意地悪なコメントを全部消せる'],
       cue: '「You don’t have to protect me」のあと',
       line: 'You don’t have to protect me, okay? I can *take whatever they throw at us*.',
       said: 'フレディが「守らなくていい。何を言われても受け止められる」と言う。',
       mean: 'take ＝ 耐える、受け止める。throw は物ではなく、悪口や批判のたとえ。',
-      trap: 'throw（投げる）から、飛んでくる物を止める話と考えがち。take は「受け止めて耐える」。',
+      trap: '守る守らないの話なので、彼が悪口を止めるのだと考えがち。take は「受け止めて耐える」。',
       use: 'I can take it. Tell me the truth.（大丈夫、受け止める。本当のことを言って）' },
 
     { id: 'i4', skill: 'infer', level: 'B1', point: 'forever', reveals: ['with'], seg: [86.5, 96.7],
@@ -204,14 +205,14 @@ export const goPublic: Clip = {
       use: 'FYI, the meeting is at three.（お知らせです。会議は3時です）' },
 
     { id: 'h2', skill: 'phrase', level: 'B2', point: 'chin', reveals: ['stream'], seg: [120.1, 132.1],
-      stem: 'What does “*not a flattering angle*” mean?', ja: '「not a flattering angle」の意味は？',
-      choices: ['She doesn’t look good', 'She looks really great', 'The camera is broken'], a: 0,
-      choicesJa: ['写りがよくない', 'とてもよく写っている', 'カメラがこわれている'],
+      stem: 'What does the text say about the camera angle?', ja: 'メッセージは、カメラの角度について何と言っている？',
+      choices: ['It’s bad for Carly’s chin', 'It’s too dark to see them', 'It makes them look cute'], a: 0,
+      choicesJa: ['カーリーのあごの写りが悪い', '暗くて二人が見えない', '二人がかわいく写っている'],
       cue: '「your camera’s on, and」のあと',
-      line: 'FYI, your camera’s on, and it’s *not a flattering angle* for Carly’s chin.',
+      line: 'FYI, your camera’s on, and it’s *not a flattering angle for Carly’s chin*.',
       said: 'お母さんが「カメラがついてる。それと、カーリーのあごの写りがよくない角度よ」と送ってくる。',
       mean: 'flattering ＝ 実際よりよく見せる。not a flattering angle ＝ 写りが悪い角度。',
-      trap: 'flattering（ほめる、よく見せる）だけ聞くと、よく写っていると思いやすい。前の not を聞く。',
+      trap: 'flattering（よく見せる）だけだと、かわいく写っていると勘違いしやすい。not と chin を聞く。',
       use: 'That’s not a flattering photo of me.（その写真、写りが悪いな）' },
 
     { id: 'd4', skill: 'detail', level: 'B1', point: 'whystream', reveals: ['stream'], seg: [127.7, 133],
@@ -237,25 +238,25 @@ export const goPublic: Clip = {
       use: 'The food was surprisingly good.（料理が意外とおいしかった）' },
 
     { id: 'f3', skill: 'phrase', level: 'B2', point: 'abouttime', reveals: ['comments'], seg: [142.9, 149.2],
-      stem: 'What does the comment “*It’s about time*” mean?', ja: 'コメントの「It’s about time」の意味は？',
-      choices: ['Finally, after a long wait', 'Just the right moment', 'Only a little time left'], a: 0,
-      choicesJa: ['やっとだね、待ってた', 'ちょうどいいタイミング', 'あと少ししか時間がない'],
+      stem: 'What does the first comment say about them?', ja: '1つ目のコメントは、二人について何と言っている？',
+      choices: ['It took them long enough', 'They look cute together', 'It won’t last very long'], a: 0,
+      choicesJa: ['やっとだね、遅いくらい', '二人はお似合い', '長くは続かない'],
       cue: '「surprisingly nice」のあと',
       line: 'These comments are surprisingly nice. *It’s about time.*',
       said: '1つ目のコメントは「やっとだね」。',
       mean: 'It’s about time ＝ やっとだね、遅いくらい。待っていたことが起きた時に言う。',
-      trap: 'time（時間）から「ちょうどいいタイミング」と思いやすい。「もっと早く」の気持ち。',
+      trap: 'nice のすぐあとなので、ほめ言葉の「お似合い」と考えがち。It’s about time は「もっと早く」の気持ち。',
       use: 'You’re here! It’s about time.（来た！遅いよ）' },
 
     { id: 'a2', skill: 'phrase', level: 'B2', point: 'sarcastic', seg: [148, 156],
-      stem: 'What does “being *sarcastic*” mean?', ja: '「being sarcastic」はどういう意味？',
-      choices: ['Not meaning what they say', 'Being really kind to them', 'Being really angry at them'], a: 0,
-      choicesJa: ['言葉と本音が逆', '二人にとても優しい', '二人にとても怒っている'],
+      stem: 'How do they read the last comment?', ja: '最後のコメントを、二人はどう受け取る？',
+      choices: ['It means the opposite', 'It is really sweet', 'It is from a friend'], a: 0,
+      choicesJa: ['本音は逆', 'とても優しい', '友だちが書いた'],
       cue: '最後のコメントのあとの一言',
       line: 'I’m definitely not clicking away as fast as humanly possible. — I think they’re *being sarcastic*.',
       said: '「全速力で画面を閉じたりしてない」というコメントに、「これ、皮肉だと思う」と言う。',
       mean: 'sarcastic ＝ 皮肉な。言葉と本音が逆。ここは「本当は急いで閉じている」ということ。',
-      trap: 'definitely not（絶対〜ない）をそのまま信じやすい。すぐあとの sarcastic が答え。',
+      trap: 'definitely not（絶対〜ない）をそのまま信じると、優しいコメントに聞こえるが、すぐあとの sarcastic が答え。',
       use: 'I think he was being sarcastic.（彼、皮肉で言ってたと思う）' },
 
     { id: 'd7', skill: 'detail', level: 'B1', point: 'decide', seg: [156.5, 163.0],

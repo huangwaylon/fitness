@@ -10,6 +10,7 @@
 // the start; segments follow the captions. Only Ross and Rachel speak, each named by the other (“Rach”, “Ross”).
 // Untested on purpose: 22.5 s (“like me” / “liked me”; no key rests on the tense); speech ends at 43 s (then music).
 // A short clip: ≤ 3 item starts in any 10 s caps the bank at 12 live.
+// CHECKS 2026-11-28: blind check: f1 rewritten so listening decides.
 import type { Clip } from '../types.ts';
 
 export const rossList: Clip = {
@@ -109,14 +110,14 @@ export const rossList: Clip = {
       use: 'It takes guts to say that.（それを言うのは勇気がいるね）' },
 
     { id: 'f1', skill: 'phrase', level: 'B2', point: 'seize', seg: [18, 26.1],
-      stem: 'What does “seize the day” mean?',
-      ja: '「seize the day」はどういう意味？',
-      choices: ['Use your chance now', 'Take a day off', 'Plan your day well'], a: 0,
-      choicesJa: ['今のチャンスを逃さない', '一日休む', '一日の予定をよく立てる'],
+      stem: 'What does Rachel say Ross never does?',
+      ja: 'レイチェルは、ロスが何をしないと言う？',
+      choices: ['Act on his chances', 'Plan things ahead', 'Say sorry first'], a: 0,
+      choicesJa: ['チャンスを逃さず動く', '前もって計画する', '先に謝る'],
       cue: 'sort of のあと。', line: 'you don’t just sort of *seize the day*, you know?',
       said: '「思い切って動いたりしないよね」と言う。',
       mean: 'seize the day ＝ 文字どおりは「その日をつかむ」。今日という機会を逃さない→思い切って動く。彼はそれをしない、という不満。',
-      trap: 'day（一日）から、休みや予定の話を連想しやすい。seize ＝ つかむ。',
+      trap: 'day（一日）から、予定を立てる話と考えがち。seize ＝ つかむ。チャンスをつかんで動くこと。',
       use: 'Seize the day. Just ask her.（チャンスだよ。誘ってみなよ）' },
 
     { id: 'nt3', skill: 'dict', level: 'C2', point: 'seize', seg: [19.4, 22.5], retired: true,

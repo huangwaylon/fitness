@@ -9,6 +9,7 @@
 // the friend at 76–80 s and the one answering at 220–229 s aren't, so items say "friend".
 // SKIP 176–216: the rest of the book talk (n4 asks the number), the cast-name list and the Gary joke (show lore).
 // Untested: 0–7 s (speakers unclear), 25.6 s (whisper garbage), 75.5 s. Open: the title ("failure") helps h2 blind.
+// CHECKS 2026-11-28: blind check: c4, f3 rewritten so listening decides.
 import type { Clip } from '../types.ts';
 
 export const tomFailure: Clip = {
@@ -18,15 +19,15 @@ export const tomFailure: Clip = {
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
     { id: 'c4', skill: 'phrase', level: 'B1', point: 'nosweat', seg: [7.5, 11.2],
-      stem: 'What does Tom mean by “No sweat”?',
-      ja: 'トムの「No sweat」はどういう意味？',
-      choices: ['Easy, don’t worry', 'It’s too hot today', 'I can’t do it today'], a: 0,
-      choicesJa: ['簡単だよ、心配ない', '今日は暑すぎる', '今日はできない'],
+      stem: 'How does Tom feel about the problem?',
+      ja: 'トムは、この問題をどう思っている？',
+      choices: ['Sure it will be easy', 'Worried it is too big', 'Angry at the city office'], a: 0,
+      choicesJa: ['簡単に解決できると思う', '大きすぎると心配している', '市役所に怒っている'],
       cue: '「Tommy will solve this problem」のあと',
       line: 'Don’t worry, boo-boo. Tommy will solve this problem. *No sweat.*',
       said: '「心配しないで。トミーが解決するよ。楽勝さ」と言う。',
       mean: 'No sweat ＝ 文字どおりは「汗なし」。汗もかかずにできる→「楽勝・お安いご用」。くだけた言い方。',
-      trap: 'sweat（汗）から暑さの話を連想しやすい。前の Don’t worry と同じ気持ち。',
+      trap: '役所のごたごたの直後なので、心配や怒りと考えがち。Don’t worry と No sweat（楽勝）で自信を見せる。',
       use: 'Can you help? — Sure, no sweat.（手伝える？—いいよ、お安いご用）' },
 
     { id: 'pr1', skill: 'phrase', level: 'B1', point: 'canijust', seg: [10.4, 15.7],
@@ -102,15 +103,15 @@ export const tomFailure: Clip = {
       use: 'Friday? Sorry, no can do.（金曜？ごめん、無理だ）' },
 
     { id: 'f3', skill: 'phrase', level: 'B2', point: 'homework', seg: [53.7, 62.8],
-      stem: 'What does “you’ve done your homework” mean here?',
-      ja: '「you’ve done your homework」は、ここではどういう意味？',
-      choices: ['You looked into it carefully', 'You did the paperwork already', 'You asked everyone first'], a: 0,
-      choicesJa: ['しっかり下調べした', 'もう書類を済ませた', '先にみんなに聞いた'],
+      stem: 'Why does Ben think the plan can work?',
+      ja: 'ベンはなぜ、この計画はうまくいくと思う？',
+      choices: ['Tom looked into it well', 'Tom has done this before', 'The bistro is always full'], a: 0,
+      choicesJa: ['トムがしっかり下調べした', 'トムは前にもやったことがある', '店がいつも満席だから'],
       cue: '「risks」の話のあと',
       line: 'there are always going to be risks… but *you’ve done your homework*. All the numbers line up.',
       said: '「リスクはつきもの。でも下調べはしてある。数字も合っている」と言う。',
       mean: 'do one’s homework ＝ 文字どおりは「宿題をする」→仕事では「事前にしっかり調べる」。',
-      trap: 'homework から書類仕事を連想しやすい。直後の All the numbers line up（数字が合う）が下調べの結果。',
+      trap: '店が成功している話のあとなので、満席だからと考えがち。but のあとの you’ve done your homework（下調べした）が理由。',
       use: 'Do your homework before you buy a car.（車を買う前に下調べを）' },
 
     { id: 'a2', skill: 'attitude', level: 'B2', point: 'ron', seg: [69.5, 78.9],

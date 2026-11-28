@@ -12,6 +12,7 @@
 // EAR CHECK: 48.6 s s1 — "has to" said "hasta" (both sources have "has to")
 // EAR CHECK: 162.9 s i1 — who says "There's an old saying in show business" (scenes: Andy; old transcript ja had Leslie's voice)
 // EAR CHECK: 160.6 s x1 — "got to find somebody" (both sources); it may be said "gotta", which the app scores the same
+// CHECKS 2026-11-28: blind check: lookgood, shortly, c1 rewritten so listening decides.
 import type { Clip } from '../types.ts';
 
 export const benSaves: Clip = {
@@ -21,15 +22,15 @@ export const benSaves: Clip = {
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
     { id: 'lookgood', skill: 'phrase', level: 'B1', point: 'lookgood', seg: [0, 5],
-      stem: 'What does “Wow, looking good” mean?',
-      ja: '「Wow, looking good」の意味は？',
-      choices: ['It looks really nice', 'Look at it carefully', 'I am looking for it'], a: 0,
-      choicesJa: ['すごくいい感じ', 'よく見て', 'それを探している'],
+      stem: 'What does the first speaker think of the stage?',
+      ja: '最初に話す人は、舞台をどう思っている？',
+      choices: ['It looks really nice', 'It looks a bit small', 'It isn’t ready yet'], a: 0,
+      choicesJa: ['すごくいい感じ', '少し小さい', 'まだできていない'],
       cue: '最初の一言。',
       line: '*Wow, looking good.*',
       said: '舞台を見て「わあ、いい感じ」と言う。',
       mean: 'looking good ＝ It’s looking good の短い形。見た目を「いい感じだね」とほめる言い方。',
-      trap: 'looking から「見ている・探している」と考えがち。look good ＝ よく見える。',
+      trap: '次の人の「エレベーターがあれば」から、まだ足りないと考えがち。最初の一言は looking good。',
       use: 'Wow, looking good!（わあ、いい感じ！）' },
 
     { id: 'd1', skill: 'detail', level: 'B1', point: 'auditors', ctx: true, seg: [9.7, 17.9],
@@ -176,15 +177,15 @@ export const benSaves: Clip = {
       use: 'I don’t really feel like going out.（あまり出かける気分じゃない）' },
 
     { id: 'shortly', skill: 'phrase', level: 'B1', point: 'shortly', seg: [121.1, 125.0],
-      stem: 'What does “I’ll be back shortly” mean?',
-      ja: '「I’ll be back shortly」の意味は？',
-      choices: ['I’ll come back soon', 'I’ll be short', 'I’ll come back tomorrow'], a: 0,
-      choicesJa: ['すぐもどる', '短くなる', '明日もどる'],
+      stem: 'He goes home for his guitar. When will he be back?',
+      ja: 'ギターを取りに行く人は、いつもどる？',
+      choices: ['In a few minutes', 'In about an hour', 'After the show'], a: 0,
+      choicesJa: ['数分で', '1時間くらいで', 'ショーのあとで'],
       cue: '「grab my guitar」のあと。',
       line: 'I got to grab my guitar from my house. *I’ll be back shortly!*',
       said: '「家にギターを取りに行かなきゃ。すぐもどる！」と言う。',
       mean: 'shortly ＝ すぐに、まもなく。I’ll be back ＝ もどってくる。',
-      trap: 'short（短い）から「背が低い・短い」と思いやすい。shortly は時間の「すぐ」。',
+      trap: '家まで取りに行くので、時間がかかると考えがち。shortly は時間の「すぐ、まもなく」。',
       use: 'The manager will be back shortly.（店長はすぐもどります）' },
 
     { id: 'h4', skill: 'humor', level: 'C1', point: 'solution', seg: [124.5, 135.8], retired: true,
@@ -290,15 +291,15 @@ export const benSaves: Clip = {
       use: 'The show must go on.（何があっても続けなきゃ）' },
 
     { id: 'c1', skill: 'phrase', level: 'B1', point: 'makeit', seg: [180.5, 186.5],
-      stem: 'What does “couldn’t make it today” mean?',
-      ja: '「couldn’t make it today」はどういう意味？',
-      choices: ['Couldn’t come today', 'Couldn’t cook today', 'Couldn’t sing well today'], a: 0,
-      choicesJa: ['今日は来られなかった', '今日は料理できなかった', '今日はうまく歌えなかった'],
+      stem: 'What does Renata say about Freddy Spaghetti?',
+      ja: 'レナータは、フレディ・スパゲッティについて何と言う？',
+      choices: ['He couldn’t come today', 'He is running late', 'He lost his voice'], a: 0,
+      choicesJa: ['今日は来られなかった', '少し遅れている', '声が出なくなった'],
       cue: '「Freddy Spaghetti」のあと',
       line: 'Freddy Spaghetti *couldn’t make it today*. He bumped his noodle.',
       said: '「フレディ・スパゲッティは今日来られなくなったの。頭をぶつけちゃって」と子どもに言う。',
       mean: 'make it ＝ 間に合う・来られる。can’t make it ＝ 行けない。noodle は「麺」と「頭」のしゃれ。',
-      trap: 'make（作る）から、料理の話と勘違いしやすい。make it は「来られる」。',
+      trap: 'make it には「間に合う」の意味もあり、遅れているだけと勘違いしやすい。ここは「来られない」。',
       use: 'Sorry, I can’t make it tonight.（ごめん、今夜は行けない）' },
 
     { id: 'f3', skill: 'phrase', level: 'C1', point: 'noodle', seg: [181.1, 187.2], retired: true,

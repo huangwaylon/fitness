@@ -12,6 +12,7 @@
 // SKIP 274.5–299: the fan finds Gibby and squeals; crosstalk.
 // EAR CHECK: 84 s n2 — “You got a name?” ends a long whisper line (71.6–84.5); check the seg holds it.
 // EAR CHECK: 272 s m2 — “he's in the men's room” under the fan's squeals.
+// CHECKS 2026-11-28: blind check: p2, a3 rewritten so listening decides.
 import type { Clip } from '../types.ts';
 
 export const spencerFriends: Clip = {
@@ -185,15 +186,15 @@ export const spencerFriends: Clip = {
       use: 'Excuse me, do you have a minute?（すみません、少しいいですか）' },
 
     { id: 'p2', skill: 'pragma', level: 'B2', point: 'pushy', seg: [129.5, 140.7],
-      stem: 'What does “You know you would” mean?',
-      ja: '「You know you would」はどういう意味？',
-      choices: ['Come on, you want to', 'You probably won’t', 'Do you know him?'], a: 0,
-      choicesJa: ['ほら、なりたいでしょ', 'たぶんならないよね', '彼を知ってる？'],
+      stem: 'How do the girls push the men to say yes?',
+      ja: '女の子たちは、男の人たちをどう押す？',
+      choices: ['They say the men must want to', 'They offer to pay for dinner', 'They say Spencer is really rich'], a: 0,
+      choicesJa: ['本当はなりたいはずだと言う', '夕食代を払うと言う', 'スペンサーはお金持ちだと言う'],
       cue: '返事がないあとの短い一文。',
       line: 'how would you like to be friends with him? … *You know you would*.',
       said: '「友だちにならない？」と聞き、返事がないので「なりたいでしょ」と押す。',
       mean: 'You know you would ＝ 本当はなりたいくせに。答えを決めつけて押す言い方。',
-      trap: 'You know を「知ってる？」と思いやすい。would のあとに like to be friends が省かれている。',
+      trap: '写真を見せているので、スペンサーのよさを売りこむと考えがち。You know you would ＝「なりたいでしょ」と決めつける。',
       use: 'Come on, you know you want to.（ほら、本当はしたいんでしょ）' },
 
     { id: 'b1', skill: 'detail', level: 'B2', point: 'notbowling', ctx: true, seg: [137.0, 152.0],
@@ -221,15 +222,15 @@ export const spencerFriends: Clip = {
       use: 'Well, that went badly.（うーん、散々だったね）' },
 
     { id: 'a3', skill: 'phrase', level: 'B2', point: 'abouttime', seg: [177.2, 183.4],
-      stem: 'What does “About time” mean here?',
-      ja: 'ここで「About time」はどういう意味？',
-      choices: ['Finally! You were slow', 'Thank you very much', 'Wow, that was fast'], a: 0,
-      choicesJa: ['やっとか、おそいよ', 'どうもありがとう', 'わあ、早かったね'],
+      stem: 'When the fries come, how does the first reply sound?',
+      ja: 'フライが来たとき、最初の返事はどんな調子？',
+      choices: ['Upset that they took so long', 'Surprised they came so fast', 'Glad and thankful for them'], a: 0,
+      choicesJa: ['おそいと不満そう', '早くておどろいている', 'うれしくて感謝している'],
       cue: '料理が届いた直後の2語。',
       line: 'Here, chili fries. — *About time*.',
       said: '料理を出されて、すぐに「やっとかよ」と返す。',
       mean: 'About time ＝ やっとか、おそいよ。お礼ではなく、待たされた不満。',
-      trap: 'time から「ちょうどいい時間」を連想しやすい。About time は「おそい」の文句。',
+      trap: '料理が来た場面なので、お礼と考えがち。About time ＝ やっとか、おそいよ。待たされた不満。',
       use: 'About time you showed up!（やっと来たか、おそいよ）' },
 
     { id: 'i2', skill: 'infer', level: 'B2', point: 'fries', reveals: ['abouttime'], ctx: true, seg: [178.1, 189.3],

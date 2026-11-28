@@ -12,6 +12,7 @@
 // EAR CHECK: 82.9–91.0 s a2 — the stammer (“I was not… I did not…”) is Jim's (assumed from what follows)
 // EAR CHECK: 180.6–188.1 s h4 — “I doubled my sales last month” and “Yup” are Pam's (assumed from turn-taking)
 // EXCLUDE 162–169: swear (“which is son of a bitch, Pam Halpert”)
+// CHECKS 2026-11-28: blind check: f1, f2 rewritten so listening decides.
 import type { Clip } from '../types.ts';
 
 export const empOfMonth: Clip = {
@@ -34,14 +35,14 @@ export const empOfMonth: Clip = {
       use: 'Wait, which one of us is driving?（待って、運転するのはどっち？）' },
 
     { id: 'f1', skill: 'phrase', level: 'B2', point: 'mondays', seg: [4.4, 13],
-      stem: 'What does “come down with” mean here?', ja: 'ここでの “come down with” はどういう意味？',
-      choices: ['Catch, like an illness', 'Go downstairs with', 'Get angry about'], a: 0,
-      choicesJa: ['（病気に）かかる', '〜と一緒に下りる', '〜に怒る'],
+      stem: 'What is wrong with the whole office?', ja: '職場全体はどうなっている？',
+      choices: ['Everyone has the Monday blues', 'Everyone caught a bad cold', 'Everyone is angry at Michael'], a: 0,
+      choicesJa: ['みんな月曜病だ', 'みんなひどい風邪をひいた', 'みんなマイケルに怒っている'],
       cue: '「The entire office has」のあと',
       line: 'The entire office has *come down with* a pernicious *case of the Mondays*.',
       said: '「職場全体が、たちの悪い『月曜病』にかかった」と言う。',
       mean: 'come down with 〜 ＝ （病気に）かかる。the Mondays は月曜のだるさ。元気のなさを病気にたとえている。',
-      trap: 'down から「下りる」を連想しやすい。come down with ＋病気で「かかる」。',
+      trap: 'come down with（病気にかかる）から本当の病気と考えがち。かかったのは the Mondays（月曜のだるさ）。',
       use: 'I think I’m coming down with a cold.（風邪をひきかけてるみたい）' },
 
     { id: 's1', skill: 'sound', level: 'B2', point: 'chances', seg: [9.2, 14.2],
@@ -67,14 +68,14 @@ export const empOfMonth: Clip = {
       use: 'That’s not such a bad idea.（それ、なかなかいい考えだね）' },
 
     { id: 'f2', skill: 'phrase', level: 'B2', point: 'wentfor', seg: [40.1, 45.7],
-      stem: 'What does “They totally went for our idea” mean?', ja: '“They totally went for our idea” はどういう意味？',
-      choices: ['They liked our idea', 'They went to talk about it', 'They said no to it'], a: 0,
-      choicesJa: ['案に乗ってきた', '相談しに行った', '断った'],
+      stem: 'What is the news about their idea?', ja: '二人の案についての知らせは？',
+      choices: ['They said yes to it', 'They said no to it', 'They’re still deciding'], a: 0,
+      choicesJa: ['受け入れられた', '断られた', 'まだ考え中'],
       cue: '「totally」のあと',
       line: 'They *totally went for* our idea.',
       said: '「俺たちの案に完全に乗ってきた」と報告する。',
       mean: 'go for 〜 ＝ （案に）乗る、受け入れる。totally で「すっかり」と強めている。',
-      trap: 'went を「行った」と取ると、相談しに行った話に聞こえる。go for ＋案 ＝ 賛成。',
+      trap: 'talking to Michael right now から、まだ話し中と考えがち。went for ＋案 ＝ 乗ってきた。',
       use: 'I think the boss will go for it.（上司は乗ってくると思う）' },
 
     { id: 'g1', skill: 'gist', level: 'B1', point: 'plan', seg: [40.1, 62.4],

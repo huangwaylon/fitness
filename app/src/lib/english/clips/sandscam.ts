@@ -11,6 +11,7 @@
 // Untested: 303–311 s (“a can of whoop-ass”), 254–262 s (the co-host's legal dodge).
 // EAR CHECK: 263.6 s x1 — "wanted to meet up": the t's merge ("ワニダ"); both sources agree on the words
 // EAR CHECK: 237.5 s s2 — "Why don't you" runs together ("ワイドンチュ"), not "Why won't you" / "Won't you"
+// CHECKS 2026-11-28: blind check: f1 f3 f4 f5 a4 rewritten so listening decides.
 import type { Clip } from '../types.ts';
 
 export const sandScam: Clip = {
@@ -80,15 +81,15 @@ export const sandScam: Clip = {
       use: 'I have a family to support.（養う家族がいるんです）' },
 
     { id: 'f1', skill: 'phrase', level: 'B2', point: 'net', seg: [38.1, 46.3],
-      stem: 'What does “leaps without a net” mean?',
-      ja: '「leaps without a net」はどういう意味？',
-      choices: ['Takes big risks', 'Sells things online', 'Learns very fast'], a: 0,
-      choicesJa: ['大きな賭けに出る', 'ネットで物を売る', 'すごく覚えが早い'],
+      stem: 'What is said about Freddie here?',
+      ja: 'ここでフレディについて何と言っている？',
+      choices: ['He takes big risks', 'He always plays it safe', 'He sells a lot online'], a: 0,
+      choicesJa: ['大きな賭けに出る', 'いつも安全第一', 'ネットでたくさん売る'],
       cue: '「You can’t quit」のあと',
       line: '… Freddie *leaps without a net*, baby.',
       said: '「フレディは安全ネットなしで飛ぶんだ」と得意げに言う。',
       mean: 'without a net ＝ 安全ネットなしで。失敗したら受け止めるものがない、大きな賭け。',
-      trap: 'net をカタカナの「ネット」と思うとインターネットに聞こえる。ここは安全ネット。',
+      trap: 'net をカタカナの「ネット」と聞くと、ネット販売の話に聞こえるが、ここはサーカスの安全ネット。',
       use: 'I moved abroad without a safety net.（後ろ盾なしで海外に移った）' },
 
     { id: 'h1', skill: 'humor', level: 'C1', point: 'debt', seg: [47.9, 54.0], retired: true,
@@ -173,15 +174,15 @@ export const sandScam: Clip = {
       use: 'He bravely, and unwisely, said yes.（勇敢に、そして軽率に引き受けた）' },
 
     { id: 'f3', skill: 'phrase', level: 'B2', point: 'head', seg: [103.5, 109.6],
-      stem: 'What does “I’ve got my head in the sand” mean?',
-      ja: '「I’ve got my head in the sand」はどういう意味？',
-      choices: ['I won’t look at the problem', 'I’m way too busy to talk', 'I’ll hide for a while'], a: 0,
-      choicesJa: ['問題を見ようとしない', '今は忙しくて話せない', 'しばらく隠れる'],
+      stem: 'What does the speaker mean when leaving?',
+      ja: '去りぎわに、話し手は何を言いたい？',
+      choices: ['They won’t face the problem', 'They’ll be back very soon', 'They want to be alone now'], a: 0,
+      choicesJa: ['問題を見ようとしない', 'すぐに戻ってくる', '今は一人になりたい'],
       cue: '「excuse me」のあと',
       line: 'I’ve got my *head in the sand*, and it’s staying there.',
       said: '「僕は現実から目をそらしてるし、ずっとそうするつもりさ」と言って去る。',
       mean: '文字どおりは「頭を砂に突っこむ」。危ないものを見ない→現実から目をそらす。商品の「砂」とかけている。',
-      trap: '直前の「準備がある」から「忙しい」と考えがち。決まり文句で「現実を見ない」。',
+      trap: '去りぎわの言葉なので「すぐ戻る」と考えがち。it’s staying there（ずっとそのまま）は、見ないままでいるということ。',
       use: 'I can’t keep my head in the sand.（もう現実から目をそらしてはいられない）' },
 
     { id: 'd7', skill: 'detail', level: 'B1', point: 'show', seg: [128.0, 138.0],
@@ -197,15 +198,15 @@ export const sandScam: Clip = {
       use: 'Today, I’m here to tell you about our new menu.（今日は新メニューのご紹介です）' },
 
     { id: 'f4', skill: 'phrase', level: 'B2', point: 'word', seg: [140.5, 146.5],
-      stem: 'What does “Don’t take our word for it” mean?',
-      ja: '「Don’t take our word for it」はどういう意味？',
-      choices: ['Don’t just believe us', 'Don’t repeat what we say', 'Don’t buy it from us'], a: 0,
-      choicesJa: ['私たちの話だけで信じないで', '私たちの言葉をくり返さないで', '私たちから買わないで'],
+      stem: 'What do the hosts say just before Spencer?',
+      ja: 'スペンサーの直前に、司会は何と言う？',
+      choices: ['Don’t just trust our words', 'Call in the next ten minutes', 'Buy two and get one free'], a: 0,
+      choicesJa: ['私たちの話だけで信じないで', '10分以内にお電話を', '2つ買うと1つおまけ'],
       cue: '「life-positive elements」のあと',
       line: '*But don’t take our word for it.* Let’s hear it from a real sand fan…',
       said: '「でも、私たちの言葉をうのみにしないで。本物のファンに聞きましょう」と言う。',
       mean: 'take 人’s word for it ＝ 人の言葉を信じる。Don’t 〜 ＝ 私たちの話だけで決めないで、本人の声を聞いて。',
-      trap: 'word（言葉）から「言葉をまねるな」と考えがち。すぐあとに別の人の声を聞く流れ。',
+      trap: '通販番組なので「今すぐ電話を」と考えがち。word が聞こえたら、すぐあとに別の人の声を聞く流れ。',
       use: 'Don’t take my word for it. Try it yourself.（私の話より、自分で試してみて）' },
 
     { id: 'h3', skill: 'humor', level: 'C1', point: 'truth', seg: [151.7, 164.1], retired: true,
@@ -244,15 +245,15 @@ export const sandScam: Clip = {
       use: 'Is there a student discount?（学生割引はありますか）' },
 
     { id: 'f5', skill: 'phrase', level: 'B1', point: 'middle', seg: [183.0, 187.5],
-      stem: 'What does “I’m in the middle of something” mean?',
-      ja: '「I’m in the middle of something」はどういう意味？',
-      choices: ['I’m busy right now', 'I’m on my way there', 'I can’t hear you well'], a: 0,
-      choicesJa: ['今、手がはなせない', '今そっちに向かってる', 'よく聞こえない'],
+      stem: 'How is the phone call answered?',
+      ja: '電話にはどう出る？',
+      choices: ['This isn’t a good time', 'You have the wrong number', 'I’m almost there now'], a: 0,
+      choicesJa: ['今は都合が悪い', '番号が違いますよ', 'もうすぐ着くよ'],
       cue: '電話に出た「Hello」のあと',
       line: 'Hello! *I’m in the middle of something.*',
       said: '電話に「もしもし！今、取り込み中なの」と出る。',
-      mean: 'in the middle of 〜 ＝ 〜の最中。something ＝ 何か。「何かの最中」→今は手がはなせない。電話を切りたいときの決まり文句。',
-      trap: 'middle から「真ん中にいる」と場所の話を連想しやすい。ここは「〜している最中」。',
+      mean: 'in the middle of 〜 ＝ 〜の最中。「何かの最中」→今は手がはなせない。電話を早く切りたいときの決まり文句。',
+      trap: 'middle（真ん中）から「途中にいる」→「もうすぐ着く」と考えがち。ここは「〜している最中」。',
       use: 'Sorry, I’m in the middle of something. Can I call you back?（今手がはなせないので、折り返していい？）' },
 
     { id: 'g2', skill: 'gist', level: 'B1', point: 'turn', reveals: ['fishfood'], seg: [194.5, 219.0],
@@ -385,10 +386,10 @@ export const sandScam: Clip = {
       use: 'I’m fine! Just… a little warm.（大丈夫！ちょっと暑いだけ）' },
 
     { id: 'a4', skill: 'attitude', level: 'B1', point: 'regret', reveals: ['handle'], seg: [295.5, 302.5],
-      stem: 'How does Freddie feel when he says “What have I done?”',
-      ja: '「What have I done?」と言うフレディはどんな気持ち？',
-      choices: ['Scared he made a mistake', 'Proud of what he did', 'Calm about the choice he made'], a: 0,
-      choicesJa: ['大失敗したとこわくなる', 'したことを誇りに思う', '自分の選択に落ち着いている'],
+      stem: 'How does Freddie feel by the end of this?',
+      ja: 'ここの終わりで、フレディはどんな気持ち？',
+      choices: ['Worried he made a mistake', 'Happy with his big choice', 'Tired from a long day'], a: 0,
+      choicesJa: ['失敗したかもと不安', '大きな決断に満足', '長い一日で疲れた'],
       cue: '汗の話のあとの短い問い',
       line: 'Well, I’m sweating a lot. Probably just from the excitement and bravery. *What have I done?*',
       said: '「すごく汗をかいてる。興奮と勇気のせいだ」と言い、「何てことをしちゃったんだ？」と言う。',

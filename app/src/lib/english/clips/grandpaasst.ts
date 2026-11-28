@@ -11,6 +11,7 @@
 // and the scenes file names her for 94–135 s. Untested: 85–93 s (a period joke), 155–159 s, 264–272 s.
 // SKIP 169–201: star-sign jokes and the birth-chart setup (lore; the sources split).
 // SKIP 294.5–326.1: the phone gag into the "pot guy" call (drug talk), then the outro.
+// CHECKS 2026-11-28: blind check: f2, k4, p2, p1 rewritten so listening decides.
 import type { Clip } from '../types.ts';
 
 export const grandpaAssistant: Clip = {
@@ -44,15 +45,15 @@ export const grandpaAssistant: Clip = {
       use: 'I’m never gonna use this, am I?（これ、どうせ使わないよね）' },
 
     { id: 'f2', skill: 'phrase', level: 'B2', point: 'face', reveals: ['wigs'], seg: [12.4, 20.4],
-      stem: 'What does “let’s face it” mean here?',
-      ja: 'ここで「let’s face it」はどういう意味？',
-      choices: ['To be honest', 'Let’s look at it', 'Let’s agree on it'], a: 0,
-      choicesJa: ['正直に言うと', 'それを見てみよう', 'それで決めよう'],
-      cue: '「wigs that」のあと、文の途中の3語。',
+      stem: 'With “let’s face it,” what does Carly admit?',
+      ja: '「let’s face it」で、カーリーは何を認めている？',
+      choices: ['She won’t ever buy a wig', 'She shops online too much', 'She can’t pick a color'], a: 0,
+      choicesJa: ['結局カツラは買わない', 'ネットで買い物しすぎる', '色が決められない'],
+      cue: '「plant cam」のあと、文の途中の3語。',
       line: 'shopping for wigs that, *let’s face it*, I’m never gonna buy',
       said: '「カツラさがし、まあ正直、買わないんだけど」と途中にはさむ。',
       mean: 'let’s face it ＝ 認めよう、正直なところ。自分に不利な本当のことを言う前置き。',
-      trap: 'face（顔）から「見てみよう」と読みたくなるが、face は「向き合う」。文の途中に入ったら「正直」の合図。',
+      trap: 'shopping（買い物）から、買いすぎの告白と考えがち。let’s face it のあとは I’m never gonna buy（どうせ買わない）。',
       use: 'Let’s face it, we’re lost.（認めよう、道に迷ってる）' },
 
     { id: 'h1', skill: 'humor', level: 'C1', point: 'dishes', seg: [20.0, 27.7], retired: true,
@@ -220,15 +221,15 @@ export const grandpaAssistant: Clip = {
       use: 'Just kidding. I actually flipped a coin.（冗談。実はコインで決めたの）' },
 
     { id: 'k4', skill: 'pragma', level: 'B1', point: 'kidding', seg: [127.0, 132.0],
-      stem: 'What does “I’m just kidding” mean?',
-      ja: '「I’m just kidding」はどういう意味？',
-      choices: ['That was only a joke', 'I am still a child', 'I am really sure'], a: 0,
-      choicesJa: ['今のはただの冗談', '私はまだ子ども', '本当に自信がある'],
+      stem: 'What does she say about hamsters being kind?',
+      ja: 'ハムスターの共感力について、彼女は何と言う？',
+      choices: ['She was only joking', 'A vet told her that', 'She saw it in her pets'], a: 0,
+      choicesJa: ['ただの冗談だった', '獣医にそう聞いた', '自分のペットで見た'],
       cue: '「more empathetic」のあと',
       line: 'Some hamsters can be more empathetic than others. *I’m just kidding.*',
       said: '「ハムスターにも共感力の差があるの。冗談よ」と言う。',
       mean: 'I’m just kidding ＝「冗談だよ」。kid ＝ からかう。言ったことを本気にしないで、という合図。',
-      trap: 'kid（子ども）から「子どもっぽい」と考えがち。動詞の kid は「からかう・冗談を言う」。',
+      trap: 'empathetic（共感力がある）と言い切るので、本当の話と考えがち。すぐあとの I’m just kidding で取り消している。',
       use: 'I’m just kidding. Don’t worry.（冗談だよ。心配しないで）' },
     { id: 'f3', skill: 'phrase', level: 'B1', point: 'gig', seg: [129.3, 136.7],
       stem: 'What does “get the gig” mean?',
@@ -290,27 +291,27 @@ export const grandpaAssistant: Clip = {
       use: 'Are you two dating? — No, we’re not.（二人は付き合ってるの？ーいや、違うよ）' },
 
     { id: 'p2', skill: 'phrase', level: 'B2', point: 'bogus', seg: [223.8, 228.5],
-      stem: 'What does “bogus” mean here?',
-      ja: 'ここでの「bogus」はどういう意味？',
-      choices: ['Fake and silly', 'Very scary', 'Really true'], a: 0,
-      choicesJa: ['でたらめ', 'すごく怖い', '本当に正しい'],
+      stem: 'What is said about the birth charts?',
+      ja: '星占いの結果について、何と言う？',
+      choices: ['It is all nonsense', 'It is kind of scary', 'It is fun to try'], a: 0,
+      choicesJa: ['全部でたらめ', 'ちょっと怖い', 'やってみると楽しい'],
       cue: '「Come on, Harper」のあと',
       line: 'Come on, Harper. This whole thing is *bogus*.',
       said: '「ねえ、ハーパー。こんなの全部でたらめよ」と言う。',
       mean: 'bogus ＝「でたらめ・インチキ」（くだけた言い方）。This whole thing ＝ この話ぜんぶ。',
-      trap: '聞きなれない語で、占いの結果が怖いと考えがち。Come on（ねえ、よしてよ）のあとなので否定の言葉。',
+      trap: '「魂の伴侶」と出たあとなので、怖がっていると考えがち。Come on（よしてよ）のあとの bogus は否定の言葉。',
       use: 'That email is bogus. Don’t click it.（そのメール、インチキだよ。押さないで）' },
 
     { id: 'p1', skill: 'pragma', level: 'B2', point: 'shoes', reveals: ['hire'], seg: [248.5, 258.5],
-      stem: 'What does “but here goes” mean?',
-      ja: '「but here goes」はどういう意味？',
-      choices: ['I’ll say it anyway', 'I’ll keep quiet', 'May I say something?'], a: 0,
-      choicesJa: ['それでも言うね', 'だまっておく', '言ってもいい？'],
+      stem: 'What does Granddad think of the shoes?',
+      ja: 'おじいちゃんは、その靴をどう思っている？',
+      choices: ['He thinks they are ugly', 'He thinks they cost too much', 'He thinks they look great'], a: 0,
+      choicesJa: ['ダサいと思う', '高すぎると思う', 'よく似合うと思う'],
       cue: '前置きの最後の but のあと。',
       line: 'Not for your lowly assistant to judge, *but here goes*. *Those shoes are ugly.*',
       said: '「下っぱの私が言うことじゃないけど、言うね。その靴、ダサい」と言う。',
       mean: 'here goes ＝ じゃあ言うよ。ひかえめな前置きのあとに、本音が来る。',
-      trap: '「私なんかが」で、だまると思いやすい。but here goes は言う合図。',
+      trap: '「下っぱの私が言うことじゃない」と遠慮するので、ほめると考えがち。but here goes（じゃあ言うね）のあとに本音。',
       use: 'Not my place to say, but here goes.（私が言うことじゃないけど、言うね）' },
 
     { id: 'k8', skill: 'detail', level: 'B1', point: 'snack', ctx: true, seg: [258.5, 267.2],

@@ -12,6 +12,7 @@
 // SKIP 166–202: Tom's teasing and the Klondike-bar line, then the outro (whisper's “Thank you” at 172–202 runs past the clip)
 // EXCLUDE 80.4–87.4: swear (“the doofus that got his ass kicked”)
 // CHECKS 2026-11-28: segment ends pulled 0.4 s before the EXCLUDE they ran into (the player plays on 0.4 s): g1 t1 n1.
+// CHECKS 2026-11-28: blind check: f5 rewritten so listening decides.
 import type { Clip } from '../types.ts';
 
 export const jerryMugged: Clip = {
@@ -21,14 +22,14 @@ export const jerryMugged: Clip = {
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
     { id: 'f5', skill: 'phrase', level: 'B1', point: 'supposed', seg: [0, 7.6],
-      stem: 'What does “Parks are supposed to be fun” mean?', ja: '“Parks are supposed to be fun” はどういう意味？',
-      choices: ['Parks should be fun', 'Parks used to be fun', 'Parks might be fun'], a: 0,
-      choicesJa: ['公園は楽しいはず', '公園は昔は楽しかった', '公園は楽しいかもしれない'],
+      stem: 'What “old saying” does the report open with?', ja: 'レポートは、どんな「昔からの言い回し」で始まる？',
+      choices: ['Parks should be fun', 'Parks are for everyone', 'Parks keep a city green'], a: 0,
+      choicesJa: ['公園は楽しいはず', '公園はみんなのもの', '公園は街を緑にする'],
       cue: '「the old saying」のあと',
       line: 'We’ve all heard the old saying, “Parks *are supposed to be* fun.” But sometimes muggers have their own ideas.',
       said: '「『公園は楽しい場所のはず』。でも、強盗には別の考えがあることも」と始まる。',
       mean: 'be supposed to 〜 ＝ 〜のはず、〜することになっている。本来そうあるべきなのに、という気持ちを含む。',
-      trap: 'used to（昔は〜）や might（〜かも）と取りちがえやすい。be supposed to ＝「本来〜のはず」。',
+      trap: 'old saying と聞くと、よくある標語を考えがち。聞こえるのは supposed to be fun（楽しいはず）。',
       use: 'The train is supposed to come at 9.（電車は9時に来るはずです）' },
 
     { id: 'h1', skill: 'humor', level: 'C1', point: 'intro', seg: [11.5, 23.15], retired: true,

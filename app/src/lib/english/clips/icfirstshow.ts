@@ -10,6 +10,7 @@
 // Segments from the captions, words from whisper (2026-11-17). Spencer names himself by reply ("baby Spencer" → "That's
 // me!"); the friend is addressed as "Freddy" at 101 s; stems say "Carly's friend" wherever the speaker isn't settled.
 // No item uses Nora, the "squirrel", the dachshunds, George the bra or the 165–173 s search.
+// CHECKS 2026-11-28: blind check: i3 rewritten so listening decides.
 import type { Clip } from '../types.ts';
 
 export const icFirstShow: Clip = {
@@ -285,15 +286,15 @@ export const icFirstShow: Clip = {
       use: 'Today I thought I’d share a recipe.（今日はレシピを紹介しようと思って）' },
 
     { id: 'i3', skill: 'infer', level: 'B2', point: 'bots', seg: [185.5, 191.8],
-      stem: 'What does “Probably bots from Brazil” mean?',
-      ja: '「Probably bots from Brazil」はどういう意味？',
-      choices: ['They may not be real people', 'Most of her fans live in Brazil', 'They are friends she invited'], a: 0,
-      choicesJa: ['本物の人ではないかも', 'ファンの多くはブラジルにいる', '彼女が呼んだ友だちだ'],
+      stem: 'What is said about Carly’s first few viewers?',
+      ja: 'カーリーの最初の視聴者について、何と言われる？',
+      choices: ['They may not be real people', 'They’re old iCarly fans', 'They’re her friends from school'], a: 0,
+      choicesJa: ['本物の人ではないかも', '昔からの番組のファン', '学校の友だち'],
       cue: '「viewers」への返事。',
       line: 'It looks like she’s already got a few viewers. — Probably *bots* from Brazil.',
       said: '「もう何人か見てるね」に「たぶんブラジルのボットだよ」と返す。',
       mean: 'bot ＝ 自動のプログラム。人間の視聴者ではないかも、と期待をしぼませる冗談。',
-      trap: 'Brazil が耳に残ると国の話に聞こえる。大事なのは前の bots。',
+      trap: '昔のファンが戻ったと考えがち。bots は自動のプログラムで、人間ではないかもという冗談。',
       use: 'Those likes are probably bots.（そのいいね、たぶんボットだよ）' },
 
     { id: 'w2', skill: 'who', level: 'B1', point: 'baby', seg: [205.6, 213.4],

@@ -11,6 +11,7 @@
 // Freddie. The roommate is never named, so stems say "her friend". Whisper repeats 137–156 s and 224–227 s. The whey
 // date's speakers are unclear: its items name no one but Carly.
 // EAR CHECK: 239.6 s a2 — “I was never gonna use a home gym” taken as Spencer's (his gym)
+// CHECKS 2026-11-28: blind check: f2 f4 f5 f6 rewritten so listening decides.
 import type { Clip } from '../types.ts';
 
 export const newIcarly: Clip = {
@@ -185,15 +186,15 @@ export const newIcarly: Clip = {
       use: 'Hi, I’m Ken, from the Tokyo office.（東京オフィスのケンです）' },
 
     { id: 'f2', skill: 'phrase', level: 'B2', point: 'headsup', seg: [147.4, 154.8],
-      stem: 'What does “Just a heads-up” mean?',
-      ja: '「Just a heads-up」はどういう意味？',
-      choices: ['Just so you know', 'Look up over there', 'Cheer up a little'], a: 0,
-      choicesJa: ['先に言っておくね', 'あそこを見上げて', 'ちょっと元気を出して'],
+      stem: 'What is the heads-up about the café?',
+      ja: 'このカフェについての「先に言っておくね」は何？',
+      choices: ['They serve only one thing', 'The place closes soon', 'The prices are very high'], a: 0,
+      choicesJa: ['一つの物しか出さない', 'もうすぐ閉店する', '値段がとても高い'],
       cue: '「I love this place」のあと',
       line: 'I love this place. *Just a heads-up*, they only serve whey here.',
       said: '「この店大好き。先に言っておくと、ここはホエイしか出さないよ」と言う。',
-      mean: 'heads-up ＝ 前もっての知らせ、注意。Just a heads-up ＝ 先に言っておくね。',
-      trap: 'heads（頭）と up（上）から「上を見て」と思いやすい。あとに注意の中身が続く。',
+      mean: 'heads-up ＝ 前もっての知らせ、注意。Just a heads-up のあとに中身が来る。only serve whey ＝ ホエイだけ。',
+      trap: '前もっての注意と聞くと、閉店時間や値段の話と考えがち。決め手は only serve（〜しか出さない）。',
       use: 'Just a heads-up, the store closes at six.（先に言っておくと、店は6時に閉まるよ）' },
 
     { id: 'd2', ctx: true, skill: 'detail', level: 'B1', point: 'whey', seg: [151.0, 161.0],
@@ -232,15 +233,15 @@ export const newIcarly: Clip = {
       use: 'Rain on my day off. Lucky me.（休みの日に雨。ついてるね）' },
 
     { id: 'f4', skill: 'phrase', level: 'B2', point: 'bottoms', seg: [181.5, 186.5],
-      stem: 'What does “Bottoms up” mean?',
-      ja: '「Bottoms up」はどういう意味？',
-      choices: ['Let’s drink it all', 'Stand up, please', 'Look at the bottom'], a: 0,
-      choicesJa: ['さあ、飲みほそう', '立ってください', 'カップの底を見て'],
+      stem: 'What is suggested about the drink at the end?',
+      ja: '最後に、飲み物をどうしようと言っている？',
+      choices: ['Drink it all at once', 'Send the drink back', 'Share it with everyone'], a: 0,
+      choicesJa: ['一気に飲みほす', '飲み物を返す', 'みんなで分ける'],
       cue: '「good luck」のあと',
       line: 'If you get a chunk, that’s considered good luck. — *Bottoms up.*',
       said: '「かたまりが入っていたら幸運です」と聞いて、「乾杯」と言う。',
       mean: 'Bottoms up ＝ 文字どおりは「底を上に」。グラスの底が上を向くまで飲む→「乾杯、飲もう」。くだけた言い方。',
-      trap: 'up から「立って」、bottom から「底を見る」を連想しやすいが、上を向くのはカップの底。飲む前のかけ声。',
+      trap: 'chunk（かたまり）と聞いて「返そう」と考えがち。Bottoms up は飲む前のかけ声で、上を向くのはカップの底。',
       use: 'Okay, everyone, bottoms up!（さあみんな、乾杯！）' },
 
     { id: 'p4', ctx: true, skill: 'pragma', level: 'B1', point: 'done', seg: [192.0, 201.5],
@@ -291,15 +292,15 @@ export const newIcarly: Clip = {
       use: 'He quit his job to follow his bliss.（好きなことをするために仕事を辞めた）' },
 
     { id: 'f5', skill: 'phrase', level: 'B1', point: 'ownown', seg: [215.5, 222.0],
-      stem: 'What does “on my own” mean?',
-      ja: '「on my own」はどういう意味？',
-      choices: ['By myself', 'At my home', 'In my own way'], a: 0,
-      choicesJa: ['一人で', '自分の家で', '自分のやり方で'],
+      stem: 'What does Carly say about making the new show?',
+      ja: '新しい番組作りについて、カーリーは何と言う？',
+      choices: ['She won’t be totally alone', 'She’ll do it all from home', 'She’ll do it her own way'], a: 0,
+      choicesJa: ['完全に一人ではない', '全部家でやる', '自分のやり方でやる'],
       cue: '「completely」のあと',
       line: 'Of course, I wouldn’t be completely *on my own*. I’d have my new producer.',
       said: '「もちろん、完全に一人ってわけじゃない。新しいプロデューサーがいる」と言う。',
       mean: 'on my own ＝ 一人で、自分だけで。by myself と同じ。あとの I’d have（〜がいる）がヒント。',
-      trap: 'own（自分の）から「自分のやり方で」と考えがち。on my own はひとまとまりで「一人で」。',
+      trap: 'own（自分の）から「自分のやり方で」と考えがち。wouldn’t で「一人ではない」と打ち消している。',
       use: 'I can do it on my own, thanks.（一人でできます、ありがとう）' },
 
     { id: 'a2', ctx: true, skill: 'attitude', level: 'B2', point: 'gym', seg: [228.0, 241.4],
@@ -350,15 +351,15 @@ export const newIcarly: Clip = {
       use: 'Today I thought I’d try something new.（今日は新しいことをしてみようと思って）' },
 
     { id: 'f6', skill: 'phrase', level: 'B2', point: 'tooearly', seg: [265.0, 273.0],
-      stem: 'What does “it’s never too early to start” mean?',
-      ja: '「it’s never too early to start」はどういう意味？',
-      choices: ['You can start now', 'It’s too late now', 'Wait until you’re older'], a: 0,
-      choicesJa: ['今から始めていい', 'もう遅すぎる', '大人になるまで待って'],
+      stem: 'What do the ads say about anti-aging products?',
+      ja: '広告は、アンチエイジング用品について何と言っている？',
+      choices: ['Start using them young', 'They work in one week', 'They’re cheaper online'], a: 0,
+      choicesJa: ['若いうちから使おう', '1週間で効く', 'ネットの方が安い'],
       cue: '「ads I get」のあと',
       line: '*it’s never too early to start using*… anti-aging products.',
       said: '「アンチエイジング用品は、使い始めるのに早すぎることはない」と話す。',
-      mean: 'never too early ＝ 早すぎることは決してない→「今すぐ始めて」。広告の決まり文句を、若いのにまねて笑っている。',
-      trap: 'too early（早すぎる）だけ拾うと「まだ早い」と考えがち。前の never が全体を打ち消す。',
+      mean: 'never too early ＝ 早すぎることは決してない→「若くても今すぐ始めて」。広告の決まり文句をまねて笑っている。',
+      trap: '広告なので「すぐ効く」「安い」と考えがち。決め手は never too early to start（始めるのに早すぎない）。',
       use: 'It’s never too early to save money.（お金をためるのに早すぎることはない）' },
 
     { id: 'a3', skill: 'attitude', level: 'C1', point: 'skincare', reveals: ['topic'], seg: [279, 289], retired: true,

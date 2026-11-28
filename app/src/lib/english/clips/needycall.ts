@@ -10,6 +10,7 @@
 // EAR CHECK: 216–224 s who says "maybe we could get together later" and who "I'll call you. Or you call me" (c3 says A/B).
 // CHECKS 2026-11-28: “she needs to hear me pee” (100.5–101.7) out; s1 starts after it.
 // EXCLUDE 100.5–101.7 (“she needs to hear me pee”)
+// CHECKS 2026-11-28: blind check: f6 rewritten so listening decides.
 import type { Clip } from '../types.ts';
 
 export const needyCall: Clip = {
@@ -19,15 +20,15 @@ export const needyCall: Clip = {
   credit: 'Friends (official YouTube channel)',
   questions: [
     { id: 'f6', skill: 'phrase', level: 'B1', point: 'chance', seg: [0.7, 14.5],
-      stem: 'What does “Give me a call when you get a chance” mean?',
-      ja: '「Give me a call when you get a chance」はどういう意味？',
-      choices: ['Call me when you can', 'Call me right now', 'Please don’t call me'], a: 0,
-      choicesJa: ['時間があるときに電話して', '今すぐ電話して', '電話しないで'],
+      stem: 'In his message, what does Chandler ask Danielle?',
+      ja: '伝言で、チャンドラーはダニエルに何を頼む？',
+      choices: ['To call back when she’s free', 'To call back right away', 'To meet him for dinner'], a: 0,
+      choicesJa: ['時間があるときに電話をくれる', '今すぐ電話をくれる', '夕食に一緒に行く'],
       cue: '留守電への伝言の最後',
       line: 'Oh, Danielle. I wasn’t expecting the machine. *Give me a call when you get a chance.* Bye-bye.',
       said: '「あ、ダニエル。留守電だと思わなかった。時間があるときに電話ちょうだい」と言う。',
       mean: 'give me a call ＝ 電話して。when you get a chance ＝ 時間ができたら。軽いお願い。',
-      trap: 'chance ＝「チャンス、機会」から、急いでいると勘違いしやすい。「手があいたら」の意味。',
+      trap: '電話を待ちわびているので、すぐの電話を頼むと考えがち。ここは手があいたらでいい、という軽い頼み。',
       use: 'Call me when you get a chance.（時間があるときに電話して）' },
 
     { id: 'i1', skill: 'infer', level: 'B2', point: 'rehearse', reveals: ['hours'], seg: [5.8, 21.9], retired: true,

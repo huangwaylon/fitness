@@ -8,6 +8,7 @@
 // EAR CHECK: 126–132 s k2 — who says "show's over" / "Nothing to see here" (transcript ja reads it as a woman)
 // CHECKS 2026-11-28: “I'm a laundry virgin” out; p2 ends before it.
 // EXCLUDE 190.6–192.0 (“…laundry virgin”)
+// CHECKS 2026-11-28: blind check: pr1 p3 i1 p2 p5 rewritten so listening decides.
 import type { Clip } from '../types.ts';
 
 export const laundromat: Clip = {
@@ -33,15 +34,15 @@ export const laundromat: Clip = {
       trap: 'Monica の名前が出るので、モニカと出かける話と考えがち。決め手は Guess who のあとの Me。',
       use: 'What a coincidence!（すごい偶然だね）' },
 
-    { id: 'pr1', skill: 'pragma', level: 'B2', point: 'join', seg: [20, 28.9], stem: 'Ross asks, “Why don’t I just join you?” What does he want?',
-      ja: 'ロスは「Why don’t I just join you?」と言う。何がしたい？',
-      choices: ['To go with them', 'To ask why he can’t come', 'To invite them out'], a: 0,
-      choicesJa: ['2人と一緒に行きたい', 'なぜ行けないのか聞きたい', '2人をどこかに誘いたい'],
+    { id: 'pr1', skill: 'pragma', level: 'B2', point: 'join', seg: [20, 28.9], stem: 'What does Ross offer to do tonight?',
+      ja: 'ロスは今夜、何をしようと申し出る？',
+      choices: ['Go with Rachel and Monica', 'Drive Rachel and Monica', 'Wash Rachel’s clothes'], a: 0,
+      choicesJa: ['レイチェルとモニカと一緒に行く', 'レイチェルとモニカを車で送る', 'レイチェルの服を洗う'],
       cue: 'ロスが2回言いかける所',
       line: 'Um, hey, *why don’t I just join you both*?',
       said: '「ねえ、僕も一緒に行こうか？」と言う。',
       mean: 'Why don’t I 〜? ＝「僕が〜しようか？」という申し出。文字どおりの「なぜ〜しない？」ではない。',
-      trap: 'why から、理由を聞いていると思いやすい。Why don’t I のあとの動詞が、したいこと。',
+      trap: '送る・手伝う申し出と考えがち。Why don’t I のあとの join you both が、したいこと。',
       use: 'Why don’t I help you?（手伝おうか？）' },
 
     { id: 's1', skill: 'sound', level: 'B2', point: 'dontyou', seg: [24.9, 30.5],
@@ -125,15 +126,15 @@ export const laundromat: Clip = {
       trap: 'horrible（ひどい）に気を取られやすいが、ロスはまず事実を確かめている。',
       use: 'Was my bag on this seat?（私のかばん、この席にありましたか）' },
 
-    { id: 'p3', skill: 'phrase', level: 'B1', point: 'holdon', seg: [100.2, 112.1], stem: 'Ross says, “Hold on a second.” What does he mean?',
-      ja: 'ロスの「Hold on a second.」はどういう意味？',
-      choices: ['Wait a moment', 'Hold this for me', 'Come back later'], a: 0,
-      choicesJa: ['ちょっと待って', 'これを持ってて', 'あとで来て'],
+    { id: 'p3', skill: 'phrase', level: 'B1', point: 'holdon', seg: [100.2, 112.1], stem: 'Why does Ross say “Hold on a second”?',
+      ja: 'ロスはなぜ「Hold on a second」と言う？',
+      choices: ['To stop the woman', 'To make Rachel wait', 'To look for coins'], a: 0,
+      choicesJa: ['女性を止めるため', 'レイチェルを待たせるため', '小銭をさがすため'],
       cue: 'ロスが女性に話しかける所',
       line: 'No suds, no— excuse me. *Hold on a second.* This is my friend’s machine.',
       said: '「ちょっと待って。これは友だちの洗濯機だよ」と割って入る。',
       mean: 'Hold on a second ＝「ちょっと待って」。hold は「持つ」だが、ここは「止まって」。',
-      trap: 'hold から「持つ」を連想しやすい。a second は「少しの間」。',
+      trap: '「待って」をレイチェルへの言葉と考えがち。直前の excuse me も、女性に向けた言葉。',
       use: 'Hold on a second, please.（少々お待ちください）' },
 
     { id: 'k1', skill: 'pragma', level: 'B2', point: 'notrule', ctx: true, seg: [108.5, 116.0],
@@ -170,15 +171,15 @@ export const laundromat: Clip = {
       trap: 'まわりの人に見られていたので、恥ずかしがっていると考えがち。amazing はほめ言葉。',
       use: 'That was amazing!（今のすごかったね）' },
 
-    { id: 'i1', skill: 'infer', level: 'B2', point: 'i1', seg: [137.8, 146.8], stem: '“I can’t even send back soup.” What does Rachel mean?',
-      ja: '「I can’t even send back soup.」レイチェルは何が言いたい？',
-      choices: ['She never orders soup', 'She’s too shy to complain', 'She can’t cook anything'], a: 1,
-      choicesJa: ['スープは頼まない', '気が弱くて文句を言えない', '料理がまったくできない'],
+    { id: 'i1', skill: 'infer', level: 'B2', point: 'i1', seg: [137.8, 146.8], stem: 'What does Rachel say about herself after Ross’s fight?',
+      ja: 'ロスの言い合いのあと、レイチェルは自分について何と言う？',
+      choices: ['She’s good at fights too', 'She’s too shy to complain', 'She’d shout even louder'], a: 1,
+      choicesJa: ['自分もけんかが強い', '気が弱くて文句を言えない', '自分ならもっと大声で言う'],
       cue: 'レイチェルの2つ目の文',
       line: '*I can’t even send back soup.*',
       said: '「私なんて、スープを返すこともできないのに」と言う。',
       mean: 'send back ＝ 料理を店に返す（替えてもらう）。それもできないほど、文句が言えない性格。',
-      trap: 'soup から料理の話に聞こえるが、even（〜さえ）がつく。自分の気の弱さの話。',
+      trap: 'amazing とほめるので、自分も強いと言いそうに聞こえるが、even（〜さえ）がつく。気の弱さの話。',
       use: 'Can I send this back?（これ、替えてもらえますか）' },
 
     { id: 'd4', skill: 'detail', level: 'B2', point: 'soap', seg: [146, 154], stem: 'What does Ross think Rachel needs?',
@@ -204,15 +205,15 @@ export const laundromat: Clip = {
       use: 'Do I need to separate these?（これ、分けたほうがいい？）' },
 
     { id: 'p2', skill: 'phrase', level: 'B1', point: 'p2', ctx: true, seg: [180.3, 190.2],
-      stem: '“Okay, you caught me.” What does Rachel mean?',
-      ja: '「Okay, you caught me.」レイチェルは何と言っている？',
-      choices: ['Fine, I admit it', 'Fine, you can stay', 'Fine, I’ll stop now'], a: 0,
-      choicesJa: ['わかった、認める', 'わかった、いていいよ', 'わかった、もうやめる'],
+      stem: 'What does Rachel admit with “Okay, you caught me”?',
+      ja: '「Okay, you caught me」で、レイチェルは何を認める？',
+      choices: ['She’s never done this', 'She came to see Ross', 'She took the wrong machine'], a: 0,
+      choicesJa: ['一度もやったことがない', 'ロスに会いに来た', 'ちがう洗濯機を使った'],
       cue: '「初めて？」と聞かれた返事',
       line: 'Ross: Have you never done this before? / Rachel: …Okay, *you caught me*.',
       said: '「洗濯したことないの？」「…わかった、ばれちゃった」。',
       mean: 'You caught me ＝ 文字どおりは「つかまえたね」→「ばれちゃった」。かくしていたことを認める決まり文句。',
-      trap: 'caught（つかまえた）から、つかまる話を連想しやすい。ここは「見ぬかれた」。',
+      trap: 'デートの場面なので、ロスに会いに来たと勘違いしやすい。直前の質問は「洗濯は初めて？」。',
       use: 'You caught me. I ate the cake.（ばれたか。ケーキを食べたのは私）' },
 
     { id: 'n2', skill: 'number', level: 'B1', point: 'machines', seg: [201, 214.6], stem: 'How many machines does Ross tell her to use?',
@@ -259,15 +260,15 @@ export const laundromat: Clip = {
       use: 'Excuse me, I think this is my seat.（すみません、ここは私の席だと思います）' },
 
     { id: 'p5', skill: 'phrase', level: 'B2', point: 'makeup', ctx: true, seg: [257.3, 264.6],
-      stem: 'Rachel says, “Quit making up rules.” What does she mean?',
-      ja: 'レイチェルの「Quit making up rules.」はどういう意味？',
-      choices: ['Your rules aren’t real', 'Tell me the rules', 'Let’s make a new rule'], a: 0,
-      choicesJa: ['あなたのルールはでたらめ', 'ルールを教えて', '新しいルールを作ろう'],
+      stem: 'What does Rachel tell the woman to do?',
+      ja: 'レイチェルは女性に何をするよう言う？',
+      choices: ['Stop making up rules', 'Read the rules again', 'Tell Rachel the rules'], a: 0,
+      choicesJa: ['ルールをでっちあげるのをやめる', 'ルールを読み直す', 'レイチェルにルールを教える'],
       cue: '女性がルールを言ったあと',
       line: 'Woman: There weren’t any clothes in it. / Rachel: Hey, hey, hey, hey. *Quit making up rules.*',
       said: '「中に服は入ってなかった」に、「勝手にルールを作らないで」と言い返す。',
       mean: 'make up ＝ でっちあげる。quit 〜ing ＝ 〜するのをやめる。女性のルールは作り話だと言う。',
-      trap: 'make から「新しく作ろう」と考えがち。前に quit（やめて）がある。',
+      trap: 'ルールの話なので「教えて」に聞こえるが、quit（やめて）making up（でっちあげる）と言う。',
       use: 'Quit making excuses.（言いわけはやめて）' },
 
     { id: 'g2', skill: 'gist', level: 'B1', point: 'cartend', seg: [262, 290], stem: 'How does the fight over the cart end?',

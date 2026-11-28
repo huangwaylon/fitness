@@ -13,6 +13,7 @@
 // EAR CHECK: 85–91.5 s k3 — whisper's lines are long here; confirm "Which one is she? / The one in the green hoodie."
 // EAR CHECK: 50.1 s h1 — "I was thinking more like a CD" assumed Jim's from the turn-taking
 // EAR CHECK: 109.7 s s1 — "what are you" (both sources): said as one reduced stretch (≈ "whaddaya")
+// CHECKS 2026-11-28: blind check: f1, p2, s1, f3 rewritten so listening decides.
 import type { Clip } from '../types.ts';
 
 export const andyJamie: Clip = {
@@ -118,15 +119,15 @@ export const andyJamie: Clip = {
       use: 'I was thinking more like pizza.（どっちかというとピザの気分だった）' },
 
     { id: 'f1', skill: 'phrase', level: 'B2', point: 'yourcall', ctx: true, seg: [47.5, 59.5],
-      stem: 'What does “Your call” mean here?',
-      ja: 'ここでの「Your call」はどういう意味？',
-      choices: ['You get to decide', 'You should phone', 'Your turn to sing'], a: 0,
-      choicesJa: ['君が決めて', '電話したほうがいい', '君が歌う番'],
+      stem: 'Jim would rather have a CD. What does Andy say?',
+      ja: 'ジムは歌よりCDがいい。アンディは何と言う？',
+      choices: ['Jim can decide', 'He has no CDs', 'Jim should sing too'], a: 0,
+      choicesJa: ['ジムが決めていい', 'CDは持っていない', 'ジムも歌うべき'],
       cue: '「Or a CD」のあと',
       line: 'Jim: I was thinking more like a CD. / Andy: Or a CD. *Your call*, dude.',
       said: '「CDでもいいね。君が決めて」と相手に任せる。',
       mean: 'your call ＝ 決めるのは君。この call は「決めること、判断」。',
-      trap: 'call は「電話」に聞こえるが、your call は「あなたが決めて」。CD か歌か、選ばせている。',
+      trap: 'CD の話なので、持っていないと断ったと考えがち。your call は「君が決めて」。CD か歌か、選ばせている。',
       use: 'Thai or Italian? Your call.（タイ料理かイタリアンか、任せるよ）' },
 
     { id: 'nt2', skill: 'infer', level: 'C2', point: 'cd', reveals: ['strength'], seg: [49.7, 63.4], retired: true,
@@ -174,15 +175,15 @@ export const andyJamie: Clip = {
       use: 'Give me strength.（もう勘弁して）' },
 
     { id: 'p2', skill: 'pragma', level: 'B2', point: 'needsaid', ctx: true, seg: [64, 76],
-      stem: 'What does Jim mean by “Did that really need to be said?”',
-      ja: 'ジムの「Did that really need to be said?」はどういう意味？',
-      choices: ['You didn’t need to say that', 'Please say that again', 'I didn’t hear what you said'], a: 0,
-      choicesJa: ['言わなくてよかったのに', 'もう一度言って', '何て言ったか聞こえなかった'],
+      stem: 'Andy says, “Let’s do a really good job.” What does Jim say?',
+      ja: '「いい仕事をしよう」と言われ、ジムは何と返す？',
+      choices: ['That was obvious', 'He’ll try his best', 'Where they’re going'], a: 0,
+      choicesJa: ['言うまでもない', '全力でがんばる', 'どこへ向かうのか'],
       cue: '「a really good job」のあと',
       line: 'Andy: …let’s do a really good job, okay? / Jim: Did that *really need to be said*?',
       said: '「いい仕事をしよう」と言われ、「それ、言う必要あった？」と返す。',
       mean: '答えを求めていない質問。「言わなくても分かる」という軽いつっこみ。',
-      trap: '質問の形なので、本当に聞いていると考えがち。答えを待たない質問で、「言わなくていい」のつっこみ。',
+      trap: '質問の形なので、本当に何かを聞いていると考えがち。答えを待たない質問で、「言わなくていい」のつっこみ。',
       use: 'Did you really have to say that?（それ、言う必要あった？）' },
 
     { id: 'h2', skill: 'humor', level: 'C1', point: 'musicconv', reveals: ['needsaid'], seg: [66.4, 74.85], retired: true,
@@ -245,13 +246,13 @@ export const andyJamie: Clip = {
     { id: 's1', skill: 'sound', level: 'B1', point: 'doinghere', seg: [106, 118],
       stem: 'Fill the gap: “Oh, ___ doing here?”',
       ja: '「Oh, ___ doing here?」の空所は？',
-      choices: ['what are you', 'what were you', 'what are they'], a: 0,
-      choicesJa: ['（今）あなたは何を', '（その時）あなたは何を', '（今）彼らは何を'],
+      choices: ['what are you', 'what is she', 'what are we'], a: 0,
+      choicesJa: ['あなたは何を', '彼女は何を', '私たちは何を'],
       cue: '「Jamie」のあと',
       line: 'Oh, *what are you* doing here?',
       said: '「えっ、ここで何してるの？」と驚いて聞く。',
       mean: 'what are you が「ワダヤ」とつながる。are と you は小さく短い。',
-      trap: 'were なら「ワー」とのびる。they なら最後が「ゼイ」。「ワダヤ」なら what are you。',
+      trap: 'she なら最後が「シー」、we なら「ウィー」とのびる。「ワダヤ」と短くつながれば what are you。',
       use: 'What are you doing here?（ここで何してるの？）' },
 
     { id: 'k4', skill: 'pragma', level: 'B2', point: 'nevertold', ctx: true, reveals: ['outcome'], seg: [110.5, 118.0],
@@ -279,15 +280,15 @@ export const andyJamie: Clip = {
       use: 'I swear, I had no idea.（本当に、全然知らなかったんだ）' },
 
     { id: 'f3', skill: 'phrase', level: 'B2', point: 'court', reveals: ['outcome'], ctx: true, seg: [135, 145.9],
-      stem: 'What does Jim mean by “not gonna hold up in court”?',
-      ja: 'ジムの「not gonna hold up in court」はどういう意味？',
-      choices: ['That excuse won’t work', 'It will slow down their visit', 'He didn’t know either'], a: 0,
-      choicesJa: ['その言い訳は通用しない', '訪問が遅れる', '彼も知らなかった'],
+      stem: 'Andy says, “I had no idea.” What does Jim tell him?',
+      ja: '「知らなかった」と言うアンディに、ジムは何と言う？',
+      choices: ['That excuse won’t work', 'He should’ve asked her age', 'Nobody else knew either'], a: 0,
+      choicesJa: ['その言い訳は通用しない', '年を聞くべきだった', 'ほかのだれも知らなかった'],
       cue: '「I had no idea」のあと',
       line: 'Andy: I had no idea. / Jim: Well, that’s *not gonna hold up in court*.',
       said: '「知らなかった」と言うアンディに「法廷じゃ通用しないぞ」と返す。',
       mean: 'hold up in court ＝ 裁判で認められる。「その言い訳は通らない」という冗談。',
-      trap: 'hold up には「遅らせる」の意味もある。in court（法廷で）が付けば「通用する」。',
+      trap: 'あきれた調子から、年を聞くべきだったと責めていると考えがち。hold up in court は「法廷で通用する」。',
       use: 'That excuse won’t work with my boss.（その言い訳は上司には通じない）' },
 
     { id: 'h3', skill: 'detail', level: 'B1', point: 'mailbox', seg: [135.9, 146.6],

@@ -9,6 +9,7 @@
 // Segments from the captions, words from whisper (2026-11-16). Only Michael, Oscar and Kevin are named. Untested:
 // 40–49 s (baby talk), 139–145 s ("respect the lay", unclear), 113 s (the name), the puns (funk as music, cafe disco).
 // SKIP 185–211.4: the end of Michael's last line (a2 plays it), then silence and music
+// CHECKS 2026-11-28: blind check: p1, f5, p3, f6 rewritten so listening decides.
 import type { Clip } from '../types.ts';
 
 export const daddyDisco: Clip = {
@@ -30,15 +31,15 @@ export const daddyDisco: Clip = {
       use: 'There’s no reason to be scared.（怖がることはないよ）' },
 
     { id: 'p1', skill: 'phrase', level: 'B2', point: 'charles', reveals: ['scared'], seg: [5.7, 14.3],
-      stem: 'What does “*did a number on*” mean here?',
-      ja: '「did a number on」はここではどういう意味？',
-      choices: ['Hurt them badly', 'Gave them sales goals', 'Counted their mistakes'], a: 0,
-      choicesJa: ['ひどく参らせた', '売り上げ目標を与えた', 'ミスを数えた'],
+      stem: 'What did Charles do to these workers?',
+      ja: 'チャールズは、この人たちに何をした？',
+      choices: ['He really upset them', 'He gave them big raises', 'He fired half of them'], a: 0,
+      choicesJa: ['ひどく参らせた', '大きく昇給させた', '半分をクビにした'],
       cue: 'チャールズの名前のすぐあと。',
       line: 'Charles really *did a number on* these guys.',
       said: '「チャールズは本当にこいつらをひどい目にあわせた」と言う。',
       mean: 'do a number on 〜 ＝ 〜をひどい目にあわせる。くだけた決まり文句で、数字の話ではない。',
-      trap: 'number から「ノルマ」や「数」を連想しやすい。前の scared と合わせて聞く。',
+      trap: 'Charles is gone（いなくなった）から、クビの話と考えがち。did a number on ＝ ひどい目にあわせた。前の scared と合う。',
       use: 'That flight really did a number on me.（あのフライトで本当に参った）' },
 
     { id: 'd1', skill: 'detail', level: 'B1', point: 'focus', reveals: ['incharge'], seg: [10.0, 23.6],
@@ -101,15 +102,15 @@ export const daddyDisco: Clip = {
       use: 'Please don’t call me “sir.”（「サー」と呼ばないでください）' },
 
     { id: 'f5', skill: 'phrase', level: 'B2', point: 'funk', seg: [50.5, 55.5],
-      stem: 'What does “get you guys out of your funk” mean?',
-      ja: '「get you guys out of your funk」はどういう意味？',
-      choices: ['Make you feel better', 'Get you out of the office', 'Teach you funk dancing'], a: 0,
-      choicesJa: ['元気にしてあげる', '会社から外に出す', 'ファンクダンスを教える'],
+      stem: 'What has Michael found a way to do?',
+      ja: 'マイケルは、何をする方法を思いついた？',
+      choices: ['Cheer everyone up again', 'Get everyone a raise', 'Let everyone leave early'], a: 0,
+      choicesJa: ['みんなを元気にする', 'みんなを昇給させる', 'みんなを早く帰らせる'],
       cue: '「figured a way」のあと。',
       line: 'I have figured a way *to get you guys out of your funk*.',
       said: '「みんなを落ちこみから抜け出させる方法を思いついた」と言う。',
       mean: 'funk ＝ 落ちこんだ気分。out of 〜 ＝ 〜から外へ。落ちこみから引っぱり出す→元気にする。',
-      trap: 'funk を音楽のファンクと考えがち。直前の「怖がる」「元気がない」の流れでは落ちこみ。',
+      trap: '職場の話なので、お金や早帰りと考えがち。funk は音楽の名前でもあるが、ここは落ちこみ。そこから抜け出させる。',
       use: 'I’m in a bit of a funk today.（今日はちょっと落ちこんでる）' },
 
     { id: 'h2', skill: 'humor', level: 'C1', point: 'funk', seg: [50.8, 59.05], retired: true,
@@ -171,15 +172,15 @@ export const daddyDisco: Clip = {
       use: 'Why don’t you take a break?（ちょっと休んだら？）' },
 
     { id: 'p3', skill: 'phrase', level: 'B2', point: 'dullboy', seg: [77.7, 82.7],
-      stem: 'What does “*All work and no play*” mean?',
-      ja: '「All work and no play」はどういう意味？',
-      choices: ['Only work, no fun', 'Only fun, no work', 'Work and fun together'], a: 0,
-      choicesJa: ['仕事ばかりで遊びなし', '遊びばかりで仕事なし', '仕事も遊びも一緒に'],
+      stem: 'Whose name does Michael put in the old saying?',
+      ja: 'マイケルは、ことわざに誰の名前を入れる？',
+      choices: ['His own', 'Oscar’s', 'Jack’s'], a: 0,
+      choicesJa: ['自分の名前', 'オスカーの名前', 'ジャックの名前'],
       cue: 'Oscar への返事のあと。',
       line: '*All work and no play* makes Michael a dull boy.',
       said: '「仕事ばかりで遊ばないと、マイケルはつまらない子になる」と言う。元は男の子 Jack の話。',
       mean: 'all 〜 and no … ＝ 〜ばかりで…なし。dull ＝ つまらない。ことわざの Jack を自分の名前に変えている。',
-      trap: 'work と play の両方が聞こえるので逆に取りやすい。no が付くのは play。',
+      trap: 'ことわざは本来 Jack なので、そのままと考えがち。makes のあとの名前を聞く。',
       use: 'All work and no play isn’t good.（仕事ばかりで遊ばないのはよくない）' },
 
     { id: 'd3', ctx: true, skill: 'detail', level: 'B2', point: 'disco', seg: [83.2, 95.3],
@@ -249,15 +250,15 @@ export const daddyDisco: Clip = {
       use: 'And best of all, I’ll be there!（何より、僕が来るよ）' },
 
     { id: 'f6', skill: 'phrase', level: 'B1', point: 'allyoucan', seg: [112.0, 119.5],
-      stem: 'What does “all-you-can-eat espresso” mean?',
-      ja: '「all-you-can-eat espresso」はどういう意味？',
-      choices: ['As much as you want', 'One free cup each', 'Half price all day'], a: 0,
-      choicesJa: ['好きなだけ飲める', '一人一杯無料', '一日じゅう半額'],
+      stem: 'What does Michael offer about the espresso?',
+      ja: 'エスプレッソについて、マイケルは何を約束する？',
+      choices: ['As much as they want', 'One free cup a day', 'A cup after lunch'], a: 0,
+      choicesJa: ['好きなだけ飲める', '一日一杯無料', '昼食のあとに一杯'],
       cue: '「from time to time」のあと。',
       line: 'Erin will be down there from time to time, and *all-you-can-eat* espresso.',
       said: '「エリンもときどき下にいるし、エスプレッソ飲み放題だ」と誘う。',
       mean: 'all-you-can-eat ＝ 食べ放題。飲み物なら本当は all-you-can-drink（飲み放題）。from time to time ＝ ときどき。',
-      trap: 'eat から食べ物の話と考えがち。ここは「好きなだけ」の意味で、飲み物に使っている。',
+      trap: '誘いのおまけなので、一杯だけ無料と考えがち。ここは「好きなだけ」。',
       use: 'Is this an all-you-can-eat buffet?（ここは食べ放題のビュッフェですか）' },
 
     { id: 'a3', skill: 'attitude', level: 'B1', point: 'onhold', seg: [130.2, 140.1],

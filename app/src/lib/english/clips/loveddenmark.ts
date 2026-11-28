@@ -8,6 +8,7 @@
 // Segments from the captions, words from whisper (2026-11-16). The sources differ at 6.2 s, 49.2 s ("good cheese eye" /
 // "Good cheese, aye") and in Ollie's surname; no key rests on those words.
 // SKIP 82–112: the end card and music (whisper's last line runs to 112 s).
+// CHECKS 2026-11-28: blind check: f1, f2 rewritten so listening decides.
 import type { Clip } from '../types.ts';
 
 export const mostLovedDenmark: Clip = {
@@ -182,15 +183,15 @@ export const mostLovedDenmark: Clip = {
       use: 'Well, it’s a nice place, but…（まあ、いい所なんだけど…）' },
 
     { id: 'f1', skill: 'phrase', level: 'B2', point: 'kickout', seg: [60.8, 67.7],
-      stem: 'What does “*kick me out of office*” mean?',
-      ja: '「kick me out of office」はどういう意味？',
-      choices: ['Take away her job', 'Kick her out of a room', 'Close her office'], a: 0,
-      choicesJa: ['仕事をやめさせる', '部屋から追い出す', '事務所を閉める'],
+      stem: 'What is Pawnee trying to do to Leslie?',
+      ja: 'ポーニーの人たちは、レスリーに何をしようとしている？',
+      choices: ['Take away her job', 'Make her pay a fine', 'Make her leave town'], a: 0,
+      choicesJa: ['仕事をやめさせる', '罰金を払わせる', '町から追い出す'],
       cue: '「they’re trying to」のあと',
       line: 'they’re trying to *kick me out of office*.',
       said: '「町は私を、今の職から追い出そうとしている」と言う。',
       mean: 'kick 〜 out ＝ 追い出す。office ＝ ここでは「公職（議員などの仕事）」。',
-      trap: 'office から「事務所の部屋」と思いやすい。out of office ＝ 職を失う。',
+      trap: 'they hate me のあとなので、町から追い出すと考えがち。office ＝ ここでは公職。out of office ＝ 職から追い出す。',
       use: 'They kicked him out of the club.（彼はクラブを追い出された）' },
 
     { id: 'c3', skill: 'sound', level: 'C2', point: 'kickout', reveals: ['pawnee'], seg: [64.0, 67.6], retired: true,
@@ -251,10 +252,10 @@ export const mostLovedDenmark: Clip = {
       use: 'You know what I mean, right?（言ってること、分かるでしょ？）' },
 
     { id: 'f2', skill: 'phrase', level: 'B2', point: 'insult', seg: [73.5, 79.0],
-      stem: 'What does “*add insult to injury*” mean?',
-      ja: '「add insult to injury」はどういう意味？',
-      choices: ['Make a bad thing worse', 'Make a bad thing better', 'Make it healthier'], a: 0,
-      choicesJa: ['悪いことをもっと悪くする', '悪いことをよくする', 'もっと体によくする'],
+      stem: 'Why did they fill the piñata with broccoli?',
+      ja: 'なぜピニャータにブロッコリーを入れた？',
+      choices: ['To make it hurt even more', 'To make it healthy for kids', 'Because candy costs too much'], a: 0,
+      choicesJa: ['さらに追い打ちをかけるため', '子どもの健康のため', 'お菓子が高すぎたから'],
       cue: '「broccoli」のあと',
       line: 'they filled it with broccoli, just to *add insult to injury*.',
       said: '「中にはブロッコリー。さらに追い打ちをかけるためにね」と言う。',

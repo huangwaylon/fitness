@@ -13,6 +13,7 @@
 // SKIP 275.3–302.5: music; captions "pam" at 280.8 s, whisper "Oh, my God"
 // EAR CHECK: 225.5–232 s k2 — who asks "This is from Hooters?" / "Did Toby approve this?" (scenes say Toby, but he'd
 //   hardly ask about himself; Michael says "Toby" at 251 s), so k2's line names no asker
+// CHECKS 2026-11-28: blind check: f1, f5 rewritten so listening decides.
 import type { Clip } from '../types.ts';
 
 export const michaelJim: Clip = {
@@ -47,15 +48,15 @@ export const michaelJim: Clip = {
       use: 'Waiting for the results is torture.（結果待ちはほんとにつらい）' },
 
     { id: 'f1', skill: 'phrase', level: 'B2', point: 'confidant', reveals: ['blurt'], seg: [38.4, 47.8],
-      stem: 'What does Jim mean by “the world’s worst confidant”?',
-      ja: 'ジムの言う「the world’s worst confidant」はどういう意味？',
-      choices: ['Michael can’t keep secrets', 'Michael isn’t confident', 'Michael is bad at drinking'], a: 0,
-      choicesJa: ['マイケルは秘密を守れない', 'マイケルは自信がない', 'マイケルはお酒に弱い'],
+      stem: 'How does Jim describe the man he told?',
+      ja: '打ち明けた相手のことを、ジムはどう言う？',
+      choices: ['The worst one to tell secrets', 'The worst one at remembering', 'The worst boss in the world'], a: 0,
+      choicesJa: ['秘密を話すには最悪の相手', '物覚えが一番悪い人', '世界一ひどい上司'],
       cue: '「world’s worst」のあとの一語。',
       line: '…and I confided in *the world’s worst confidant*.',
       said: '別れた直後でお酒も入り、「世界一ひどい秘密の相談相手」に話した、と言う。',
       mean: 'confidant ＝ 秘密を打ち明ける相手。the world’s worst 〜 ＝ 世界一ひどい〜。',
-      trap: 'confident（自信がある）と音がほぼ同じ。すぐ前の confided（打ち明けた）がヒント。',
+      trap: 'world’s worst から、上司としてひどいと考えがち。confidant は秘密を打ち明ける相手。前の confided がヒント。',
       use: 'I’m the world’s worst cook.（私、料理は世界一下手なの）' },
 
     { id: 'p1', skill: 'pragma', level: 'B1', point: 'between', seg: [55.3, 65.8],
@@ -116,15 +117,15 @@ export const michaelJim: Clip = {
       use: 'I’ll stay awake as long as I can.（がんばれるだけ起きてるよ）' },
 
     { id: 'f5', skill: 'phrase', level: 'B2', point: 'sealed', seg: [82, 94],
-      stem: 'What does Michael mean by “My lips are sealed”?',
-      ja: 'マイケルの「My lips are sealed」はどういう意味？',
-      choices: ['I won’t tell anyone', 'I’m too angry to talk', 'My mouth hurts'], a: 0,
-      choicesJa: ['誰にも言わない', '怒りすぎて話せない', '口が痛い'],
+      stem: 'What does Michael promise Jim?',
+      ja: 'マイケルはジムに何を約束する？',
+      choices: ['To tell no one at all', 'To talk to Pam for him', 'To stop asking about it'], a: 0,
+      choicesJa: ['誰にも言わない', '代わりにパムと話す', 'もうその話は聞かない'],
       cue: '「possibly can」のあと。',
       line: 'for as long as I possibly can. *My lips are sealed.* My lips are sealed.',
       said: '「できる限り長く秘密を守る。口にチャックだ」と2回言う。',
       mean: 'My lips are sealed ＝ 文字どおりは「くちびるに封がしてある」。「絶対に言わない」の決まり文句。',
-      trap: '文字どおりだと口が開かない話に聞こえやすい。直前の keeping that secret が答え。',
+      trap: 'ジムの味方になりたい様子から、パムとの仲を取り持つと考えがち。直前の keeping that secret が答え。',
       use: 'Don’t worry. My lips are sealed.（心配しないで。絶対言わないから）' },
 
     { id: 'g2', skill: 'gist', level: 'B1', point: 'vending', reveals: ['updates'], seg: [99.6, 132],

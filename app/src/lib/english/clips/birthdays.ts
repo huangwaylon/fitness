@@ -14,6 +14,7 @@
 // EXCLUDE 16.9–19.6 (race joke)
 // SKIP 255–303.9: the closing song, “skip around the room” crosstalk, then music (299.5 s “Thank you” is whisper over music)
 // OPEN: 178.3 s pr2 — whisper "maybe it could include me"; an older line had "maybe you could include me"
+// CHECKS 2026-11-28: blind check: f1, f4, f2, pr3 rewritten so listening decides.
 import type { Clip } from '../types.ts';
 
 export const birthdayGuide: Clip = {
@@ -58,15 +59,15 @@ export const birthdayGuide: Clip = {
       use: 'I only sing in the shower.（シャワーのときしか歌わない）' },
 
     { id: 'f1', skill: 'phrase', level: 'B2', point: 'fault', seg: [30, 38.4],
-      stem: 'What does “to a fault” mean here?',
-      ja: 'ここでの「to a fault」の意味は？',
-      choices: ['More than is good', 'With no faults', 'Only a little'], a: 0,
-      choicesJa: ['良すぎて困るほど', '欠点がまったくなく', 'ほんの少し'],
+      stem: 'How much does Michael like surprise parties?',
+      ja: 'マイケルはサプライズパーティーがどのくらい好き？',
+      choices: ['Maybe a little too much', 'Not as much as before', 'Only when they’re for him'], a: 0,
+      choicesJa: ['好きすぎるくらい', '前ほどではない', '自分のためのときだけ'],
       cue: '文の最後の3語。',
       line: 'a very big believer in surprise parties. Maybe even, arguably, possibly *to a fault*.',
       said: 'サプライズパーティーが大好きで、「もしかすると、やりすぎなほど」と言う。',
       mean: 'to a fault ＝ 良いことでも、やりすぎて困るほど。',
-      trap: 'fault（欠点）から「欠点がない」と考えがち。to a fault でひとまとまり。',
+      trap: 'very big believer（大ファン）で「好き」と止まりがち。to a fault でひとまとまり。',
       use: 'She’s kind to a fault.（彼女は優しすぎるくらいだ）' },
 
     { id: 'nt1', retired: true, skill: 'infer', level: 'C2', point: 'fault', seg: [30.9, 44.4],
@@ -187,15 +188,15 @@ export const birthdayGuide: Clip = {
       use: 'It’s not your trip. It’s our trip.（君の旅じゃない、僕らの旅だよ）' },
 
     { id: 'f4', skill: 'phrase', level: 'B2', point: 'word', reveals: ['oneparty'], seg: [148, 155],
-      stem: 'What does “I just got the word” mean?',
-      ja: '「I just got the word」の意味は？',
-      choices: ['I just heard the news', 'I just found a new word', 'I just made a big plan'], a: 0,
-      choicesJa: ['今その話を聞いた', '今ある単語を見つけた', '今計画を立てた'],
+      stem: 'What does Toby tell Jim about the birthday plan?',
+      ja: 'トビーは誕生日の計画について、ジムに何と言う？',
+      choices: ['He just heard about it', 'He already told everyone', 'He can’t come that day'], a: 0,
+      choicesJa: ['今その話を聞いた', 'もうみんなに話した', 'その日は来られない'],
       cue: 'トビーの「Hey, Jim」のあと。',
       line: 'Hey, *I just got the word* on the communal birthday. It’s a great idea.',
       said: 'トビーが「ねえ、合同誕生日のこと聞いたよ。いいアイデアだね」と言う。',
       mean: 'get the word ＝ 文字どおりは「言葉を受け取る」。知らせを受け取る→「話を聞いた」。communal ＝ みんなでの。',
-      trap: 'word（単語）から、言葉を考えている話と勘違いしやすい。続く It’s a great idea で、聞いた感想。',
+      trap: 'word（言葉）から「みんなに言った」と考えがち。続く It’s a great idea で、聞いた感想。',
       use: 'I just got the word. Congratulations!（今聞いたよ。おめでとう！）' },
 
     { id: 'n2', skill: 'number', level: 'B1', point: 'twomonths', reveals: ['include'], seg: [162.6, 168.9], keep: true,
@@ -247,15 +248,15 @@ export const birthdayGuide: Clip = {
       use: 'Thanks, but that’s a bit much for me.（ありがとう、でも私にはちょっと多すぎる）' },
 
     { id: 'f2', skill: 'phrase', level: 'B2', point: 'merrier', reveals: ['include', 'planner'], seg: [194.4, 200.9],
-      stem: 'What does “the more the merrier” mean?',
-      ja: '「the more the merrier」の意味は？',
-      choices: ['More people, more fun', 'One more won’t matter', 'Everyone gets a turn'], a: 0,
-      choicesJa: ['人が多いほど楽しい', '1人増えても変わらない', 'みんなに順番が来る'],
+      stem: 'Why does Jim say Toby can join?',
+      ja: 'ジムはなぜトビーも入れると言う？',
+      choices: ['More people make it more fun', 'There’s plenty of cake', 'The boss wants him there'], a: 0,
+      choicesJa: ['人が多いほど楽しいから', 'ケーキがたくさんあるから', '上司が来てほしがっているから'],
       cue: '「because」のあと。',
       line: 'We’re just going to *throw you in*, because *the more the merrier*, right? — No.',
       said: '「君も入れよう。多いほど楽しいしね」と言うと、すぐ「だめ」と返る。',
       mean: 'the more the merrier ＝ 人が多いほど楽しい。人を誘うときの決まり文句。merry ＝ 楽しい。',
-      trap: 'throw you in（ついでに入れる）が軽く聞こえ、「1人くらい変わらない」と勘違いしやすい。merrier は「もっと楽しい」。',
+      trap: 'ケーキの話の流れなので「ケーキが多い」と考えがち。merrier は「もっと楽しい」。',
       use: 'Bring your friends! The more the merrier.（友だちも連れてきて、多いほど楽しい）' },
 
     { id: 'c1', skill: 'pragma', level: 'B1', point: 'planner', reveals: ['merrier'], ctx: true, seg: [195.5, 207],
@@ -282,15 +283,15 @@ export const birthdayGuide: Clip = {
       use: 'Don’t change the plan willy-nilly.（思いつきで予定を変えないで）' },
 
     { id: 'pr3', skill: 'phrase', level: 'B2', point: 'bummer', ctx: true, seg: [209.9, 217.3],
-      stem: 'What does “That’s a bummer” mean?',
-      ja: '「That’s a bummer」の意味は？',
-      choices: ['That’s too bad', 'That’s great', 'That’s a lie'], a: 0,
-      choicesJa: ['それはついてないね', 'それはよかった', 'うそでしょ'],
+      stem: 'What is the first reply to “I’m allergic to mushrooms”?',
+      ja: '「キノコのアレルギーなんだ」への最初の返事は？',
+      choices: ['Oh, that’s too bad', 'Just pick them off', 'I didn’t know that'], a: 0,
+      choicesJa: ['ああ、それはついてないね', 'よけて食べればいいよ', 'それは知らなかった'],
       cue: 'キノコの話のすぐあと。',
       line: 'I’m allergic to mushrooms. / *That’s a bummer.*',
       said: '「キノコのアレルギーなんだ」に「それはついてないね」と軽く返すだけ。',
       mean: 'bummer ＝ がっかりなこと。That’s a bummer ＝ ついてないね。くだけた軽い言い方。',
-      trap: '知らない語なので当てずっぽうにしやすい。アレルギーの話への返事なので、悪い知らせへの返し。',
+      trap: '軽い返事なので「よけて食べれば」と考えがち。bummer は知らない語でも、がっかりの返し。',
       use: 'Rain again? That’s a bummer.（また雨？ついてないね）' },
 
     { id: 'g2', skill: 'gist', level: 'B1', point: 'outcome', reveals: ['hands'], seg: [218, 246.4],

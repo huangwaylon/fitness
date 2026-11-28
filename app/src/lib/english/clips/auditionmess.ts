@@ -19,6 +19,7 @@
 // CHECKS 2026-11-28: b1 ends on “None!” (the “Pee as you run” lines, whisper 17.2–21.4, out).
 // EXCLUDE 17.2–21.4 (“Pee as you run, Carly!”)
 // CHECKS 2026-11-28: segment ends pulled 0.4 s before the EXCLUDE they ran into (the player plays on 0.4 s): i3.
+// CHECKS 2026-11-28: blind check: f1, f4, f3, f5 rewritten so listening decides.
 import type { Clip } from '../types.ts';
 
 export const auditionDisaster: Clip = {
@@ -52,15 +53,15 @@ export const auditionDisaster: Clip = {
       use: 'The concert was canceled.（コンサートは中止になった）' },
 
     { id: 'f1', skill: 'phrase', level: 'B2', point: 'pulloff', seg: [46.3, 52.8],
-      stem: 'What does “pull this off” mean here?',
-      ja: 'ここでの「pull this off」はどういう意味？',
-      choices: ['Do something hard well', 'Wear bold clothes well', 'Back out of a plan'], a: 0,
-      choicesJa: ['難しいことをうまくやる', '派手な服を着こなす', '計画から手を引く'],
+      stem: 'What does Harper say about herself?',
+      ja: 'ハーパーは自分のことを何と言う？',
+      choices: ['She did something hard well', 'She looks good in any clothes', 'She needed help from others'], a: 0,
+      choicesJa: ['難しいことをうまくやった', 'どんな服も似合う', '人に助けてもらった'],
       cue: '「Whoever said Harper」のあと',
       line: 'Whoever said Harper couldn’t *pull this off* was seriously misguided.',
       said: '「ハーパーにはできないと言った人は、見当違いだった」と自分をほめる。',
       mean: 'pull 〜 off ＝ 文字どおりは「引きはがす」。そこから「難しいことをやってのける」。自分の名前で自分をほめる冗談。',
-      trap: '服の場面なので「着こなす」と考えがち。主語は服を作ったハーパー。',
+      trap: '服の場面なので「服が似合う」と考えがち。主語は服を作ったハーパー。',
       use: 'I can’t believe we pulled it off!（やりとげたなんて信じられない！）' },
 
     { id: 'd1', skill: 'detail', level: 'B1', point: 'sold', reveals: ['canceled'], seg: [67.1, 74.8],
@@ -76,15 +77,15 @@ export const auditionDisaster: Clip = {
       use: 'The shop was sold last month.（その店、先月売られたんだ）' },
 
     { id: 'f4', skill: 'phrase', level: 'B2', point: 'fornothing', seg: [74.2, 79.5],
-      stem: 'What does “all this work was for nothing” mean?',
-      ja: '「all this work was for nothing」はどういう意味？',
-      choices: ['All the work was wasted', 'All the work was free', 'All the work was easy'], a: 0,
-      choicesJa: ['苦労が全部むだになった', '全部ただでやった', '全部かんたんだった'],
+      stem: 'After the news, what is said about all the work?',
+      ja: '知らせのあと、作業について何と言う？',
+      choices: ['All of it was wasted', 'It was worth it anyway', 'They can use it again'], a: 0,
+      choicesJa: ['全部むだになった', 'それでもやってよかった', 'また使える'],
       cue: '「So all this work」のあと',
       line: 'So *all this work was for nothing*?',
       said: 'クラブが売られたと聞いて、「じゃあ、この苦労は全部むだだったの？」と言う。',
       mean: 'for nothing ＝ 文字どおりは「何のためでもなく」。→ 何にもならない＝「むだに」。衣装作りが全部むだに。',
-      trap: 'for nothing には「ただで」の意味もあり、無料と勘違いしやすい。中止の直後なので「むだ」。',
+      trap: 'がんばった話なので「それでもよかった」と考えがち。for nothing ＝ 何にもならず。',
       use: 'I came all this way for nothing.（はるばる来たのに、むだ足だった）' },
 
     { id: 'h1', skill: 'detail', level: 'B1', point: 'limo', ctx: true, seg: [104, 114.1],
@@ -215,15 +216,15 @@ export const auditionDisaster: Clip = {
       use: 'Just so you know, I get carsick.（一応言っておくと、車に酔いやすいんだ）' },
 
     { id: 'f3', skill: 'phrase', level: 'B2', point: 'makeup', seg: [186.9, 193.9],
-      stem: 'What does “make up the time” mean?',
-      ja: '「make up the time」はどういう意味？',
-      choices: ['Win back the lost time', 'Think of a good excuse', 'Stop the argument'], a: 0,
-      choicesJa: ['遅れた時間を取り戻す', 'うまい言い訳を考える', '言い合いをやめる'],
+      stem: 'Why take Ballard Bridge, says the speaker?',
+      ja: '話し手によると、バラード橋を通る理由は？',
+      choices: ['To win back lost time', 'To see the view on the way', 'To stop for gas first'], a: 0,
+      choicesJa: ['遅れた時間を取り戻すため', '途中の景色を見るため', '先にガソリンを入れるため'],
       cue: '「take Ballard Bridge」のあと',
       line: 'No, take Ballard Bridge. We can *make up the time* we lost.',
       said: '「いや、バラード橋を通れ。遅れた分を取り戻せる」と言う。',
       mean: 'make up the time ＝ 遅れを取り戻す。',
-      trap: 'make up には「でっち上げる」「仲直りする」もある。あとが the time なら「取り戻す」。',
+      trap: 'make up は「でっち上げる」の意味もあり、寄り道の理由と勘違いしやすい。the time we lost を取り戻す。',
       use: 'Let’s take a taxi to make up time.（タクシーで遅れを取り戻そう）' },
 
     { id: 'a1', skill: 'attitude', level: 'B2', point: 'foronce', seg: [189.2, 195.1],
@@ -309,15 +310,15 @@ export const auditionDisaster: Clip = {
       use: 'We want you back on the team.（チームに戻ってきてほしい）' },
 
     { id: 'f5', skill: 'phrase', level: 'B2', point: 'dealwith', seg: [283.5, 290.5],
-      stem: 'What does “I can’t deal with him anymore” mean?',
-      ja: '「I can’t deal with him anymore」はどういう意味？',
-      choices: ['I’m tired of him now', 'I can’t find him now', 'I can’t pay him now'], a: 0,
-      choicesJa: ['もう彼にはうんざり', 'もう彼が見つからない', 'もう彼に払えない'],
+      stem: 'Why does Carly tell them to take Spencer?',
+      ja: 'カーリーはなぜスペンサーを連れていっていいと言う？',
+      choices: ['She’s had enough of him', 'He’s better at this game', 'He wants to go with them'], a: 0,
+      choicesJa: ['もう彼にうんざりしている', '彼のほうがこのゲームがうまい', '彼が一緒に行きたがっている'],
       cue: '「You can take him」のあと',
       line: 'You know what? You can take him. *I can’t deal with him anymore.*',
       said: '「ねえ、彼を連れていっていいよ。もう彼の相手はできない」と兄を押しつける。',
-      mean: 'deal with 〜 ＝ 文字どおりは「〜を扱う・処理する」。人なら「〜の相手をする」。もう相手しきれない＝うんざり。くだけた言い方。',
-      trap: 'deal を「取引」と考えがち。deal with ＋人 ＝ その人の相手をする。',
+      mean: 'deal with 〜 ＝ 文字どおりは「〜を扱う・処理する」。人なら「〜の相手をする」。もう相手しきれない＝うんざり。',
+      trap: 'take him（連れていって）から、本人が行きたがっていると考えがち。can’t … anymore でうんざり。',
       use: 'I can’t deal with this right now.（今はこれ、手に負えない）' },
 
     { id: 'nt2', skill: 'pragma', level: 'C2', point: 'cameras', seg: [284.3, 294.3], retired: true,

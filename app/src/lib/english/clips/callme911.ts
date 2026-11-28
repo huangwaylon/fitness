@@ -10,6 +10,7 @@
 // Untested: 0–15 s (unnamed speakers on Toby's tan), 106–114 s ("No / Yep / I don't / Don't do that": speakers and words
 // unsettled), 120–122 s (the "Kurt Russell… served" line), 156–158 s, 168–175 s (the air conditioner lines: unclear).
 // c4: who asks "Are you all right?" at 175 s isn't settled, so the stem says "someone".
+// CHECKS 2026-11-28: blind check: c1, p1, p2, f2, f4 rewritten so listening decides.
 import type { Clip } from '../types.ts';
 
 export const callMe911: Clip = {
@@ -19,10 +20,10 @@ export const callMe911: Clip = {
   credit: 'The Office (official YouTube channel)',
   questions: [
     { id: 'c1', skill: 'phrase', level: 'B1', point: 'online', seg: [22.5, 27.5],
-      stem: 'What does “on the line for you” mean here?',
-      ja: 'ここでの「on the line for you」はどういう意味？',
-      choices: ['Waiting for you on the phone', 'Standing in a line for you', 'Waiting at the front door'], a: 0,
-      choicesJa: ['電話であなたを待っている', 'あなたのために列に並んでいる', '玄関で待っている'],
+      stem: 'What is Michael told about David Wallace?',
+      ja: 'デビッド・ウォレスについて、マイケルは何と知らされる？',
+      choices: ['David is on the phone now', 'David is waiting in line', 'David is at the front desk'], a: 0,
+      choicesJa: ['デビッドから電話が来ている', 'デビッドが列に並んでいる', 'デビッドが受付に来ている'],
       cue: '「David Wallace is」のあと。',
       line: 'David Wallace is *on the line for you*.',
       said: '「デビッド・ウォレスさんからお電話です」と取りつぐ。',
@@ -102,27 +103,27 @@ export const callMe911: Clip = {
       use: 'It’s close, it’s cheap, and I like it.（近いし安いし、気に入ってる）' },
 
     { id: 'p1', skill: 'pragma', level: 'B2', point: 'decided', seg: [62.7, 73],
-      stem: 'What does David mean by “And that’s that”?',
-      ja: 'デビッドの「And that’s that.」はどういう意味？',
-      choices: ['It’s decided, no more talk', 'Please tell me if it’s okay', 'Now it’s your turn to talk'], a: 0,
-      choicesJa: ['もう決まり、話は終わり', 'いいかどうか教えて', '次は君が話す番だ'],
+      stem: 'How does David end his reasons about Toby?',
+      ja: 'トビーの理由を並べたあと、デビッドはどう締める？',
+      choices: ['He says it’s already decided', 'He asks for Michael’s opinion', 'He says they can talk later'], a: 0,
+      choicesJa: ['もう決まったことだと言う', 'マイケルの意見を聞く', 'あとで話そうと言う'],
       cue: '理由のあと、Okay に続く一言。',
       line: 'Okay? And *that’s that*.',
       said: '理由を三つ並べてから「いいね？それで決まりだ」と付け足す。',
       mean: 'that’s that ＝ もう決まったこと。話し合う気はない、という締めの言葉。',
-      trap: 'Okay? を本当の質問と思いやすい。that’s that が来たら返事は求めていない。',
+      trap: 'Okay? が聞こえるので意見を聞いていると考えがち。that’s that が来たら返事は求めていない。',
       use: 'We’re leaving at six, and that’s that.（6時に出る。以上）' },
 
     { id: 'p2', skill: 'pragma', level: 'B2', point: 'respect', seg: [68.3, 75],
-      stem: 'Why does Michael start with “With all due respect”?',
-      ja: 'マイケルはなぜ「With all due respect」で話しはじめる？',
-      choices: ['To disagree with David politely', 'To thank David for his help', 'To ask David to repeat it'], a: 0,
-      choicesJa: ['ていねいに反対するため', '手助けにお礼を言うため', 'もう一度言ってと頼むため'],
+      stem: 'What does Michael tell David after hearing his reasons?',
+      ja: 'デビッドの理由を聞いて、マイケルは何と言う？',
+      choices: ['This isn’t really a talk', 'He agrees with David', 'He thanks David for helping'], a: 0,
+      choicesJa: ['これでは話し合いになっていない', 'デビッドに賛成だ', '助けてくれてありがとう'],
       cue: '前置きのあとに続く文の中身。',
       line: '*With all due respect*, David, this hardly seems like a dialogue.',
       said: '「お言葉ですが、これはとても話し合いとは言えないね」と返す。',
       mean: 'With all due respect ＝「お言葉ですが」。目上の人に反対する前の前置き。',
-      trap: 'respect から尊敬やお礼を連想しやすい。この前置きのあとには、ほぼ反論が来る。',
+      trap: 'respect から賛成やお礼に聞こえるが、この前置きのあとには、ほぼ反論が来る。',
       use: 'With all due respect, I disagree.（お言葉ですが、反対です）' },
 
     { id: 'i2', skill: 'infer', level: 'B2', point: 'decided', ctx: true, seg: [68.5, 75.0],
@@ -184,16 +185,16 @@ export const callMe911: Clip = {
       use: 'How do I get rid of this smell?（このにおい、どうやって消すの？）' },
 
     { id: 'f2', skill: 'phrase', level: 'B2', point: 'cause', ctx: true, seg: [95.5, 102.0],
-      stem: 'What does David mean by “Not without cause”?',
-      ja: 'デビッドの「Not without cause.」はどういう意味？',
-      choices: ['Only with a good reason', 'Only when his contract ends', 'Only if Toby wants to go'], a: 0,
-      choicesJa: ['正当な理由があるときだけ', '契約が切れたときだけ', 'トビーが辞めたいときだけ'],
+      stem: 'What does David say it takes to get rid of Toby?',
+      ja: 'トビーを辞めさせるには何が必要だとデビッドは言う？',
+      choices: ['A good reason to fire him', 'A vote by all the staff', 'A long talk with Toby first'], a: 0,
+      choicesJa: ['辞めさせる正当な理由', '社員全員による投票', 'まずトビーとよく話すこと'],
       cue: '「get rid of him?」への返事。',
 
       line: 'Michael: Is there no way we can…? / David: Not *without cause*, Michael.',
       said: '「何か方法はないのか」に、「正当な理由がなければ無理だ」と答える。',
       mean: 'cause ＝ 正当な理由。好き嫌いでは辞めさせられない、ということ。',
-      trap: 'not と without の否定が重なる。「〜なしではだめ」＝「〜があれば」と考える。',
+      trap: 'not と without の否定が重なって迷いやすい。「理由なしではだめ」＝「理由があればできる」。',
       use: 'You can’t return it without a receipt.（レシートなしでは返品できません）' },
 
     { id: 'h2', retired: true, skill: 'humor', level: 'C1', point: 'hate', reveals: ['cause'], seg: [97.6, 103.5],
@@ -244,15 +245,15 @@ export const callMe911: Clip = {
       use: 'Just act natural.（自然にふるまって）' },
 
     { id: 'f4', skill: 'phrase', level: 'B1', point: 'back', seg: [124.4, 133.6],
-      stem: 'What does “Great to have you back” mean?',
-      ja: '「Great to have you back」はどういう意味？',
-      choices: ['I’m glad you’re here again', 'I want you to go back', 'Please come back soon'], a: 0,
-      choicesJa: ['また来てくれてうれしい', '帰ってほしい', '早く戻ってきて'],
+      stem: 'What does Michael tell Toby first?',
+      ja: 'マイケルはまずトビーに何と言う？',
+      choices: ['He’s glad Toby is back', 'He wants Toby to leave', 'He’s sorry for the past'], a: 0,
+      choicesJa: ['トビーが戻ってうれしい', 'トビーに出て行ってほしい', '昔のことを謝りたい'],
       cue: 'トビーへの最初のあいさつ。',
       line: 'Hey, Toby. *Great to have you back*, man. Seriously.',
       said: '「やあトビー。戻ってきてくれてうれしいよ、本当に」と言う。',
       mean: 'Great to have you back ＝ おかえり、戻ってくれてうれしい。職場に戻った人へのあいさつ。',
-      trap: 'back から「帰って」と思いやすい。have you back で「あなたが戻ってくる」。',
+      trap: 'back から「出て行って」と勘違いしやすい。have you back で「あなたが戻ってくる」。',
       use: 'Welcome! Great to have you back.（おかえり！戻ってくれてうれしい）' },
 
     { id: 't1', skill: 'attitude', level: 'B1', point: 'sweet', seg: [133.8, 143.8],

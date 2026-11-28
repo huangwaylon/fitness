@@ -12,6 +12,7 @@
 // "kill you" warning have no named speaker. Monica is the one coming home (she had lunch out, Rachel asks “Where have
 // you been?”), so she asks “Where is everybody?” (103.6 s). Kept out: Rachel's insult under her breath (19.4 s).
 // Untested: “you can / could borrow it” (118.4 s), who says “…put the receipt back in your pocket” (141 s).
+// CHECKS 2026-11-28: blind check: f2 rewritten so listening decides.
 import type { Clip } from '../types.ts';
 
 export const bloomingdales: Clip = {
@@ -75,15 +76,15 @@ export const bloomingdales: Clip = {
       trap: '文字どおり教会と取ると合わない。直前の店の名前が「神殿」。',
       use: 'This bakery is my church.（このパン屋は私の聖地）', retired: true },
     { id: 'f2', skill: 'phrase', level: 'B2', point: 'cheat', seg: [59.5, 64.5],
-      stem: 'What does “cheating on Rachel” mean here?',
-      ja: '「cheating on Rachel」は、ここでどういう意味？',
-      choices: ['Being unfaithful, like a lover', 'Getting a better deal secretly', 'Lying to her about a price'], a: 0,
-      choicesJa: ['恋人の浮気のように裏切る', 'こっそりいい取引をする', '値段のことでうそをつく'],
+      stem: 'What is going shopping with Julie compared to?',
+      ja: 'ジュリーとの買い物は何にたとえられる？',
+      choices: ['Being unfaithful to a partner', 'Stealing from a close friend', 'Lying to your own family'], a: 0,
+      choicesJa: ['恋人を裏切って浮気すること', '親友から物を盗むこと', '自分の家族にうそをつくこと'],
       cue: 'cheating のあとの on',
       line: 'it’s like *cheating on Rachel* in her house of worship.',
       said: '「レイチェルの聖地で、レイチェルを裏切るようなもんだ」と言う。',
       mean: 'cheat on ＋人 ＝ 浮気する。友だちとの買い物を、恋人の浮気にたとえている。',
-      trap: 'cheat は「カンニング・ずる」の意味が有名。on のあとに人が来たら「浮気」。',
+      trap: 'cheat は「ずる・だます」が有名で、うそや盗みと考えがち。on のあとに人が来たら「浮気」。',
       use: 'He was cheating on his girlfriend.（彼は彼女がいるのに浮気していた）' },
     { id: 'pr1', skill: 'phrase', level: 'B1', point: 'kill', seg: [64.6, 73],
       stem: 'What does “She will kill you” mean here?',

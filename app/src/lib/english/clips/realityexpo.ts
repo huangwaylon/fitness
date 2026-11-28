@@ -16,6 +16,7 @@
 // EAR CHECK: 192.9–204.9 s the coaching of Carly (“worry about being alone forever”) is the director (assumed)
 // EAR CHECK: 230.6–236 s f3 — who answers “I do, because I’ve got the receipts” (maybe the asker herself; no names in f3)
 // EAR CHECK: 176.2–177.1 s x3 — “Can I get a” (both sources): the four words run together, the t of “get” flaps
+// CHECKS 2026-11-28: blind check: f4 c1 f3 rewritten so listening decides.
 import type { Clip } from '../types.ts';
 
 export const realityExposed: Clip = {
@@ -190,27 +191,27 @@ export const realityExposed: Clip = {
       use: 'It’s twenty dollars an hour.（時給20ドルです）' },
 
     { id: 'f4', skill: 'phrase', level: 'B1', point: 'toolate', reveals: ['onit'], seg: [149.5, 156.8],
-      stem: 'What does “Is it too late to…?” ask?',
-      ja: '「Is it too late to…?」は何を聞いている？',
-      choices: ['Can we still do it?', 'Why are we so late?', 'What time is it now?'], a: 0,
-      choicesJa: ['まだそれができる？', 'なんでこんなに遅れたの？', '今何時？'],
+      stem: 'After “Fun.”, what does the speaker hope can still happen?',
+      ja: '「Fun.」のあと、話し手はまだ何ができたらと思っている？',
+      choices: ['A dinosaur takes their place', 'The filming stops early', 'They get paid more money'], a: 0,
+      choicesJa: ['恐竜が自分と交代する', '撮影が早く終わる', 'もっとお金をもらう'],
       cue: '「Fun.」のあと。',
       line: '*Is it too late to* replace me with a dinosaur? — I’m on it.',
       said: '「今から私を恐竜と交代させるのは、もう遅い？」と聞き、「すぐやる」と返される。',
       mean: 'Is it too late to 〜? ＝ 今から〜しても間に合う？ I’m on it ＝ すぐやります。',
-      trap: 'late から「遅刻」や時間の話だと思いやすい。too late to 〜 は「〜するには遅すぎる」。',
+      trap: '直前の200ドルの話から、お金の話と考えがち。too late to のあとの dinosaur を聞く。',
       use: 'Is it too late to change my order?（今から注文を変えても大丈夫？）' },
 
     { id: 'c1', skill: 'pragma', level: 'B2', point: 'onit', reveals: ['toolate'], ctx: true, seg: [151, 157.5],
-      stem: 'What does “I’m on it” mean here?',
-      ja: 'ここでの「I’m on it」の意味は？',
-      choices: ['I’ll do it right away', 'I’m standing on it', 'I’m against that idea'], a: 0,
-      choicesJa: ['すぐやります', 'その上に立っている', 'その案には反対'],
+      stem: 'How is the dinosaur question answered?',
+      ja: '恐竜の質問に、どう返事される？',
+      choices: ['They’ll do it right away', 'It’s much too late now', 'That’s a bad idea'], a: 0,
+      choicesJa: ['すぐやる', 'もう遅すぎる', 'それはよくない考え'],
       cue: '「dinosaur?」への返事。',
       line: 'Is it too late to replace me with a dinosaur? / *I’m on it*.',
       said: '「今から私を恐竜と交代させるのは、もう遅い？」に「すぐやる」と返す。',
       mean: 'I’m on it ＝ 文字どおりは「その上にいる」。仕事の上に乗っている→「今やってます、すぐやります」。',
-      trap: 'on（上に）から、場所の話と勘違いしやすい。頼まれごとへの返事なら「任せて」。',
+      trap: 'too late と聞かれたので「もう遅い」と答えそうに聞こえるが、I’m on it は「すぐやる、任せて」。',
       use: 'I’ll send the file. I’m on it.（ファイル送ります。すぐやります）' },
 
     { id: 'c2', skill: 'attitude', level: 'B1', point: 'relaxed', ctx: true, seg: [156.3, 169.5],
@@ -303,15 +304,15 @@ export const realityExposed: Clip = {
       use: 'Sorry, there’s no bus today.（すみません、今日はバスがありません）' },
 
     { id: 'f3', skill: 'phrase', level: 'B2', point: 'receipts', ctx: true, seg: [230.1, 236.5],
-      stem: 'What does “I’ve got the receipts” mean here?',
-      ja: 'ここでの「I’ve got the receipts」の意味は？',
-      choices: ['I have proof of it', 'I can get my money back', 'I was paid to say it'], a: 0,
-      choicesJa: ['証拠を持っている', 'お金を返してもらえる', 'お金をもらって言った'],
+      stem: 'How does the speaker know what Carly has been saying?',
+      ja: 'カーリーが何を言っていたか、話し手はどうして知っている？',
+      choices: ['They have proof of it', 'Carly told them herself', 'They heard it on TV'], a: 0,
+      choicesJa: ['証拠を持っている', 'カーリー本人から聞いた', 'テレビで聞いた'],
       cue: '「I do because」のあと。',
       line: 'Do you know what Carly’s been saying about you? / I do, because *I’ve got the receipts*.',
       said: '「カーリーが何て言ってたか知ってる？」に「知ってるよ、証拠があるからね」と言う。',
       mean: 'have the receipts ＝ 証拠を押さえている（くだけた言い方）。もとは「レシート」。',
-      trap: 'receipt はふつう「レシート」だが、言い争いの場面では「証拠」の意味で使う。',
+      trap: 'カーリー本人から聞いたと考えがち。receipts はここでは「証拠」で、本人の話ではない。',
       use: 'Don’t lie. I’ve got the receipts.（ごまかさないで。証拠あるから）' },
 
     { id: 'h6', skill: 'humor', level: 'C1', point: 'cvs', reveals: ['receipts'], seg: [231.1, 243.1],

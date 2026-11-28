@@ -10,6 +10,7 @@
 // (140–157 s) and the barista (116 s) aren't named.
 // EAR CHECK: 292.1 s nt2 — “Michael, I should get back to work” is Holly's (assumed by voice)
 // EAR CHECK: 99.4 s d6 — “Practice Olympics” in whisper (accent); the key needs only “Olympics”
+// CHECKS 2026-11-28: blind check: pr2, p9, f8 rewritten so listening decides.
 import type { Clip } from '../types.ts';
 
 export const mykonos: Clip = {
@@ -79,15 +80,15 @@ export const mykonos: Clip = {
       use: 'That’s the best news all week!（今週いちばんの朗報だ！）' },
 
     { id: 'pr2', skill: 'phrase', level: 'B1', point: 'offer', seg: [70.2, 80.9],
-      stem: 'What does “*If you change your mind*” mean?',
-      ja: '「If you change your mind」はどういう意味？',
-      choices: ['If you decide differently', 'If you start to feel sick', 'If you forget about it'], a: 0,
-      choicesJa: ['もし気が変わったら', 'もし気分が悪くなったら', 'もし忘れたら'],
+      stem: 'What does Michael tell Holly she can do?',
+      ja: 'マイケルはホリーに、何をしてもいいと言う？',
+      choices: ['Talk to him if she wants in', 'Take some time to rest', 'Ask Andy about it first'], a: 0,
+      choicesJa: ['その気になったら彼に言う', 'ゆっくり休む', '先にアンディに聞く'],
       cue: 'ホリーに言う一文の最初。',
       line: '*If you change your mind*, why don’t you talk to Mykonos?',
       said: '「気が変わったら、ミコノスに話してよ」と言う。',
       mean: 'change your mind ＝ 考えを変える、気が変わる。Mykonos はマイケル自身の役の名前。',
-      trap: 'mind から「気分」を思いやすい。change your mind ＝ 決めたことを変える。',
+      trap: 'つらい一週間の話のあとなので、休むように言うと考えがち。If you change your mind ＝「気が変わったら」。',
       use: 'If you change your mind, call me.（気が変わったら電話して）' },
 
     { id: 'i2', skill: 'infer', level: 'C1', point: 'joins', seg: [78.7, 92.6], retired: true,
@@ -279,15 +280,15 @@ export const mykonos: Clip = {
       use: 'I’m just not a pushy person.（押しが強いタイプじゃないんだ）' },
 
     { id: 'p9', skill: 'phrase', level: 'B2', point: 'letdown', seg: [205.4, 214.9],
-      stem: 'What does “*Don’t let them down*” mean?',
-      ja: '「Don’t let them down」はどういう意味？',
-      choices: ['Don’t disappoint them', 'Don’t laugh at them', 'Don’t leave them alone'], a: 0,
-      choicesJa: ['みんなをがっかりさせるな', 'みんなを笑うな', 'みんなを一人にするな'],
+      stem: 'What does Michael ask Andy not to do?',
+      ja: 'マイケルはアンディに、何をするなと言う？',
+      choices: ['Disappoint the others', 'Lie to the people here', 'Be rude to the guests'], a: 0,
+      choicesJa: ['みんなをがっかりさせる', 'ここの人たちにうそをつく', 'お客さんに失礼にする'],
       cue: '「they believe in you」のあと。',
       line: 'Kelly and Creed, Kevin, they believe in you. *Don’t let them down*.',
       said: '「みんな君を信じてる。がっかりさせるな」と励ます。',
       mean: 'let 人 down ＝ 文字どおりは「下におろす」。期待を下げる→がっかりさせる。believe in you ＝ 君ならできると信じている。',
-      trap: 'down（下）から「下に見る、ばかにする」と考えがち。直前の believe in you で、期待を裏切るなと分かる。',
+      trap: 'I’m a nice guy への返事なので、失礼にするなと言うと考えがち。let them down ＝ がっかりさせる。',
       use: 'I won’t let you down.（がっかりさせないよ）' },
 
     { id: 'p7', skill: 'phrase', level: 'B2', point: 'snowball', seg: [222, 232.8],
@@ -348,15 +349,15 @@ export const mykonos: Clip = {
       use: 'This one looks good. I’ll take it.（これがいいですね。これにします）' },
 
     { id: 'f8', skill: 'phrase', level: 'B1', point: 'anytime', seg: [271.5, 278.2],
-      stem: 'What does “*feel free to call anytime*” mean?',
-      ja: '「feel free to call anytime」はどういう意味？',
-      choices: ['Call whenever you like', 'Calls are free today', 'Please call right now'], a: 0,
-      choicesJa: ['いつでも気軽に電話して', '今日は電話が無料', '今すぐ電話して'],
+      stem: 'What are the rest of the people told they can do?',
+      ja: '残りの人たちは、何をしていいと言われる？',
+      choices: ['Call any time they like', 'Come back next week', 'Buy it online later'], a: 0,
+      choicesJa: ['いつでも気軽に電話する', '来週また来る', 'あとでネットで買う'],
       cue: '「you’ve got my information」のあと。',
       line: 'you’ve got my information. So *feel free to call anytime*.',
       said: '「連絡先は渡したので、いつでも気軽に電話して」と言う。',
       mean: 'feel free to 〜 ＝ 遠慮なく〜して。anytime ＝ いつでも。',
-      trap: 'free から「無料」と思いやすい。feel free は「気軽に」。',
+      trap: 'セミナーの終わりなので「来週また」の誘いと考えがち。feel free to call anytime ＝「いつでも気軽に電話して」。',
       use: 'Feel free to ask me anything.（何でも気軽に聞いてね）' },
 
     { id: 'nt2', skill: 'pragma', level: 'B1', point: 'realname', seg: [288.5, 295.7],

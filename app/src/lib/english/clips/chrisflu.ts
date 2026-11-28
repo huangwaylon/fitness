@@ -11,6 +11,7 @@
 // never is, so stems name him from the title. The sources differ at 0–2.8 s, 25.2 s ("Speaking of" / "Speaking", the
 // "of" weak) and 107.6 s; no key rests on them. No item uses the fart, "Damn, you're fine", vomit and drawer lines, or
 // "Way to go, buddy" (speaker unclear). h2's stem doesn't rest on who says the chip line (an old ear check).
+// CHECKS 2026-11-28: blind check: f4, m1, s1, s2 rewritten so listening decides.
 import type { Clip } from '../types.ts';
 
 export const chrisFlu: Clip = {
@@ -54,14 +55,14 @@ export const chrisFlu: Clip = {
       use: 'I wear a mask on the train.（電車ではマスクをしている）' },
 
     { id: 'f4', skill: 'phrase', level: 'B1', point: 'whatswith', seg: [8.4, 13.8],
-      stem: 'What does “What’s with the mask?” mean?', ja: '“What’s with the mask?” はどういう意味？',
-      choices: ['Why are you wearing it?', 'Where did you get that?', 'Can I have one too?'], a: 0,
-      choicesJa: ['なんでそれを着けてるの？', 'それ、どこで買ったの？', '私にも1枚くれる？'],
-      cue: 'アンの質問',
-      line: '*What’s with the mask?*',
-      said: '「そのマスク、どうしたの？」と聞く。',
-      mean: 'What’s with 〜? ＝ その〜はどうしたの？ いつもと違う物や様子のわけを聞く、くだけた言い方。',
-      trap: 'with から「マスクと一緒に何？」と考えがち。わけを聞くひとまとまり。',
+      stem: 'Ann asks “What’s with the mask?” What is the answer?', ja: '“What’s with the mask?” と聞かれて、何と答える？',
+      choices: ['To keep from getting sick', 'Because he has a bad cold', 'Because of the dusty air'], a: 0,
+      choicesJa: ['病気をふせぐため', 'ひどいかぜをひいているから', '空気がほこりっぽいから'],
+      cue: 'アンの質問への答え',
+      line: 'What’s with the mask? — *Flu prevention*.',
+      said: '「そのマスク、どうしたの？」に「インフルエンザ予防」と答える。',
+      mean: 'What’s with 〜? ＝ その〜はどうしたの？ わけを聞く、くだけた言い方。prevention ＝ 予防。',
+      trap: 'マスクなので、もう具合が悪いと考えがち。prevention（予防）は、まだかかっていないということ。',
       use: 'What’s with the long line?（この長い列、どうしたの？）' },
 
     { id: 'i1', skill: 'detail', level: 'B2', point: 'microchip', seg: [12.9, 22.2], retired: true,
@@ -102,14 +103,14 @@ export const chrisFlu: Clip = {
       use: 'Can I have some potato chips?（ポテトチップ、少しもらえる？）' },
 
     { id: 'm1', skill: 'marker', level: 'B2', point: 'speaking', reveals: ['chip'], seg: [23.3, 30],
-      stem: 'What does “Speaking of potato chips” mean here?', ja: 'ここでの “Speaking of potato chips” はどういう意味？',
-      choices: ['That reminds me of something', 'Let’s go buy some chips', 'Please stop joking'], a: 0,
-      choicesJa: ['それで思い出したけど', 'チップスを買いに行こう', '冗談はやめて'],
-      cue: 'クリスの文の最初',
-      line: '*Speaking of potato chips*, you and I are on for dinner tomorrow, yes?',
+      stem: 'After “Speaking of potato chips,” what does Chris bring up?', ja: '“Speaking of potato chips” のあと、クリスは何の話をする？',
+      choices: ['Their dinner tomorrow', 'A snack he really likes', 'A new diet he’s on'], a: 0,
+      choicesJa: ['明日の二人の夕食', '好きなおやつ', '始めたダイエット'],
+      cue: '「Speaking of」で始まる文の続き',
+      line: 'Speaking of potato chips, you and I are *on for dinner tomorrow*, yes?',
       said: '「ポテトチップと言えば、明日の夕食、予定どおりだよね？」と聞く。',
       mean: 'Speaking of 〜 ＝ 〜と言えば。相手の言葉をきっかけに、別の話を始める。',
-      trap: 'potato chips が出るので、食べ物の話の続きに聞こえるが、あとは夕食の約束の話。',
+      trap: 'potato chips のあとなので、おやつの話の続きに聞こえるが、あとは夕食の約束の話。',
       use: 'Speaking of Paris, how was your trip?（パリと言えば、旅行どうだった？）' },
 
     { id: 'f3', skill: 'pragma', level: 'B2', point: 'dinner', seg: [25, 32.9], retired: true,
@@ -217,13 +218,13 @@ export const chrisFlu: Clip = {
 
     { id: 's1', skill: 'sound', level: 'B2', point: 'tends', seg: [75.6, 82.9],
       stem: 'Fill the gap: “My body ___ lose a lot of fluids…”', ja: '空所に入るのは？ “My body ___ lose a lot of fluids…”',
-      choices: ['tends to', 'tended to', 'intends to'], a: 0,
-      choicesJa: ['〜しがち', '〜しがちだった', '〜するつもり'],
+      choices: ['tends to', 'used to', 'seems to'], a: 0,
+      choicesJa: ['〜しがち', '前は〜していた', '〜するようだ'],
       cue: '「My body」のすぐあと',
       line: 'My body *tends to* lose a lot of fluids when it’s sick.',
       said: '「体調を崩すと、僕の体は水分をたくさん失いがち」と言う。',
       mean: 'tend to ＝ 〜しがち。ds と to がつながり「テンズタ」に近い。',
-      trap: 'tended なら「テンディッド」、intends なら頭に「イン」がある。ここは「テンズタ」。',
+      trap: 'used to なら「ユース」、seems to なら「シー」で始まる。ここは t で始まる「テンズタ」。',
       use: 'I tend to oversleep on Sundays.（日曜は寝坊しがち）' },
 
     { id: 'k1', skill: 'detail', level: 'B2', point: 'hasflu', ctx: true, seg: [79.5, 88.0],
@@ -268,13 +269,13 @@ export const chrisFlu: Clip = {
 
     { id: 's2', skill: 'sound', level: 'B1', point: 'hafta', seg: [105.3, 109.5],
       stem: 'Fill the gap: “You ___ get up off the floor now.”', ja: '空所に入るのは？ “You ___ get up off the floor now.”',
-      choices: ['have to', 'had to', 'want to'], a: 0,
-      choicesJa: ['〜しなきゃ', '〜しなきゃいけなかった', '〜したい'],
+      choices: ['have to', 'need to', 'got to'], a: 0,
+      choicesJa: ['〜しなきゃ', '〜する必要がある', '〜しなくちゃ'],
       cue: '「You」のすぐあと',
       line: '*You have to* get up off the floor now.',
       said: '「もう床から起きなきゃだめ」と言う。',
       mean: 'have to ＝ 〜しなければならない。「ハフタ」と、v が f のような音になる。',
-      trap: 'had to なら「ハットゥ」、want to なら「ワナ」。「ハフ」と f の音が聞こえれば have to。',
+      trap: 'need to なら「ニー」、got to なら「ガッタ」。「ハフ」と f の音が聞こえれば have to。',
       use: 'I have to go now.（もう行かなきゃ）' },
 
     { id: 'k2', skill: 'infer', level: 'B2', point: 'floor', reveals: ['hafta'], ctx: true, seg: [105.4, 111.5],

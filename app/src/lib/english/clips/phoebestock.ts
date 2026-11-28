@@ -13,6 +13,7 @@
 // EAR CHECK: 32.4 s x1 — both sources write “am I going to” twice; if it's said “am I gonna”, x1's answer changes
 // CHECKS 2026-11-28: segment ends pulled 0.4 s before the EXCLUDE they ran into (the player plays on 0.4 s): g3;
 // started earlier to keep the minimum length after that: g3.
+// CHECKS 2026-11-28: blind check: f2 m1 rewritten so listening decides.
 import type { Clip } from '../types.ts';
 
 export const phoebeStock: Clip = {
@@ -174,15 +175,15 @@ export const phoebeStock: Clip = {
       use: 'Okay, okay, what do I do now?（どうしよう、どうしたらいい？）' },
 
     { id: 'f2', skill: 'phrase', level: 'B1', point: 'office', seg: [32.5, 36.0],
-      stem: 'Phoebe says, “They’ll *kill* me.” What does she mean?',
-      ja: 'フィービーの「They’ll kill me.」はどういう意味？',
-      choices: ['They’ll be very angry', 'They’ll be very sad', 'They’ll laugh at her'], a: 0,
-      choicesJa: ['すごく怒られる', 'すごく悲しむ', '笑われる'],
+      stem: 'Why can’t Phoebe call her office?',
+      ja: 'フィービーはなぜ会社に電話できない？',
+      choices: ['They’ll be very angry', 'Everyone has gone home', 'Her phone is broken'], a: 0,
+      choicesJa: ['すごく怒られる', 'みんなもう帰った', '電話がこわれている'],
       cue: 'office のあと、短い3語。',
       line: 'I can’t call my office, *they’ll kill me*.',
       said: '「会社には電話できない、殺される」と言う。',
       mean: 'kill ＝ 文字どおりは「殺す」。ここは「すごく怒る」の大げさな言い方。日本語の「殺される」と同じ。',
-      trap: '物騒な話に聞こえるが、会話の kill me はたいてい「すごく怒られる」。',
+      trap: '電話できない理由なので、電話のトラブルと考えがち。kill me は「すごく怒られる」の大げさな言い方。',
       use: 'My mom’s going to kill me.（母さんにすごく怒られる）' },
 
     { id: 'd3', retired: true, skill: 'detail', level: 'B2', point: 'clients', reveals: ['office'], seg: [33.6, 39.3],
@@ -278,15 +279,15 @@ export const phoebeStock: Clip = {
       use: 'Hypothetically, if I broke your lamp…（もし仮に、ランプを割ったら…）', retired: true },
 
     { id: 'm1', skill: 'marker', level: 'B2', point: 'then', reveals: ['symptoms'], seg: [51.0, 57.0],
-      stem: 'What does “Then” mean in “Then yes”?',
-      ja: '「Then yes」の Then はどういう意味？',
-      choices: ['In that case', 'After that', 'At that time'], a: 0,
-      choicesJa: ['それなら', 'そのあとで', 'その時に'],
+      stem: 'What makes Phoebe say “Then yes”?',
+      ja: 'フィービーが「Then yes」と言うきっかけは？',
+      choices: ['His answer to her question', 'The pain in her chest', 'The money she lost'], a: 0,
+      choicesJa: ['自分の質問への彼の答え', '胸の痛み', '失ったお金'],
       cue: '彼の Yes のすぐあとの一語。',
       line: '— Yes. — *Then* yes, that is what I’m having.',
       said: '彼の「うん」を受けて「じゃあ、そう、それなの」と答える。',
       mean: 'then ＝ それなら。相手の答えを受けて結論を言う合図。',
-      trap: 'then を「それから」と時間で取りやすい。返事の頭の then は「それなら」。',
+      trap: '胸の痛みやお金の話が前にあり、それが理由と考えがち。then は「それなら」で、彼の Yes を受けている。',
       use: 'Then let’s just take a taxi.（それならタクシーにしよう）' },
   ]
 };

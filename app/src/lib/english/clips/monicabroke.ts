@@ -15,6 +15,7 @@
 // EAR CHECK: 93–99.5 s k2 — "Where have you been? / Emotional hell." (whisper line 94.2–105.4 s): confirm the timing
 // EAR CHECK: 17.3 s s1 d1 — "couldn't" (both sources): said with the t dropped, ending on the n (≈ "couldn")
 // EAR CHECK: 8.0 s x2 — "do you have any" (both sources): do you runs into one weak syllable, have any linked
+// CHECKS 2026-11-28: blind check: f2 rewritten so listening decides.
 import type { Clip } from '../types.ts';
 
 export const monicabroke: Clip = {
@@ -283,15 +284,15 @@ export const monicabroke: Clip = {
       use: 'I save 10% of every paycheck.（給料の1割は必ず貯金してる）' },
 
     { id: 'f2', skill: 'phrase', level: 'B2', point: 'dip', seg: [140.9, 150.8],
-      stem: 'What does “she dips into her savings” mean?',
-      ja: '「she dips into her savings」の意味は？',
-      choices: ['She uses some of them', 'She adds a bit to them', 'She saves them for later'], a: 0,
-      choicesJa: ['貯金を少し使う', '貯金を少し増やす', '貯金をあとに取っておく'],
+      stem: 'What does Jack say Monica can do with her savings?',
+      ja: 'ジャックは、モニカが貯金をどうすればいいと言う？',
+      choices: ['Use some of it right now', 'Add a little more to it', 'Keep it for a new home'], a: 0,
+      choicesJa: ['今少し使う', 'もう少し増やす', '家のために取っておく'],
       cue: '「So, she」のあと。',
       line: 'So, she *dips into her savings*. That’s what it’s there for.',
       said: '「だから貯金を少し使えばいい。そのためにあるんだ」と言う。',
       mean: 'dip into 〜 ＝ 〜（貯金など）に手をつけて少し使う。今がその困ったとき。',
-      trap: 'dip を「入れる」と思うと「貯金を増やす」に聞こえる。into の中から取り出す動き。',
+      trap: '直前は「給料の1割を銀行へ」という貯める話なので、増やすと考えがち。dips into ＝ 手をつけて少し使う。',
       use: 'I had to dip into my travel fund.（旅行資金に手をつけちゃった）' },
 
     { id: 'p2', skill: 'pragma', level: 'B2', point: 'extra', seg: [141.4, 153.1],

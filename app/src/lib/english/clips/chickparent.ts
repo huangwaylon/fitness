@@ -11,6 +11,7 @@
 // here it comes" and the opening song isn't settled (stems don't name them). en 36–37 repeat 35 (whisper). Joey/Chandler are named only where the words settle it (rehearsal/cast = Joey; stayed home
 // from work = Chandler).
 // EAR CHECK: 14.2 s doing — “How's she doing?” asked by the one coming home (unnamed)
+// CHECKS 2026-11-28: blind check: last rewritten so listening decides.
 import type { Clip } from '../types.ts';
 
 export const chickParent: Clip = {
@@ -20,15 +21,15 @@ export const chickParent: Clip = {
   credit: 'Friends (official YouTube channel)',
   questions: [
     { id: 'last', skill: 'pragma', level: 'B1', point: 'last', seg: [0, 5.8],
-      stem: 'What does “Okay, but this is the last time” mean?',
-      ja: '「Okay, but this is the last time」はどういう意味？',
-      choices: ['Yes, but only once more', 'No, not one more time', 'Yes, as many as you like'], a: 0,
-      choicesJa: ['いいよ、でもあと1回だけ', 'だめ、もうやらない', 'いいよ、何回でも'],
+      stem: 'What does the first speaker decide?',
+      ja: '最初に話す人は、どうすることにする？',
+      choices: ['To sing it one last time', 'To stop singing for tonight', 'To let the other one sing'], a: 0,
+      choicesJa: ['最後にもう1回歌う', '今夜はもう歌わない', 'もう一人に歌わせる'],
       cue: 'いちばん最初の文。',
       line: '*Okay, but this is the last time.* With a chick-chick here…',
       said: '「分かった、でもこれが最後だぞ」と言って、ひよこに歌ってやる。',
       mean: 'Okay ＝ いいよ（引き受ける）。but this is the last time ＝ でもこれで最後。しぶしぶ「あと1回だけ」。',
-      trap: 'last から「もうやらない」と考えがち。Okay で引き受けていて、このあと歌が始まる。',
+      trap: 'last（最後）から「もう歌わない」と考えがち。Okay で引き受けていて、このあと本人が歌い出す。',
       use: 'Okay, but this is the last time.（いいよ、でもこれが最後ね）' },
 
     { id: 'doing', skill: 'phrase', level: 'B1', point: 'doing', seg: [12.26, 20.6],

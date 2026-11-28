@@ -9,6 +9,7 @@
 // Untested on purpose: the "Ron in 60 seconds" card, the entrance (52–57 s), "Shh, clean" (63–65 s) and the word chain
 // (69–77 s: names and puns).
 // SKIP 83.5–104.3: after pr3, the end card (whisper loops "see you next time")
+// CHECKS 2026-11-28: blind check: i3, f3 rewritten so listening decides.
 import type { Clip } from '../types.ts';
 
 export const ronShare: Clip = {
@@ -197,13 +198,13 @@ export const ronShare: Clip = {
     { id: 'i3', skill: 'infer', level: 'B2', point: 'our', seg: [45.3, 52.4],
       stem: 'Why does Ron ask, “Who else is joining you?”',
       ja: 'ロンはなぜ「ほかに誰が来るんだ？」と聞く？',
-      choices: ['Tom said “our,” not “my”', 'Tom picked 8 a.m.', 'Tom named his partner'], a: 0,
-      choicesJa: ['トムが my でなく our と言った', 'トムが朝8時を選んだ', 'トムが相棒の名前を言った'],
+      choices: ['Tom said “our,” not “my”', 'Tom said “we,” not “I”', 'Tom said “my partner”'], a: 0,
+      choicesJa: ['トムが my でなく our と言った', 'トムが I でなく we と言った', 'トムが「僕の相棒」と言った'],
       cue: 'ロンが聞き返した語。',
       line: 'very impressed with *our* presentation. — *Our* presentation, who else is joining you?',
       said: '「僕たちのプレゼンに感心しますよ」に、「僕たち？ほかに誰が？」と聞き返す。',
       mean: 'our ＝ 私たちの。一人のプレゼンなら my。ロンは一語で、ほかにも人がいると気づいた。',
-      trap: '時刻や名前に気を取られやすい。聞き返しは、相手の語をそのままくり返す。',
+      trap: '「僕たち」なら we でも同じなので迷いやすい。ロンがくり返した語は our（Our presentation）。',
       use: 'Wait, “we”? Who else is coming?（待って、「僕たち」？ほかに誰が来るの？）' },
 
     { id: 'g2', retired: true, skill: 'gist', level: 'B1', point: 'turn', reveals: ['rethink'], seg: [49, 86.6],
@@ -219,15 +220,15 @@ export const ronShare: Clip = {
       use: 'I didn’t know you were coming.（来るとは知らなかった）' },
 
     { id: 'f3', skill: 'phrase', level: 'B1', point: 'realize', seg: [58.6, 61.8],
-      stem: 'What does Ron mean by “I didn’t realize”?',
-      ja: 'ロンの「I didn’t realize」はどういう意味？',
-      choices: ['I didn’t know', 'I didn’t like it', 'I didn’t agree'], a: 0,
-      choicesJa: ['知らなかった', '気に入らなかった', '賛成しなかった'],
+      stem: 'What does Ron say to Jean-Ralphio?',
+      ja: 'ロンはジャン・ラルフィオに何と言う？',
+      choices: ['He didn’t know he was in it', 'He has heard a lot about him', 'He thought he was much older'], a: 0,
+      choicesJa: ['関わっているとは知らなかった', '彼のうわさはよく聞いている', 'もっと年上だと思っていた'],
       cue: 'That’s me のあと、ロンの一言。',
       line: '*I didn’t realize* you were a part of this.',
       said: '「君も関わっているとは知らなかった」と言う。',
       mean: 'I didn’t realize 〜 ＝ 〜とは知らなかった・気づかなかった。',
-      trap: 'realize をカタカナの「リアライズ（実現）」と結びつけやすい。会話では「気づく」。',
+      trap: '初めて会う場面なので「うわさは聞いている」と考えがち。I didn’t realize ＝「〜とは知らなかった」。',
       use: 'Sorry, I didn’t realize you were busy.（ごめん、忙しいとは知らなかった）' },
 
     { id: 'd3', skill: 'detail', level: 'B1', point: 'partner', seg: [60.6, 63.5],

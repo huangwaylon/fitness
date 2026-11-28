@@ -13,6 +13,7 @@
 // 52.5 s, 75.7 s, 99.2 s, 107.4 s, 110 s on.
 // SKIP 108.9–132.6: the “powers” tease runs into crosstalk, then the last line over the end music
 // EAR CHECK: 87.8 s x2 — the captions have an extra “what” before “I don't even know” (whisper doesn't)
+// CHECKS 2026-11-28: blind check: f1 f2 rewritten so listening decides.
 import type { Clip } from '../types.ts';
 
 export const dwightHobbit: Clip = {
@@ -66,14 +67,14 @@ export const dwightHobbit: Clip = {
       use: 'We’re here for the party.（パーティーに来たんだ）' },
 
     { id: 'f1', skill: 'phrase', level: 'B2', point: 'offer', seg: [10.1, 15.4],
-      stem: 'What does “taking you up on your offer” mean?', ja: '“taking you up on your offer” はどういう意味？',
-      choices: ['Accepting Ryan’s invite', 'Raising Ryan’s offer', 'Asking if Ryan still wants them'], a: 0,
-      choicesJa: ['ライアンの誘いに乗る', 'ライアンの申し出を上げる', 'まだ来てほしいか聞く'],
+      stem: 'What does Michael say about Ryan’s offer?', ja: 'ライアンの誘いについて、マイケルは何と言う？',
+      choices: ['They’re saying yes to it', 'They nearly forgot about it', 'They want to change the plan'], a: 0,
+      choicesJa: ['誘いに乗りに来た', 'あやうく忘れるところだった', '予定を変えたい'],
       cue: '「offer」の前',
       line: 'just *taking you up on* your offer to party.',
       said: '「きみの誘いに乗りに来た」と言う。up on がつながり「アポン」。',
       mean: 'take 人 up on 〜 ＝ 人の申し出（誘い）を受ける。誘いに本当に乗るときの言い方。',
-      trap: 'up を「上げる」と思うと値上げの話に聞こえるが、take 〜 up on でひとまとまり。',
+      trap: 'up を「上げる・変える」と考えがちだが、take 〜 up on でひとまとまり。最後の So, ta-da も得意げな登場。',
       use: 'I’ll take you up on that coffee.（そのコーヒーの話、乗るよ）' },
 
     { id: 'm2', skill: 'marker', level: 'B1', point: 'tada', retired: true, seg: [11.1, 17.6],
@@ -132,14 +133,14 @@ export const dwightHobbit: Clip = {
       use: 'No, no, I meant that as a joke.（いやいや、冗談のつもりだったの）' },
 
     { id: 'f2', skill: 'phrase', level: 'B2', point: 'wizard', seg: [45.7, 50.7],
-      stem: 'What does “a regular banking wizard” say about Dwight?', ja: '“a regular banking wizard” は、ドワイトについて何と言っている？',
-      choices: ['A real genius with money', 'An ordinary bank worker', 'Just okay with money'], a: 0,
-      choicesJa: ['お金の本物の天才', 'ふつうの銀行員', 'お金はまあまあ'],
+      stem: 'After the Tolkien remark, what is Dwight called?', ja: 'トールキンの話のあと、ドワイトは何と呼ばれる？',
+      choices: ['Someone great with money', 'Just a normal bank clerk', 'Someone bad at saving'], a: 0,
+      choicesJa: ['お金の扱いの名人', 'ただのふつうの銀行員', '貯金が苦手な人'],
       cue: '「He basically is」のあと',
       line: 'He’s *a regular* banking *wizard*.',
       said: '「まさにそう。本物の金融の天才だ」と言う。',
       mean: 'a regular 〜 ＝ まさに〜。wizard ＝ 名人、天才。見た目の話をほめ言葉に変えている。',
-      trap: 'regular を「ふつうの」と思いやすい。a regular ＋人なら「まさに」。',
+      trap: 'regular と banking から「ふつうの銀行員」と考えがち。a regular ＋人なら「まさに」、wizard は名人。',
       use: 'She’s a regular genius in the kitchen.（彼女は料理の天才だ）' },
 
     { id: 'g1', skill: 'gist', level: 'B1', point: 'scene', reveals: ['wizard', 'house', 'normal'], seg: [46.6, 76.6],

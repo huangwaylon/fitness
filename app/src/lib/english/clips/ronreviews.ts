@@ -12,6 +12,7 @@
 // shipped: never reuse those ids.
 // SKIP 113–134: music, no speech
 // EAR CHECK: 58.5 s postage — “How much postage does it take…?” is Ron (assumed: the letter to Canada is his)
+// CHECKS 2026-11-28: blind check: f1, m1 rewritten so listening decides.
 import type { Clip } from '../types.ts';
 
 export const ronsReviews: Clip = {
@@ -55,10 +56,10 @@ export const ronsReviews: Clip = {
       use: 'I looked up the address online.（住所はネットで調べた）' },
 
     { id: 'f1', skill: 'phrase', level: 'B2', point: 'letters', seg: [8.9, 18.5],
-      stem: 'What are “strongly worded letters”?',
-      ja: '「strongly worded letters」とは？',
-      choices: ['Letters with harsh words', 'Letters in big, dark type', 'Letters with polite words'], a: 0,
-      choicesJa: ['きつい言葉の手紙', '大きな太字の手紙', 'ていねいな言葉の手紙'],
+      stem: 'What kind of letters is Ron writing?',
+      ja: 'ロンはどんな手紙を書いている？',
+      choices: ['Letters full of harsh words', 'Letters in big, bold print', 'Letters asking for refunds'], a: 0,
+      choicesJa: ['きつい言葉だらけの手紙', '大きな太字の手紙', '返金を求める手紙'],
       cue: '「composing」のあと。',
       line: 'I am composing *strongly worded letters* about things I *disapprove of*',
       said: '「気に入らないものに、強い言葉の手紙を書いている」と言う。',
@@ -276,15 +277,15 @@ export const ronsReviews: Clip = {
       use: 'Don’t worry, he’s harmless.（心配ない、あの人は無害だよ）' },
 
     { id: 'm1', skill: 'marker', level: 'B1', point: 'importantly', reveals: ['signname', 'realname'], seg: [102.9, 114.5],
-      stem: 'What does Ron mean by “But more importantly”?',
-      ja: 'ロンの「But more importantly」はどういう意味？',
-      choices: ['The main point comes next', 'He says he was wrong', 'A small side point comes next'], a: 0,
-      choicesJa: ['ここから本題', '自分がまちがっていたと言う', 'ちょっとした話が来る'],
+      stem: 'What does Ron call the more important reason to sign his name?',
+      ja: 'ロンが言う、本名を書くもっと大事な理由は？',
+      choices: ['Stand behind what you believe', 'He wants answers to his letters', 'The post office needs real names'], a: 0,
+      choicesJa: ['信じることには責任を持つ', '手紙の返事がほしい', '郵便局が本名を求める'],
       cue: '「glass」のあと。',
       line: '*But more importantly*, if you believe in something, you sign your name to it',
       said: '「でももっと大事なのは、信じることには名前を書くことだ」と言う。',
       mean: 'more importantly ＝ もっと大事なことに。ここからが本題という合図。',
-      trap: 'but から、前の話の取り消しと聞こえるが、but more importantly は重みを足すだけ。',
+      trap: 'made of glass（もろい）も理由に聞こえるが、but more importantly のあとが本題。',
       use: 'It’s cheap. But more importantly, it’s close.（安い。でももっと大事なのは近いこと）' },
 
     // anchor: 105.4–113.4 s “if you believe in something, you sign your name to it. Which is why the makers of

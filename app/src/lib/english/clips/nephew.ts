@@ -16,6 +16,7 @@
 // in a forest"), 195–201 s, 212–220 s (the punishment itself: shown, not said), 245–247 s ("Texas justice"), 255 s.
 // EXCLUDE 181.7–183 (a crude line; captions: "power it down" ends ≈ 181.6, the line starts 181.8)
 // CHECKS 2026-11-28: segment ends pulled 0.4 s before the EXCLUDE they ran into (the player plays on 0.4 s): ph4.
+// CHECKS 2026-11-28: blind check: h1 f5 rewritten so listening decides.
 import type { Clip } from '../types.ts';
 
 export const michaelsNephew: Clip = {
@@ -107,15 +108,15 @@ export const michaelsNephew: Clip = {
       use: 'You know who’s the best? My mom.（だれが一番か知ってる？うちの母だよ）' },
 
     { id: 'h1', skill: 'marker', level: 'B2', point: 'intern', seg: [63.7, 75.5],
-      stem: 'What does “though” mean in “Good worker, though”?',
-      ja: '「Good worker, though」の though はどういう意味？',
-      choices: ['It means “but”', 'It means “so”', 'It means “also”'], a: 0,
-      choicesJa: ['「でも」の意味', '「だから」の意味', '「それに」の意味'],
+      stem: 'What good thing does Michael add about the old intern?',
+      ja: '昔のインターンについて、マイケルはどんないい点を付け足す？',
+      choices: ['He did his job well', 'He was always on time', 'He made good coffee'], a: 0,
+      choicesJa: ['仕事はよくできた', 'いつも時間どおりに来た', 'コーヒーをいれるのがうまかった'],
       cue: '「He was the worst」のあと',
       line: 'That face, how ugly he was. He was the worst. *Good worker, though.*',
       said: '「あの顔、ひどかったな。最悪だった。仕事はできたけどね」と付け足す。',
       mean: '文の最後の though ＝「〜だけどね」。前の話と反対のことを付け足す。',
-      trap: 'though は文の最後に来ると気づきにくい。but と同じで、前の話を少し打ち消す。',
+      trap: 'コーヒーの話の流れなので、コーヒーの腕と考えがち。最後の Good worker, though は「仕事はできたけどね」。',
       use: 'Nice place. Kind of pricey, though.（いい店。ちょっと高いけどね）' },
 
     { id: 'g1', skill: 'gist', level: 'B1', point: 'staff', reveals: ['gotto'], seg: [73.0, 99.6],
@@ -278,15 +279,15 @@ export const michaelsNephew: Clip = {
       use: 'Please power down your phones now.（携帯の電源をお切りください）' },
 
     { id: 'f5', skill: 'phrase', level: 'B1', point: 'kidding', seg: [201.8, 211.4],
-      stem: 'What does “I’m not kidding” mean?',
-      ja: '「I’m not kidding」はどういう意味？',
-      choices: ['I am serious', 'I am not a child', 'I am not angry'], a: 0,
-      choicesJa: ['本気だよ', 'ぼくは子どもじゃない', '怒っていない'],
+      stem: 'In the middle of the countdown, what does Michael tell Luke?',
+      ja: 'カウントダウンの途中で、マイケルはルークに何と言う？',
+      choices: ['He really means it', 'He’ll tell Luke’s mom', 'He’ll take the pointer'], a: 0,
+      choicesJa: ['本気だ', 'ルークのお母さんに言う', 'ポインターを取り上げる'],
       cue: '「Four」のあと',
       line: 'I am going to count down from five. Five. Four. *I’m not kidding.*',
       said: '「5から数えるぞ。5、4。冗談じゃないぞ」と言う。',
       mean: 'kid ＝ ここは「冗談を言う」。I’m not kidding ＝「冗談じゃない、本気だ」。',
-      trap: 'kid から「子ども」と思いやすい。動詞の kidding は「冗談を言う」。',
+      trap: 'おどしの言葉なので、お母さんに言うなどと考えがち。動詞の kidding は「冗談を言う」で、本気だと伝える。',
       use: 'I’m not kidding. It’s really expensive.（冗談じゃなくて、本当に高いよ）' },
 
     { id: 'i3', skill: 'infer', level: 'C1', point: 'twotwo', seg: [206, 212.4],

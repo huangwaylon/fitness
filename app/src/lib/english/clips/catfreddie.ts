@@ -13,6 +13,7 @@
 // contacts?"), 106.8 s (captions "Hanging", whisper "Hang it").
 // EAR CHECK: 91.3 s s1 — captions "You want to hang out with me today?", whisper "You wanna hang out…": the reduction
 //   to "wanna" is really there
+// CHECKS 2026-11-28: blind check: ph1 rewritten so listening decides.
 import type { Clip } from '../types.ts';
 
 export const catFreddie: Clip = {
@@ -186,15 +187,15 @@ export const catFreddie: Clip = {
       use: 'So, is she okay or not?（で、彼女は大丈夫なの？）' },
 
     { id: 'ph1', skill: 'phrase', level: 'B1', point: 'hangout', reveals: ['wanna'], seg: [89.6, 104.3],
-      stem: 'What does “hang out” mean here?',
-      ja: 'ここでの「hang out」はどういう意味？',
-      choices: ['Spend time together', 'Look for Sam outside', 'Meet her other friends'], a: 0,
-      choicesJa: ['一緒に過ごす', '外でサムを探す', 'ほかの友だちに会う'],
+      stem: 'Who does Cat want there when they hang out?',
+      ja: '一緒に遊ぶとき、キャットはだれがいてほしい？',
+      choices: ['Only Cat and Freddie', 'Cat, Freddie and Sam', 'Cat’s friends from school'], a: 0,
+      choicesJa: ['キャットとフレディだけ', 'キャットとフレディとサム', 'キャットの学校の友だち'],
       cue: 'today の前の動詞と、あとの言葉。',
       line: 'You wanna *hang out* with me today? … Just me and you.',
       said: '「今日、私と遊ばない？」と誘い、「あなたと私だけで」と付け足す。',
       mean: 'hang out ＝ 予定なく一緒に過ごす、遊ぶ。友だち同士でよく使う。',
-      trap: 'out（外）から、サムを探しに行く話に思いやすい。me and you で二人だけと分かる。',
+      trap: 'サムの話で来たので、サムも一緒と考えがち。just me and you で二人だけと分かる。',
       use: 'Want to hang out this weekend?（週末、遊ばない？）' },
 
     { id: 's1', skill: 'sound', level: 'B2', point: 'wanna', reveals: ['hangout'], seg: [90.6, 93.7],

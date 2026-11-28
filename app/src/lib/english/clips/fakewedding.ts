@@ -11,6 +11,7 @@
 // Rachel (88.8 s), Aunt Lisa and Uncle Dan (89–92 s), Catherine (29.7 s); "Son" (61.7 s) settles who asks at 58 s.
 // Untested on purpose: Stevie Wonder, Fred Astaire (world knowledge; Annie Leibovitz glossed in i2); 104–106 s
 // "Unbelievable. — I love married life." (captions differ); 218.8 s "lilies" / "lies"; 178–191 s (blind nuns joke).
+// CHECKS 2026-11-28: blind check: f3, k3 rewritten so listening decides.
 import type { Clip } from '../types.ts';
 
 export const fakeWedding: Clip = {
@@ -238,15 +239,15 @@ export const fakeWedding: Clip = {
       use: 'I got you a little something.（ちょっとしたものを用意したよ）' },
 
     { id: 'f3', skill: 'phrase', level: 'B2', point: 'treating', seg: [101.0, 106.7],
-      stem: 'What does “How’s married life treating you?” ask?',
-      ja: '「How’s married life treating you?」は何を聞いている？',
-      choices: ['How is married life going?', 'Is your partner kind to you?', 'Who pays for the house?'], a: 0,
-      choicesJa: ['結婚生活はどう？', '相手は優しくしてくれる？', '家のお金はだれが払う？'],
+      stem: 'What is the couple asked after the gift?',
+      ja: 'プレゼントのあと、二人は何を聞かれる？',
+      choices: ['How married life is going', 'When the baby is coming', 'Where they will live now'], a: 0,
+      choicesJa: ['結婚生活はどうか', '赤ちゃんはいつ生まれるか', 'これからどこに住むか'],
       cue: '「So」で始まる質問。',
       line: 'So *how’s married life treating you*?',
       said: 'おじさんが「で、結婚生活はどう？」と聞く。',
       mean: 'How’s 〜 treating you? ＝ 〜はどう？うまくいってる？ 仕事や新しい町にも使うあいさつ。',
-      trap: 'treat（あつかう）から「相手は優しい？」と思いやすい。主語は married life（結婚生活）。',
+      trap: '赤ちゃんがいる二人なので、出産の話と考えがち。主語は married life（結婚生活）。',
       use: 'How’s the new job treating you?（新しい仕事はどう？）' },
 
     { id: 'g1', skill: 'gist', level: 'B2', point: 'scene', reveals: ['wont', 'where', 'nod'], seg: [124.0, 152.0],
@@ -285,14 +286,14 @@ export const fakeWedding: Clip = {
       use: 'You wouldn’t think it’d rain in July.（7月に雨なんて思わないよね）' },
 
     { id: 'k3', skill: 'phrase', level: 'B1', point: 'excuse', seg: [154.6, 159.8],
-      stem: 'What does “Would you excuse us for a second?” mean?', ja: '“Would you excuse us for a second?” はどういう意味？',
-      choices: ['We’ll leave you for a moment', 'Please forgive our mistake', 'Please say that again'], a: 0,
-      choicesJa: ['少し席を外させて', '私たちのミスを許して', 'もう一度言って'],
+      stem: 'After the film story, what do they ask for?', ja: 'フィルムの話のあと、二人は何を頼む？',
+      choices: ['A moment alone together', 'Another glass of wine', 'Some more of the cake'], a: 0,
+      choicesJa: ['二人だけになる少しの時間', 'ワインをもう一杯', 'ケーキをもう少し'],
       cue: 'フィルムの話のあと',
       line: '*Would you excuse us for a second?*',
       said: '「ちょっと失礼してもいい？」と言って、二人で席を外す。',
       mean: '文字どおりは「私たちを許してくれる？」→「ちょっと席を外すね」。人の輪から抜けるときのていねいな決まり文句。',
-      trap: 'excuse から「許して」や、聞き返しの Excuse me?（もう一度）と考えがち。for a second（少し）で席を外すあいさつ。',
+      trap: 'excuse を「許して」と取ると、何か物を頼むと考えがち。for a second（少し）で席を外すあいさつ。',
       use: 'Would you excuse me for a moment?（少し失礼してもいいですか）' },
 
     { id: 'k4', skill: 'infer', level: 'B1', point: 'only', ctx: true, seg: [159.5, 170.5],

@@ -17,6 +17,7 @@
 // EAR CHECK: 82.2 s d3 — "weren't": confirm the n of the negative is heard (both sources say "weren't")
 // EAR CHECK: 87.3 s x1 — "make us call" linked (≈ メイカス); both sources agree on the words
 // EAR CHECK: 59.8–66.6 s a3, 140–147.5 s f1 — whisper's lines are long here: confirm each seg holds its line
+// CHECKS 2026-11-28: blind check: a3 p2 rewritten so listening decides.
 import type { Clip } from '../types.ts';
 
 export const dwightGun: Clip = {
@@ -62,15 +63,15 @@ export const dwightGun: Clip = {
       use: 'That’s not what I asked.（それ、聞いたことと違うよ）' },
 
     { id: 'a3', skill: 'attitude', level: 'B1', point: 'uneasy', seg: [59.8, 66.6],
-      stem: 'How do guns make Dwight’s coworker feel?',
-      ja: '銃があると、ドワイトの同僚はどんな気持ち？',
-      choices: ['Very uneasy', 'Very excited', 'Very safe'], a: 0,
-      choicesJa: ['とても落ち着かない', 'とてもわくわくする', 'とても安心'],
+      stem: 'What does the coworker tell Dwight about guns?',
+      ja: '同僚はドワイトに、銃について何と言う？',
+      choices: ['They make me so nervous', 'They aren’t allowed here', 'They should stay at home'], a: 0,
+      choicesJa: ['すごく落ち着かない', 'ここでは禁止', '家に置いておくべき'],
       cue: '「Dwight,」のあと',
       line: 'Dwight, guns make me *really uncomfortable*.',
       said: '「ドワイト、銃があると本当に落ち着かない」と言う。',
-      mean: 'make me uncomfortable ＝「私を落ち着かなくさせる」＝居心地が悪い。',
-      trap: 'comfortable（快適）が聞こえるので、平気と勘違いしやすい。前の un- が「〜でない」。',
+      mean: 'make me uncomfortable ＝「私を落ち着かなくさせる」＝居心地が悪い。規則ではなく気持ちの話。',
+      trap: '職場の話なので「ここでは禁止」と考えがち。言っているのは自分の気持ち。un- が「〜でない」で、落ち着かない。',
       use: 'Loud music makes me uncomfortable.（大きな音楽は落ち着かない）' },
 
     // retired (A2): a “why is it funny” item
@@ -194,15 +195,15 @@ export const dwightGun: Clip = {
       use: 'Don’t make me ask you twice.（2回言わせないで）' },
 
     { id: 'p2', skill: 'phrase', level: 'B2', point: 'freaked', seg: [90.6, 96.4],
-      stem: 'What does “I freaked you guys out” mean?',
-      ja: '「I freaked you guys out」はどういう意味？',
-      choices: ['I scared all of you', 'I made you all laugh', 'I made you all wait'], a: 0,
-      choicesJa: ['みんなを怖がらせた', 'みんなを笑わせた', 'みんなを待たせた'],
+      stem: 'What does Dwight say sorry for?',
+      ja: 'ドワイトは何について謝る？',
+      choices: ['Scaring everyone so much', 'Keeping everyone waiting', 'Eating everyone’s snacks'], a: 0,
+      choicesJa: ['みんなをひどく怖がらせた', 'みんなを待たせた', 'みんなのおやつを食べた'],
       cue: '「banana」のあとのおわび',
       line: 'Someone get me a banana. *Sorry I freaked you guys out.*',
       said: '「誰かバナナを持ってきて。驚かせて悪かった」と言う。',
       mean: 'freak 人 out ＝「人をひどく驚かせる・怖がらせる」（くだけた言い方）。you guys ＝ みんな。',
-      trap: 'freak（変わった人）から、変なことをして笑わせた話と考えがち。Sorry（ごめん）と謝っているのが手がかり。',
+      trap: '直前の banana から、食べ物のことで謝ると考えがち。Sorry のあとの freaked you guys out が謝る中身。',
       use: 'Sorry, I didn’t mean to freak you out.（ごめん、驚かせるつもりはなかった）' },
 
     { id: 'i2', skill: 'detail', level: 'B1', point: 'loud', seg: [97.7, 109.7],

@@ -14,6 +14,7 @@
 // EXCLUDE 326–329.5 (swearing: “you greedy …”)
 // SKIP 189–211: “You wish it was water” (a drink joke), shouting and the film quotes
 // EAR CHECK: 76.2–76.7 s s1 — captions "you got to", whisper "you gotta": the key assumes the reduced "gotta"
+// CHECKS 2026-11-28: blind check: k2 f4 k6 h3 f7 rewritten so listening decides.
 import type { Clip } from '../types.ts';
 
 export const lewTrial: Clip = {
@@ -159,15 +160,15 @@ export const lewTrial: Clip = {
       use: 'Permission to sit down? My feet hurt.（座ってもいい？足が痛くて）' },
 
     { id: 'k2', skill: 'phrase', level: 'B2', point: 'slew', seg: [85.3, 93],
-      stem: 'What does “a slew of other witnesses” mean?',
-      ja: '「a slew of other witnesses」の意味は？',
-      choices: ['Many more witnesses', 'A few slow witnesses', 'No other witnesses'], a: 0,
-      choicesJa: ['ほかにもたくさんの証人', '何人かの遅い証人', 'ほかに証人はいない'],
+      stem: 'What does the questioner say about his other witnesses?',
+      ja: '質問役の男は、ほかの証人について何と言う？',
+      choices: ['He has a lot of them', 'They are late today', 'Only one could come'], a: 0,
+      choicesJa: ['たくさんいる', '今日は遅れている', '一人しか来られなかった'],
       cue: '「Your Honor, I’ve got」のあと。',
       line: 'I’ve got *a slew of other witnesses*, all who will attest to Carly’s horrific ways.',
       said: '「ほかにも証人がたくさんいる。みんなカーリーのひどさを証言する」と言う。',
       mean: 'a slew of 〜 ＝ たくさんの〜（くだけた言い方）。attest to 〜 ＝ 〜を証言する。',
-      trap: 'slew を slow（遅い）と聞きまちがえやすい。続く all who で、人数が多いと分かる。',
+      trap: 'slew を slow と聞くと「遅れている」と考えがち。続く all who で、人数が多いと分かる。',
       use: 'I have a slew of emails to answer.（返事するメールが山ほどある）' },
 
     { id: 'k9', skill: 'who', level: 'B1', point: 'gibby', seg: [107.5, 117],
@@ -255,15 +256,15 @@ export const lewTrial: Clip = {
       use: 'No, it was the other way around.（いや、逆だよ）' },
 
     { id: 'f4', skill: 'phrase', level: 'B2', point: 'offgame', seg: [181.4, 186.4],
-      stem: 'What does “throw you off your game” mean?',
-      ja: '「throw you off your game」はどういう意味？',
-      choices: ['Make you lose focus', 'Make you lose on purpose', 'Make you feel sorry'], a: 0,
-      choicesJa: ['調子をくるわせる', 'わざと負けさせる', 'かわいそうに思わせる'],
+      stem: 'Why is Chuck here, Spencer is told?',
+      ja: 'チャックはなぜここにいると、スペンサーは言われる？',
+      choices: ['To make Spencer lose focus', 'To say sorry to Spencer', 'To help Spencer’s side'], a: 0,
+      choicesJa: ['スペンサーの調子をくるわせるため', 'スペンサーにあやまるため', 'スペンサー側を助けるため'],
       cue: '「brought Chuck here to」のあと。',
       line: 'He brought Chuck here to *throw you off your game*.',
       said: '「チャックが呼ばれたのは、あなたの調子をくるわせるため」と注意される。',
       mean: 'throw 〜 off one’s game ＝ 〜の調子をくるわせる。',
-      trap: 'throw the game（わざと負ける）に似るが、off your game なら「調子をくずす」。',
+      trap: '証人なら味方をしに来たと考えがち。throw you off your game は「調子をくずさせる」。',
       use: 'Don’t let him throw you off your game.（あいつにペースを乱されないで）' },
 
     { id: 'k10', skill: 'pragma', level: 'B1', point: 'breathe', seg: [185.5, 188.3],
@@ -303,15 +304,15 @@ export const lewTrial: Clip = {
       use: 'She loves pizza as much as I do.（彼女も私と同じくらいピザ好き）' },
 
     { id: 'k6', skill: 'phrase', level: 'B1', point: 'nailed', seg: [229.5, 236.5],
-      stem: 'What does “Nailed it!” mean?',
-      ja: '「Nailed it!」の意味は？',
-      choices: ['I said it perfectly', 'I hurt my finger', 'I fixed the door'], a: 0,
-      choicesJa: ['完璧に言えた', '指をけがした', 'ドアを直した'],
+      stem: 'Why is Mrs. Benson happy when she says “Nailed it!”?',
+      ja: '「Nailed it!」と言うとき、ベンソンさんはなぜうれしい？',
+      choices: ['She likes her own line', 'She found Lewbert’s mistake', 'She won the case'], a: 0,
+      choicesJa: ['自分のせりふが気に入った', 'ルーバートのミスを見つけた', '裁判に勝った'],
       cue: 'ベンソンさんの決めぜりふのあと。',
       line: 'I’m going to turn that doorman into a doormat! *Nailed it!*',
       said: 'ベンソンさんが「あのドアマンを玄関マットにしてやる！決まった！」と言う。',
       mean: 'nail ＝ 文字どおりは「くぎを打つ」。くぎがぴたりと入る→「完璧に決まった、うまく言えた」。',
-      trap: 'nail（くぎ）から、何かを直した話と勘違いしやすい。うまいせりふを言えた自分へのほめ言葉。',
+      trap: '裁判の場面なので、勝ったと勘違いしやすい。証言の前で、うまいせりふを言えた自分へのほめ言葉。',
       use: 'I think I nailed the interview.（面接、ばっちりだったと思う）' },
 
     { id: 'h4', skill: 'humor', level: 'C1', point: 'bushhell', seg: [236.1, 245.5], retired: true,
@@ -326,27 +327,27 @@ export const lewTrial: Clip = {
       use: 'Nailed it!（バッチリ決まった！）' },
 
     { id: 'h3', skill: 'phrase', level: 'B2', point: 'mine', seg: [250.8, 261],
-      stem: 'What does “the witness is all yours” mean?',
-      ja: '「the witness is all yours」はどういう意味？',
-      choices: ['You can ask her now', 'She belongs to you', 'She is on your side'], a: 0,
-      choicesJa: ['どうぞ質問して', '彼女はあなたのもの', '彼女はあなたの味方'],
+      stem: 'What is Lewbert told he can do now?',
+      ja: 'ルーバートは、今何をしていいと言われる？',
+      choices: ['Ask Mrs. Benson questions', 'Take Mrs. Benson home', 'Leave the room now'], a: 0,
+      choicesJa: ['ベンソンさんに質問する', 'ベンソンさんを家に連れて帰る', '部屋を出る'],
       cue: '「Lewbert」と呼んだあと。',
       line: 'Lewbert, *the witness is all yours*. — Oh, she was once mine, wasn’t she?',
       said: '「ルーバート、証人はどうぞ」と言われ、「彼女はかつてぼくのものだった」と返す。',
       mean: 'It’s all yours ＝ どうぞ使って（あなたの番）。ルーバートは「ぼくのもの」と恋の話にずらす。',
-      trap: 'yours を「あなたのもの」と文字どおり思いやすい。ここは「あなたの番、どうぞ」。',
+      trap: 'yours を「あなたのもの」と取ると「連れて帰る」に聞こえるが、ここは「あなたの番、どうぞ」。',
       use: 'The bathroom’s free. It’s all yours.（トイレ空いたよ、どうぞ）' },
 
     { id: 'f7', skill: 'phrase', level: 'B2', point: 'fell', seg: [267.8, 277.7],
-      stem: 'What does “I’m not falling for it” mean?',
-      ja: '「I’m not falling for it」はどういう意味？',
-      choices: ['You can’t trick me', 'I won’t fall down', 'I won’t help you'], a: 0,
-      choicesJa: ['だまされないよ', 'ころばないよ', '助けないよ'],
+      stem: 'How does Mrs. Benson answer Lewbert’s sad story?',
+      ja: 'ルーバートの悲しい話に、ベンソンさんはどう答える？',
+      choices: ['She doesn’t believe him', 'She feels sorry for him', 'She starts to cry'], a: 0,
+      choicesJa: ['信じない', 'かわいそうに思う', '泣きだす'],
       cue: '「Can it, Lube」のあと。',
       line: 'Can it, Lube. *I’m not falling for it*. — But I fell for you.',
       said: '「だまって、ルーブ。その手には乗らない」に「でもぼくは君を好きになった」と返す。',
       mean: 'fall for it ＝ だまされる。fall for you ＝ 君を好きになる。同じ形で意味が変わる。',
-      trap: 'fall から「ころぶ」と思いやすい。for it が付くと「引っかかる」。',
+      trap: 'あとで心が動くので、同情したと考えがち。この時点では「その手には乗らない」と突っぱねる。',
       use: 'Don’t fall for that old trick.（その古い手に引っかからないで）' },
 
     { id: 'k7', skill: 'detail', level: 'B1', point: 'perfume', seg: [283.5, 290.5],

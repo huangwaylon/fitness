@@ -11,6 +11,7 @@
 // 64.8–68 s (the captions have a gap, whisper's timings don't, so no pause item).
 // EXCLUDE 20.8–22.6 (“This is B.S.”, a disguised swear)
 // SKIP 102–130: music (Dwight's silence, then the end card).
+// CHECKS 2026-11-28: blind check: g2, f1 rewritten so listening decides.
 import type { Clip } from '../types.ts';
 
 export const dinnerplan: Clip = {
@@ -82,25 +83,25 @@ export const dinnerplan: Clip = {
     { id: 'g2', skill: 'gist', level: 'B1', point: 'gohome', reveals: ['horn'], seg: [40.6, 56.5],
       stem: 'What news does Michael give everybody?',
       ja: 'マイケルはみんなにどんな知らせを伝える？',
-      choices: ['Everyone can go home now', 'Everyone must finish the work', 'Everyone gets extra pay'], a: 0,
-      choicesJa: ['もうみんな帰っていい', 'みんな仕事を終わらせないといけない', 'みんな残業代がもらえる'],
+      choices: ['They can all go home now', 'They must stay till midnight', 'The work moves to Monday'], a: 0,
+      choicesJa: ['もうみんな帰っていい', '夜中まで残らないといけない', '仕事は月曜にまわす'],
       cue: '電話の話のあと、最後の一言。',
       line: 'go *enjoy your Friday*. — Thank you, Michael.',
       said: '本社と話したと言い、「金曜を楽しんで」と全員を帰す。お礼の声が返る。',
       mean: 'go enjoy your Friday ＝ 金曜の夜を楽しんで。残業はなし、もう帰っていい、という知らせ。',
-      trap: 'overtime（残業）が聞こえて、残業が続く話と考えがち。決め手は最後の go enjoy。',
+      trap: 'overtime（残業）が聞こえて、まだ残る話と考えがち。決め手は最後の go enjoy your Friday。',
       use: 'Go enjoy the rest of your day.（残りの一日を楽しんでね）' },
 
     { id: 'f1', skill: 'phrase', level: 'B1', point: 'horn', seg: [42.5, 47.5],
-      stem: 'What does “I just got off the horn” mean here?',
-      ja: 'ここでの「I just got off the horn」はどういう意味？',
-      choices: ['I just ended a phone call', 'I just started a phone call', 'I just heard a car horn'], a: 0,
-      choicesJa: ['いま電話を切った', 'いま電話をかけ始めた', 'いま車のクラクションを聞いた'],
+      stem: 'What has Michael just done, he tells everybody?',
+      ja: 'マイケルは、たった今何をしたとみんなに言う？',
+      choices: ['Talked to corporate by phone', 'Met corporate in person', 'Got an email from corporate'], a: 0,
+      choicesJa: ['本社と電話で話した', '本社の人と直接会った', '本社からメールが来た'],
       cue: 'Everybody のあと。',
       line: 'Everybody, I just *got off the horn* with corporate.',
       said: '「みんな、いま本社との電話を切ったところだ」と言う。',
       mean: 'the horn ＝ 電話（古いくだけた言い方）。get off the phone（電話を切る）と同じ。',
-      trap: 'horn から車のクラクションを連想しやすい。off は終わり、電話を始めるなら get on。',
+      trap: 'horn はなじみのない言葉で、会議やメールの話と考えがち。the horn は電話のくだけた言い方。',
       use: 'I just got off the phone.（いま電話を切ったところ）' },
 
     { id: 'f2', skill: 'phrase', level: 'C1', point: 'stick', reveals: ['gohome'], seg: [47.0, 53.4], retired: true,

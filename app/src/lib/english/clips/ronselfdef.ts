@@ -10,6 +10,7 @@
 // EXCLUDE 152–155: a crude closing line.
 // Untested: 54–63 s (the wrist-grab demo, speakers unnamed), 109–123 s (the hold itself).
 // CHECKS 2026-11-28: segment ends pulled 0.4 s before the EXCLUDE they ran into (the player plays on 0.4 s): g2.
+// CHECKS 2026-11-28: blind check: f1 f2 c1 rewritten so listening decides.
 import type { Clip } from '../types.ts';
 
 export const ronSelfDefense: Clip = {
@@ -53,16 +54,16 @@ export const ronSelfDefense: Clip = {
       use: 'So in your plan, you’re the bad guy.（君の案だと、悪者は君だね）' },
 
     { id: 'f1', skill: 'phrase', level: 'B2', point: 'laidout', reveals: ['pervert'], seg: [13.4, 24.25],
-      stem: 'What does “the scenario you just laid out” mean?',
-      ja: '「the scenario you just laid out」はどういう意味？',
-      choices: ['The plan you just told us', 'The plan you just tried', 'The plan you just stopped'], a: 0,
-      choicesJa: ['今あなたが説明した設定', '今あなたが試した設定', '今あなたがやめた設定'],
+      stem: 'Which plan is Ron talking about when he says “pervert”?',
+      ja: '「pervert」と言うとき、ロンはどの設定の話をしている？',
+      choices: ['The classmate’s own idea', 'A story from the news', 'Ron’s plan for the class'], a: 0,
+      choicesJa: ['そのクラスメートが今言った案', 'ニュースで見た話', 'ロンの授業の計画'],
       cue: '「scenario」のあと',
       line: 'Uh, in the scenario you just *laid out*, you’re the pervert. You understand that, right?',
       said: '「君が今説明した設定だと、変質者は君のほうだ。分かってるな？」と言う。',
 
       mean: 'lay out ＝ 順を追って説明する。案を目の前に並べて見せるイメージ。',
-      trap: 'lay（置く）から、わきに置いた（やめた）と勘違いしやすい。scenario と組むと「説明する」。',
+      trap: '先生の話なので、ロンの計画と勘違いしやすい。you just laid out は「君が今説明した」。',
       use: 'Let me lay out the plan.（計画を説明させて）' },
 
     { id: 'x1', skill: 'dict', level: 'B1', point: 'simple', seg: [22.8, 30.5],
@@ -100,27 +101,27 @@ export const ronSelfDefense: Clip = {
       use: 'There was this one movie where…（こんな映画があってね…）' },
 
     { id: 'f2', skill: 'phrase', level: 'B1', point: 'there', seg: [50.2, 55.5],
-      stem: 'What does “I’m there” mean here?',
-      ja: 'ここでの「I’m there」はどういう意味？',
-      choices: ['I’ll come for sure', 'I came here by force', 'I’ll come if I’m free'], a: 0,
-      choicesJa: ['絶対に行く', 'むりやり来させられた', 'ひまなら行く'],
+      stem: 'How does the student sum up her plan for the class?',
+      ja: 'この生徒は、教室に行くかどうかをどうまとめる？',
+      choices: ['She’ll be there for sure', 'She’ll come if she has time', 'She’ll try one class first'], a: 0,
+      choicesJa: ['絶対に行く', '時間があれば行く', 'まず1回だけ試す'],
       cue: '最後の2語',
       line: 'So, yeah, *free* self-defense class, *I’m there*.',
       said: '「というわけで、無料の護身術教室なら、行くに決まってる」としめくくる。',
       mean: 'I’m there ＝ 絶対行く、乗った。free ＝ 無料の。誘いに乗るときの言い方。',
-      trap: 'free は「ひま」に聞こえるが、ここは「無料」。I’m there は場所の話ではない。',
+      trap: 'free を「ひま」と取ると「時間があれば」に聞こえるが、ここは「無料」。I’m there は「絶対行く」。',
       use: 'Pizza night? I’m there.（ピザの夜？行く行く）' },
 
     { id: 'c1', skill: 'phrase', level: 'B1', point: 'lesson', seg: [63.5, 68.5],
-      stem: 'What does “Okay, lesson learned” mean?',
-      ja: '「Okay, lesson learned」はどういう意味？',
-      choices: ['I learned from this', 'The class is over now', 'I want another lesson'], a: 0,
-      choicesJa: ['これで勉強になった', 'もう授業は終わり', 'もう一回教えて'],
+      stem: 'What does the speaker say after “That was really good”?',
+      ja: '「That was really good」のあと、話し手は何と言う？',
+      choices: ['They learned something', 'They want to go again', 'The class is over now'], a: 0,
+      choicesJa: ['勉強になった', 'もう一回やりたい', 'もう授業は終わり'],
       cue: '「that was really good」のあと',
       line: 'Man, that was awesome. That was really good. *Okay, lesson learned.*',
       said: '「すごかった。本当によかった。よし、勉強になった」と言う。',
       mean: 'lesson learned ＝ 文字どおりは「学んだ教訓」→「いい勉強になった」。失敗のあとにも使う短い言い方。',
-      trap: 'lesson（授業）から、授業が終わったと考えがち。learned（学んだ）が決め手。',
+      trap: 'awesome と喜ぶので、もう一回やりたいと考えがち。lesson のあとの learned（学んだ）が決め手。',
       use: 'I missed the train. Lesson learned.（電車に乗り遅れた。いい勉強になった）' },
 
     { id: 's1', skill: 'sound', level: 'B2', point: 'tryand', seg: [71.8, 80.4],

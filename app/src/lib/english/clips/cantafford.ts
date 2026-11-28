@@ -9,6 +9,7 @@
 // whisper where it doesn't drift, with room on both sides). Phoebe is settled by “Feebs” (153.6 s), Ross by “my
 // sister” (3.4 s) and “my birthday” (241.8 s); other speakers are left unnamed. Untested: 22 s (“beeper”/“paper”; c1 quotes only “Oh, wait, and I got a…”), 52 s
 // (“ching”/“chiching”), 109 s (the song request), 133 s (“prom night flashback”).
+// CHECKS 2026-11-28: blind check: f4, p2, c5 rewritten so listening decides.
 import type { Clip } from '../types.ts';
 
 export const cantAfford: Clip = {
@@ -77,15 +78,15 @@ export const cantAfford: Clip = {
       use: 'Let me know if you need anything.（何か要るなら言ってね）' },
 
     { id: 'f4', skill: 'phrase', level: 'B1', point: 'same', ctx: true, seg: [56.8, 63.8],
-      stem: 'What does “Same for me” mean?',
-      ja: '「Same for me」はどういう意味？',
-      choices: ['I’ll have that too', 'I’m not very hungry', 'That’s too expensive'], a: 0,
-      choicesJa: ['私も同じものを', 'あまりおなかがすいていない', 'それは高すぎる'],
+      stem: 'What does the second friend order?',
+      ja: '二人目の友だちは何を注文する？',
+      choices: ['What the first friend ordered', 'Only a small green salad', 'Nothing, just a drink'], a: 0,
+      choicesJa: ['一人目と同じもの', '小さなサラダだけ', '何も頼まず飲み物だけ'],
       cue: 'エビの料理を頼んだすぐあと。',
       line: 'Friend: I’ll start with the carpaccio, and then I’ll have the grilled prawns. / Friend 2: That sounds great, *same for me*.',
       said: '「カルパッチョと、エビのグリルを」に「いいね、同じので」と続ける。',
       mean: 'Same for me ＝ 私も同じものを。I’ll start with 〜 ＝ まず〜から。注文の決まり文句。',
-      trap: '値段に驚いた直後なので、断りと思いやすい。sounds great と言っている。',
+      trap: '値段に驚いた直後なので、安い物にすると考えがち。sounds great, same for me と言っている。',
       use: 'Same for me, please.（私も同じものをお願いします）' },
 
     { id: 'd2', skill: 'detail', level: 'B1', point: 'nuts', seg: [63.6, 72.5], retired: true,
@@ -197,10 +198,10 @@ export const cantAfford: Clip = {
       use: 'Should we just split it evenly?（普通に割り勘にする？）' },
 
     { id: 'p2', skill: 'pragma', level: 'B2', point: 'promoted', seg: [135.6, 143.7],
-      stem: 'Why does Phoebe say “I’m really happy… but”?',
-      ja: 'フィービーは、なぜ「I’m really happy… but」と言う？',
-      choices: ['To say no after kind words', 'To offer to pay Monica’s share', 'To say she has to leave'], a: 0,
-      choicesJa: ['祝ってから断るため', 'モニカの分を払うと言うため', '帰らないとと言うため'],
+      stem: 'What is Phoebe telling Monica here?',
+      ja: 'フィービーはここでモニカに何を伝えている？',
+      choices: ['She won’t pay that much', 'She’ll pay Monica’s share', 'She needs to leave now'], a: 0,
+      choicesJa: ['そんなには払わない', 'モニカの分を払う', 'もう帰らなきゃ'],
       cue: '「but」の前と後で、話の向きがどう変わるか。',
       line: 'I’m sorry, Monica. I’m *really happy you got promoted, but* cold cucumber mush for 30-something bucks?',
       said: '「ごめん。昇進はうれしいけど、冷たいキュウリに30ドル以上は…」と言う。',
@@ -279,15 +280,15 @@ export const cantAfford: Clip = {
       use: 'I don’t have as much time as you.（あなたほど時間がないの）' },
 
     { id: 'c5', skill: 'phrase', level: 'B1', point: 'hearya', seg: [204.0, 211.5],
-      stem: 'What does “I hear ya” mean here?',
-      ja: 'ここでの「I hear ya」はどういう意味？',
-      choices: ['I understand you', 'I can hear you well', 'I will pay for you'], a: 0,
-      choicesJa: ['気持ちは分かるよ', 'よく聞こえるよ', '代わりに払うよ'],
+      stem: 'How does the friend first answer the money problem?',
+      ja: 'お金の打ち明け話に、友だちはまずどう答える？',
+      choices: ['Says they understand it', 'Asks them to speak up', 'Offers to pay for all three'], a: 0,
+      choicesJa: ['気持ちは分かると言う', 'もっと大きな声でと頼む', '三人の分を払うと言う'],
       cue: '打ち明けられたあとの返事。',
       line: 'Okay. *I hear ya.* We can talk about that.',
       said: '「そっか。分かるよ。その話、しようよ」と受け止める。',
       mean: 'I hear ya ＝ 文字どおりは「聞こえる」→「言いたいことは分かる」。ya は you のくだけた形。',
-      trap: 'hear（聞こえる）から、音の話と考えがち。打ち明け話への返事なので「分かる」。',
+      trap: 'hear（聞こえる）から、声の大きさの話と考えがち。打ち明け話への返事なので「分かる」。',
       use: 'I hear ya. It’s been a long week.（分かるよ。長い一週間だったね）' },
 
     { id: 'c2', skill: 'infer', level: 'B2', point: 'haveit', ctx: true, seg: [218.6, 227.5],

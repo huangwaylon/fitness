@@ -11,6 +11,7 @@
 // SKIP 140–177: the makeover song (music only).
 // SKIP 232–346: One Direction's song to the end of the clip.
 // EAR CHECK: 73–85 s m1 — who gives the idea? The bank said "she"; the ja transcript has 僕 (73 s, 79 s).
+// CHECKS 2026-11-28: blind check: p3, p4 rewritten so listening decides.
 import type { Clip } from '../types.ts';
 
 export const replaceHarry: Clip = {
@@ -242,15 +243,15 @@ export const replaceHarry: Clip = {
       use: 'You look beautiful today.（今日すてきだね）' },
 
     { id: 'p3', skill: 'phrase', level: 'B1', point: 'getrid', seg: [111.5, 116.5],
-      stem: 'What does “Get rid of him” mean?',
-      ja: '「Get rid of him」はどういう意味？',
-      choices: ['Send him away', 'Help him sing', 'Give him a try'], a: 0,
-      choicesJa: ['あいつを追い出して', 'あいつが歌うのを手伝って', 'あいつを試しに使って'],
+      stem: 'What does Harry ask them to do?',
+      ja: 'ハリーは何をしてほしいと言う？',
+      choices: ['Send the new singer away', 'Let Harry rest a few more days', 'Bring Harry some more soup'], a: 0,
+      choicesJa: ['新しい歌手を追い出す', 'ハリーをあと数日休ませる', 'ハリーにスープをもっと持ってくる'],
       cue: '「Please!」のすぐあと',
       line: 'Please! *Get rid of him.* I’m feeling better.',
       said: 'ハリーが「お願い！あいつを追い出して。もう良くなったから」と言う。',
       mean: 'get rid of 〜 ＝「〜を追い払う・捨てる」。いらない物や人をなくす言い方。物にもよく使う。',
-      trap: 'rid は聞きなれない語で、get（手に入れる）に引っぱられがち。続く I’m feeling better（もう良くなった）が決め手。',
+      trap: '病人の頼みなので「休ませて」と考えがち。続く I’m feeling better（もう良くなった）が決め手。',
       use: 'I need to get rid of some old clothes.（古い服を少し処分しないと）' },
 
     { id: 'n1', skill: 'number', level: 'B1', point: 'hour', seg: [116.3, 123], keep: true,
@@ -372,15 +373,15 @@ export const replaceHarry: Clip = {
       use: 'Come back soon!（また来てね）' },
 
     { id: 'p4', skill: 'phrase', level: 'B2', point: 'waiting', seg: [219.5, 225.0],
-      stem: 'What does “the moment you’ve been waiting for” mean?',
-      ja: '「the moment you’ve been waiting for」はどういう意味？',
-      choices: ['The best part, at last', 'The end of the show', 'A short break now'], a: 0,
-      choicesJa: ['ついに一番いいところ', '番組の終わり', 'ここで少し休憩'],
-      cue: '「OK, iCarly fans」のあと',
+      stem: 'How is the next part of the show introduced?',
+      ja: '番組の次のコーナーは、どう紹介される？',
+      choices: ['As what fans have waited for', 'As the very end of the show', 'As a quick break before more'], a: 0,
+      choicesJa: ['ファンが待っていたもの', '番組の一番最後', 'ひと休みの時間'],
+      cue: '「iCarly」と呼びかけたあと',
       line: '’Tis *the moment you’ve been waiting for*.',
       said: '「アイカーリーのファンのみんな、お待ちかねの瞬間よ」と紹介する。',
       mean: 'ずっと待っていた瞬間 ＝「お待ちかね」。’Tis ＝ It is の古い言い方で、わざと大げさにしている。',
-      trap: 'waiting（待つ）から、待ち時間＝休憩と考えがち。have been waiting は「ずっと待っていた」。ゲストの紹介の決まり文句。',
+      trap: 'waiting（待つ）から、待ち時間＝休憩と考えがち。have been waiting は「ずっと待っていた」。',
       use: 'This is the moment we’ve been waiting for.（これを待っていたんだ）' },
 
     { id: 'n2', skill: 'number', level: 'B1', point: 'five', reveals: ['waiting'], seg: [222.5, 227.0], keep: true,

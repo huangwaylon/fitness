@@ -10,6 +10,7 @@
 // EAR CHECK: 45.9–46.4 s nt1 — the six words “why don't you go ahead and” in about 0.6 s (both sources agree)
 // EAR CHECK: 101.1 s i1 — “Not interested” is Ben (Barney has just praised “Oh, Ben. That was amazing”)
 // EAR CHECK: 106.1–108.3 s x1 s1 — “give her” with the h dropped (“giver”), and the t in “not as” (“nadas”)
+// CHECKS 2026-11-28: blind check: f1, f2, holdon, pr3 rewritten so listening decides.
 import type { Clip } from '../types.ts';
 
 export const ronHumour: Clip = {
@@ -227,15 +228,15 @@ export const ronHumour: Clip = {
       use: 'Let’s make you an actual plan.（ちゃんとした計画を立てよう）' },
 
     { id: 'f1', skill: 'phrase', level: 'B2', point: 'hands', seg: [146, 156],
-      stem: 'What does “all hands on deck” mean?',
-      ja: '「all hands on deck」の意味は？',
-      choices: ['Everyone has to help', 'Only the best people help', 'People should raise their hands'], a: 0,
-      choicesJa: ['全員で手伝う', 'いちばんできる人だけ手伝う', 'みんな手を挙げるべき'],
+      stem: 'What does the friend say they’ll need for the plan?',
+      ja: 'この計画のために何が必要だと、その友だちは言う？',
+      choices: ['Help from everyone', 'A bigger meeting room', 'A few more days'], a: 0,
+      choicesJa: ['全員の協力', 'もっと広い会議室', 'あと数日'],
       cue: '「Gonna need」のあと。',
       line: 'Gonna need *all hands on deck*. That’s Craig, Donna, and most importantly—',
       said: '「全員の力が必要だ」と言い、クレイグ、ドナ…と名前を挙げる。',
       mean: 'all hands on deck ＝ 船の「全員、甲板へ」から、全員で取りかかる。',
-      trap: 'hands を「手」と思うと、手を挙げる話に聞こえる。すぐあとに人の名前が並ぶ。',
+      trap: 'need のあとを物や時間と考えがち。hands は人手で、すぐあとに人の名前が並ぶ。',
       use: 'Big order today. All hands on deck!（今日は大口注文、全員集合！）' },
 
     { id: 'h3', skill: 'humor', level: 'C1', point: 'gary', seg: [154.0, 166.5], retired: true,
@@ -274,15 +275,15 @@ export const ronHumour: Clip = {
       use: 'All I’m asking is five minutes.（お願いは5分だけです）' },
 
     { id: 'f2', skill: 'phrase', level: 'B2', point: 'accountable', seg: [182, 188.1],
-      stem: 'What does “you can hold me accountable” mean?',
-      ja: '「you can hold me accountable」の意味は？',
-      choices: ['You can blame me', 'You can pay me', 'You can watch me'], a: 0,
-      choicesJa: ['私の責任にしていい', '私に払っていい', '私を見張っていい'],
+      stem: 'What does the friend promise Barney?',
+      ja: 'その友だちはバーニーに何を約束する？',
+      choices: ['He’ll be the one to blame', 'He’ll pay for any mistakes', 'He’ll check all her work'], a: 0,
+      choicesJa: ['責任は自分が取る', 'ミスの分は自分が払う', '彼女の仕事を全部確かめる'],
       cue: '「disappoints you」のあと。',
       line: 'And if she disappoints you, you can *hold me accountable*.',
       said: '「彼女が期待はずれなら、責任は僕が取るよ」と言う。',
       mean: 'hold 人 accountable ＝ 人の責任にする。account（会計）とかけた、会計事務所向けの言い方。',
-      trap: 'account から「口座・会計」を連想しやすい。hold 人 accountable で覚える。',
+      trap: 'account から「お金・会計」を連想しやすい。hold 人 accountable ＝ 人の責任にする。',
       use: 'If it fails, hold me responsible.（失敗したら私の責任にして）' },
 
     { id: 'i3', skill: 'infer', level: 'B1', point: 'meet', reveals: ['accountable'], seg: [188.5, 197.3],
@@ -310,15 +311,15 @@ export const ronHumour: Clip = {
       use: 'Thanks, but I’ll pass.（ありがとう、でも遠慮しとく）' },
 
     { id: 'holdon', skill: 'phrase', level: 'B1', point: 'holdon', seg: [195.5, 202.6],
-      stem: 'What does “Hold on” mean here?',
-      ja: 'ここでの「Hold on」の意味は？',
-      choices: ['Wait a moment', 'Hold it tightly', 'End the phone call'], a: 0,
-      choicesJa: ['ちょっと待って', 'しっかりつかんで', '電話を切って'],
+      stem: 'What does the friend say just before calling April?',
+      ja: 'エイプリルに電話する直前、その友だちは何と言う？',
+      choices: ['Wait just a moment', 'Thank you so much', 'You won’t regret it'], a: 0,
+      choicesJa: ['ちょっと待って', '本当にありがとう', '後悔させないよ'],
       cue: '「tomorrow」のあと。',
       line: '*Hold on.* April? Hey, we were just talking about you.',
       said: '「ちょっと待って」と言って、エイプリルに電話する。',
       mean: 'hold on ＝ ちょっと待って。電話や会話でよく使う。',
-      trap: 'hold（持つ）から「つかむ」と思いやすい。hold on ＝ 待つ。',
+      trap: 'hold（持つ）から別の意味に聞こえるが、hold on ＝ ちょっと待って。お礼の言葉はない。',
       use: 'Hold on, let me check.（ちょっと待って、確認するね）' },
 
     { id: 'm1', skill: 'marker', level: 'B1', point: 'ohboy', reveals: ['outcome'], seg: [199.3, 214.1],
@@ -334,15 +335,15 @@ export const ronHumour: Clip = {
       use: 'Oh, boy. That’s not good.（あーあ、それはまずいね）' },
 
     { id: 'pr3', skill: 'pragma', level: 'B2', point: 'awkward', reveals: ['outcome'], seg: [212, 221.8],
-      stem: 'What does “Well, this is uncomfortable” mean here?',
-      ja: 'ここでの「Well, this is uncomfortable」はどういう意味？',
-      choices: ['This feels awkward', 'I’m sorry, Barney', 'This is April’s fault'], a: 0,
-      choicesJa: ['気まずいね', 'ごめん、バーニー', 'エイプリルのせいだ'],
+      stem: 'After “I see,” how does the speaker describe the moment?',
+      ja: '「I see」のあと、話し手はこの場をどう言う？',
+      choices: ['It feels awkward', 'It’s no big deal', 'It’s really too bad'], a: 0,
+      choicesJa: ['気まずい', 'たいしたことない', '本当に惜しい'],
       cue: '「I see」のあと。',
       line: 'I see. — *Well, this is uncomfortable.*',
       said: '「なるほど」のあと、「いやあ、これは気まずいね」とだけ言う。',
       mean: 'uncomfortable ＝ 気まずい。気まずさをわざと口に出す言い方。謝ってはいない。',
-      trap: '気まずい場面なので謝ったと考えがちだが、sorry はない。',
+      trap: '断られた直後なので惜しむ言葉と考えがちだが、uncomfortable ＝ 気まずい。',
       use: 'Well, this is uncomfortable.（えーと、これは気まずいな）' },
   ]
 };

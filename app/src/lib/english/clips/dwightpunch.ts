@@ -18,6 +18,7 @@
 // EXCLUDE 101.6–102.5: swear (“that could kick his ass”)
 // CHECKS 2026-11-28: segment ends pulled 0.4 s before the EXCLUDE they ran into (the player plays on 0.4 s): p2 s1 x1
 // n1; started earlier to keep the minimum length after that: p2.
+// CHECKS 2026-11-28: blind check: f1 f2 p2 rewritten so listening decides.
 import type { Clip } from '../types.ts';
 
 export const dwightPunch: Clip = {
@@ -95,14 +96,14 @@ export const dwightPunch: Clip = {
       use: 'See, I grew up in a small town.（というのも、小さな町で育ったから）' },
 
     { id: 'f1', skill: 'phrase', level: 'B2', point: 'crowd', seg: [22.2, 32.3],
-      stem: 'What does “run with a tough crowd” mean?', ja: '“run with a tough crowd” はどういう意味？',
-      choices: ['Spend time with rough people', 'Train with street fighters', 'Run a fighting club'], a: 0,
-      choicesJa: ['荒っぽい連中とつるむ', 'ストリートファイターと練習する', 'ケンカのクラブを経営する'],
+      stem: 'What does Michael say about his past?', ja: 'マイケルは自分の昔について何と言う？',
+      choices: ['He hung out with rough people', 'He trained to be a boxer', 'He ran every day back then'], a: 0,
+      choicesJa: ['荒っぽい連中とつるんでいた', 'ボクサーになる練習をした', '当時は毎日走っていた'],
       cue: '「used to」のあと',
       line: 'I used to *run with a very tough crowd*, street fighter types…',
       said: '「昔はすごく荒っぽい連中とつるんでいた。ストリートファイター系の」と言う。',
       mean: 'run with 〜 ＝ 文字どおりは「〜と一緒に走る」→ いつも一緒に動く＝つるむ。crowd ＝ 連中。tough ＝ 荒っぽい。',
-      trap: 'run を「走る」「経営する」と思いやすい。run with ＋人は「つき合う」。',
+      trap: 'run を「走る」と考えがち。run with ＋人は「〜とつるむ」。',
       use: 'He runs with the wrong crowd.（彼は悪い仲間とつるんでる）' },
 
     { id: 'a1', skill: 'attitude', level: 'B1', point: 'lucky', seg: [25.5, 36],
@@ -143,14 +144,14 @@ export const dwightPunch: Clip = {
       use: 'In theory, I’m on vacation.（一応、休暇中なんだけどね）' },
 
     { id: 'f2', skill: 'phrase', level: 'B2', point: 'tees', seg: [42.7, 47.7],
-      stem: 'What does “cross some T’s and dot some I’s” mean?', ja: '“cross some T’s and dot some I’s” はどういう意味？',
-      choices: ['Finish small details', 'Fix spelling mistakes', 'Learn the alphabet'], a: 0,
-      choicesJa: ['細かいところを仕上げる', 'つづりのまちがいを直す', 'アルファベットを習う'],
+      stem: 'What does Michael say is left to do?', ja: 'マイケルは、あと何が残っていると言う？',
+      choices: ['Only a few small details', 'Fix some spelling mistakes', 'Find the missing reports'], a: 0,
+      choicesJa: ['細かいところが少しだけ', 'つづりのまちがいを直す', 'なくした書類を探す'],
       cue: '「just need to」のあと',
       line: 'I just need to *cross some T’s and dot some I’s*.',
       said: '「あとは細かいところ（t の横棒と i の点）だけ」と言う。',
       mean: 'cross the t’s and dot the i’s ＝ t の横棒、i の点まで書く→細かいところまで仕上げる。the でなく some なのがいい加減。',
-      trap: '文字の話なので、つづりを直すと思いやすい。文字の決まり文句は「細かい仕上げ」のたとえ。',
+      trap: '文字の話なので、つづりを直すと考えがち。文字の決まり文句は「細かい仕上げ」のたとえ。',
       use: 'Let’s dot the i’s and cross the t’s.（最後の細かい確認をしよう）' },
 
     { id: 'k1', skill: 'detail', level: 'B1', point: 'office', seg: [48.6, 54.5],
@@ -202,14 +203,14 @@ export const dwightPunch: Clip = {
       use: 'It was a meeting that wasn’t really a meeting.（名ばかりの会議だった）' },
 
     { id: 'p2', skill: 'pragma', level: 'B1', point: 'manicure', ctx: true, seg: [82.7, 88.7],
-      stem: 'Why is “I just got a manicure” said here?', ja: 'ここではなぜ「I just got a manicure」と言う？',
-      choices: ['To say no with an excuse', 'To say yes, but later', 'To ask Michael to wait'], a: 0,
-      choicesJa: ['理由をつけて断るため', 'あとでならいいと言うため', 'マイケルに待ってと頼むため'],
+      stem: 'How does the coworker answer “Just hit me”?', ja: '「Just hit me」に、同僚はどう答える？',
+      choices: ['Refuses with a small excuse', 'Agrees and hits him lightly', 'Agrees to do it after lunch'], a: 0,
+      choicesJa: ['軽い理由をつけて断る', '引き受けて軽く殴る', '昼休みのあとならと引き受ける'],
       cue: '「Just hit me」への返事',
       line: 'Michael: Just hit me. You’ll see. / Coworker: I can’t, ’cause, uh, I *just got a manicure*, so…',
       said: '「殴れ」と言われ、「ネイルしたばかりなので」と理由をつけて断る。',
       mean: 'I can’t, ’cause 〜 ＝ 無理、〜だから。わざと軽い理由で、冗談まじりに断っている。',
-      trap: '最後の so… を「ちょっと待って」と勘違いしやすい。I can’t で始まれば断り。',
+      trap: '最後の so… で言葉を濁すので、あとでならやると勘違いしやすい。I can’t で始まれば断り。',
       use: 'I can’t, I just washed my hair.（無理、髪洗ったばかりだから）' },
 
     { id: 's1', skill: 'sound', level: 'B1', point: 'manicure', seg: [83.5, 88.7],

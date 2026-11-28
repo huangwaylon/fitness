@@ -14,6 +14,7 @@
 // SKIP 34–59.3: the other character cards (wordplay names), then the secretary card (excluded).
 // EAR CHECK: 198–207.4 s f3 — no json3 for this video (whisper only): confirm the seg holds "I'm famished" and starts
 //   after "we'll drink heavily" (≈ 197 s)
+// CHECKS 2026-11-28: blind check: f3 rewritten so listening decides.
 import type { Clip } from '../types.ts';
 
 export const mysteryParty: Clip = {
@@ -261,15 +262,15 @@ export const mysteryParty: Clip = {
       use: 'Okay, I’m out of here. Bye!（じゃ、帰るね。バイバイ！）' },
 
     { id: 'f3', skill: 'phrase', level: 'B1', point: 'famished', seg: [198.0, 207.4],
-      stem: 'What does “I’m famished” mean?',
-      ja: '「I’m famished」はどういう意味？',
-      choices: ['I’m very hungry', 'I’m very tired', 'I’m really happy'], a: 0,
-      choicesJa: ['すごくお腹がすいた', 'すごく疲れた', 'すごくうれしい'],
+      stem: 'Before “Who wants cake?”, what does someone say?',
+      ja: '「Who wants cake?」の前に、何と言っている？',
+      choices: ['I’m really hungry', 'I made it myself', 'It’s my favorite kind'], a: 0,
+      choicesJa: ['すごくお腹がすいた', '自分で作った', '大好きな種類だ'],
       cue: '「Hey,」のあと',
       line: 'Hey, *I’m famished*. Who wants cake?',
       said: '「ねえ、お腹ぺこぺこ。ケーキ食べたい人？」と言う。',
       mean: 'famished ＝ とてもお腹がすいた（starving より少し上品）。',
-      trap: 'famous（有名な）と音が似ていて迷いやすい。すぐあとの cake が手がかり。',
+      trap: 'famous（有名な）と音が似ていて迷いやすい。ケーキを作った話や好みの話ではない。',
       use: 'I’m famished. Let’s eat.（お腹ぺこぺこ。食べよう）' },
 
     { id: 'k7', skill: 'pragma', level: 'B2', point: 'notime', ctx: true, seg: [199.5, 206.0],

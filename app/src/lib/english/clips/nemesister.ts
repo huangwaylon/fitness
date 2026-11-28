@@ -11,6 +11,7 @@
 // x2: who asks "Did I miss anything?" at 205 s isn't settled (Freddie or Millicent), so the stem names no one.
 // EXCLUDE 158–159: swear (“People are pissed”)
 // CHECKS 2026-11-28: segment ends pulled 0.4 s before the EXCLUDE they ran into (the player plays on 0.4 s): i1.
+// CHECKS 2026-11-28: blind check: ph1 p1 f1 rewritten so listening decides.
 import type { Clip } from '../types.ts';
 
 export const spencerRoastsCarly: Clip = {
@@ -20,15 +21,15 @@ export const spencerRoastsCarly: Clip = {
   credit: 'iCarly (NickRewind, official YouTube channel)',
   questions: [
     { id: 'ph1', skill: 'phrase', level: 'B1', point: 'board', seg: [4.8, 13.9],
-      stem: 'What does “he’s *on board with* the meme” mean?',
-      ja: '「he’s on board with the meme」はどういう意味？',
-      choices: ['He’s happy to join in', 'He’s in charge of it', 'He’s tired of it'], a: 0,
-      choicesJa: ['喜んで乗っかっている', 'それを仕切っている', 'それにうんざりしている'],
+      stem: 'How does Carly say Spencer feels about the meme?',
+      ja: 'カーリーによると、スペンサーはそのネタをどう思っている？',
+      choices: ['He’s really into it', 'He’s sick of it', 'He’s worried about it'], a: 0,
+      choicesJa: ['すごく乗り気', 'うんざりしている', '心配している'],
       cue: '最初の文、「he’s」のあと。',
       line: 'Okay, well, he’s *on board with* the meme in a really big way.',
       said: 'カーリーが配信で「お兄ちゃんはそのネタにすごく乗り気みたい」と紹介する。',
       mean: '文字どおりは「〜と同じ船に乗っている」。同じ船に乗る→計画に加わる・賛成。ここでは兄がネタに大乗り気。',
-      trap: 'board を「取締役会」と思うと「仕切る」に聞こえる。ここは「乗る」側。',
+      trap: 'ネタと聞くと、困って心配していると考えがち。on board with ＝ 乗り気。in a really big way が強める。',
       use: 'Are you on board with the plan?（その計画、乗る？）' },
 
     { id: 'e1', skill: 'detail', level: 'B1', point: 'expected', seg: [17.5, 22.5],
@@ -112,15 +113,15 @@ export const spencerRoastsCarly: Clip = {
       use: 'I, for one, love this idea.（私としては、この案大好き）' },
 
     { id: 'p1', skill: 'pragma', level: 'B2', point: 'oneway', reveals: ['personally'], ctx: true, seg: [99.6, 109.5],
-      stem: 'What does Carly mean by “That’s *one way to look at it*”?',
-      ja: 'カーリーの「That’s one way to look at it」はどういう意味？',
-      choices: ['I don’t quite agree', 'I totally agree', 'Please tell me more'], a: 0,
-      choicesJa: ['あまり賛成できない', '大賛成', 'もっと聞かせて'],
+      stem: 'How does Carly answer Willow here?',
+      ja: 'ここでカーリーはウィローにどう返す？',
+      choices: ['She thinks Willow’s too upset', 'She fully agrees with Willow', 'She wants Willow to say more'], a: 0,
+      choicesJa: ['ウィローは気にしすぎだと思う', 'ウィローに完全に賛成', 'ウィローにもっと話してほしい'],
       cue: 'ウィローが「offended」と言ったあと。',
       line: 'Willow: I… am personally *offended*. / Carly: That’s *one way to look at it*. But don’t you think you’re taking this a little too personally?',
-      said: '「個人的に腹が立つ」と言うウィローに、「そういう見方もあるね。でも、ちょっと気にしすぎじゃない？」と返す。',
-      mean: '文字どおりは「それはひとつの見方」。ほかの見方もある→賛成はしていない。反対をやわらげる大人の前置き。',
-      trap: '日本語の「そうですね」のように同意に聞こえやすい。すぐあとの But が本音。',
+      said: 'ウィローの「腹が立つ」に「そういう見方もあるね。でも気にしすぎじゃない？」と返す。',
+      mean: 'one way to look at it ＝ ひとつの見方→賛成はしていない。反対をやわらげる前置き。',
+      trap: '同意の「そうですね」に聞こえるが、すぐあとの But … too personally? が本音。',
       use: 'That’s one way to see it, sure.（まあ、そういう見方もあるね）' },
 
     { id: 'x1', skill: 'dict', level: 'B1', point: 'personally', seg: [103.7, 109.5],
@@ -239,15 +240,15 @@ export const spencerRoastsCarly: Clip = {
       use: 'The review totally skewered the movie.（その批評、映画をボロクソに書いてた）' },
 
     { id: 'f1', skill: 'phrase', level: 'B1', point: 'makefun', seg: [226, 233.2],
-      stem: 'What does “*make fun of*” mean here?',
-      ja: 'ここでの「make fun of」はどういう意味？',
-      choices: ['Laugh at it unkindly', 'Have fun playing with it', 'Make it work better'], a: 0,
-      choicesJa: ['意地悪く笑いものにする', 'それで楽しく遊ぶ', 'もっと使いやすくする'],
+      stem: 'What is this part of the museum doing with JavaScript?',
+      ja: '展示のこの部分は、ジャバスクリプトをどう扱っている？',
+      choices: ['Makes jokes about it', 'Teaches you how to use it', 'Shows how it was made'], a: 0,
+      choicesJa: ['それをからかっている', '使い方を教えている', '作られた歴史を見せている'],
       cue: '「Oh!」のあと、「This is the part where…」の文。',
       line: 'This is the part where they *make fun of* JavaScript!',
       said: '「ここはジャバスクリプト（プログラムの言語）をからかうコーナーだ！」と喜ぶ。',
       mean: 'make fun of 〜 ＝ 〜をからかう、笑いものにする。fun（楽しみ）があっても、相手は楽しくない。',
-      trap: 'fun から「楽しく遊ぶ」と考えがち。have fun（楽しむ）とは別物で、of のあとが笑われる相手。',
+      trap: '展示と聞くと、使い方や歴史を見せると考えがち。make fun of はからかうこと。直前の skewering も同じ流れ。',
       use: 'Please don’t make fun of my English.（私の英語をからかわないで）' },
 
     { id: 'i2', skill: 'infer', level: 'B1', point: 'notme', seg: [245, 260],

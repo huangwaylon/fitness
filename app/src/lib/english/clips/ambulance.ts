@@ -12,6 +12,7 @@
 // SKIP 94.6–124.6: music, no speech
 // EAR CHECK: 81.7 s a1 — “Mm-hmm, so romantic” is sincere, not sarcastic (captions “mm-hmm so romantic”)
 // CHECKS 2026-11-28: segment ends pulled 0.4 s before the EXCLUDE they ran into (the player plays on 0.4 s): g3.
+// CHECKS 2026-11-28: blind check: f2, f3 rewritten so listening decides.
 import type { Clip } from '../types.ts';
 
 export const ambulance: Clip = {
@@ -207,14 +208,14 @@ export const ambulance: Clip = {
       use: 'Let’s just go home.（もう家に帰ろう）' },
 
     { id: 'f2', skill: 'phrase', level: 'B2', point: 'scam', seg: [63.5, 69.8],
-      stem: 'What does Andy mean by “*scam artists*”?', ja: 'アンディの「scam artists」の意味は？',
-      choices: ['People who trick you', 'People with great skill', 'People who paint well'], a: 0,
-      choicesJa: ['人をだます人たち', 'すごい技術のある人たち', '絵が上手な人たち'],
+      stem: 'What does Andy think of doctors now?', ja: '今、アンディは医者をどう思っている？',
+      choices: ['They trick people', 'They are too slow', 'They don’t listen'], a: 0,
+      choicesJa: ['人をだます', '仕事がおそい', '話を聞かない'],
       cue: '「No more doctors」のあと',
       line: 'They’re a bunch of *scam artists*.',
       said: 'アンディが「医者なんて詐欺師の集まりだ」と言う。',
       mean: 'scam ＝ 詐欺。scam artist ＝ 詐欺師。a bunch of 〜 ＝ 〜の集まり。',
-      trap: 'artist（芸術家）から、上手な人だと連想しやすい。scam（詐欺）が大事。',
+      trap: '「ほかの医者に」と言われたあとなので、腕や態度への不満と考えがち。scam（詐欺）が大事。',
       use: 'That website is a scam.（そのサイトは詐欺だ）' },
 
     { id: 'h2', skill: 'humor', level: 'C1', point: 'bam', reveals: ['reel'], seg: [65.6, 75.2], retired: true,
@@ -240,14 +241,14 @@ export const ambulance: Clip = {
       use: 'You go out for one drink, and bam.（一杯だけのつもりが、ドーン）' },
 
     { id: 'f3', skill: 'phrase', level: 'B2', point: 'reel', reveals: ['bam'], seg: [65.8, 71.5],
-      stem: 'What does “*reel you in* with the free stuff” mean?', ja: '「reel you in with the free stuff」の意味は？',
-      choices: ['Catch you, like a fish', 'Push you away from them', 'Send you home with gifts'], a: 0,
-      choicesJa: ['魚のようにつかまえる', '遠ざける', 'おみやげを持たせて帰す'],
+      stem: 'What do doctors do with free stuff, says Andy?', ja: 'アンディによると、医者はタダのもので何をする？',
+      choices: ['Pull you in, like a fish', 'Give it to poor people', 'Keep it all for themselves'], a: 0,
+      choicesJa: ['魚のように引き寄せる', '貧しい人に配る', '全部自分のものにする'],
       cue: '「scam artists」のあと',
       line: '*Reel you in* with the free stuff.',
       said: 'アンディが「タダのもので釣って、引きこむんだ」と言う。',
       mean: 'reel 〜 in ＝ 釣り糸を巻いて〜を引き寄せる。タダで人を引きつける話。',
-      trap: 'reel は釣りざおのリール。in（中へ）が付くので、遠ざけるのではなく引き寄せる。',
+      trap: '医者を悪く言う流れで、ひとりじめすると考えがち。reel は釣りざおのリールで、in（中へ）引き寄せる。',
       use: 'Free samples reel you in.（試食で引きつけられる）' },
 
     { id: 'x2', skill: 'dict', level: 'B1', point: 'carefor', seg: [73.4, 78.4],

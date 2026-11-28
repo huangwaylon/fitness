@@ -12,6 +12,7 @@
 // EAR CHECK: 100–128 s d3 m1 a2 pr2 — the woman who answers after “Erin, did this call come?” is Erin (from the turns)
 // CHECKS 2026-11-28: segment ends pulled 0.4 s before the EXCLUDE they ran into (the player plays on 0.4 s): g1 d1 pr1
 // c3 s1.
+// CHECKS 2026-11-28: blind check: g1, pr1, m1 rewritten so listening decides.
 import type { Clip } from '../types.ts';
 
 export const movember: Clip = {
@@ -21,14 +22,14 @@ export const movember: Clip = {
   credit: 'The Office (official YouTube channel)',
   questions: [
     { id: 'g1', skill: 'gist', level: 'B1', point: 'why', seg: [0, 17.6],
-      stem: 'Why do the men have mustaches?', ja: '男性たちはなぜ口ひげを生やしている？',
-      choices: ['To raise money for a charity', 'To win a contest set by Toby', 'To look like a famous actor'], a: 0,
-      choicesJa: ['チャリティーのお金を集めるため', 'トビーのコンテストで勝つため', '有名な俳優に似せるため'],
+      stem: 'What did Toby get all the men to do?', ja: 'トビーは男性みんなに何をさせた？',
+      choices: ['Join a cancer charity', 'Enter a mustache contest', 'Dress up like a TV star'], a: 0,
+      choicesJa: ['がんのチャリティーに参加する', '口ひげコンテストに出る', 'テレビスターの仮装をする'],
       cue: '「Toby got us all」から',
       line: 'It’s *a charity* for prostate cancer.',
       said: '前立腺がんの寄付のために、11月のあいだ口ひげを伸ばす企画に、男性みんなで参加したと話す。',
       mean: 'charity ＝ チャリティー、寄付の活動。口ひげは、寄付の企画に参加したしるし。',
-      trap: 'Tom Selleck（口ひげで有名な俳優）や Toby から、まねやコンテストと考えがち。決め手は It’s a charity。',
+      trap: 'Tom Selleck（口ひげで有名な俳優）が聞こえるので、まねや仮装と考えがち。決め手は It’s a charity。',
       use: 'It’s for a good cause.（いいことのためなんだ）' },
 
     { id: 'd1', skill: 'detail', level: 'B1', point: 'pledge', seg: [10.3, 17.6],
@@ -121,14 +122,14 @@ export const movember: Clip = {
       use: 'Over the next three months, I’ll save money.（この先3か月で貯金する）' },
 
     { id: 'pr1', skill: 'phrase', level: 'B1', point: 'trustme', seg: [58.5, 65.6],
-      stem: 'What does Jim mean by “Trust me”?', ja: 'ジムの “Trust me” はどういう意味？',
-      choices: ['Believe me', 'Keep it secret', 'Do what I say'], a: 0,
-      choicesJa: ['本当だって', '秘密にして', '言うとおりにして'],
+      stem: 'What does Jim say about being at his own office?', ja: 'ジムは自分のオフィスにいることについて何と言う？',
+      choices: ['He’d really rather be there', 'He’s glad to be working alone', 'He’ll be back next week'], a: 0,
+      choicesJa: ['本当はみんなの所にいたい', '一人で働けてうれしい', '来週には戻る'],
       cue: '「Yeah」のあとの二語',
       line: 'Are you at your office right now? — Yeah. *Trust me*, I’d rather be with you guys.',
       said: '「今、自分のオフィス？」と聞かれ、「うん。本当だよ、そっちにいたい」と答える。',
       mean: 'Trust me ＝ 本当だって、信じて。自分の気持ちが本当だと強めるときの前置き。',
-      trap: 'trust（信用する）から、何かを任せる話を連想しやすい。ここは「本当だよ」の前置き。',
+      trap: 'オフィスにいると聞いて、一人がいいと考えがち。Trust me（本当だって）のあとが本音。',
       use: 'Trust me, this place is good.（本当だって、この店いいよ）' },
 
     { id: 'c3', skill: 'detail', level: 'B1', point: 'office', ctx: true, seg: [59.5, 65.6],
@@ -229,14 +230,14 @@ export const movember: Clip = {
       use: 'That hat makes you look taller.（その帽子だと背が高く見えるね）' },
 
     { id: 'm1', skill: 'marker', level: 'B1', point: 'but', reveals: ['socket'], seg: [111.9, 119],
-      stem: 'What comes after Erin’s “but, um”?', ja: 'エリンの “but, um” のあとに来るのは？',
-      choices: ['Something not so nice', 'Another nice thing to say', 'A brand-new topic'], a: 0,
-      choicesJa: ['あまりよくないこと', 'もう一つのほめ言葉', 'まったく新しい話'],
+      stem: 'What does Erin say after “but, um”?', ja: 'エリンは “but, um” のあと何と言う？',
+      choices: ['His mouth looks strange', 'He looks a lot older', 'It needs a little trim'], a: 0,
+      choicesJa: ['口が変に見える', 'ずっと年上に見える', '少し整えたほうがいい'],
       cue: 'ほめ言葉のすぐあと',
       line: 'A handsome eyebrow, *but, um*, makes your mouth look like an eye socket.',
       said: '「ハンサムな眉毛よ。でも、えっと、口が目のくぼみみたいに見える」と続ける。',
       mean: 'but のあとに本音が来る。um は言いにくさのしるしで、ここから悪い話になる。',
-      trap: 'handsome（かっこいい）のあとなので、ほめ言葉が続くと思いやすい。but のあとが本音。',
+      trap: 'handsome（かっこいい）のあとなので、まだほめると思いやすい。but のあとが本音。',
       use: 'It’s nice, but, um, a bit loud.（いいけど、えっと、ちょっと派手かな）' },
 
     { id: 'x1', skill: 'dict', level: 'B2', point: 'socket', seg: [113.2, 119],

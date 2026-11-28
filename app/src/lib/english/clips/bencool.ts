@@ -11,6 +11,7 @@
 // EAR CHECK: 21.2 s x1, 189.3 s s1 — “live up to” runs together; “would be” is weak
 // EXCLUDE 148.8–153.3: swear (“Jamm is going to be so pissed”)
 // CHECKS 2026-11-28: segment ends pulled 0.4 s before the EXCLUDE they ran into (the player plays on 0.4 s): n1.
+// CHECKS 2026-11-28: blind check: at2 f3 rewritten so listening decides.
 import type { Clip } from '../types.ts';
 
 export const benCool: Clip = {
@@ -205,25 +206,25 @@ export const benCool: Clip = {
       use: 'We won three to two.（3対2で勝った）' },
 
     { id: 'at2', skill: 'marker', level: 'B2', point: 'ethical', seg: [153.3, 163.5],
-      stem: 'What does “on the flip side” mean here?', ja: 'ここでの「on the flip side」はどういう意味？',
-      choices: ['On the other hand', 'At the very end', 'To be really honest'], a: 0,
-      choicesJa: ['その一方で', '結局', '正直に言うと'],
+      stem: 'Why does the friend feel okay about it?', ja: '友人は、なぜそれを平気だと思っている？',
+      choices: ['Jamm is mean anyway', 'Jamm will never know', 'It was Jamm’s idea'], a: 0,
+      choicesJa: ['どうせジャムは意地悪だから', 'ジャムには絶対ばれないから', 'ジャムの案だったから'],
       cue: '「ethical thing」のあと',
       line: 'it’s *not the most ethical thing* that I’ve ever done, *but on the flip side*, Jamm is a big mean dope',
       said: '友人が「一番正しいことではないけど、その一方で、ジャムは意地悪なばかだし」と言う。',
-      mean: 'on the flip side ＝ 逆に言えば、その一方で。悪い点のあとに、別の見方を言う。',
-      trap: 'flip（ひっくり返す）から、話を終える合図を連想しやすい。but のあとが別の面。',
+      mean: 'on the flip side ＝ 逆に言えば、その一方で。悪い点のあとに別の見方。ここでは平気な理由。',
+      trap: 'not the most ethical（正しくはない）だけ聞くと、ばれないから平気と考えがち。理由は flip side のあと。',
       use: 'It’s expensive, but on the flip side, it’s good.（高いけど、そのぶんいい）' },
 
     { id: 'f3', skill: 'phrase', level: 'B2', point: 'denial', seg: [159.8, 168.1],
-      stem: 'What does “I’m *in deep denial*” mean here?', ja: 'ここでの「I’m in deep denial」の意味は？',
-      choices: ['I can’t accept it yet', 'I told everyone no', 'I’m too busy to think'], a: 0,
-      choicesJa: ['まだ受け入れられない', 'みんなに断った', '忙しくて考えられない'],
+      stem: 'How is “us moving away” answered?', ja: '「us moving away」にはどう返す？',
+      choices: ['I’m not ready to face it', 'I’m so happy for you two', 'I’m already used to it'], a: 0,
+      choicesJa: ['まだ向き合えない', '二人のために本当にうれしい', 'もう慣れた'],
       cue: '「moving away」のあと',
       line: 'the pain of us moving away… — Oh, I’m currently *in deep denial* that that’s happening.',
       said: '「引っ越しのつらさが和らげば」に「今それを全力で認めないようにしてる」と返す。',
       mean: 'denial ＝ 否定。in denial ＝ 文字どおりは「否定の中にいる」→ つらい現実を認めようとしない。',
-      trap: 'denial（否定）から、誰かに「いいえ」と言った話を連想しやすい。',
+      trap: '明るい Oh で始まるので、もう平気と考えがち。in deep denial ＝ 認めたくない、まだ向き合えない。',
       use: 'I’m in denial about Monday.（月曜が来るのを認めたくない）' },
 
     { id: 'pr3', retired: true, skill: 'pragma', level: 'B2', point: 'reason', seg: [165.3, 175],

@@ -9,6 +9,7 @@
 // EXCLUDE 1–5.1: innuendo ("How they hangin'? To the left?")
 // EAR CHECK: 25.3 s s1 — "You can train him": the weak "can" (both sources "can"); confirm it isn't "can't"
 // EAR CHECK: 74–91 s g2, k1, k2 — Ben's lines are whisper-only (captions have a gap); the keys rest on Michael's replies
+// CHECKS 2026-11-28: blind check: f1, f2, i2 rewritten so listening decides.
 import type { Clip } from '../types.ts';
 
 export const poachBen: Clip = {
@@ -106,9 +107,9 @@ export const poachBen: Clip = {
       use: 'This traffic is the worst.（この渋滞、最悪）' },
 
     { id: 'f1', skill: 'phrase', level: 'B2', point: 'poach', seg: [37, 43.8],
-      stem: 'Michael says he will “*poach* one of yours.” What does he mean?', ja: '「poach one of yours」の意味は？',
-      choices: ['Take one of her workers', 'Win Stanley back again', 'Give her one of his'], a: 0,
-      choicesJa: ['彼女の部下を一人引き抜く', 'スタンリーを取り戻す', '自分の部下を一人あげる'],
+      stem: 'What does Michael say he will do to Karen?', ja: 'マイケルはカレンに何をすると言う？',
+      choices: ['Take one of her workers', 'Win Stanley back from her', 'Tell her boss about this'], a: 0,
+      choicesJa: ['彼女の部下を一人引き抜く', 'スタンリーを取り戻す', '彼女の上司に言いつける'],
       cue: '「if you were going to」のあと',
       line: 'if you were going to *poach* one of my guys, I am going to *poach* one of yours.',
       said: 'マイケルが「そっちが引き抜くなら、こっちも引き抜く」と言う。',
@@ -160,14 +161,14 @@ export const poachBen: Clip = {
       use: 'I have Mr. Sato on the line.（佐藤様からお電話です）' },
 
     { id: 'f2', skill: 'phrase', level: 'B2', point: 'chase', seg: [56.4, 64.8],
-      stem: 'What does “*cut right to the chase*” mean?', ja: '「cut right to the chase」の意味は？',
-      choices: ['Get straight to the point', 'Chase him until he agrees', 'Give him a better deal'], a: 0,
-      choicesJa: ['すぐ本題に入る', 'OK するまで追いかける', 'もっといい条件を出す'],
+      stem: 'What does Michael say before asking about magic?', ja: 'マジックの質問の前に、マイケルは何と言う？',
+      choices: ['He’ll get straight to the point', 'He’ll call back a bit later', 'He has only a minute to talk'], a: 0,
+      choicesJa: ['すぐ本題に入る', 'あとでかけ直す', '話せるのは1分だけ'],
       cue: '「Hi, Michael」のあと',
       line: 'I’m going to *cut right to the chase* here.',
       said: 'マイケルが「単刀直入に言おう」と切り出す。',
       mean: '文字どおりは「追いかけっこの場面まで飛ばす」。映画の退屈な所を切って見せ場へ→前置きなしで本題に入る。',
-      trap: 'chase（追いかける）から、追いかける話を連想しやすい。',
+      trap: '電話の始めなので「1分だけ」と考えがち。chase（追いかける）は映画の見せ場のこと。',
       use: 'Let me cut to the chase.（単刀直入に言います）' },
 
     { id: 'd4', skill: 'detail', level: 'B1', point: 'wishes', seg: [64.2, 75.5],
@@ -237,14 +238,14 @@ export const poachBen: Clip = {
       use: 'Careful, or you’re next!（気をつけないと、次は君だよ）' },
 
     { id: 'i2', skill: 'pragma', level: 'B1', point: 'whatsay', seg: [92.0, 99.5],
-      stem: 'What does “So *what do you say*?” ask Ben?', ja: '「So what do you say?」はベンに何を聞いている？',
-      choices: ['Will you say yes?', 'What did you say?', 'Can you say it again?'], a: 0,
-      choicesJa: ['OK してくれる？', '何て言ったの？', 'もう一度言って？'],
+      stem: 'What does Michael want from Ben at the end?', ja: '最後に、マイケルはベンに何を求める？',
+      choices: ['His answer to the offer', 'His boss’s phone number', 'A list of his clients'], a: 0,
+      choicesJa: ['誘いへの返事', '上司の電話番号', '顧客のリスト'],
       cue: '長い間のあと',
       line: 'No, I fired them, and you’re next. … *So what do you say?*',
       said: 'マイケルが少し間を置いて「で、どう？」と返事を求める。',
       mean: 'What do you say? ＝ どう？（返事を求める）。誘いや提案のあとに言う。',
-      trap: 'say（言う）から、聞き返しているように聞こえるが、答えを求める言い方。',
+      trap: 'say（言う）から、何か情報を言わせたいと考えがち。ここは答えを求める言い方。',
       use: 'Dinner tonight? What do you say?（今夜、夕食どう？）' },
 
     { id: 'a1', skill: 'attitude', level: 'B2', point: 'lame', seg: [98.7, 109.6],

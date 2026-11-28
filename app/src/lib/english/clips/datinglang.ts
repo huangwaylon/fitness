@@ -6,6 +6,7 @@
 
 // “Rachel Doesn't Understand Dating Language | Friends” (official Friends channel): Phoebe is back from a date; the
 // friends tell Rachel what polite dating lines really mean; Ross learns the truth about his dog's “farm”.
+// CHECKS 2026-11-28: blind check: p3, i2, p2 rewritten so listening decides.
 import type { Clip } from '../types.ts';
 
 export const datinglang: Clip = {
@@ -93,15 +94,15 @@ export const datinglang: Clip = {
       trap: 'roughly も自然。音の「ルース」で聞き分けよう。',
       use: 'Loosely translated, it’s a “no.”（要はノーだね）' },
 
-    { id: 'p3', skill: 'phrase', level: 'B1', point: 'sincewhen', ctx: true, seg: [19.5, 27.1], stem: 'What does “Since when?” mean here?',
-      ja: 'ここでの “Since when?” はどういう意味？',
-      choices: ['When did this start?', 'What time is it now?', 'How long was the date?'], a: 0,
-      choicesJa: ['それはいつからなの？', '今、何時？', 'デートはどれくらいだった？'],
+    { id: 'p3', skill: 'phrase', level: 'B1', point: 'sincewhen', ctx: true, seg: [19.5, 27.1], stem: 'What is asked right after “Oh.”?',
+      ja: '「Oh.」のすぐあと、何を聞いている？',
+      choices: ['How long it has meant that', 'Who told her about that', 'Why he said it that way'], a: 0,
+      choicesJa: ['いつからそういう意味なのか', 'だれがそれを教えたのか', '彼はなぜそう言ったのか'],
       cue: '「Oh.」のあとの短い質問',
       line: 'Oh. / *Since when?* / Since always.',
       said: '「いつからそうなの？」「ずっと前からよ」。',
       mean: 'Since when? ＝ いつから？ 知らなかったことに驚いたときの言い方。',
-      trap: 'when から時刻を聞いていると思いやすい。since は「〜から」で、始まりを聞いている。',
+      trap: 'Oh. のあとなので、言った理由を聞いていると考えがち。since は「〜から」。返事も Since always。',
       use: 'Since when do you drink coffee?（いつからコーヒー飲むの？）' },
 
     { id: 'm1', skill: 'marker', level: 'B2', point: 'youknowlike', seg: [23.2, 30.9], retired: true, stem: 'What comes after “You know, like”?',
@@ -137,15 +138,15 @@ export const datinglang: Clip = {
       trap: '例が多いので、誘い方の話だと思いやすい。means のあとが本音。',
       use: 'What does that really mean?（それって本当はどういう意味？）' },
 
-    { id: 'i2', skill: 'pragma', level: 'B2', point: 'i2', seg: [29.7, 38.3], stem: 'What does “You’re such a nice guy” really mean?',
-      ja: '“You’re such a nice guy” は、本当はどういう意味？',
-      choices: ['I won’t date you', 'I want to date you', 'I want to marry you'], a: 0,
-      choicesJa: ['あなたとは付き合わない', 'あなたと付き合いたい', 'あなたと結婚したい'],
+    { id: 'i2', skill: 'pragma', level: 'B2', point: 'i2', seg: [29.7, 38.3], stem: 'In dating language, what will she do after “You’re such a nice guy”?',
+      ja: 'デートの言葉で、「You’re such a nice guy」のあと彼女はどうする？',
+      choices: ['Date bad men, then complain', 'Stop answering his calls', 'Say she’s too busy to meet'], a: 0,
+      choicesJa: ['悪い男と付き合って愚痴を言う', '彼の電話に出なくなる', '忙しくて会えないと言う'],
       cue: '「nice guy」のあとの長い説明',
       line: '“You’re such a nice guy” means… *dating leather-wearing alcoholics* and complaining about them to you.',
       said: '「『いい人ね』は『悪い男と付き合って愚痴を言う』って意味」。',
       mean: 'such a nice guy ＝ すごくいい人。ほめ言葉だが、恋人にはしないとやんわり断っている。',
-      trap: 'nice はほめ言葉なので、好かれていると思いやすい。実際は、愚痴を聞くだけの友だちにされる。',
+      trap: '断りの言葉なので「電話に出ない」と考えがち。ここは愚痴を聞く友だちにされる、という冗談。',
       use: 'He’s a really nice guy.（彼、本当にいい人だよ）' },
 
     { id: 's2', skill: 'sound', level: 'B1', point: 'gonna', seg: [29.7, 37.1], retired: true, stem: 'Fill the gap: “I’m ___ be dating…”',
@@ -182,15 +183,15 @@ export const datinglang: Clip = {
       use: 'Everybody knows this place.（ここはみんな知ってる店だよ）' },
 
     { id: 'p2', skill: 'phrase', level: 'B2', point: 'p2', seg: [44.0, 50.5],
-      stem: 'What does “Cushions the blow” mean?',
-      ja: '「Cushions the blow」はどういう意味？',
-      choices: ['Makes bad news hurt less', 'Makes a fight end sooner', 'Makes a joke out of it'], a: 0,
-      choicesJa: ['悪い知らせの痛みを小さくする', 'けんかを早く終わらせる', '冗談にしてしまう'],
+      stem: 'What do these dating sayings do, says one friend?',
+      ja: 'こうしたデートの言葉は何をする、と友だちは言う？',
+      choices: ['Make the bad news hurt less', 'Leave room to change your mind', 'Help you end the date sooner'], a: 0,
+      choicesJa: ['悪い知らせの痛みを小さくする', 'あとで気が変わってもいいようにする', 'デートを早く終わらせる'],
       cue: '「Oh, yeah.」のあと。',
       line: 'Oh, yeah. *Cushions the blow.*',
       said: '「ああ、そうね。ショックを和らげるのよ」と言う。',
       mean: '文字どおりは「打撃にクッションを当てる」。→ 痛みが小さくなる → 悪い知らせをやわらかく伝えること。',
-      trap: 'blow から「なぐる」「けんか」を連想しやすい。ここは決まり文句がショックをやわらげる、という話。',
+      trap: '言い訳の言葉なので「気が変わってもいい」と勘違いしやすい。blow ＝ 打撃。',
       use: 'I tried to cushion the blow.（やんわり伝えるようにした）' },
 
     { id: 'd4', skill: 'detail', level: 'B1', point: 'farm', seg: [47.8, 54], retired: true, stem: 'Where do parents say the dog went?',

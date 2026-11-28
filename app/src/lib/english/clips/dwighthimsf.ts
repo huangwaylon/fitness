@@ -9,6 +9,7 @@
 // Twin of dwightself (same scene, another upload): items here avoid its points where the clip allows.
 // SKIP 121.5–143: screams (whisper hears "Thank you" at 142 s).
 // Untested on purpose: 0–9 s (shouted moves), 88–94 s and 101–111 s (the fight itself: shouts and visual).
+// CHECKS 2026-11-28: blind check: c4 rewritten so listening decides.
 import type { Clip } from '../types.ts';
 
 export const dwightHimself: Clip = {
@@ -291,10 +292,10 @@ export const dwightHimself: Clip = {
       use: 'I’m behind now, but not for long.（今は遅れてるけど、すぐ追いつく）' },
 
     { id: 'c4', skill: 'phrase', level: 'B2', point: 'matched', seg: [111.0, 115.5],
-      stem: 'What does “so evenly matched” mean?',
-      ja: '「so evenly matched」はどういう意味？',
-      choices: ['Just as strong as each other', 'Wearing the very same clothes', 'Much too tired to go on'], a: 0,
-      choicesJa: ['同じくらい強い', 'まったく同じ服を着ている', '疲れすぎて続けられない'],
+      stem: 'What does the coworker say about Dwight versus himself?',
+      ja: 'ドワイト対ドワイトについて、同僚は何と言う？',
+      choices: ['They’re equal in strength', 'They look exactly the same', 'They’re both too tired'], a: 0,
+      choicesJa: ['力が互角だ', 'まったく同じに見える', '二人とも疲れすぎ'],
       cue: '「You two are」のあと',
       line: 'You two are *so evenly matched*. I don’t know how one of you is going to get the upper hand.',
       said: '「二人ともすごく互角ね。どっちが勝つか分からない」と、ひとりのドワイトに言う。',

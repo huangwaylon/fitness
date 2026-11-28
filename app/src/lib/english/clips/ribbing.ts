@@ -13,6 +13,7 @@
 // SKIP 183–209: Michael's silent improv miming, then one line naming it
 // EAR CHECK: 11.2 s p1 — “Wonder where my e-vitation is” is Michael's (assumed: he is the one not invited)
 // EAR CHECK: 123–128 s k3 — “I got my lunch. I'm good.” is Michael's (assumed: he has his cup of noodles)
+// CHECKS 2026-11-28: blind check: k7, k1, f2, f3, k3, f5 rewritten so listening decides.
 import type { Clip } from '../types.ts';
 
 export const ribbing: Clip = {
@@ -77,14 +78,14 @@ export const ribbing: Clip = {
       use: 'Maybe I need to be even friendlier.（もっと気さくにならないとね）' },
 
     { id: 'k7', skill: 'phrase', level: 'B1', point: 'sameold', seg: [46.9, 53.5],
-      stem: 'What does “same old stuff” mean?', ja: '“same old stuff” はどういう意味？',
-      choices: ['Nothing new, as usual', 'Some old things to sell', 'A very old problem'], a: 0,
-      choicesJa: ['いつもどおり、特に何もない', '売るための古い物', 'とても古い問題'],
+      stem: 'Asked what’s going on, what does Michael answer?', ja: '「どうしたの」と聞かれ、マイケルは何と答える？',
+      choices: ['Nothing new, as usual', 'Something big just happened', 'He’s too busy to talk'], a: 0,
+      choicesJa: ['いつもどおり、特に何もない', '大きなことが起きたばかり', '忙しくて話せない'],
       cue: '「Talk to me」への返事',
       line: 'What’s going on, Michael? Talk to me. — Yeah, you know, *same old stuff*.',
       said: '「どうしたの、話してよ」と聞かれ、「まあ、いつものことさ」と答える。',
       mean: '文字どおりは「同じ古いもの」→ いつもと同じこと＝「相変わらずだよ」。How are you? への軽い返事にも使う。',
-      trap: 'old から「古い物」を連想しやすい。ここは物ではなく、毎日のこと。',
+      trap: '「どうしたの」と聞かれたので、何か大きなことがあったと考えがち。same old は「いつもと同じ」。',
       use: 'How’s work? — Oh, same old stuff.（仕事どう？―まあ、相変わらずだよ）' },
 
     { id: 'g1', skill: 'gist', level: 'B1', point: 'snub', seg: [56.5, 72.0],
@@ -99,14 +100,14 @@ export const ribbing: Clip = {
       use: 'I just want to hang out with you guys.（ただみんなと一緒に過ごしたいんだ）' },
 
     { id: 'k1', skill: 'phrase', level: 'B2', point: 'bestofus', seg: [66.0, 70.0],
-      stem: 'What does “It happens to the best of us” mean?', ja: '“It happens to the best of us” はどういう意味？',
-      choices: ['It happens to everyone', 'Only the best people do it', 'It happened to the top worker'], a: 0,
-      choicesJa: ['誰にでもあること', '一番すごい人だけがする', '一番の社員に起きた'],
+      stem: 'What does Michael say about the slump?', ja: 'スランプについて、マイケルは何と言う？',
+      choices: ['It happens to everyone', 'It will be over soon', 'You need to work harder'], a: 0,
+      choicesJa: ['誰にでもあること', 'すぐに終わる', 'もっとがんばらないと'],
       cue: '「slump」のあと',
       line: 'You’ve had a slump. *It happens to the best of us.*',
       said: '「スランプなんだよ。誰にでもあることさ」と言う。',
       mean: '文字どおりは「最高の人にも起きる」→ だから誰にでも起きる。失敗した人をなぐさめる決まり文句。',
-      trap: 'best（一番）から、すごい人だけの話を連想しやすい。「すごい人でさえ」→「誰でも」。',
+      trap: 'なぐさめの言葉なので「すぐ終わる」と考えがち。the best of us（一番すごい人）にも起きる → 誰にでも。',
       use: 'Don’t worry. It happens to the best of us.（気にしないで。誰にでもあることだよ）' },
 
     { id: 'k2', skill: 'detail', level: 'B2', point: 'snap', ctx: true, seg: [79.0, 88.5],
@@ -121,14 +122,14 @@ export const ribbing: Clip = {
       use: 'I can’t snap my fingers.（指を鳴らせないんだ）' },
 
     { id: 'f2', skill: 'phrase', level: 'B2', point: 'hardly', seg: [87.0, 93.0],
-      stem: 'What does “this is hardly the time” mean?', ja: '“this is hardly the time” はどういう意味？',
-      choices: ['Now is not the time for that', 'There’s little time left', 'This is very hard'], a: 0,
-      choicesJa: ['今はそんな話をする時じゃない', '時間があまり残っていない', 'これはとても難しい'],
+      stem: 'What does Michael tell Jim after the finger joke?', ja: '小指の冗談のあと、マイケルはジムに何と言う？',
+      choices: ['Now is not the time for that', 'That was a really good joke', 'We are running out of time'], a: 0,
+      choicesJa: ['今はそんな話をする時じゃない', '今のはすごくいい冗談だ', 'もう時間があまりない'],
       cue: '「Jim,」のあと',
       line: 'Jim, this is *hardly the time*. — No, this is completely the time.',
       said: '「ジム、今はそんな時じゃない」に、ジムは「今こそです」と返す。',
       mean: 'hardly ＝ ほとんど〜ない。hardly the time ＝ そんな場面ではない。軽くたしなめる言い方。',
-      trap: 'hardly を hard（難しい）と結びつけやすい。返事の completely the time で、場面の話と分かる。',
+      trap: 'time が何度も聞こえ、「時間がない」と考えがち。ジムの completely the time で、場面の話と分かる。',
       use: 'This is hardly the place for that.（ここでそんな話はないでしょう）' },
 
     // R fix: V2, the distractors were long and off the words; now a boss-frame reading and a Japanese frame (he's too
@@ -147,14 +148,14 @@ export const ribbing: Clip = {
       use: 'That’s what friends are for.（友だちってそういうものでしょ）' },
 
     { id: 'f3', skill: 'phrase', level: 'B2', point: 'ribbing', seg: [90, 100],
-      stem: 'What does “gently ribbing each other” mean?', ja: '“gently ribbing each other” はどういう意味？',
-      choices: ['Teasing in a friendly way', 'Poking each other’s ribs', 'Being very kind to each other'], a: 0,
-      choicesJa: ['悪気なくからかい合う', 'あばら骨をつつき合う', 'お互いにとてもやさしくする'],
+      stem: 'What does Jim say the guys are doing?', ja: 'ジムは、みんなが何をしていると言う？',
+      choices: ['Teasing each other kindly', 'Helping each other out', 'Talking about the party'], a: 0,
+      choicesJa: ['悪気なくからかい合っている', 'お互いに助け合っている', 'パーティーの話をしている'],
       cue: '「gently」のあと',
       line: 'This is just guys *gently ribbing* each other.',
       said: '「これは男同士の、ちょっとしたからかいだよ」と言う。',
-      mean: 'rib ＝ 文字どおりは「あばら骨」。脇腹をつついてふざける→言葉で軽くからかう。gently ＝ 悪気なく。',
-      trap: 'rib は「あばら骨」でもあるので、体をつつくと考えがち。ここは言葉でのいじり。',
+      mean: 'rib ＝ 文字どおりは「あばら骨」。脇腹をつつく→言葉で軽くからかう。gently ＝ 悪気なく。',
+      trap: 'each other（お互い）から「助け合う」と考えがち。ここは言葉での軽いいじり。',
       use: 'Don’t worry, I’m just ribbing you.（気にしないで、からかってるだけ）' },
 
     { id: 's2', skill: 'sound', level: 'B2', point: 'eat', seg: [99.7, 106],
@@ -191,14 +192,14 @@ export const ribbing: Clip = {
       use: 'Sorry I’m late. Traffic was terrible.（遅れてごめん。道がひどく混んでて）' },
 
     { id: 'k3', skill: 'pragma', level: 'B1', point: 'imgood', ctx: true, seg: [123.0, 133.0],
-      stem: 'What does Michael mean by “I’m good”?', ja: 'マイケルの “I’m good” はどういう意味？',
-      choices: ['No, thank you', 'I feel fine today', 'I am a nice person'], a: 0,
-      choicesJa: ['いえ、いりません', '今日は体調がいい', '私はいい人だ'],
+      stem: 'Michael is offered some food. What does he say?', ja: '食べ物をすすめられ、マイケルは何と言う？',
+      choices: ['No, he doesn’t want any', 'Yes, he’s really hungry', 'Maybe later, after work'], a: 0,
+      choicesJa: ['いらない、と断る', 'うん、すごくおなかがすいた', 'あとで、仕事が終わってから'],
       cue: 'I got my lunch のあと',
       line: 'Michael: I got my lunch. *I’m good.* / You don’t want this? — *No.*',
       said: '出前をすすめられ、「昼ごはんはあるから、いいよ」と断る。「いらないの？」「いらない」。',
       mean: 'I’m good ＝ ここでは「いりません」。食べ物や手伝いを断るときの、くだけた決まり文句。',
-      trap: 'good から「元気」「いい人」を連想しやすい。すぐあとの No で、断っていると分かる。',
+      trap: 'good から「うん、いいね」と受けると考えがち。すぐあとの No で、断っていると分かる。',
       use: 'More coffee? — I’m good, thanks.（コーヒーのおかわりは？―いえ、大丈夫です）' },
 
     { id: 'n1', skill: 'number', level: 'B1', point: 'beer', seg: [134.0, 138.5], keep: true,
@@ -246,14 +247,14 @@ export const ribbing: Clip = {
       use: 'You’re making that up!（それ、作り話でしょ！）' },
 
     { id: 'f5', skill: 'phrase', level: 'B1', point: 'down', ctx: true, seg: [153.8, 162.9],
-      stem: 'What does “Keep that down” mean?', ja: '“Keep that down” はどういう意味？',
-      choices: ['Talk more quietly', 'Write it on paper', 'Say it more slowly'], a: 0,
-      choicesJa: ['もっと小さい声で話して', '紙に書いて', 'もっとゆっくり言って'],
+      stem: 'What does Jim ask Dwight to do?', ja: 'ジムはドワイトに何を頼む？',
+      choices: ['Say it more quietly', 'Send him the directions', 'Come early to the party'], a: 0,
+      choicesJa: ['もっと小さい声で言って', '道順を送って', 'パーティーに早めに来て'],
       cue: '道順の話のあとの短い命令',
       line: 'Dwight: …to get to your house for the party tonight. / Jim: *Keep that down.*',
       said: 'ドワイトが大声でパーティーへの道順を話し、ジムが「声を小さくして」と言う。',
       mean: '文字どおりは「下げたままにして」→ 声の大きさを下げて＝声を小さくして。パーティーのことを聞かれたくない。',
-      trap: 'down から「書きとめる」「ゆっくり」を連想しやすい。keep 〜 down は音の大きさ。',
+      trap: '道順の話なので「道順を送って」と考えがち。keep 〜 down は声の大きさを下げること。',
       use: 'Could you keep it down, please?（少し静かにしてもらえますか）' },
 
     { id: 'i5', skill: 'infer', level: 'B2', point: 'surprise', ctx: true, seg: [165, 176.2],

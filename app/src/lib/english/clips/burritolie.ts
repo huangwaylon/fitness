@@ -15,6 +15,7 @@
 // EAR CHECK: 142.5–143.2 s x1 — “on my way” runs together; both sources agree on the words
 // EXCLUDE 80.4–87.4: swear (“the doofus that got his ass kicked”)
 // CHECKS 2026-11-28: segment ends pulled 0.4 s before the EXCLUDE they ran into (the player plays on 0.4 s): n1 d1.
+// CHECKS 2026-11-28: blind check: p1, f3 rewritten so listening decides.
 import type { Clip } from '../types.ts';
 
 export const jerryBurritoLie: Clip = {
@@ -101,14 +102,14 @@ export const jerryBurritoLie: Clip = {
       use: 'My visa came through.（ビザが下りた）' },
 
     { id: 'p1', skill: 'pragma', level: 'B1', point: 'sorry', seg: [45.7, 53.9],
-      stem: 'Why does Leslie say “I am sorry to say this” here?', ja: 'レスリーは、なぜここで「I am sorry to say this」と言う？',
-      choices: ['To soften bad news', 'To say sorry for Jerry', 'To thank the city'], a: 0,
-      choicesJa: ['悪い知らせをやわらげるため', 'ジェリーのことを謝るため', '市にお礼を言うため'],
+      stem: 'What is Leslie sorry to tell Pawnee?', ja: 'レスリーがパウニーの人に言いにくそうに伝えることは？',
+      choices: ['The government is failing them', 'The park will have to close soon', 'Jerry might not walk again'], a: 0,
+      choicesJa: ['行政が期待に応えていない', '公園を近く閉めることになる', 'ジェリーはもう歩けないかも'],
       cue: '「And Pawnee」のあと',
       line: 'And Pawnee, *I am sorry to say this, but* your government is failing you.',
       said: 'レスリーが「言いにくいのですが、行政はみなさんの期待に応えていません」と言う。',
       mean: 'I’m sorry to say this, but 〜 ＝ 言いにくいけど〜。きついことの前置き。',
-      trap: 'sorry から、謝っていると思いやすい。but のあとが本題。',
+      trap: '事件の話なので、ジェリーのけがの知らせと考えがち。but のあとが本題。',
       use: 'I’m sorry to say this, but you’re late.（言いにくいけど、遅刻だよ）' },
 
     { id: 'f2', skill: 'detail', level: 'B1', point: 'possessed', ctx: true, seg: [58.1, 67.2],
@@ -201,15 +202,15 @@ export const jerryBurritoLie: Clip = {
       use: 'We treat everyone with respect.（ここではみんなを大切に扱います）' },
 
     { id: 'f3', skill: 'phrase', level: 'B1', point: 'heart', seg: [102.5, 109],
-      stem: 'What does “Speak from the heart” mean?',
-      ja: '「Speak from the heart」の意味は？',
-      choices: ['Say honestly how you feel', 'Read the speech I wrote', 'Keep your talk very short'], a: 0,
-      choicesJa: ['気持ちを正直に話して', '私の原稿を読んで', 'とても短くして'],
+      stem: 'What advice does Leslie give Jerry?',
+      ja: 'レスリーはジェリーにどんな助言をする？',
+      choices: ['Say how he really feels', 'Read the notes she wrote', 'Keep his talk very short'], a: 0,
+      choicesJa: ['本当の気持ちを話す', '彼女が書いたメモを読む', '話をとても短くする'],
       cue: '「Jerry, are you nervous?」のあと。',
       line: 'Just talk about how hard it was for you. *Speak from the heart*. You’ll be fine.',
       said: 'レスリーが「つらかったことを話して。心から話して。大丈夫」と励ます。',
       mean: 'Speak from the heart ＝ 文字どおりは「心から話す」。原稿でなく、本当の気持ちを自分の言葉で。You’ll be fine ＝ 大丈夫。',
-      trap: '原稿を読む話と考えがち。heart（心）＝気持ち。つらさを自分の言葉で話す。',
+      trap: '緊張している人への助言なので「短く」と考えがち。heart（心）＝気持ち。',
       use: 'Just speak from the heart. You’ll be fine.（気持ちを話せばいいよ。大丈夫）' },
 
     { id: 'd4', skill: 'detail', level: 'B2', point: 'mute', seg: [122.5, 132.5],
