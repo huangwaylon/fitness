@@ -11,12 +11,12 @@
     "deploy": "sh scripts/deploy.sh"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "^5.20261123.1",
-    "@types/node": "^26.6.5",
+    "@cloudflare/workers-types": "^5.20261125.1",
+    "@types/node": "^26.6.10",
     "knip": "^6.48.0",
     "typescript": "^7.0.2",
     "vitest": "^5.1.1",
-    "wrangler": "^4.166.0"
+    "wrangler": "^4.168.0"
   },
   "engines": {
     "node": ">=24"
