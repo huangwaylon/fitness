@@ -46,7 +46,7 @@ export function dictate(q: Question, st: QState, typed: string): QState {
 export const heard = (r: Extract<Result, { k: 'dict' }>): { hit: number; of: number } => ({ hit: r.words.filter((w) => w.hit).length, of: r.words.length });
 
 /** Heard in full on the first try (◎, or every word of a dictation): not a scene to hear again. */
-export const clean = (r: Result | null): boolean => r?.k === 'first' || (r?.k === 'dict' && r.words.every((w) => w.hit));
+const clean = (r: Result | null): boolean => r?.k === 'first' || (r?.k === 'dict' && r.words.every((w) => w.hit));
 
 /** The scenes to hear again at まとめ: every question answered and not heard in full the first time, the ones its row
  *  records (progress.ts missesOf: これまでの記録 counts the same). */
