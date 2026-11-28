@@ -100,8 +100,12 @@ test('天気: 自動 (Tokyo\'s, its line and credit), ゲーム, or a forced sky
   await expect(sec.locator('[data-preview="weather:auto"]')).toHaveAttribute('aria-checked', 'true');
   await expect(sec.locator('[data-wx-credit]')).toBeVisible();
   await expect(page.locator('[data-preview-reset]')).toHaveCount(0);
-  await sec.locator('[data-preview="weather:game"]').click();
-  await expect(sec.locator('[data-preview="weather:game"]')).toHaveAttribute('aria-checked', 'true');
+  // (the sheet just unfolded: a click while it settles can be the sheet's own; CI's logic full 2026-11-28 had it stay
+  // 'false' once, its retry green: the click again till it takes)
+  await expect(async () => {
+    await sec.locator('[data-preview="weather:game"]').click();
+    await expect(sec.locator('[data-preview="weather:game"]')).toHaveAttribute('aria-checked', 'true', { timeout: 1500 });
+  }).toPass({ timeout: 10_000 });
   await expect(sec.locator('[data-wx-game]')).toBeVisible();
   await expect(page.locator('[data-preview-summary]')).toHaveText('ゲームの天気');
   await sec.locator('[data-preview="weather:rain"]').click();

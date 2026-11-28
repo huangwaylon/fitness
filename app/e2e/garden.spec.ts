@@ -84,14 +84,20 @@ test('my villager’s walk across a fence run goes round its end, never through 
   // my villager west of the fence, a tap east of it
   await quiet(phone);
   await camTo(phone, 300);
-  const from: [number, number] = [45, 315], to: [number, number] = [165, 315];
+  // (the tap on bare ground east of it: a day's weed or find there takes the tap in place, 2026-11-28 a weed by 165, 315)
+  const from: [number, number] = [45, 315];
+  const to = await phone.evaluate((zs) => {
+    const w = (window as unknown as { __world3d: { client(x: number, z: number): [number, number]; claim(x: number, y: number): unknown } }).__world3d;
+    return zs.find(([x, z]) => w.claim(...w.client(x, z)) === null) ?? null;
+  }, [[165, 315], [165, 335], [180, 335], [165, 355], [195, 315], [195, 340]] as [number, number][]);
+  expect(to, 'bare ground east of the fence').not.toBeNull();
   await phone.evaluate(([x, z]) => (window as unknown as { __world: Wd }).__world.put(x, z), from);
-  await tapWorld(phone, ...to, { mouse: true });
+  await tapWorld(phone, ...to!, { mouse: true });
   const seen: [number, number][] = [];
   await expect.poll(async () => {
     const p = await phone.evaluate(() => (window as unknown as { __world: Wd }).__world.mine());
     seen.push(p);
-    return Math.hypot(p[0] - to[0], p[1] - to[1]);
+    return Math.hypot(p[0] - to![0], p[1] - to![1]);
   }, { timeout: 20_000, intervals: [100] }).toBeLessThan(20);
   for (const [x, z] of seen) expect(x > BOX.x0 + 2 && x < BOX.x1 - 2 && z > BOX.z0 + 2 && z < BOX.z1 - 2, `at ${x}, ${z}: on the fence`).toBe(false);
   // round an end: out past row 11's or row 15's edge

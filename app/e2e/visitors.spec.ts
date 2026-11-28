@@ -204,11 +204,19 @@ test('a tap in a visitor’s reach (a finger’s slack beside its figure) with n
   const p = await page.evaluate(() => {
     const w = (window as unknown as { __world3d: W3 }).__world3d, b = w.box('visitor', 'redd')!;
     const r = { left: b.left, right: b.left + b.width, bottom: b.top + b.height }, mid = b.top + b.height / 2;
-    // (the small things lying about: where each lies; a tree shake's drops: their middles)
-    const things = [...w.care(), ...w.finds()].map((t) => t.foot).concat(w.shakes().drops.map(({ box: b }) => [b.left + b.width / 2, b.top + b.height / 2]));
-    for (const [x, y] of [[r.left - 5, mid], [r.right + 5, mid], [r.left - 5, r.bottom - 10], [r.right + 5, r.bottom - 10]]) {
+    // (the small things lying about and a tree shake's drops: their art's boxes grown to a thumb's 44 px, as their tap
+    // boxes are: hitbox.ts MIN_HIT)
+    const grow = (b: { left: number; top: number; width: number; height: number }) => {
+      const cx = b.left + b.width / 2, cy = b.top + b.height / 2, hw = Math.max(b.width, 44) / 2 + 2, hh = Math.max(b.height, 44) / 2 + 2;
+      return [cx - hw, cy - hh, cx + hw, cy + hh];
+    };
+    const boxes = [...w.care(), ...w.finds(), ...w.shakes().drops].map((t) => grow(t.box));
+    // (either side, 5 px off, at a few heights: a day's weed or find may lie by one of them; 2026-11-28 a weed behind
+    // Redd's middle on the pinned day)
+    const ys = [mid, r.bottom - 10, b.top + 12, r.bottom - 24];
+    for (const [x, y] of ys.flatMap((y) => [[r.left - 5, y], [r.right + 5, y]])) {
       const at = document.elementFromPoint(x, y);
-      if (at?.classList.contains('stage') && !things.some(([tx, ty]) => Math.abs(x - tx) < 30 && Math.abs(y - ty) < 30)) return { x, y };
+      if (at?.classList.contains('stage') && !boxes.some(([l, t, rr, bb]) => x >= l && x <= rr && y >= t && y <= bb)) return { x, y };
     }
     return null;
   });
