@@ -52,8 +52,8 @@ export function tapCovered(layout: Layout, which: keyof typeof covered = 'all'):
   if (had) return had;
   const taken = new Set<string>();
   const mark = (c: number, r: number) => taken.add(`${c},${r}`);
-  /** Its tiles' rows j0…j1 round them (behind: +), a tile each side (`side` 1) or just its own column (0). */
-  const around = (o: Obj, j0: number, j1: number, side: 0 | 1 = 1) => {
+  /** Its tiles' rows j0…j1 round them (behind: +), `side` tiles each side (0: just its own column). */
+  const around = (o: Obj, j0: number, j1: number, side = 1) => {
     for (const [c, r] of objTiles(layout, o)) for (let j = j0; j <= j1; j++) for (let i = -side; i <= side; i++) mark(c + i, r + j);
   };
   for (const o of layout.objects.values()) {
@@ -73,7 +73,9 @@ export function tapCovered(layout: Layout, which: keyof typeof covered = 'all'):
     // bench took the bench's tap)
     const ROUND = def?.block === true && def.group !== 'tree' && def.group !== 'bush' && o.k !== 'home';
     const over = def?.group === 'tree' ? 2 : def?.group === 'bush' || def?.group === 'flower' || ROUND ? 1 : -1;
-    if (over >= 0) around(o, -1, over);
+    // (a goal tree's fruit row, its button, reaches two tiles each side of its trunk: FruitTree's FRUIT_SPOTS and lean;
+    // a dig spot and weeds there got the row's taps, the prod sweep 2026-11-28)
+    if (over >= 0) around(o, -1, over, o.k === 'goal-tree' ? 2 : 1);
     // what one stands before to use (the board, K.K.'s stool: catalog.ts `front`) is a button standing up over the
     // ground behind it: on screen its art covers rows there at every zoom (hides.ts frontRows: the board's three, K.K.'s
     // four; and a tile each side), where a spot would hide under it once the camera settled (the finds' uncovered) and

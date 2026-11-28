@@ -92,10 +92,10 @@ const findsNear = (page: Page, x: number, y: number, r: number) => page.evaluate
 /** Find `uid` still lying out. */
 const findOut = (page: Page, uid: string) => page.evaluate((uid) => (window as unknown as Hooks).__world3d.finds().some((f) => f.uid === uid), uid);
 
-/** Opens the island on the first day from `from` (of 10) with a dig spot in the back third of the island within 30 u
- *  of the sea, and gives that spot's x (the nearest the sea that day). */
-async function dayWithDigBySea(page: Page, layout: 'default' | 'user', from: string): Promise<number> {
-  for (let i = 0; i < 10; i++) {
+/** Opens the island on the first day from `from` (of 30) with a dig spot in the back third of the island within 30 u
+ *  of the sea, and gives that day and that spot's x (the nearest the sea that day). */
+async function dayWithDigBySea(page: Page, layout: 'default' | 'user', from: string): Promise<{ date: string; x: number }> {
+  for (let i = 0; i < 30; i++) {
     const date = new Date(Date.parse(from) + i * 864e5).toISOString().slice(0, 10);
     await open(page, layout, date);
     const x = await page.evaluate(() => {
@@ -110,7 +110,7 @@ async function dayWithDigBySea(page: Page, layout: 'default' | 'user', from: str
       const near = at.filter(([, z]) => z >= back).map(([x, z]) => [x, sea(x, z)]).filter(([, d]) => d < Infinity).sort((a, b) => a[1] - b[1]);
       return near[0]?.[0] ?? null;
     });
-    if (x !== null) return x;
+    if (x !== null) return { date, x };
   }
   throw new Error(`no day from ${from} with a dig spot by the back beach`);
 }
@@ -193,20 +193,29 @@ for (const layout of ['default', 'user'] as const) {
     // on the island or a change to the draw moves them; the first such day from the one that had it last, read off the
     // island, and the camera on that spot's x, not a fixed view's: one by the island's side sat at a fixed view's edge,
     // in Chromium on CI's Linux in view, on a Mac not)
-    const x = await dayWithDigBySea(page, layout, layout === 'user' ? '2026-11-08' : '2026-11-07');
-    const url = page.url();
-    let tried = 0, last: { k: number; pt: Pt } | null = null;
-    for (const k of [1, 2, 3]) {
-      await farStop(page, k, x);
-      const pts = await waterBeside(page, 'find');
-      tried += pts.length;
-      await castsAt(page, spread(pts, 2), url);
-      // (the pick-up from a view with that find well on screen: the camera can't centre a spot by the island's side)
-      const [f] = pts.length ? await findsNear(page, pts[0][0], pts[0][1], 20) : [];
-      if (f && f.x > 24 && f.x < 393 - 24) last = { k, pt: pts[0] };
+    // (a spot by the sea that day may still be off the far stop's view: then the next such day)
+    let from = layout === 'user' ? '2026-12-02' : '2026-11-07', x = 0, last: { k: number; pt: Pt } | null = null;
+    const views = new Map<number, Pt[]>();
+    for (let day = 0; day < 6 && !last; day++) {
+      const d = await dayWithDigBySea(page, layout, from);
+      x = d.x;
+      views.clear();
+      for (const k of [1, 2, 3]) {
+        await farStop(page, k, x);
+        const pts = await waterBeside(page, 'find');
+        views.set(k, pts);
+        // (the pick-up from a view with that find well on screen: the camera can't centre a spot by the island's side)
+        const [f] = pts.length ? await findsNear(page, pts[0][0], pts[0][1], 20) : [];
+        if (f && f.x > 24 && f.x < 393 - 24) last = { k, pt: pts[0] };
+      }
+      from = new Date(Date.parse(d.date) + 864e5).toISOString().slice(0, 10);
     }
-    expect(tried, 'the sea beside a find at the far stop').toBeGreaterThan(0);
     expect(last, 'a view with the find by the sea on screen').not.toBeNull();
+    const url = page.url();
+    for (const [k, pts] of views) {
+      await farStop(page, k, x);
+      await castsAt(page, spread(pts, 2), url);
+    }
     // the find beside the sea there itself, on its art's middle
     await farStop(page, last!.k, x);
     const [on] = await findsNear(page, last!.pt[0], last!.pt[1], 20);

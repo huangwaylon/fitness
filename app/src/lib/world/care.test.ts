@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { hybridsOf, HYBRID_ODDS, MAX_WEEDS, hybridFor, rockTap, weedsAt } from './care.ts';
-import { DIG_SPOTS, LAWN } from './beach.ts';
+import { DIG_SPOTS, LAWN, digSpots, layoutSpots, useSpots } from './beach.ts';
+import { defaultLayout } from '#lib/layout/model.ts';
 import { mulberry32 } from '#lib/random.ts';
 import { WILD } from '../components/island/scene.ts';
 import { assetFor } from '../components/world3d/assets.ts';
@@ -23,6 +24,22 @@ describe('weeds', () => {
   it('never sprout on a dig spot that’s showing', () => {
     const taken = new Set(DIG_SPOTS.slice(0, 2).map(([x, y]) => `${x},${y}`));
     for (let h = 2; h < 24; h++) for (const w of weedsAt('2026-11-04', h * H, undefined, taken)) expect(taken.has(`${w.x},${w.y}`)).toBe(false);
+  });
+  it('on the layout, never a tile from a dig spot showing or another weed (its tap area took the taps: the prod sweep 2026-11-28)', () => {
+    useSpots(layoutSpots(() => defaultLayout()));
+    try {
+      for (let d = 1; d <= 30; d++) {
+        const date = `2026-11-${String(d).padStart(2, '0')}`, digs = digSpots(date, new Set()), taken = new Set(digs.map((s) => `${s.x},${s.y}`));
+        for (let h = 2; h < 24; h += 3) {
+          const w = weedsAt(date, h * H, undefined, taken), out = [...digs.map((s) => [s.x, s.y]), ...w.map((x) => [x.x, x.y])];
+          out.forEach(([x, y], i) => {
+            for (const [a, b] of out.slice(i + 1)) expect(Math.abs(a - x) < 45 && Math.abs(b - y) < 45, `${date} ${h}h ${x},${y} by ${a},${b}`).toBe(false);
+          });
+        }
+      }
+    } finally {
+      useSpots(null);
+    }
   });
 });
 

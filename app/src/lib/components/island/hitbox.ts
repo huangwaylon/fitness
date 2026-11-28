@@ -23,13 +23,13 @@ const centreDist = (b: HitBox, x: number, y: number): number => Math.hypot(x - (
 const BARE = 3;
 
 /** Of the targets under (x, y), the one in front (the smallest world z: nearer the camera), then the nearest middle.
- *  `wet`: the ground under the finger is water: a target with a `body` (what it draws, BARE px round it) takes the tap
- *  only on that, its thumb-size margin over the water the water's (a shell by the sea: a tap on the sea beside it
- *  casts). */
-export function pick<T extends { box: HitBox | null; z: number; body?: HitBox | null }>(list: readonly T[], x: number, y: number, wet = false): T | null {
+ *  `bare`: a target with a `body` (what it draws, BARE px round it) takes the tap only on that, not its thumb-size
+ *  margin: over water (a shell by the sea: a tap on the sea beside it casts), and SceneTaps' first pass (a weed drawn
+ *  under the finger before a dig spot's margin beside it). */
+export function pick<T extends { box: HitBox | null; z: number; body?: HitBox | null }>(list: readonly T[], x: number, y: number, bare = false): T | null {
   let best: T | null = null, bd = Infinity;
   for (const it of list) {
-    const box = wet && it.body !== undefined ? it.body : it.box;
+    const box = bare && it.body !== undefined ? it.body : it.box;
     if (!box || !inside(box, x, y)) continue;
     const d = centreDist(box, x, y);
     if (!best || it.z < best.z - 1 || (Math.abs(it.z - best.z) <= 1 && d < bd)) (best = it), (bd = d);

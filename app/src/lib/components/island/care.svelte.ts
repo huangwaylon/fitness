@@ -18,6 +18,7 @@ import { jst, minuteNow } from '#lib/time/clock.ts';
 import { islandDay } from './ambientClock.ts';
 import { sceneSfx } from './sceneTaps.ts';
 import { digSpots, findArt } from '#lib/world/beach.ts';
+import { mushroomsOn } from '#lib/world/mushrooms.ts';
 import { ROCK, rockTap, weedsAt, type Weed } from '#lib/world/care.ts';
 import { weedArt } from '#lib/world/dayModels.ts';
 import { take, takenOn } from '#lib/world/sceneDay.ts';
@@ -25,7 +26,7 @@ import { partnerTurnTo, turnTo } from './avatar.ts';
 import { world as shared } from '#lib/store/world.svelte.ts';
 import { taken as takenBy, takenIds } from '#lib/sync/world-day.ts';
 import { untrack } from 'svelte';
-import { SHOWN, drawn3, hitRect, hitSources, pick, type Seen } from './hitbox.ts';
+import { SHOWN, bareRect, drawn3, hitRect, hitSources, pick, type Seen } from './hitbox.ts';
 import { fx3d } from '#lib/world/fx3d.ts';
 import { echo3d } from './echo3d.ts';
 import { theme } from '#lib/ui-state/theme.svelte.ts';
@@ -40,8 +41,10 @@ export interface CareRow {
 }
 /** What SceneTaps asks of the care things. */
 export type Care = {
-  tap(px: number, py: number, seen?: Seen): boolean;
-  claims(px: number, py: number, seen?: Seen): string | null;
+  /** `bare`: only on what each draws, not its thumb-sized margin (SceneTaps' first pass: a weed drawn under the finger
+   *  over a dig spot's margin beside it). */
+  tap(px: number, py: number, seen?: Seen, bare?: boolean): boolean;
+  claims(px: number, py: number, seen?: Seen, bare?: boolean): string | null;
 };
 
 /** A weed's tuft (u: the 2D art's), and how long one takes to sprout and to fly out of the ground (ms). */
@@ -71,8 +74,10 @@ export function useCare(w: World, o: {
       const { hour, minute } = jst(clock);
       // what was taken today: this phone's own record, and every claim in the shared day (mine too: world-day.ts takenIds)
       const gone = date === islandDay() ? takenOn(date).union(takenIds(shared.day)) : takenOn(date);
-      const dug = new Set(digSpots(date, gone, seed).map((s) => `${s.x},${s.y}`));
-      return weedsAt(date, (hour * 60 + minute) * 60_000, seed, dug).filter((w) => !gone.has(w.uid));
+      // (what lies out that a weed keeps off and a tile from: the dig spots showing and the day's mushrooms, picked or not:
+      // a weed never moves as one is picked)
+      const out = [...digSpots(date, gone, seed), ...mushroomsOn(date, seed)];
+      return weedsAt(date, (hour * 60 + minute) * 60_000, seed, new Set(out.map((s) => `${s.x},${s.y}`))).filter((w) => !gone.has(w.uid));
     });
     // A weed that sprouts while the island is open pops up out of the lawn; the ones already there when it opens just stand.
     let opened = false;
@@ -191,7 +196,8 @@ export function useCare(w: World, o: {
     const targets = () => lyingNow().flatMap((l) => {
       if (!w.inView(l.x, l.z, 20)) return [];
       const b = boxOf(l);
-      return [{ box: hitRect({ ...b, right: b.left + b.width, bottom: b.top + b.height }), x: l.x, z: l.z, kind: l.kind, uid: l.uid, go: l.go }];
+      const r = { ...b, right: b.left + b.width, bottom: b.top + b.height };
+      return [{ box: hitRect(r), body: bareRect(r), x: l.x, z: l.z, kind: l.kind, uid: l.uid, go: l.go }];
     });
     $effect(() => {
       const list = () => targets().flatMap((t) => (t.box ? [{ box: t.box, kind: t.kind }] : []));
@@ -199,12 +205,12 @@ export function useCare(w: World, o: {
       return () => void hitSources.delete(list);
     });
     /** A tap on the scene (client px), after the finds: the care thing it took (on its tap box; in front wins). */
-    const hit = (px: number, py: number, seen: Seen) => (enabled() ? pick(targets().filter((t) => seen(t.x, t.z)), px, py) : null);
+    const hit = (px: number, py: number, seen: Seen, bare = false) => (enabled() ? pick(targets().filter((t) => seen(t.x, t.z)), px, py, bare) : null);
     /** The care thing a tap at client (px, py) is for (a weed's uid, `rock`), no side effect (SceneTaps' claims), or
      *  null. */
-    const claims = (px: number, py: number, seen: Seen = SHOWN): string | null => hit(px, py, seen)?.uid ?? null;
-    function tap(px: number, py: number, seen: Seen = SHOWN): boolean {
-      const best = hit(px, py, seen);
+    const claims = (px: number, py: number, seen: Seen = SHOWN, bare = false): string | null => hit(px, py, seen, bare)?.uid ?? null;
+    function tap(px: number, py: number, seen: Seen = SHOWN, bare = false): boolean {
+      const best = hit(px, py, seen, bare);
       if (!best) return false;
       best.go();
       return true;

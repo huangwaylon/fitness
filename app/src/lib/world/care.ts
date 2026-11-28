@@ -12,6 +12,8 @@ import { ISLAND_SEED, dayRand } from './daySeed.ts';
 /** A weed sprouts every 30–60 minutes of the day (the first after 15–30); the lawn holds the newest three. */
 const WEED_GAP: readonly [number, number] = [30 * 60_000, 60 * 60_000];
 export const MAX_WEEDS = 3;
+/** Closer than this (u, across and in depth) a weed is on the next tile to what's out: a tile and a half. */
+const NEAR = 45;
 
 export interface Weed { uid: string; x: number; y: number; flip: boolean; at: number }
 
@@ -24,12 +26,18 @@ export function weedsAt(date: string, ms: number, seed = ISLAND_SEED, taken: Rea
   const recent = times.slice(-MAX_WEEDS);
   const WEED_SPOTS = spotsOn(date, seed).lawn;
   const used = new Set(WEED_SPOTS.flatMap(([x, y], i) => (taken.has(`${x},${y}`) ? [i] : [])));
+  // (what's out already: the dig spots showing and the weeds before; a weed a tile from one, behind it or beside it,
+  // lost its taps to that one's thumb-sized tap area, the prod sweep 2026-11-28: one further off while there is one)
+  const out = [...taken].map((k) => k.split(',').map(Number));
+  const near = (i: number) => out.some(([x, y]) => Math.abs(WEED_SPOTS[i][0] - x) < NEAR && Math.abs(WEED_SPOTS[i][1] - y) < NEAR);
   return recent.flatMap((at) => {
     const s = dayRand(date, `weed@${at}`, seed);
     if (used.size >= WEED_SPOTS.length) return [];
     let i = Math.floor(s() * WEED_SPOTS.length);
+    for (let n = 0; n < WEED_SPOTS.length && (used.has(i) || near(i)); n++) i = (i + 1) % WEED_SPOTS.length;
     while (used.has(i)) i = (i + 1) % WEED_SPOTS.length;
     used.add(i);
+    out.push([WEED_SPOTS[i][0], WEED_SPOTS[i][1]]);
     return [{ uid: `w${at}`, x: WEED_SPOTS[i][0], y: WEED_SPOTS[i][1], flip: s() < 0.5, at }];
   });
 }

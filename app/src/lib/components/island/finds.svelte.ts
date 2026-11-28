@@ -67,8 +67,10 @@ export interface FindRow {
 }
 /** What SceneTaps asks of the finds. */
 export type Finds = {
-  tap(px: number, py: number, seen?: Seen): boolean;
-  claims(px: number, py: number, seen?: Seen): string | null;
+  /** `bare`: only on what each draws, not its thumb-sized margin (SceneTaps' first pass: a weed drawn under the finger
+   *  over a dig spot's margin beside it). */
+  tap(px: number, py: number, seen?: Seen, bare?: boolean): boolean;
+  claims(px: number, py: number, seen?: Seen, bare?: boolean): string | null;
   present(x: number, z: number, art: string, size: number): void;
   wish(): void;
 };
@@ -494,19 +496,19 @@ export function useFinds(w: World, o: {
     });
     /** A tap on the scene (client px), after the critters: the find a tap took (on its tap box; in front wins; only
      *  what shows there: `seen`). On water, only on what it draws (the sea beside a shell is the sea's: a cast). */
-    function hit(px: number, py: number, seen: Seen) {
+    function hit(px: number, py: number, seen: Seen, bare = false) {
       if (!enabled()) return null;
       const at = w.worldAtClient(px, py), k = at && hitWorld(at.x, at.z).kind, wet = k === 'sea' || k === 'pond' || k === 'river';
-      return pick(targets().filter((t) => seen(t.x, t.z)), px, py, wet);
+      return pick(targets().filter((t) => seen(t.x, t.z)), px, py, bare || wet);
     }
-    function tap(px: number, py: number, seen: Seen = SHOWN): boolean {
-      const best = hit(px, py, seen);
+    function tap(px: number, py: number, seen: Seen = SHOWN, bare = false): boolean {
+      const best = hit(px, py, seen, bare);
       if (!best) return false;
       best.go();
       return true;
     }
     /** The find a tap at client (px, py) is for, by its uid (no side effect: SceneTaps' claims), or null. */
-    const claims = (px: number, py: number, seen: Seen = SHOWN): string | null => hit(px, py, seen)?.uid ?? null;
+    const claims = (px: number, py: number, seen: Seen = SHOWN, bare = false): string | null => hit(px, py, seen, bare)?.uid ?? null;
 
     /** A wish on a shooting star (SceneTaps, a tap in the sky while one crosses; it shows the caption): one more star
      *  fragment on the beach the next morning (before dawn: this morning, from 5:00). */

@@ -103,6 +103,21 @@ describe('what one stands before keeps the day’s spots off the ground its art 
   });
 });
 
+describe('the day’s spots keep clear of the goal trees’ fruit rows (the prod sweep, 2026-11-28)', () => {
+  // (a goal tree's fruit row reaches two tiles each side of its trunk: a dig spot or a weed there got the row's taps)
+  for (const [name, g] of [['the default', l], ['the user’s record', userLayout()]] as const)
+    test(`${name}: none within two tiles each side of a goal tree`, () => {
+      const goals = [...g.objects.values()].filter((o) => o.k === 'goal-tree');
+      expect(goals.length).toBeGreaterThan(0);
+      for (let d = 1; d <= 30; d++) {
+        const date = new Date(Date.UTC(2026, 10, d)).toISOString().slice(0, 10), { dig, lawn } = daySpots(g, date, 'island-fund');
+        expect(dig).toHaveLength(8);
+        for (const [c, r] of [...dig, ...lawn].map(([x, z]) => tileAt(x, z)))
+          for (const t of goals) expect(Math.abs(c - t.x) <= 2 && r - t.z >= -1 && r - t.z <= 2, `${date} ${c},${r} by ${t.id}`).toBe(false);
+      }
+    });
+});
+
 describe('the visitors’ stage and Gulliver’s beach, from the layout (spots.ts)', () => {
   const villagers = (g: Layout) => [...g.objects.values()].filter((o) => o.k === 'spot' && o.s !== 'stage').map((o) => objMid(g, o));
   for (const [name, g] of [['the default', l], ['the user’s record', userLayout()]] as const)

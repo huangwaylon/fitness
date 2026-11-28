@@ -346,8 +346,8 @@
       return step('plot', () => g && plotUnder(g.x, g.z), () => !!g && farmAt(g.x, g.z));
     };
     const prop = (p: Prop | undefined, kind: string, seen: Seen) => step(kind, () => p?.claims(cx, cy, seen), () => p?.tap(cx, cy, seen));
-    const finds_ = (seen: Seen) => step('find', () => finds?.claims(cx, cy, seen), () => finds?.tap(cx, cy, seen));
-    const care_ = (seen: Seen) => step('care', () => care?.claims(cx, cy, seen), () => care?.tap(cx, cy, seen));
+    const finds_ = (seen: Seen, bare = false) => step('find', () => finds?.claims(cx, cy, seen, bare), () => finds?.tap(cx, cy, seen, bare));
+    const care_ = (seen: Seen, bare = false) => step('care', () => care?.claims(cx, cy, seen, bare), () => care?.tap(cx, cy, seen, bare));
     const fish = (seen: Seen) => step('fish', () => critters?.fishClaims(cx, cy, seen), () => critters?.fish(cx, cy, seen));
     // a plot under a goal tree's canopy or trunk, or a villager (their tap areas reach over a field beside them): the
     // plot's, farmed where it is; a bug in front keeps its tap
@@ -387,7 +387,10 @@
     // present) and the island's care (a weed, the rock) on their own boxes; the visitor's reach (a finger's slack round
     // it); K.K. on his stool (his figure's box is wider than he is: a shell by his stool is the shell's); the water under
     // the finger with nothing of the island's over it (a canopy over the pond shakes its tree): a cast, however far
-    return bug(SHOWN, true) ?? prop(deck, 'deck', SHOWN) ?? prop(cakeEl, 'cake', SHOWN) ?? vis(true) ?? plot() ?? finds_(SHOWN) ?? care_(SHOWN) ?? vis(false)
+    // (a find or a weed drawn under the finger first, then their thumb-sized margins: a weed a tile behind a dig spot
+    // lost its taps to the spot's margin, the prod sweep 2026-11-28)
+    return bug(SHOWN, true) ?? prop(deck, 'deck', SHOWN) ?? prop(cakeEl, 'cake', SHOWN) ?? vis(true) ?? plot() ?? finds_(SHOWN, true) ?? care_(SHOWN, true)
+      ?? finds_(SHOWN) ?? care_(SHOWN) ?? vis(false)
       ?? kk_() ?? (k && SCENERY_KINDS.has(k) ? null : fish(SHOWN));
   }
   /** The chain's dry run (things3 claims: the test hooks' claim, world3d/pick3d.ts claimAt). */
