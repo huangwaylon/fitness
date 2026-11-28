@@ -10,6 +10,7 @@
 // SKIP 94–119.5: the deli platter, the immigration report, the "atrocities" joke, crime confessions
 // SKIP 129–169: "I'll go", Meredith's deal (sexual)
 // EAR CHECK: 216.6 s nt2 — “What you gonna do?” is taken as Michael's shrug (after Holly's “Michael, …”)
+// CHECKS 2026-11-28: segment ends pulled 0.4 s before the EXCLUDE they ran into (the player plays on 0.4 s): i4.
 import type { Clip } from '../types.ts';
 
 export const thiefOfJoy: Clip = {
@@ -172,7 +173,7 @@ export const thiefOfJoy: Clip = {
       trap: 'make it には「間に合う」もあり、遅刻を連想しやすい。couldn’t make it ＝ 行けなかった。',
       use: 'Sorry, I can’t make it tonight.（ごめん、今夜は行けない）' },
 
-    { id: 'i4', skill: 'infer', level: 'B2', point: 'noone', reveals: ['brunch'], ctx: true, seg: [88.9, 97.5],
+    { id: 'i4', skill: 'infer', level: 'B2', point: 'noone', reveals: ['brunch'], ctx: true, seg: [88.9, 97.2],
       stem: 'Why won’t Phyllis give any names?',
       ja: 'フィリスはなぜ名前を言わない？',
       choices: ['Nobody went to it', 'Nobody will admit it', 'It was canceled'], a: 0,

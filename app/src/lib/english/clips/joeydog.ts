@@ -5,6 +5,7 @@
 // can look after himself and will only miss Chandler (and now the dog).
 // Segments from the captions, words from whisper (2026-11-16). Named in the audio: Chandler (71 s); Joey by the title.
 // Untested: 12.5 s ("Cups money": the game needs backstory).
+// CHECKS 2026-11-28: s1's “going to” (said at 81.6 s: “the only thing that I'm going to miss”) -> “still going to”.
 import type { Clip } from '../types.ts';
 
 export const joeyDog: Clip = {
@@ -218,13 +219,13 @@ export const joeyDog: Clip = {
     { id: 's1', skill: 'sound', level: 'B1', point: 'miss', reveals: ['missyou'], seg: [75.1, 82.9],
       stem: 'Fill the gap: “I’m ___ miss you helping me out…”',
       ja: '「I’m ___ miss you helping me out…」の空所は？',
-      choices: ['not going to', 'going to', 'only going to'], a: 0,
-      choicesJa: ['〜しない', '〜する', '〜だけする'],
+      choices: ['not going to', 'still going to', 'only going to'], a: 0,
+      choicesJa: ['〜しない', 'それでも〜する', '〜だけする'],
       cue: '「I’m」のあと',
       line: 'Look, I’m *not going to* miss you helping me out with money.',
       said: '「お金で助けてもらえなくなるのは寂しくない」と言う。',
       mean: 'not going to ＝「〜しない」。次の「寂しいのは君だけ」への前置き。',
-      trap: '「ナッ」が入れば not、「アイムゴナ」だけなら going to、「オウンリ」なら only。',
+      trap: '「ナッ」が入れば not、「スティル」なら still、「オウンリ」なら only。',
       use: 'I’m not going to miss this weather.（この天気は恋しくならないな）' },
 
     // retired (A2): a predict item whose next line isn’t a set phrase

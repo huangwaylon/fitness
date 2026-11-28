@@ -10,6 +10,7 @@
 // Untested: 106.7–111 s (needles), 185–190 s (crosstalk), the eye-chart words (visual).
 // EXCLUDE 121.2–125.9
 // EAR CHECK: 130.1 s x1 — “get you home” runs together as “getcha home” (both sources have the words)
+// CHECKS 2026-11-28: segment ends pulled 0.4 s before the EXCLUDE they ran into (the player plays on 0.4 s): g2.
 import type { Clip } from '../types.ts';
 
 export const medicalMess: Clip = {
@@ -242,7 +243,7 @@ export const medicalMess: Clip = {
       trap: '最後の単位を聞き逃しやすい。決め手は days（デイズ）。hours なら「アワーズ」、weeks は「ウィークス」。',
       use: 'I’ll let you know in a few days.（数日したら連絡します）' },
 
-    { id: 'g2', skill: 'pragma', level: 'B2', point: 'correct', seg: [110.45, 121.2],
+    { id: 'g2', skill: 'pragma', level: 'B2', point: 'correct', seg: [110.45, 120.8],
       stem: 'Why does someone say “X-rayed” after Andy?',
       ja: 'アンディのあと、なぜ「X-rayed」と言う？',
       choices: ['To fix Andy’s word', 'To add another test', 'To make fun of the test'], a: 0,

@@ -6,6 +6,7 @@
 // Only Ron (and Tom, in the talking head) is named, so the others are “the leader” and “a coworker”.
 // Untested: 29–37 s (pain noises, a visual gag). The whisper line 29.4–43.0 s holds the noises too; f2 assumes
 // "What were we talking about?" sits at its end (the captions put it at 37–43.5 s).
+// CHECKS 2026-11-28: widened to hold the line's starred words by the captions' times: s1.
 import type { Clip } from '../types.ts';
 
 export const ronTooth: Clip = {
@@ -122,7 +123,7 @@ export const ronTooth: Clip = {
       trap: '「バッグズ」なら bags、「バインダーズ」と長ければ binders。短い「ビンズ」なら bins。',
       use: 'Where is the recycling bin?（リサイクル箱はどこですか）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'needto', seg: [23.45, 25.3],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'needto', seg: [22.6, 25.3],
       stem: '“___ go to the dentist, Ron?”', ja: '空所に入るのは？',
       choices: ['Do you need to', 'Do you want to', 'Did you need to'], a: 0,
       choicesJa: ['〜しなきゃいけないんじゃない？', '〜したい？', '〜する必要があった？'],

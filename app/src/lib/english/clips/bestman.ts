@@ -8,6 +8,7 @@
 // Untested: who says "Full disclosure" and "what we're trying to say" (stems say "the friends"); 94–98 s ("dibbles",
 // "R+"); "take care of April" vs "Take care, April" (102 s).
 // EXCLUDE 49–52: swear (“I'm planning to kick your ass”)
+// CHECKS 2026-11-28: segment ends pulled 0.4 s before the EXCLUDE they ran into (the player plays on 0.4 s): g2.
 import type { Clip } from '../types.ts';
 
 export const chrisBestMan: Clip = {
@@ -101,7 +102,7 @@ export const chrisBestMan: Clip = {
       mean: 'nuts ＝ 文字どおりは「木の実」、くだけて「頭がおかしい」。nuts about 〜 ＝ おかしくなるほど好き→夢中。くだけた言い方。',
       trap: 'nuts を食べ物のナッツと思いやすい。about が続くと「夢中」。',
       use: 'My dad is nuts about baseball.（父は野球に夢中）' },
-    { id: 'g2', skill: 'gist', level: 'B2', point: 'arc', seg: [29.5, 49],
+    { id: 'g2', skill: 'gist', level: 'B2', point: 'arc', seg: [29.5, 48.6],
       stem: 'What happens to Andy’s part of the story?',
       ja: 'アンディの番の話はどうなる？',
       choices: ['It becomes his own sad drama', 'It turns into a real fight', 'It makes Chris very upset'], a: 0,

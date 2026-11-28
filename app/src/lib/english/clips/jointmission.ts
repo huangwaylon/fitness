@@ -15,6 +15,7 @@
 // EXCLUDE 55–61 (Tom's "roll it up into a joint and smoke it" drug joke; no item ever played it)
 // EXCLUDE 141.5–153.95 (ethnic joke: Leslie assumes Tom is from abroad, "conceived in Libya")
 // EXCLUDE 163.8–165.98 ("brown guys with funny-sounding Muslim names")
+// CHECKS 2026-11-28: segment ends pulled 0.4 s before the EXCLUDE they ran into (the player plays on 0.4 s): c1.
 import type { Clip } from '../types.ts';
 
 export const jointMission: Clip = {
@@ -239,7 +240,7 @@ export const jointMission: Clip = {
       mean: 'この Wow は感心ではなく「よくそんなこと聞くね」というあきれ。すぐに No が続く。',
       trap: 'Wow（ワオ）から「すごい、当たり」に聞こえるが、すぐあとに No が来たら、あきれている。',
       use: 'Wow. No. That’s not true.（うわ、違うよ。そうじゃない）' },
-    { id: 'c1', skill: 'detail', level: 'B2', point: 'renamed', ctx: true, seg: [154.0, 163.8],
+    { id: 'c1', skill: 'detail', level: 'B2', point: 'renamed', ctx: true, seg: [154, 163.4],
       stem: 'Where did the name Haverford come from?',
       ja: 'ハヴァフォードという名前は、どこから来た？',
       choices: ['Tom chose it himself', 'It’s his father’s name', 'It’s his birth name'], a: 0,

@@ -10,6 +10,7 @@
 // SKIP 43.8–84.5: the sperm-bank exchange and the talking heads after it (innuendo)
 // Untested on purpose: "She's gonna orbit" (18.5 s, likely misheard), the cola line, the curb crash (110–118 s:
 // visual), and the Spartan story's abandonment joke (h2, t2 retired). Whisper repeats the Spartan lines at 129.6 s.
+// CHECKS 2026-11-28: segment ends pulled 0.4 s before the EXCLUDE they ran into (the player plays on 0.4 s): g2 r2.
 import type { Clip } from '../types.ts';
 
 export const jansStroller: Clip = {
@@ -111,7 +112,7 @@ export const jansStroller: Clip = {
       trap: '直前に開けた贈り物の話と取りやすいが、それは安い方。ブランドの話なので高い方を指す。',
       use: 'Fancy label, same old stuff.（ラベルは立派、中身は普通）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'brand', reveals: ['impressed'], seg: [26.1, 43.7],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'brand', reveals: ['impressed'], seg: [26.1, 43.4],
       stem: 'What is his main point when he talks to the camera?',
       ja: 'カメラに向かって話すとき、彼が一番言いたいことは？',
       choices: ['Brand names aren’t better', 'Brand names are worth it', 'Homemade things are best'], a: 0,
@@ -168,7 +169,7 @@ export const jansStroller: Clip = {
       trap: 'my own（自分の）が耳に残ると、自分で作ると勘違いしやすい。作る人は文の頭。',
       use: 'My grandmother makes the best soup.（祖母のスープが一番おいしい）' },
 
-    { id: 'r2', skill: 'pragma', level: 'B2', point: 'impressed', reveals: ['brand'], seg: [38.5, 43.7],
+    { id: 'r2', skill: 'pragma', level: 'B2', point: 'impressed', reveals: ['brand'], seg: [38.5, 43.4],
       stem: 'What does “You tell me” mean here?',
       ja: '「You tell me」は、ここでどういう意味？',
       choices: ['The answer is clearly no', 'He can’t decide at all', 'The answer is clearly yes'], a: 0,

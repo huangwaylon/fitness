@@ -8,6 +8,7 @@
 // the one who "technically works for Gryzzl" at 2.8–16 s and 69.7–83 s); April's coworker and the novel reader stay
 // unnamed.
 // EXCLUDE 132.05–143.2 (the genital-cream complaint; json3 hears 'doctors' at 142.5)
+// CHECKS 2026-11-28: segment ends pulled 0.4 s before the EXCLUDE they ran into (the player plays on 0.4 s): d7.
 import type { Clip } from '../types.ts';
 
 export const gryzzlBoxes: Clip = {
@@ -226,7 +227,7 @@ export const gryzzlBoxes: Clip = {
       trap: 'スピーチを頼まれたので、仕事を教えると考えがち。save them は「ここから救う」。',
       use: 'It’s too late for me, but you can still go.（私はもう遅いけど、君はまだ行ける）' },
 
-    { id: 'd7', skill: 'detail', level: 'B1', point: 'whether', seg: [125.8, 132.0],
+    { id: 'd7', skill: 'detail', level: 'B1', point: 'whether', seg: [125.8, 131.65],
       stem: 'What is the town meeting about?',
       ja: '町の集会は何について？',
       choices: ['Gryzzl and people’s privacy', 'A place for a new park', 'Free Wi-Fi for the town'], a: 0,

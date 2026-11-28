@@ -9,6 +9,7 @@
 // EXCLUDE 240.0–243.6 (the white-Protestant line)
 // EAR CHECK: 236.7–240.0 s s1 — both sources have "It's not that big a deal" and "it isn't a big deal": confirm
 // EAR CHECK: 193.9–209.2 s ev — the co-worker asking for the basket is unnamed (the one Leslie wrote up)
+// CHECKS 2026-11-28: segment ends pulled 0.4 s before the EXCLUDE they ran into (the player plays on 0.4 s): s1.
 import type { Clip } from '../types.ts';
 
 export const apologyVideos: Clip = {
@@ -285,7 +286,7 @@ export const apologyVideos: Clip = {
       trap: 'that を落としたり、of を足したりしやすい。文法ではなく、聞こえた5語を書く。a も1語。',
       use: 'It’s not that big a deal, honestly.（正直、そこまでのことじゃないよ）' },
 
-    { id: 's1', skill: 'sound', level: 'B1', point: 'isnt', reveals: ['bigdeal'], seg: [236.6, 239.95],
+    { id: 's1', skill: 'sound', level: 'B1', point: 'isnt', reveals: ['bigdeal'], seg: [236.6, 239.6],
       stem: 'Fill the gap: “…in your world it ___ a big deal.”',
       ja: '空いている所に入る語は？「…in your world it ___ a big deal.」',
       choices: ['isn’t', 'is', 'wasn’t'], a: 0,

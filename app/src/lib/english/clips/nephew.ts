@@ -15,6 +15,7 @@
 // favourite films), 77–79 s, 88–90 s ("Venus": a jab at looks), 99–108 s ("scram, twerp": rude), 114 s, 159 s ("lost him
 // in a forest"), 195–201 s, 212–220 s (the punishment itself: shown, not said), 245–247 s ("Texas justice"), 255 s.
 // EXCLUDE 181.7–183 (a crude line; captions: "power it down" ends ≈ 181.6, the line starts 181.8)
+// CHECKS 2026-11-28: segment ends pulled 0.4 s before the EXCLUDE they ran into (the player plays on 0.4 s): ph4.
 import type { Clip } from '../types.ts';
 
 export const michaelsNephew: Clip = {
@@ -264,7 +265,7 @@ export const michaelsNephew: Clip = {
       trap: 'ahead と and がつながり、1語に聞こえやすい。4語あるか数える。',
       use: 'I’ll go ahead and order for us.（先に注文しておくね）' },
 
-    { id: 'ph4', skill: 'phrase', level: 'B1', point: 'powerdown', seg: [177.0, 181.7],
+    { id: 'ph4', skill: 'phrase', level: 'B1', point: 'powerdown', seg: [177, 181.3],
       stem: 'What does Michael want Luke to do with the pointer?',
       ja: 'マイケルは、ルークにポインターをどうしてほしい？',
       choices: ['Switch it off', 'Point it lower', 'Move it a little'], a: 0,

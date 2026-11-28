@@ -10,6 +10,7 @@
 // EXCLUDE 50–52: "April Ludgate Kevorkian" (a joke on the assisted-suicide doctor)
 // EAR CHECK: 3.8–7.6 s s3 — "Is that where you're gonna sit?" is April's, "I'm driving…" Ann's (by turn)
 // EAR CHECK: 217.4 s g2 — "Well, right now my gut is saying… Mariah Carey the whole way home" is Ann's
+// CHECKS 2026-11-28: segment ends pulled 0.4 s before the EXCLUDE they ran into (the player plays on 0.4 s): p5.
 import type { Clip } from '../types.ts';
 
 export const annVibes: Clip = {
@@ -87,7 +88,7 @@ export const annVibes: Clip = {
       mean: 'all set ＝ 準備OK。店で「ほかに何か？」と聞かれたときの返事にも使う。',
       trap: 'all と set がつながり一語に聞こえやすい。最後の t はほぼ消えるが、語は3つ。',
       use: 'No thanks, I’m all set.（いえ、大丈夫です）' },
-    { id: 'p5', skill: 'phrase', level: 'B1', point: 'happyto', ctx: true, seg: [43, 50],
+    { id: 'p5', skill: 'phrase', level: 'B1', point: 'happyto', ctx: true, seg: [43, 49.6],
       stem: 'What does Laura mean by “Happy to”?',
       ja: 'ローラの「Happy to」はどういう意味？',
       choices: ['I will gladly do it', 'I am happy to be here', 'I want to go too'], a: 0,

@@ -7,6 +7,7 @@
 // 125.7 s "male men"/"mailmen", 131.8–137.2 s. The transcript's last line ("you", 190.6 s) is whisper noise.
 // EXCLUDE 152.9–156.2 (the "asking for it" joke)
 // SKIP 161.2–191.1: the group's "rough go … for just recently" line (a C2 joke), its chants (168–173 s, not in the transcript), then music
+// CHECKS 2026-11-28: segment ends pulled 0.4 s before the EXCLUDE they ran into (the player plays on 0.4 s): d6.
 import type { Clip } from '../types.ts';
 
 export const saveBen: Clip = {
@@ -260,7 +261,7 @@ export const saveBen: Clip = {
       mean: 'force 人 to 〜 ＝「人に無理やり〜させる」。Oh, excuse me はここでは反論の「ちょっと待って」。',
       trap: 'excuse me を、あやまる「すみません」と考えがち。すぐあとに not で打ち消している。',
       use: 'I’m not forcing you. It’s up to you.（無理にとは言わない。あなた次第）' },
-    { id: 'd6', skill: 'number', level: 'B1', point: 'aprons', seg: [147.2, 152.7],
+    { id: 'd6', skill: 'number', level: 'B1', point: 'aprons', seg: [147.2, 152.5],
       stem: 'How many aprons does Ben have, says Leslie?', ja: 'レスリーによると、ベンはエプロンを何枚持っている？',
       choices: ['4', '5', '9', '15'], a: 1, keep: true,
       choicesJa: ['4枚', '5枚', '9枚', '15枚'],

@@ -12,6 +12,8 @@
 // SKIP 82.9–105: the scuffle (insults, crosstalk, no usable lines), then no talk
 // EAR CHECK: 63.6 s a1 — “Awesome idea, Leslie. Matter of fact, I say we should secede” is taken as Jamm's (it names
 //   Leslie, so it isn't hers; Mike then pairs “Councilman Jeremy Jamm” with the movement)
+// CHECKS 2026-11-28: segment ends pulled 0.4 s before the EXCLUDE they ran into (the player plays on 0.4 s): f1 d1 a1
+// s1.
 import type { Clip } from '../types.ts';
 
 export const lesliesBlackEye: Clip = {
@@ -49,7 +51,7 @@ export const lesliesBlackEye: Clip = {
       mean: 'a lot less ＋形容詞 ＝ ずっと〜でない。a lot more の反対。gross ＝ 気持ち悪い。',
       trap: 'lot の t はほぼ聞こえず「アラッレス」に近い。最初の a を落として書きやすい。',
       use: 'It’s a lot less crowded today.（今日はずっと空いてるね）' },
-    { id: 'f1', skill: 'phrase', level: 'B1', point: 'besties', seg: [8.4, 12.3],
+    { id: 'f1', skill: 'phrase', level: 'B1', point: 'besties', seg: [8.4, 11.9],
       stem: 'What does Jamm mean by “besties”?', ja: 'ジャムの “besties” はどういう意味？',
       choices: ['Best friends', 'Next-door neighbors', 'Old enemies'], a: 0,
       choicesJa: ['親友', '隣の家の人', '昔からの敵'],
@@ -69,7 +71,7 @@ export const lesliesBlackEye: Clip = {
       mean: '名前は出さないが、かごをねだるジャムがその「イヤなやつ」だとほのめかしている。',
       trap: 'pain が聞こえても、痛みを和らげようとした話ではない。because のあとが刺された理由。',
       use: 'That’s what you get for laughing.（笑ったりするからだよ）' },
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'baskets', seg: [14.3, 20.7],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'baskets', seg: [14.3, 20.3],
       stem: 'Who are the gift baskets for?', ja: 'ギフトバスケットはだれのため？',
       choices: ['People who did nothing wrong', 'Everyone who got stung', 'People who laughed at others'], a: 0,
       choicesJa: ['何も悪くない人たち', '刺された人みんな', '人を笑った人たち'],
@@ -161,7 +163,7 @@ export const lesliesBlackEye: Clip = {
       mean: 'I say we should 〜 ＝ 〜すべきだと思う。Leslie と呼びかけているので、レスリー本人ではない。',
       trap: 'あとのニュースで彼女の名前が出るので、彼女の案と思いやすい。呼びかけで話し手を絞る。',
       use: 'I say we order pizza.（ピザを頼もうよ）' },
-    { id: 'a1', skill: 'infer', level: 'B2', point: 'secede', reveals: ['matter'], ctx: true, seg: [59.3, 68.0],
+    { id: 'a1', skill: 'infer', level: 'B2', point: 'secede', reveals: ['matter'], ctx: true, seg: [59.3, 67.6],
       stem: 'What does Jamm suggest after Leslie’s peace idea?', ja: 'レスリーの仲直りの案のあと、ジャムは何を言い出す？',
       choices: ['Split from Eagleton', 'Make peace with Eagleton', 'Ask Eagleton for money'], a: 0,
       choicesJa: ['イーグルトンから分かれる', 'イーグルトンと仲直りする', 'イーグルトンにお金を頼む'],
@@ -180,7 +182,7 @@ export const lesliesBlackEye: Clip = {
       mean: '会話では whom でなく who を使う。doesn’t は弱く、bailed out はつながって「ベイルダウト」。',
       trap: '習った文法で最後を whom と書きたくなる。書き取りは正しい形でなく、言われた音を書く。',
       use: 'Who cares who said what?（誰が何を言ったかなんてどうでもいい）', retired: true },
-    { id: 's1', skill: 'sound', level: 'B2', point: 'matter', seg: [63.4, 68.0],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'matter', seg: [63.4, 67.6],
       stem: 'Which words do you hear: “Awesome idea, Leslie. ___, I say…”', ja: '“Awesome idea, Leslie. ___, I say…” の空所に聞こえるのは？',
       choices: ['Matter of fact', 'As a matter of fact', 'And that’s a fact'], a: 0,
       choicesJa: ['それどころか', '実のところ', 'それは事実だ'],

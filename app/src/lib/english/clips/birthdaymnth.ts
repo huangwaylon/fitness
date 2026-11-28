@@ -6,6 +6,7 @@
 // (the sources differ). Michael's “Happy birthday!” shouts (51–58 s) play only as f2's lead-in.
 // EXCLUDE 29.85–33.3 (a racial joke)
 // EAR CHECK: 8.4 s — the man with the idea (and the talking head) is assumed Jim; stems name him, no key depends on it
+// CHECKS 2026-11-28: segment ends pulled 0.4 s before the EXCLUDE they ran into (the player plays on 0.4 s): d3.
 import type { Clip } from '../types.ts';
 
 export const birthdayMonth: Clip = {
@@ -119,7 +120,7 @@ export const birthdayMonth: Clip = {
       trap: 'one は「ワン」、three は「スリー」、four は「フォー」。ここは「トゥー」。直後の One is 〜 と the other is 〜 も手がかり。',
       use: 'There are two kinds of people.（人には2種類いる）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'agejoke', seg: [24.45, 29.8],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'agejoke', seg: [24.45, 29.45],
       stem: 'What is the first kind of toast about?',
       ja: '1つ目の乾杯のあいさつは何について？',
       choices: ['How old the person is', 'How long they have worked there', 'Their bad habits'], a: 0,

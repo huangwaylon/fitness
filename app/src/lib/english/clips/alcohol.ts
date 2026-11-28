@@ -1,5 +1,10 @@
 // R4 REVIEW 2026-11-18: keep 9, rewrite 8, retire 1, new 4, ctx 6, tx 8, qa 13
 // A2 REVIEW 2026-11-17: keep 8, rewrite 10, retire 5, new 0
+// CHECKS 2026-11-28: the drug words out of every played segment (d2, on the cocaine line, retired; g1 now on the
+// left/right “fact”, pr2 starts after the cocaine line).
+// SKIP 26–58.6: Michael's drug talk (34.5–58.4 s: i1 and h2 retired, the pot line excluded)
+// EXCLUDE 54.9–58.6 (“…if they didn't smoke pot”)
+// EXCLUDE 74.1–79.6 (“more people will use cocaine than…”)
 // “Do you think DOING ALCOHOL is COOL? - The Office US” (the official Office channel, Best of Season 2): Michael
 // lectures the office on drugs with made-up facts, turns on Toby for correcting him, and asks for a tragic story; Pam
 // volunteers Jim, who gets out of it by crying, and a comment to the camera calls it fake.
@@ -88,18 +93,6 @@ export const doingAlcohol: Clip = {
       trap: 'anti-drug と testing が並ぶので検査に賛成と取りやすい。above は「外にいる」。',
       use: 'Nobody here is above the rules.（ここではだれもルールの例外じゃない）' },
 
-    { id: 'g1', skill: 'gist', level: 'B2', point: 'talk', reveals: ['facts'], seg: [45.1, 84.7],
-      stem: 'What is Michael’s talk about drugs like?',
-      ja: 'マイケルの薬物の話はどんなもの？',
-      choices: ['Full of facts that are false', 'About his own drug use', 'About drugs found at work'], a: 0,
-      choicesJa: ['本当でない話ばかり', '自分が使った経験の話', '会社で見つかった薬の話'],
-      cue: '最後に聞き手が口をはさむところ。',
-      line: 'One of those people will be dead from drug use… — *Where did you get these facts?*',
-      said: '「薬は人生を壊す」「隣の人が薬で死ぬ」などと並べ、出どころを聞かれる。',
-      mean: 'false ＝ 本当でない。根拠のない脅し文句ばかりで、最後に出どころを聞かれる。',
-      trap: '自信たっぷりなので本当の話に聞こえやすい。最後の質問が手がかり。',
-      use: 'Where did you hear that?（それ、どこで聞いたの？）' },
-
     { id: 'h2', skill: 'humor', level: 'C1', point: 'cheech', seg: [47, 58.4], retired: true,
       stem: 'Why does his Cheech and Chong example get a laugh?',
       choices: ['He calls them funny, so drugs didn’t ruin them', 'He says pot is what made them so funny',
@@ -110,6 +103,18 @@ export const doingAlcohol: Clip = {
       mean: '仕事が壊れた例のはずが、成功例を出す。そのずれが笑い。二人を知らなくても解ける。',
       trap: 'funny と pot が並ぶので「薬のおかげ」と取りやすい。didn’t は「吸わなければ」。',
       use: 'Take me, for example.（たとえば私がそう）' },
+
+    { id: 'g1', skill: 'gist', level: 'B2', point: 'talk', reveals: ['facts', 'look'], seg: [58.65, 73.7],
+      stem: 'What is Michael’s talk about drugs like?',
+      ja: 'マイケルの薬物の話はどんなもの？',
+      choices: ['Full of facts that are false', 'About his own drug use', 'About drugs found at work'], a: 0,
+      choicesJa: ['本当でない話ばかり', '自分が使った経験の話', '会社で見つかった薬の話'],
+      cue: '左右を見させたあとの一言。',
+      line: 'Take a look to their left… *One of those people will be dead from drug use*…',
+      said: '左右の人を見させてから、「このうち一人は薬で死ぬ」と事実のように言い切る。',
+      mean: 'false ＝ 本当でない。根拠のない脅し文句を、事実のように言い切っている。',
+      trap: '自信たっぷりなので本当の話に聞こえやすい。言い切りの中身が手がかり。',
+      use: 'Where did you hear that?（それ、どこで聞いたの？）' },
 
     { id: 'd5', skill: 'detail', level: 'B1', point: 'look', seg: [59.3, 69.9],
       stem: 'What does Michael ask everyone to do?',
@@ -123,7 +128,7 @@ export const doingAlcohol: Clip = {
       trap: 'right を「正しい」と勘違いしやすい。left（左）のあとなので「右」。',
       use: 'I want everybody to look at page five.（みなさん、5ページを見てください）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'cocaine', seg: [73.2, 81.5],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'cocaine', seg: [73.2, 81.5], retired: true,
       stem: 'What does Michael compare cocaine use with?',
       ja: 'マイケルはコカインを使う人を、何をする人と比べる？',
       choices: ['Reading books to their kids', 'Drinking wine at home', 'Smoking with their friends'], a: 0,
@@ -135,7 +140,7 @@ export const doingAlcohol: Clip = {
       trap: 'あとで wine の話が出るので迷いやすい。than のあとが比べる相手。',
       use: 'More people walk than drive here.（ここは車より歩く人が多い）' },
 
-    { id: 'pr2', skill: 'pragma', level: 'B2', point: 'facts', ctx: true, seg: [78.3, 84.7],
+    { id: 'pr2', skill: 'pragma', level: 'B2', point: 'facts', ctx: true, seg: [79.6, 85.6],
       stem: 'How does Michael answer the question about his facts?',
       ja: '話の出どころを聞かれて、マイケルはどう答える？',
       choices: ['With a question of his own', 'With the name of a study', 'By saying they aren’t true'], a: 0,

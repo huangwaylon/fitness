@@ -9,6 +9,7 @@
 // opening talking head ("as city councilor") is hers.
 // EXCLUDE 40–46 (the chant's “chard-on” pun)
 // EAR CHECK: 63.7 s — “chard is so bitter” and “Ben, do something” are the same speaker (assumed)
+// CHECKS 2026-11-28: widened to hold the line's starred words by the captions' times: cm.
 import type { Clip } from '../types.ts';
 
 export const sellVeg: Clip = {
@@ -276,7 +277,7 @@ export const sellVeg: Clip = {
       trap: 'kick them out（追い出して）と頼まれたあとなので、閉めると考えがち。今夜は何もできない、と言う。',
       use: 'Let me check the rules first.（まず規則を確認させて）' },
 
-    { id: 'cm', skill: 'phrase', level: 'B1', point: 'comeget', seg: [92.0, 96.5],
+    { id: 'cm', skill: 'phrase', level: 'B1', point: 'comeget', seg: [92, 97.3],
       stem: 'What does “Come and get it!” mean?',
       ja: '「Come and get it!」はどういう意味？',
       choices: ['It’s ready, take some!', 'Come over and help me!', 'Go and buy it!'], a: 0,

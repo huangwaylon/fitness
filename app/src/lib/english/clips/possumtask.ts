@@ -11,6 +11,7 @@
 // Never tested: 49–52 s ("shoe shinest" / "shoe shyness"), 80–83 s (whose "No." answers each favor), 89.8 s.
 // R4: m1 and i1 (crowded 67–78 s), d3 (folded into the p1 exchange) retired; c3, p2, c1, h3
 // restored in plain B1 form so the talking head (96–116 s) and the praise scene each have items; d6 new.
+// CHECKS 2026-11-28: widened to hold the line's starred words by the captions' times: a1.
 import type { Clip } from '../types.ts';
 
 export const possumTaskForce: Clip = {
@@ -163,7 +164,7 @@ export const possumTaskForce: Clip = {
       trap: 'favor から、レスリーが借りを作ったと思いやすい。you need なので、たのむのはレスリー。',
       use: 'If you ever need anything, give me a call.（何かあったら電話して）' },
 
-    { id: 'a1', skill: 'attitude', level: 'B2', point: 'eager', ctx: true, seg: [68.45, 77.1],
+    { id: 'a1', skill: 'attitude', level: 'B2', point: 'eager', ctx: true, seg: [68.45, 78.4],
       stem: 'How does Leslie take the official’s offer?',
       ja: '市長室の人の申し出を、レスリーはどう受け取る？',
       choices: ['She wants to use it now', 'She saves it for another day', 'She says no, thank you'], a: 0,

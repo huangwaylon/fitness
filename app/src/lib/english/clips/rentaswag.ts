@@ -10,6 +10,8 @@
 // EXCLUDE 26–29 (“dope-ass cravats”)
 // EXCLUDE 91.9–94.8 (“pimp myself out to hot older ladies”)
 // EXCLUDE 106–108.7 (the mannequin suicide joke)
+// CHECKS 2026-11-28: segment ends pulled 0.4 s before the EXCLUDE they ran into (the player plays on 0.4 s): g1 d3;
+// started earlier to keep the minimum length after that: g1.
 import type { Clip } from '../types.ts';
 
 export const rentASwag: Clip = {
@@ -18,7 +20,7 @@ export const rentASwag: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'teens', seg: [11.0, 26.0],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'teens', seg: [10.6, 25.6],
       stem: 'What is Tom’s new business?', ja: 'トムの新しい商売は何？',
       choices: ['Lending clothes to young people', 'Selling clothes to parents', 'Buying old clothes from kids'], a: 0,
       choicesJa: ['若い子に服を貸す', '親に服を売る', '子どもから古着を買う'],
@@ -117,7 +119,7 @@ export const rentASwag: Clip = {
       trap: 'hear から「聞こえない」と勘違いしやすい。I’m glad to hear it の短い形。',
       use: 'You passed? Glad to hear it!（受かったの？よかった！）' },
 
-    { id: 'd3', skill: 'phrase', level: 'B2', point: 'flames', seg: [86.2, 91.6],
+    { id: 'd3', skill: 'phrase', level: 'B2', point: 'flames', seg: [86.2, 91.5],
       stem: 'What does “goes down in flames” mean?', ja: '「goes down in flames」はどういう意味？',
       choices: ['Fails completely', 'Burns in a real fire', 'Makes a lot of money'], a: 0,
       choicesJa: ['完全に失敗する', '本当の火事で燃える', '大もうけする'],

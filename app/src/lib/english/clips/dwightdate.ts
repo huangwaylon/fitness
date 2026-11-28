@@ -8,6 +8,7 @@
 // EXCLUDE 30.85–35.1: "thick, beautiful Chicano hair" (an ethnic remark)
 // EAR CHECK: 96 s g2 p1 — "Oh, my God. Twins. I'm sorry. You understand. Nice to meet you" assumed Michael's (he
 //   answers "I found twins" after Dwight calls "Michael"; no name in the line itself)
+// CHECKS 2026-11-28: segment ends pulled 0.4 s before the EXCLUDE they ran into (the player plays on 0.4 s): a0 f1.
 import type { Clip } from '../types.ts';
 
 export const dwightDate: Clip = {
@@ -16,7 +17,7 @@ export const dwightDate: Clip = {
   show: 'The Office',
   credit: 'The Office (official YouTube channel)',
   questions: [
-    { id: 'a0', skill: 'detail', level: 'B1', point: 'outfit', ctx: true, seg: [0, 7.2],
+    { id: 'a0', skill: 'detail', level: 'B1', point: 'outfit', ctx: true, seg: [0, 6.9],
       stem: 'What does Dwight say about his clothes?',
       ja: 'ドワイトは自分の服について何と言う？',
       choices: ['They are for meeting people', 'They are for a fish fry party', 'They are for farm work'], a: 0,
@@ -38,7 +39,7 @@ export const dwightDate: Clip = {
       trap: 'such thing はつながり「サッチシング」。as は小さく短く言うので聞き落としやすい。',
       use: 'There’s no such thing as a perfect plan.（完ぺきな計画なんてない）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'easy', reveals: ['nosuch'], ctx: true, seg: [24.0, 30.85],
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'easy', reveals: ['nosuch'], ctx: true, seg: [24, 30.45],
       stem: 'What does Michael mean by “that’s easy enough for you to say”?', ja: 'マイケルの「that’s easy enough for you to say」の意味は？',
       choices: ['It’s not your problem', 'It is very easy to do', 'You are right about that'], a: 0,
       choicesJa: ['君の問題じゃないから', 'やるのは簡単だ', '君の言うとおり'],

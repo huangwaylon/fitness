@@ -8,6 +8,7 @@
 // EXCLUDE 23.5–30.5 (bleeped "f***ing my girlfriend" lines)
 // EAR CHECK: 16.3–16.9 s s1, 22.0–22.3 s nt1, 81.9–82.6 s x1 — both sources agree on the words; confirm the "not" in
 //   "I'm not actually" is weak but there, that "You doing good?" has no "are", and that "for once in my life" runs together
+// CHECKS 2026-11-28: segment ends pulled 0.4 s before the EXCLUDE they ran into (the player plays on 0.4 s): nt1.
 import type { Clip } from '../types.ts';
 
 export const textsMean: Clip = {
@@ -62,7 +63,7 @@ export const textsMean: Clip = {
       trap: 'terrific を文字どおり「よかった」と取りやすい。英語は明るい一語で流すこともある。',
       use: 'Great. Well, moving on…（そっか。じゃあ次へ…）' },
 
-    { id: 'nt1', skill: 'dict', level: 'C2', point: 'greet', seg: [20.2, 23.4],
+    { id: 'nt1', skill: 'dict', level: 'C2', point: 'greet', seg: [20.2, 23.1],
       stem: 'Type what Brandon asks Darryl: “I heard about you. ___?” (3 words)', answer: 'you doing good',
       ja: 'ブランドンの質問を書き取る：「I heard about you. ___?」（3語）',
       cue: 'I heard about you のすぐあと。',

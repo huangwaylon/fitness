@@ -14,6 +14,8 @@
 // EXCLUDE 230.5–233 (“spaz”, an ableist slur)
 // SKIP 69.5–99.5: crowd chants, whisper garbage
 // EAR CHECK: 129.1 s x1 — “promised” (captions) vs “found us” (whisper) in “Remember how you … to go easy on me”
+// CHECKS 2026-11-28: segment ends pulled 0.4 s before the EXCLUDE they ran into (the player plays on 0.4 s): st;
+// started earlier to keep the minimum length after that: st.
 import type { Clip } from '../types.ts';
 
 export const shelbyFight: Clip = {
@@ -243,7 +245,7 @@ export const shelbyFight: Clip = {
       trap: '欠点が続くと、取り消しや注意に聞こえる。but のあとが本音。',
       use: 'It wasn’t pretty, but you did it!（かっこ悪くても、やりとげたね！）' },
 
-    { id: 'st', skill: 'pragma', level: 'B1', point: 'stopit', ctx: true, seg: [224.4, 230.4],
+    { id: 'st', skill: 'pragma', level: 'B1', point: 'stopit', ctx: true, seg: [224.1, 230.1],
       stem: 'What does “Stop it!” mean here?',
       ja: 'ここでの「Stop it!」はどういう意味？',
       choices: ['Oh, you’re too kind', 'Leave me alone now', 'Stop the fight now'], a: 0,

@@ -10,6 +10,7 @@
 // EXCLUDE 50–55: the “love-making” brag
 // EXCLUDE 165–169: “Do you think Angela could get beaten up?”
 // SKIP 196.9–227: the grave talking head (a dark joke about a death), then whisper loops it over the music
+// CHECKS 2026-11-28: segment ends pulled 0.4 s before the EXCLUDE they ran into (the player plays on 0.4 s): d3.
 import type { Clip } from '../types.ts';
 
 export const darwin: Clip = {
@@ -276,7 +277,7 @@ export const darwin: Clip = {
       trap: 'help me を文字通りに取ると「助けて」。決まり文句は形で覚える。',
       use: 'I promise you, I’ll be there.（約束する、必ず行く）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'stanley', seg: [154.4, 164.8],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'stanley', seg: [154.4, 164.6],
       stem: 'What does Stanley want to see?',
       ja: 'スタンリーは何が見たい？',
       choices: ['One of them beaten up', 'Angela with the right man', 'Toby stop the fight'], a: 0,

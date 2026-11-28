@@ -7,6 +7,7 @@
 // EXCLUDE 79.5–86 (Donna's “turn somebody” line; whisper's times there are off)
 // EXCLUDE 161–166 (Marsha's view of gay marriage)
 // EAR CHECK: 20.3–22 s a1 — “Oh. Yeah. Sure.” taken as Leslie's (whisper splits it into turns; “No.” may be April's)
+// CHECKS 2026-11-28: segment ends pulled 0.4 s before the EXCLUDE they ran into (the player plays on 0.4 s): i3.
 import type { Clip } from '../types.ts';
 
 export const thisIsMyBoyfriendDerek: Clip = {
@@ -273,7 +274,7 @@ export const thisIsMyBoyfriendDerek: Clip = {
       trap: 'I have a plan（計画はある）から、堂々としていると思いやすい。言い直しの多さを聞く。',
       use: 'Not yet. Soon, I hope.（まだ。もうすぐだといいけど）' },
 
-    { id: 'i3', skill: 'infer', level: 'B2', point: 'understand', seg: [153.6, 161],
+    { id: 'i3', skill: 'infer', level: 'B2', point: 'understand', seg: [153.6, 160.6],
       stem: '“So you couldn’t possibly understand.” What does Marsha mean?',
       ja: '「So you couldn’t possibly understand」マーシャが言いたいことは？',
       choices: ['Only married people would know', 'Leslie is too busy to see', 'Leslie will never marry'], a: 0,

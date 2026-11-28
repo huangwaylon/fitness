@@ -8,6 +8,7 @@
 // 147–149.5 s and 157.2 s (who offers to go along). The questioner is never named.
 // EXCLUDE 174.3–177.2 (a vulgar word)
 // SKIP 174.3–200: the excluded line, then music (whisper's “I'll see you next time” at 180 s is a hallucination)
+// CHECKS 2026-11-28: segment ends pulled 0.4 s before the EXCLUDE they ran into (the player plays on 0.4 s): f1.
 import type { Clip } from '../types.ts';
 
 export const lesliePleads: Clip = {
@@ -300,7 +301,7 @@ export const lesliePleads: Clip = {
       trap: 'text から、進み具合の報告がほしいと勘違いしやすい。中身は毎回同じ「大丈夫」。',
       use: 'Just tell me it’s going to be okay.（大丈夫だって言って）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'wrist', seg: [168.0, 174.2],
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'wrist', seg: [168, 173.9],
       stem: 'What punishment does Leslie say she’ll accept?',
       ja: 'レスリーは、どんな罰なら受けると言う？',
       choices: ['A light punishment', 'A heavy punishment', 'A public scolding'], a: 0,

@@ -14,6 +14,8 @@
 // EAR CHECK: 186.3–196 s a2 — "Lamb chops it is" taken as Freddie's mother's line (no one is named)
 // EAR CHECK: 262.6–268.8 s n9 — whisper puts "I have met…" at 263 s and the excluded lines on either side; check
 // the seg holds no word of them
+// CHECKS 2026-11-28: segment ends pulled 0.4 s before the EXCLUDE they ran into (the player plays on 0.4 s): g2 i3 n7
+// n9.
 import type { Clip } from '../types.ts';
 
 export const mrsBensonCrashes: Clip = {
@@ -101,7 +103,7 @@ export const mrsBensonCrashes: Clip = {
       mean: 'fix 〜 up ＝ 文字どおりは「整えてあげる」→ 相手を用意してあげる＝恋人を紹介する。red flag ＝ 危険信号。',
       trap: 'fix（直す）から、くせや見た目を直す話を連想しやすい。人が目的語なら「紹介」。',
       use: 'Can you fix me up with someone?（誰か紹介してくれない？）' },
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'visit', seg: [84.5, 109.5],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'visit', seg: [84.5, 109.2],
       stem: 'What is McKenna checking during her visit?', ja: 'マッケナは訪問中、何を確かめている？',
       choices: ['If Spencer is good enough', 'Carly’s dating rules', 'Her show’s ratings'], a: 0,
       choicesJa: ['スペンサーが合格かどうか', 'カーリーの恋愛ルール', '番組の視聴率'],
@@ -251,7 +253,7 @@ export const mrsBensonCrashes: Clip = {
       mean: 'trust ＝ 信用する。neither do I ＝ 私も〜しない。相手の否定に「私も」と合わせる形。',
       trap: '肉の話のすぐあとなので、料理が理由と考えがち。理由は if のあと。',
       use: 'If you’re not going, neither am I.（君が行かないなら、私も行かない）' },
-    { id: 'i3', skill: 'who', level: 'B1', point: 'lookout', ctx: true, seg: [205, 212.6],
+    { id: 'i3', skill: 'who', level: 'B1', point: 'lookout', ctx: true, seg: [205, 212.4],
       stem: 'Who is Freddie’s mom looking out for?', ja: 'フレディのお母さんは誰のためを思っている？',
       choices: ['Millicent', 'Pearl', 'Freddie'], a: 0,
       choicesJa: ['ミリセント', 'パール', 'フレディ'],
@@ -271,7 +273,7 @@ export const mrsBensonCrashes: Clip = {
       mean: 'get used to 〜 ＝ 〜に慣れる。struggle to 〜 ＝ 〜するのに苦労する。謝ってから理由を言う形。',
       trap: '肉の話があったので、食べ物の好みが理由と考えがち。理由は get used to のあと。',
       use: 'I’m still getting used to the new job.（新しい仕事にまだ慣れてないんだ）' },
-    { id: 'n7', skill: 'phrase', level: 'B2', point: 'roof', seg: [229.5, 235.9],
+    { id: 'n7', skill: 'phrase', level: 'B2', point: 'roof', seg: [229.5, 235.6],
       stem: 'What does “under your mother’s roof” mean?', ja: '「under your mother’s roof」はどういう意味？',
       choices: ['Living in her home', 'Working for her company', 'Living next door to her'], a: 0,
       choicesJa: ['母親の家に住んでいる', '母親の会社で働いている', '母親の隣に住んでいる'],
@@ -321,7 +323,7 @@ export const mrsBensonCrashes: Clip = {
       mean: 'touch ＝ くっつく。like always ＝ いつもみたいに。子ども扱いを否定した直後に、まさに子ども扱い。',
       trap: '肉を切る話なので、自分で切ると言ったと考えがち。返したのは can touch の一言。',
       use: 'I’ll have it like always, please.（いつものでお願いします）' },
-    { id: 'n9', skill: 'detail', level: 'B1', point: 'dreams', seg: [262.6, 268.8],
+    { id: 'n9', skill: 'detail', level: 'B1', point: 'dreams', seg: [262.6, 268.5],
       stem: 'What does Spencer say about the woman he met?', ja: 'スペンサーは出会った女性について何と言う？',
       choices: ['She’s smart and funny', 'She’s rich and very tall', 'She’s shy and quiet'], a: 0,
       choicesJa: ['頭がよくて面白い', 'お金持ちでとても背が高い', '内気で静か'],

@@ -6,6 +6,10 @@
 // Segments from the captions, words from whisper (2026-11-16). Untested: 36.5–39 s, 53–62 s (greetings), 86 s on
 // (whisper loops one line). Named in the audio: Joey (80.6 s), Leonard Hayes; the other speakers aren't named.
 // EXCLUDE 35–37: swear (“They played it right before Jackass”)
+// CHECKS 2026-11-28: “I really had to pee… having to pee makes me…” (71.1–74.7) out: g2 (its point) retired, g3 (the
+// friends' praise, 37–53.6 s) the second gist, f1 starts after the lines.
+// EXCLUDE 71.1–74.7 (“I really had to pee, and apparently having to pee makes me a really good actor”)
+// CHECKS 2026-11-28: segment ends pulled 0.4 s before the EXCLUDE they ran into (the player plays on 0.4 s): i2.
 import type { Clip } from '../types.ts';
 
 export const joeyBroadwayAudition: Clip = {
@@ -101,7 +105,7 @@ export const joeyBroadwayAudition: Clip = {
       trap: '劇の話なので、脚本（writing）と考えがち。and のあとの directing を聞く。',
       use: 'She wrote it, and she’s directing it.（脚本も演出も彼女）' },
 
-    { id: 'i2', skill: 'infer', level: 'B2', point: 'macbeth', seg: [28.7, 35],
+    { id: 'i2', skill: 'infer', level: 'B2', point: 'macbeth', seg: [28.7, 34.6],
       stem: 'What did the person praising Macbeth see?', ja: 'マクベスをほめた人は、何を見た？',
       choices: ['Only the short trailer', 'The whole movie', 'The play on Broadway'], a: 0,
       choicesJa: ['予告編だけ', '映画を全部', 'ブロードウェイの劇'],
@@ -111,6 +115,17 @@ export const joeyBroadwayAudition: Clip = {
       mean: 'previews ＝ 予告編（trailer とも言う）。ほめた理由が予告編だけで、本編は見ていない。',
       trap: 'saw（見た）から本編を見たと考えがち。最初の No が答えで、見たのは予告編だけ。',
       use: 'Haven’t seen it, but I saw the trailer.（見てないけど、予告は見た）' },
+
+    { id: 'g3', skill: 'gist', level: 'B1', point: 'praise', reveals: ['ads', 'nervous'], seg: [37.0, 53.6],
+      stem: 'What do the friends talk about here?', ja: 'ここで友だちは何について話している？',
+      choices: ['Hayes’s ads and other work', 'Joey’s old commercials', 'A movie they all saw'], a: 0,
+      choicesJa: ['ヘイズのCMなどの仕事', 'ジョーイの昔のCM', 'みんなで見た映画'],
+      cue: '猿の話が出る前後。',
+      line: 'He’s done some *amazing work*. — Oh, I loved him in those *cell phone commercials*.',
+      said: '「すばらしい仕事をしてきた」と言い、携帯電話のCMで猿に顔をたたかれる場面をほめ合う。',
+      mean: 'commercials ＝ テレビのCM。ほめているのは名作ではなく、CMの思い出ばかり。',
+      trap: '「amazing work」から名作映画の話と考えがち。出てくるのは電話のCM。',
+      use: 'I loved you in that commercial.（あのCMのあなた、最高だった）' },
 
     { id: 'h1', skill: 'humor', level: 'C1', point: 'ads', seg: [38.3, 48.4], retired: true,
       stem: 'Why does the audience laugh as the friends finish praising Leonard Hayes?',
@@ -167,7 +182,7 @@ export const joeyBroadwayAudition: Clip = {
       trap: '聞かないのを遠慮と取ると、気づかいの話に見える。No は「知っている」ではなく「驚かない」。理由の言い方が決め手。',
       use: 'Late again? That’s so you.（また遅刻？あなたらしいね）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'pee', reveals: ['callback'], seg: [64.4, 80.55],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'pee', reveals: ['callback'], seg: [64.4, 80.55], retired: true,
       stem: 'What is Joey’s reason for drinking so much?', ja: 'ジョーイがたくさん飲んでいる理由は？',
       choices: ['It helps him act better', 'His mouth was too dry', 'He is celebrating his news'], a: 0,
       choicesJa: ['演技がうまくなるから', '口がかわいていたから', 'いい知らせのお祝いだから'],
@@ -199,17 +214,6 @@ export const joeyBroadwayAudition: Clip = {
       trap: 'callback と drinking が並ぶと、お祝いの乾杯に聞こえやすい。理由は so の前。',
       use: 'I got the job, so I’m buying dinner.（仕事が決まったから、夕食おごるよ）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'callback', seg: [72, 80.55],
-      stem: 'What news does Joey give about his audition?', ja: 'オーディションについて、ジョーイはどんな知らせを言う？',
-      choices: ['He has a second audition', 'His agent phoned again', 'He got the part'], a: 0,
-      choicesJa: ['二次審査がある', 'エージェントからまた電話', '役をもらった'],
-      cue: '「good actor」のすぐあと',
-      line: 'I got a *callback*, so I’m drinking everything.',
-      said: '「二次審査に呼ばれたから、何でも飲んでるんだ」と話す。',
-      mean: 'callback ＝ 文字どおりは「呼び戻し」。オーディションでもう一度呼ばれる＝二次審査。役が決まる一歩手前。',
-      trap: 'call back は「折り返しの電話」でも使う。オーディションの話なら二次審査。',
-      use: 'I got a callback for the job!（その仕事、二次面接に呼ばれた！）' },
-
     { id: 'p1', skill: 'marker', level: 'B1', point: 'byway', reveals: ['eggnog'], seg: [74.6, 82.3], retired: true,
       stem: 'Why does Joey say “by the way” here?', ja: 'ジョーイは、なぜここで「by the way」と言う？',
       choices: ['To bring up a new topic', 'To greet someone new', 'To start a long complaint'], a: 0,
@@ -220,6 +224,17 @@ export const joeyBroadwayAudition: Clip = {
       mean: 'by the way ＝ ところで。Oh, hey がつくと「今思い出した」感じ。',
       trap: 'hey は「やあ」のあいさつにもなるので、誰か来たと思いやすい。',
       use: 'Oh, by the way, I found your keys.（あ、そういえば、鍵あったよ）' },
+
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'callback', seg: [74.7, 80.55],
+      stem: 'What news does Joey give about his audition?', ja: 'オーディションについて、ジョーイはどんな知らせを言う？',
+      choices: ['He has a second audition', 'His agent phoned again', 'He got the part'], a: 0,
+      choicesJa: ['二次審査がある', 'エージェントからまた電話', '役をもらった'],
+      cue: '「good actor」のすぐあと',
+      line: 'I got a *callback*, so I’m drinking everything.',
+      said: '「二次審査に呼ばれたから、何でも飲んでるんだ」と話す。',
+      mean: 'callback ＝ 文字どおりは「呼び戻し」。オーディションでもう一度呼ばれる＝二次審査。役が決まる一歩手前。',
+      trap: 'call back は「折り返しの電話」でも使う。オーディションの話なら二次審査。',
+      use: 'I got a callback for the job!（その仕事、二次面接に呼ばれた！）' },
 
     { id: 't3', skill: 'attitude', level: 'B1', point: 'eggnog', seg: [76.3, 82.3], retired: true,
       stem: 'How does Joey feel about what he drank?', ja: '飲んだものについて、ジョーイはどう思っている？',

@@ -12,6 +12,7 @@
 // EXCLUDE 261.4–273.9 (the 1817 quote about killing Indians)
 // EAR CHECK: 59.8 s k1 — who answers "No, it's an early 90s party" (Leslie or Ben); the stem names no one
 // EAR CHECK: 214.1 s a3 — Jamm's "Oops" is taken as mock regret; the key rests on his "I turned up the heat to 90"
+// CHECKS 2026-11-28: segment ends pulled 0.4 s before the EXCLUDE they ran into (the player plays on 0.4 s): g1 s1 g2.
 import type { Clip } from '../types.ts';
 
 export const benSkates: Clip = {
@@ -134,7 +135,7 @@ export const benSkates: Clip = {
       mean: 'I don’t care ＝「どうでもいい」。相手の事情に関心がない。',
       trap: 'blades（インラインスケート）から、スケート好き同士と考えがち。I don’t care が答え。',
       use: 'Honestly, I don’t care either way.（正直、どっちでもいい）' },
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'filibuster', reveals: ['yield', 'nor', 'blades'], seg: [85.6, 106.3],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'filibuster', reveals: ['yield', 'nor', 'blades'], seg: [85.6, 106],
       stem: 'What does Leslie decide to do?',
       ja: 'レスリーはどうすることにする？',
       choices: ['Keep talking to stop the vote', 'Leave now for Ben’s party', 'Let them vote on it tonight'], a: 0,
@@ -156,7 +157,7 @@ export const benSkates: Clip = {
       mean: '文字どおりは「時間をゆずる」。→ 自分の発言時間を手放す → ここでは「話をやめて投票させる」。会議の決まった言い方。',
       trap: 'yield を「負けて賛成する」と勘違いしやすい。うしろが time なら「話す番をゆずる」。',
       use: 'Please yield to the bus.（バスに道をゆずってください）' },
-    { id: 's1', skill: 'sound', level: 'B2', point: 'nor', seg: [99.9, 106.3],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'nor', seg: [99.9, 106],
       stem: 'Fill the gap: “___ yield for the rest of the evening.”',
       ja: 'すき間をうめよう：「___ yield for the rest of the evening.」',
       choices: ['Nor will I', 'Nor would I', 'Now I will'], a: 0,
@@ -308,7 +309,7 @@ export const benSkates: Clip = {
       mean: '文字どおりは「よい印ではない」。→ 悪いことの前ぶれ → ここでは「まずい流れだ」。sign ＝ 兆し。',
       trap: 'sign（看板・サイン）から、目に見える物の話を連想しやすい。ここでは「兆し」。',
       use: 'Dark clouds. Not a good sign.（黒い雲だ。よくない兆しだね）' },
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'outcome', reveals: ['eagleton'], seg: [237.15, 261.2],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'outcome', reveals: ['eagleton'], seg: [237.15, 261],
       stem: 'What happens as Leslie gets weak?',
       ja: 'レスリーが弱ってきたところで、何が起きる？',
       choices: ['People come to support her', 'She gives up, and they vote', 'She stops and eats cake'], a: 0,

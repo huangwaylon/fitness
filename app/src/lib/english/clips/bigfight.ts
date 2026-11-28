@@ -11,6 +11,8 @@
 // EXCLUDE 5.25–7.9 (the crude "douches" pickup line)
 // EXCLUDE 69.1–71.1 ("Douche, you're up"; json3 hears it 69.2–71.1)
 // EAR CHECK: 72.5–78.8 s — d4/c3 say Ann is the drunk one asked "are you okay?"; the scenes file says Leslie.
+// CHECKS 2026-11-28: s1's “at you” (said just before, 44.5 s) -> “at them”.
+// CHECKS 2026-11-28: segment ends pulled 0.4 s before the EXCLUDE they ran into (the player plays on 0.4 s): d5.
 import type { Clip } from '../types.ts';
 
 export const bigFight: Clip = {
@@ -19,7 +21,7 @@ export const bigFight: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    { id: 'd5', skill: 'detail', level: 'B1', point: 'meet', seg: [0.5, 5.2],
+    { id: 'd5', skill: 'detail', level: 'B1', point: 'meet', seg: [0.5, 4.85],
       stem: 'Where did the couple first meet?',
       ja: '二人は最初どこで知り合った？',
       choices: ['At the supermarket', 'At a bar like this', 'At a friend’s party'], a: 0,
@@ -144,13 +146,13 @@ export const bigFight: Clip = {
 
     { id: 's1', skill: 'sound', level: 'B2', point: 'atall', seg: [42.85, 48.6],
       stem: 'Fill the gap: “I’m not mad ___.” — “Neither am I.”', ja: '空所に入るのは？',
-      choices: ['at all', 'at you', 'after all'], a: 0,
-      choicesJa: ['全然', 'あなたに', '結局'],
+      choices: ['at all', 'at them', 'after all'], a: 0,
+      choicesJa: ['全然', 'あの人たちに', '結局'],
       cue: '「Neither am I」の直前',
       line: 'I’m not mad *at all*. — Neither am I.',
       said: '「全然怒ってない」「私も」と言い合う。',
       mean: 'not 〜 at all ＝ 全然〜ない。t は軽い「ラ」の音で、「アロール」に聞こえる。',
-      trap: '直前の mad at you につられやすい。「アロール」なら at all、「アッチュー」なら at you、「アフター」なら after all。',
+      trap: '直前の mad at you と同じ形と考えがち。「アロール」なら at all、「アッゼム」なら at them、「アフター」なら after all。',
       use: 'I don’t mind at all.（全然かまわないよ）' },
 
     { id: 'c2', skill: 'pragma', level: 'B1', point: 'neither', ctx: true, reveals: ['atall'], seg: [42.85, 49.05],

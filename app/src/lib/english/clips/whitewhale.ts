@@ -13,6 +13,7 @@
 // EXCLUDE 325.9–334.0
 // EAR CHECK: 157.2 s s1 / 250.4 s x1 — the weak forms are there (“you've just”, with an audible 've; “a little smile and
 //   a nod”); both sources have these words
+// CHECKS 2026-11-28: segment ends pulled 0.4 s before the EXCLUDE they ran into (the player plays on 0.4 s): g2 a3 w6.
 import type { Clip } from '../types.ts';
 
 export const whiteWhale: Clip = {
@@ -139,7 +140,7 @@ export const whiteWhale: Clip = {
       trap: 'お礼は丁寧に聞こえるが、デイビッドの文はとちゅうで切れている。',
       use: 'Thank you so much for calling.（お電話ありがとうございました）' },
 
-    { id: 'g2', skill: 'detail', level: 'B1', point: 'whyhelp', ctx: true, seg: [97.9, 104.75],
+    { id: 'g2', skill: 'detail', level: 'B1', point: 'whyhelp', ctx: true, seg: [97.9, 104.4],
       stem: 'Why do the coworkers say Dwight can’t go?',
       ja: '同僚たちは、なぜドワイトは行けないと言う？',
       choices: ['Women buyers don’t like him', 'David asked someone else', 'He forgot the buyer’s name'], a: 0,
@@ -373,7 +374,7 @@ export const whiteWhale: Clip = {
       trap: '会社の方針の話と取りやすいが、話しているのは絵のこと。直前の絵の中身とつなげる。',
       use: 'It’s casual, but not in a sloppy way.（ラフだけど、だらしない感じじゃない）' },
 
-    { id: 'a3', skill: 'attitude', level: 'B2', point: 'face', seg: [278.3, 292.55],
+    { id: 'a3', skill: 'attitude', level: 'B2', point: 'face', seg: [278.3, 292.2],
       stem: 'How does Nellie feel about Dwight’s face?',
       ja: 'ネリーはドワイトの顔をどう感じている？',
       choices: ['It scares her', 'It makes her laugh', 'It makes her sad'], a: 0,
@@ -397,7 +398,7 @@ export const whiteWhale: Clip = {
       trap: '決め手は but のあと。sorry から、あやまって引き下がると考えがちだが、意見は変えていない。',
       use: 'I’m sorry, but I don’t agree.（悪いけど、賛成できません）' },
 
-    { id: 'w6', skill: 'detail', level: 'B1', point: 'proud', ctx: true, seg: [317.2, 325.6],
+    { id: 'w6', skill: 'detail', level: 'B1', point: 'proud', ctx: true, seg: [317.2, 325.5],
       stem: 'The coach praises the kids. How does Dwight answer?',
       ja: 'コーチが子どもをほめる。ドワイトはどう返す？',
       choices: ['He thanks her for it', 'He says they aren’t his', 'He asks about the price'], a: 0,

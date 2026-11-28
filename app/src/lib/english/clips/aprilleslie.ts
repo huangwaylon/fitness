@@ -11,6 +11,7 @@
 // EXCLUDE 151.5–154.3
 // EXCLUDE 157.3–159.5
 // SKIP 112.8–144.8: the topless-park stretch (innuendo, "pervert") and the chant
+// CHECKS 2026-11-28: segment ends pulled 0.4 s before the EXCLUDE they ran into (the player plays on 0.4 s): n2.
 import type { Clip } from '../types.ts';
 
 export const aprilLeslie: Clip = {
@@ -183,7 +184,7 @@ export const aprilLeslie: Clip = {
       trap: 'fine が何度も聞こえるので、落ち着いていると考えがち。前の scared of a lot of stuff が本音。',
       use: 'I’m fine. Totally fine. Really.（大丈夫。全然平気。ほんとに）' },
 
-    { id: 'n2', skill: 'number', level: 'B1', point: 'four', seg: [144.58, 151.5], keep: true,
+    { id: 'n2', skill: 'number', level: 'B1', point: 'four', seg: [144.58, 151.1], keep: true,
       stem: 'How many signatures did the first forum get?',
       ja: '最初の説明会で集まった署名はいくつ？',
       choices: ['2', '4', '14', '40'], a: 1,

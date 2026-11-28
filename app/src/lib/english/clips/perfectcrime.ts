@@ -8,6 +8,7 @@
 // heard but never tested. A monologue: in the ctx lines, `Tiffany:` marks her side of Dwight's story (what she says or
 // does, as he tells it), `Dwight:` his answer.
 // EXCLUDE 14.8–16.0 (“We make love all night”)
+// CHECKS 2026-11-28: segment ends pulled 0.4 s before the EXCLUDE they ran into (the player plays on 0.4 s): c1 d2.
 import type { Clip } from '../types.ts';
 
 export const perfectCrime: Clip = {
@@ -62,7 +63,7 @@ export const perfectCrime: Clip = {
       trap: 'taking it down が「テイキニッダウン」とつながり、it が消えたように聞こえる。',
       use: 'As I was leaving, it started to rain.（出ようとしたら雨が降ってきた）' },
 
-    { id: 'c1', skill: 'pragma', level: 'B1', point: 'sayno', ctx: true, seg: [8.0, 14.7],
+    { id: 'c1', skill: 'pragma', level: 'B1', point: 'sayno', ctx: true, seg: [8, 14.4],
       stem: 'Tiffany tells Dwight to stop. What does he do?',
       ja: 'ティファニーに「やめて」と言われ、ドワイトはどうする？',
       choices: ['He says he won’t', 'He stops at once', 'He says sorry'], a: 0,
@@ -74,7 +75,7 @@ export const perfectCrime: Clip = {
       trap: '店の娘に見つかったので、謝る流れと考えがち。決め手は最後の短い I say no。',
       use: 'If he asks again, just say no.（また頼まれたら、断ればいいよ）' },
 
-    { id: 'd2', skill: 'detail', level: 'B2', point: 'tiffany', seg: [10.25, 14.7],
+    { id: 'd2', skill: 'detail', level: 'B2', point: 'tiffany', seg: [10.25, 14.4],
       stem: 'In Dwight’s story, who catches him?',
       ja: 'ドワイトの話で、彼を見つけたのはだれ？',
       choices: ['The owner’s daughter', 'A night-shift guard', 'A police officer'], a: 0,

@@ -1,6 +1,7 @@
 // Every clip's bank against the rules in docs/english.md "Content" (the A2 rules, the R4 rubric's coverage, density,
 // context items, trap openers and swears, the review rubric's mechanical checks §4): schema, segments, tells, notes,
-// coverage, levels, reveals, EXCLUDE/SKIP/SWEAR-OK header ranges, and that each bank gives five full, valid plays.
+// coverage, levels, reveals, EXCLUDE/SKIP/SWEAR-OK header ranges, and that each bank gives five full, valid plays; and the
+// mechanical checks of 2026-11-28 (scripts/english-checks.ts: run-on, starred words, gaps, crude words).
 // The draw's own rules are tested once, on made-up banks, in draw.test.ts.
 import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -10,6 +11,7 @@ import { draw, GROUP_OF, seedOf, type History } from './draw.ts';
 import { PLANNED } from './plan-order.ts';
 import { cleanLine } from '#lib/contract/text.ts';
 import { notInTrimmedFont } from '../../../scripts/font-subsets.ts';
+import { crudeOffenders, gapOffenders, lineOffenders, noCaptions, tailOffenders } from '../../../scripts/english-checks.ts';
 import type { Clip, Question, TranscriptFile } from './types.ts';
 
 const SKILLS = Object.keys(GROUP_OF);
@@ -26,11 +28,10 @@ describe('SWEAR regex', () => {
 });
 const JA = /[぀-ヿ㐀-鿿]/;
 
-// the echo tell: a choice's content words, stemmed
+// a choice's content words, stemmed (the cue and A2 RAMP checks)
 const STOP = new Set(('a an the and or but so if of to in on at for with from by up out off over about into as is am are was were be been being do does did done have has had i me my you your he him his she her it its we us our they them their this that these those there here what which who when where why how not no yes just very really too also then than can could will would should may might must oh um uh well okay yeah all some any one get got go going want like now right').split(' '));
 const stem = (w: string) => w.replace(/'s$/, '').replace(/(ies)$/, 'y').replace(/(ing|ed|es|s)$/, '') || w;
 const content = (t: string) => new Set((t.toLowerCase().replace(/[’‘]/g, "'").match(/[a-z0-9][a-z0-9']*/g) ?? []).filter((w) => !STOP.has(w) && w.length > 2).map(stem));
-const echo = (choice: string, heard: Set<string>) => [...content(choice)].filter((w) => heard.has(w)).length;
 const words = (t: string) => t.toLowerCase().replace(/[’']/g, "'").replace(/[^a-z' ]/g, ' ').split(/\s+/).filter(Boolean);
 const starred = (line: string) => [...line.matchAll(/\*([^*]+)\*/g)].map((m) => m[1]).join(' ');
 const sentence = (q: Question) => q.choices && q.skill !== 'number' && q.skill !== 'sound';
@@ -49,10 +50,9 @@ const jaOk = (t: string, max: number): string[] => [
 const FONT = new Map<string, boolean>();
 const inFont = (ch: string) => FONT.get(ch) ?? (FONT.set(ch, !notInTrimmedFont(ch).length), FONT.get(ch)!);
 /** The A2 ramp (review 11-24 #8: first-try data showed A2 learners picking the distractor that carried the words they
- *  heard): a `// A2 RAMP` header line marks the plan's first RAMP banks. There a detail or gist key may reuse one clearly
- *  heard content word of the line (the rubric's "the key never the one echoing the line" is lifted for them; the right
- *  meaning still decides, and no distractor equally supported), and at most one distractor carries a heard word the key
- *  doesn't. Every other rule, the length and the echo-least tally included, holds as everywhere. */
+ *  heard): a `// A2 RAMP` header line marks the plan's first RAMP banks, where at most one distractor of a detail or gist
+ *  carries a heard word the key doesn't. Since the 2026-11-28 panel (O1) a key may use heard words in every bank (the
+ *  old "the key echoing the clip least" tally is gone): the right meaning decides, distractors don't trap by echo. */
 const RAMP = 30, RAMP_TAG = /^\/\/ A2 RAMP\b/m, RAMP_SKILLS = ['detail', 'gist'];
 /** Banks let off the level shares, and why (an ear check may bring them back). */
 const LEVELS_RELAXED: Record<string, string> = { seatingchart: 'h1 (C1) retired pending its ear check, 2026-11-16: B1 6/17, C1 3/17' };
@@ -150,6 +150,12 @@ describe('the clips', () => {
   it(`\`// A2 RAMP\` marks the plan's first ${RAMP} banks, no others`, () => {
     const marked = CLIPS.filter((c) => RAMP_TAG.test(SRC.get(c.video) ?? '')).map((c) => c.id);
     expect(marked.sort()).toEqual([...PLANNED.slice(0, RAMP)].sort());
+  });
+
+  it('checks e (a report): the clips with no captions file, where checks b and c can’t place words', () => {
+    const none = noCaptions();
+    if (none.length) console.info(`english checks: ${none.length} clips with no english-captions/<video>.en.json3: ${none.join(' ')}`);
+    expect(none.length).toBeLessThan(CLIPS.length);
   });
 
   it('choices kept in order only for numbers (else the key sits where it was written: 150 were all first)', () => {
@@ -255,7 +261,7 @@ describe('the clips', () => {
 
       each('a bank: the tells, the notes, coverage and levels (the A2 rules)', () => {
         const sets = qs.filter((q) => sentence(q) && !q.retired);
-        let longest = 0, shortest = 0, least = 0;
+        let longest = 0, shortest = 0;
         const ramp = RAMP_TAG.test(SRC.get(c.video) ?? '');
         for (const q of sets) {
           const key = q.choices![q.a!], ds = q.choices!.filter((_, i) => i !== q.a);
@@ -265,10 +271,9 @@ describe('the clips', () => {
           expect(ok, `${q.id}: the key's length`).toBe(true);
           if (len(key) > L) longest++;
           if (len(key) < S) shortest++;
-          const heard = content(q.line ?? '');
-          if (heard.size && echo(key, heard) < Math.min(...ds.map((d) => echo(d, heard)))) least++;
-          // the A2 ramp: the key may carry a heard word, and a heard word only a distractor carries is in one at most
+          // the A2 ramp: a heard word only a distractor carries is in one at most
           if (ramp && RAMP_SKILLS.includes(q.skill)) {
+            const heard = content(q.line ?? '');
             const mine = content(key), lures = ds.filter((d) => [...content(d)].some((w) => heard.has(w) && !mine.has(w)));
             expect(lures.length, `${q.id}: A2 RAMP, distractors alone echoing the line: ${lures.join(' / ')}`).toBeLessThanOrEqual(1);
           }
@@ -276,7 +281,6 @@ describe('the clips', () => {
         if (sets.length) {
           expect(longest / sets.length, 'the key strictly longest').toBeLessThanOrEqual(0.4);
           expect(shortest / sets.length, 'the key strictly shortest').toBeLessThanOrEqual(0.4);
-          expect(least / sets.length, 'the key echoing the clip least').toBeLessThanOrEqual(0.45);
         }
         for (const q of qs) {
           const n = len(q.said) + len(q.mean) + len(q.trap);
@@ -325,6 +329,24 @@ describe('the clips', () => {
         const ex = ranges(src, 'EXCLUDE').flatMap((r) => r.spans);
         const bad = live.flatMap((q) => [q.seg, ...(q.then ? [q.then] : [])].filter((s) => overlaps(s, ex)).map((s) => `${q.id} [${s.join(', ')}]`));
         expect(bad.length, `${c.id}: segments over EXCLUDE ${ex.map((s) => s.join('–')).join(', ')}: ${bad.join('; ')}`).toBe(0);
+      });
+
+      // the mechanical checks (2026-11-28, scripts/english-checks.ts; `node scripts/english-checks.ts [clip…]` lists them)
+      each('checks a: no segment’s 0.4 s run-on (the player’s) reaches into an EXCLUDE', () => {
+        const bad = tailOffenders(c);
+        expect(bad.length, `${c.id}: end the segment 0.4 s before the EXCLUDE: ${bad.join('; ')}`).toBe(0);
+      });
+      each('checks b: a line’s starred words (a dictation’s answer) inside its segment by the captions’ word times', () => {
+        const bad = lineOffenders(c);
+        expect(bad.length, `${c.id}: widen the segment or fix the line: ${bad.join('; ')}`).toBe(0);
+      });
+      each('checks c: no fill-the-gap distractor is said in the gap’s place inside the segment', () => {
+        const bad = gapOffenders(c);
+        expect(bad.length, `${c.id}: ${bad.join('; ')}`).toBe(0);
+      });
+      each('checks d: no live item plays or quotes a crude or drug word (`// EXCLUDE a–b` over it, or `// CRUDE-OK a–b: why`)', () => {
+        const bad = crudeOffenders(c);
+        expect(bad.length, `${c.id}: ${bad.join('; ')}`).toBe(0);
       });
 
       // the R4 rules (rubric-r4.md §2–§5)

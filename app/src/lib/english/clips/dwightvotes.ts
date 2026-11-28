@@ -13,6 +13,7 @@
 // Untested on purpose: 12.8–16.8 s (who says "creeping me out"), 109–111 s (whisper "in my eyes", captions "in my
 // house"), 175–182 s ("Correction, it was my idea": speakers unclear), 203–208 s (a swear).
 // EAR CHECK: 74.3–75.8 s n1 (retired) — whisper “pitched in a 20”, the captions “pitched in a … for” (no number)
+// CHECKS 2026-11-28: segment ends pulled 0.4 s before the EXCLUDE they ran into (the player plays on 0.4 s): n3.
 import type { Clip } from '../types.ts';
 
 export const dwightVotes: Clip = {
@@ -309,7 +310,7 @@ export const dwightVotes: Clip = {
       trap: 'Why（なぜ）から理由を聞いていると思いやすい。ここは「〜したら？」という提案。',
       use: 'Why don’t we just take a taxi?（タクシーで行けばいいんじゃない？）' },
 
-    { id: 'n3', skill: 'number', level: 'B1', point: 'three', seg: [198.5, 203.2], keep: true,
+    { id: 'n3', skill: 'number', level: 'B1', point: 'three', seg: [198.5, 202.9], keep: true,
       stem: 'Which employee number has the next highest score?',
       ja: '次に点が高いのは、従業員番号何番？',
       choices: ['3', '13', '23', '30'], a: 0,

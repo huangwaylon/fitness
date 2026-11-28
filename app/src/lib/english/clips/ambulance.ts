@@ -11,6 +11,7 @@
 // EXCLUDE 17.6–22.5 (sexual)
 // SKIP 94.6–124.6: music, no speech
 // EAR CHECK: 81.7 s a1 — “Mm-hmm, so romantic” is sincere, not sarcastic (captions “mm-hmm so romantic”)
+// CHECKS 2026-11-28: segment ends pulled 0.4 s before the EXCLUDE they ran into (the player plays on 0.4 s): g3.
 import type { Clip } from '../types.ts';
 
 export const ambulance: Clip = {
@@ -30,7 +31,7 @@ export const ambulance: Clip = {
       trap: 'allergic だけ聞くと、薬のことだと思いやすい。food を聞く。',
       use: 'Are you allergic to any food?（食べ物のアレルギーはありますか）' },
 
-    { id: 'g3', skill: 'gist', level: 'B1', point: 'doctors', seg: [0, 17.5],
+    { id: 'g3', skill: 'gist', level: 'B1', point: 'doctors', seg: [0, 17.2],
       stem: 'What did Andy and April do today?',
       ja: 'アンディとエイプリルは今日何をした？',
       choices: ['Saw lots of doctors', 'Had a long day at work', 'Went out for ice cream'], a: 0,

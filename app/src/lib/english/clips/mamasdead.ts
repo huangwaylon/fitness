@@ -10,6 +10,7 @@
 // p2's exchange), s2 (pr1's twin), d3 and i2 (i1's twin) retired; p2 and h1 restored as context items; f0 new.
 // EXCLUDE 32.3–39.5
 // EXCLUDE 49.8–52.9
+// CHECKS 2026-11-28: segment ends pulled 0.4 s before the EXCLUDE they ran into (the player plays on 0.4 s): a2 s1.
 import type { Clip } from '../types.ts';
 
 export const mamasDead: Clip = {
@@ -107,7 +108,7 @@ export const mamasDead: Clip = {
       trap: 'josh を知らないと雑談と取りやすい。〜ing around は「〜して遊ぶ・ふざける」。',
       use: 'We were just kidding around.（ただふざけてただけ）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B1', point: 'doubt', ctx: true, reveals: ['seem'], seg: [24.5, 32.3],
+    { id: 'a2', skill: 'attitude', level: 'B1', point: 'doubt', ctx: true, reveals: ['seem'], seg: [24.5, 31.9],
       stem: 'Does Toby agree that Stanley was joking?',
       ja: 'スタンリーは冗談を言っただけ、にトビーは賛成する？',
       choices: ['No, he doesn’t', 'Yes, he does', 'He thinks it’s funny'], a: 0,
@@ -119,7 +120,7 @@ export const mamasDead: Clip = {
       trap: '強い言葉がないので、受け入れたと考えがち。seem の前の didn’t を聞く。',
       use: 'He didn’t seem happy.（彼はうれしそうに見えなかった）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'seem', seg: [26.7, 32.3],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'seem', seg: [26.7, 31.9],
       stem: 'Fill the gap: “He ___ seem like he was joking.”',
       ja: '「He ___ seem like he was joking.」の空所は？',
       choices: ['didn’t', 'did', 'doesn’t'], a: 0,

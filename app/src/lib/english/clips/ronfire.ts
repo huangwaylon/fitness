@@ -12,6 +12,7 @@
 // R4: i3 now asks what Ron gives her (her "embarrassing photo" guess is the distractor); i1, n1, a1, pr2 and i3
 // follow the exchange.
 // EAR CHECK: 35.6 s r1 — the cut falls after "Keep reading" and before "Request for termination?" (captions 36.2 s, whisper 36.6 s)
+// CHECKS 2026-11-28: segment ends pulled 0.4 s before the EXCLUDE they ran into (the player plays on 0.4 s): n1 d2 d3.
 import type { Clip } from '../types.ts';
 
 export const ronFire: Clip = {
@@ -113,7 +114,7 @@ export const ronFire: Clip = {
       trap: 'fire は衝撃の語なので強く感じやすいが、彼女も言った語。強勢は新しい情報に乗る。',
       use: 'Not two hours. I waited three hours.（2時間じゃない、3時間待った）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'four', ctx: true, seg: [38.3, 48.85], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'four', ctx: true, seg: [38.3, 48.5], keep: true,
       stem: 'How many times did Ron try to fire Leslie?',
       ja: 'ロンはレスリーを何回クビにしようとした？',
       choices: ['Once', '2 times', '4 times', '5 times'], a: 2,
@@ -149,7 +150,7 @@ export const ronFire: Clip = {
       trap: 'you だけなら次の ignore にすぐつながる。you’ll なら「ル」が残る。小さな「ド」で you’d。',
       use: 'We’d always stop for ice cream.（いつもアイスを食べに寄ったものだ）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'ignore', reveals: ['would'], seg: [59, 64.3],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'ignore', reveals: ['would'], seg: [59, 63.9],
       stem: 'When Ron said no, what did Leslie do?',
       ja: 'ロンがだめと言ったとき、レスリーはどうした？',
       choices: ['She still did it', 'She asked again and again', 'She gave up on it'], a: 0,
@@ -206,7 +207,7 @@ export const ronFire: Clip = {
       trap: '悪口のあとなので、もう1つ悪口が来ると思いやすい。本題はここから。',
       use: 'The point is, we need more time.（要するに、もっと時間が要るんだ）' },
 
-    { id: 'd3', skill: 'detail', level: 'B2', point: 'conviction', seg: [72.75, 80.35],
+    { id: 'd3', skill: 'detail', level: 'B2', point: 'conviction', seg: [72.75, 80.1],
       stem: 'Why did Ron keep Leslie in the end?',
       ja: 'ロンは結局、なぜレスリーを辞めさせなかった？',
       choices: ['She has strong beliefs', 'Her work was so great', 'She was hard to replace'], a: 0,

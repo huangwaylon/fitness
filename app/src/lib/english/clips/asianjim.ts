@@ -9,6 +9,7 @@
 // Open: the title gives the prank away, so g1 and g2 stay partly guessable; their distractors keep the act.
 // R4: retired m1 (banned "why say All right, then"), i2 (= g1), h2 (a "why funny" stem; = i3's outsider point), and
 // n2, x1, d4 for the 10-s density (x1 = p1's cut it out; d4 = d3's line); new f1 (Morning), c1 (Weird joke), x2.
+// CHECKS 2026-11-28: segment ends pulled 0.4 s before the EXCLUDE they ran into (the player plays on 0.4 s): c1 n1.
 import type { Clip } from '../types.ts';
 
 export const asianjim: Clip = {
@@ -40,7 +41,7 @@ export const asianjim: Clip = {
       trap: '仕込みの役者なので、落ち着いて待っていたと取りやすい。問い返しは「何を言ってるの？」という驚きの形。',
       use: 'Who am I? I’m your neighbor!（誰って、隣の者ですよ）' },
 
-    { id: 'c1', skill: 'pragma', level: 'B2', point: 'weird', ctx: true, seg: [9.8, 18.9],
+    { id: 'c1', skill: 'pragma', level: 'B2', point: 'weird', ctx: true, seg: [9.8, 18.8],
       stem: 'How does the man answer “Who are you?”',
       ja: 'ドワイトに「お前は誰だ」と聞かれて、男はどんな態度をとる？',
       choices: ['Like the question makes no sense', 'Like he just started working here', 'Like he has never met Dwight'], a: 0,
@@ -52,7 +53,7 @@ export const asianjim: Clip = {
       trap: '知らない男なので、新人や初対面のふりと考えがち。でも「12年一緒」と言い、最後は Weird joke で質問のほうを変だとする。',
       use: 'Ha, very funny. Weird joke.（はは、おもしろいね。変な冗談）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'years', seg: [11.8, 19.2], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'years', seg: [11.8, 18.8], keep: true,
       stem: 'How long does the fake Jim say they’ve worked together?',
       ja: 'ニセのジムは、どれくらい一緒に働いてきたと言う？',
       choices: ['2 years', '10 years', '12 years', '20 years'], a: 2,

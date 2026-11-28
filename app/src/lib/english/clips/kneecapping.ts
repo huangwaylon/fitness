@@ -15,6 +15,7 @@
 // EAR CHECK: 31–36 s f4 — whether “Yes, crazy, thank you” (Dwight?) and “But I think I’m up for it” (Trevor?) are one
 // speaker; f4 names no one.
 // EAR CHECK: 223 s s1 — whisper writes "going to", captions "gonna"; s1 keys on the spoken "gonna"
+// CHECKS 2026-11-28: segment ends pulled 0.4 s before the EXCLUDE they ran into (the player plays on 0.4 s): g1 d2.
 import type { Clip } from '../types.ts';
 
 export const kneecapping: Clip = {
@@ -47,7 +48,7 @@ export const kneecapping: Clip = {
       trap: 'books を「本」と思いやすい。ここは帳簿（お金の記録）。no taxes で分かる。',
       use: 'They paid him off the books.（記録に残らない形で払った）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'motive', seg: [9.3, 39.1],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'motive', seg: [9.3, 38.8],
       stem: 'Who does Angela want to hurt?',
       ja: 'アンジェラは誰を痛い目にあわせたい？',
       choices: ['Her husband’s secret lover', 'Her husband himself', 'Someone who took money'], a: 0,
@@ -164,7 +165,7 @@ export const kneecapping: Clip = {
       trap: 'turning back を「振り向く」と思いやすい。ここは「引き返す、やめる」。',
       use: 'Once you sign, there’s no turning back.（サインしたら、もう後戻りはできない）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'callout', seg: [83.2, 88.5],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'callout', seg: [83.2, 88.2],
       stem: 'Why did Dwight ask Angela to meet here?',
       ja: 'ドワイトはなぜアンジェラを呼び出した？',
       choices: ['To talk about who will be hurt', 'To say sorry to her', 'To warn her about Trevor'], a: 0,

@@ -11,6 +11,7 @@
 // "Swanson" (111.4 s, Jamm's "see you in court"). Untested: the dental/"yabos" trade (20–26 s), the pool story's
 // teller, and who says "Yeah, but who cares?" (i2 says "the reply"). R4 restored h1, h2, p2, i2 as context items.
 // EXCLUDE 20.65–25.6 (the dental/“yabos” trade, a breast-implant joke; json3 20.68–24.56 s)
+// CHECKS 2026-11-28: segment ends pulled 0.4 s before the EXCLUDE they ran into (the player plays on 0.4 s): h1.
 import type { Clip } from '../types.ts';
 
 export const ronNoRegret: Clip = {
@@ -55,7 +56,7 @@ export const ronNoRegret: Clip = {
       trap: '短く大きな声なので、おどろいたと思いやすい。knew it は「前から分かっていた」。',
       use: 'I knew it! You did it.（やっぱり！君がやったんだ）' },
 
-    { id: 'h1', skill: 'infer', level: 'B2', point: 'whichtime', ctx: true, seg: [12.75, 20.6],
+    { id: 'h1', skill: 'infer', level: 'B2', point: 'whichtime', ctx: true, seg: [12.75, 20.25],
       stem: 'Why does Tom answer “Which time?”',
       ja: 'トムが「Which time?」と答えるのはなぜ？',
       choices: ['Ron said it many times', 'Tom forgot what happened', 'It happened just once'], a: 0,

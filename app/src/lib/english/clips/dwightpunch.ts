@@ -16,6 +16,8 @@
 //   "That was because…" stands in both)
 // EXCLUDE 10.2–13.1: swear (“Because I would kick his ass”)
 // EXCLUDE 101.6–102.5: swear (“that could kick his ass”)
+// CHECKS 2026-11-28: segment ends pulled 0.4 s before the EXCLUDE they ran into (the player plays on 0.4 s): p2 s1 x1
+// n1; started earlier to keep the minimum length after that: p2.
 import type { Clip } from '../types.ts';
 
 export const dwightPunch: Clip = {
@@ -199,7 +201,7 @@ export const dwightPunch: Clip = {
       trap: '前の coming in late に引っぱられやすい。that aren’t のあとの同じ言葉で「名前だけ」と分かる。',
       use: 'It was a meeting that wasn’t really a meeting.（名ばかりの会議だった）' },
 
-    { id: 'p2', skill: 'pragma', level: 'B1', point: 'manicure', ctx: true, seg: [83.0, 89.0],
+    { id: 'p2', skill: 'pragma', level: 'B1', point: 'manicure', ctx: true, seg: [82.7, 88.7],
       stem: 'Why is “I just got a manicure” said here?', ja: 'ここではなぜ「I just got a manicure」と言う？',
       choices: ['To say no with an excuse', 'To say yes, but later', 'To ask Michael to wait'], a: 0,
       choicesJa: ['理由をつけて断るため', 'あとでならいいと言うため', 'マイケルに待ってと頼むため'],
@@ -210,7 +212,7 @@ export const dwightPunch: Clip = {
       trap: '最後の so… を「ちょっと待って」と勘違いしやすい。I can’t で始まれば断り。',
       use: 'I can’t, I just washed my hair.（無理、髪洗ったばかりだから）' },
 
-    { id: 's1', skill: 'sound', level: 'B1', point: 'manicure', seg: [83.5, 89.0],
+    { id: 's1', skill: 'sound', level: 'B1', point: 'manicure', seg: [83.5, 88.7],
       stem: 'Fill the gap: “I ___, ’cause, uh, I just got a manicure.”', ja: '空所に入るのは？ “I ___, ’cause, uh, I just got a manicure.”',
       choices: ['can’t', 'couldn’t', 'won’t'], a: 0,
       choicesJa: ['できない', 'できなかった', 'しない'],
@@ -221,7 +223,7 @@ export const dwightPunch: Clip = {
       trap: 't が消えると、どれも「〜ン」で終わる。最初の母音「キャ」と、一拍かどうかで聞き分ける。',
       use: 'I can’t, I’m driving tonight.（無理なんだ、今夜は運転するから）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'worthless', seg: [95.9, 101.6],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'worthless', seg: [95.9, 101.2],
       stem: 'Type what Michael says: “Well, that would be ___.” (3 words)', ja: '書こう：“Well, that would be ___.”（3語）',
       answer: 'kind of worthless',
       cue: '「would be」のあと',
@@ -231,7 +233,7 @@ export const dwightPunch: Clip = {
       trap: 'of がほぼ消えて、二語に聞こえやすい。kinda と聞こえたら kind of と書く。',
       use: 'That’s kind of a long walk.（歩くにはちょっと遠いね）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'fourteen', seg: [96.9, 101.6], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'fourteen', seg: [96.9, 101.2], keep: true,
       stem: 'How old are the girls Michael talks about?', ja: 'マイケルが話す女の子たちは何歳？',
       choices: ['4', '14', '15', '40'], a: 1,
       choicesJa: ['4歳', '14歳', '15歳', '40歳'],

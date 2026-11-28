@@ -11,6 +11,7 @@
 // EXCLUDE 135.5–137.5 (bleeped swear: “… it. I'll sell it”)
 // EXCLUDE 179.6–187.1 (Stanley's album: the line turns on race)
 // EAR CHECK: 211.9 s s1 — "what were the" (both sources): confirm "were" is the weak "wer", not "are"
+// CHECKS 2026-11-28: segment ends pulled 0.4 s before the EXCLUDE they ran into (the player plays on 0.4 s): pr3 a1 n3.
 import type { Clip } from '../types.ts';
 
 export const leaveTelescope: Clip = {
@@ -70,7 +71,7 @@ export const leaveTelescope: Clip = {
       use: 'I’ll trade you my apple for your banana.（りんごとバナナ、交換しよう）' },
 
 
-    { id: 'pr3', skill: 'phrase', level: 'B1', point: 'getout', seg: [33.9, 43.83],
+    { id: 'pr3', skill: 'phrase', level: 'B1', point: 'getout', seg: [33.9, 43.45],
       stem: 'What does “Get out of here, Dwight” mean here?',
       ja: 'ここでの「Get out of here, Dwight」はどういう意味？',
       choices: ['Move out of my way', 'I don’t believe you', 'Let’s leave together'], a: 0,
@@ -82,7 +83,7 @@ export const leaveTelescope: Clip = {
       trap: '「うそでしょ！」の意味もあるが、すぐあとに blocking（ふさいでる）が続く。',
       use: 'Excuse me, you’re blocking the door.（すみません、ドアをふさいでます）' },
 
-    { id: 'a1', skill: 'attitude', level: 'B2', point: 'hugeline', ctx: true, seg: [37.4, 43.83],
+    { id: 'a1', skill: 'attitude', level: 'B2', point: 'hugeline', ctx: true, seg: [37.4, 43.45],
       stem: 'Does Dwight think people want her things?',
       ja: 'ドワイトは、みんなが彼女の物をほしがっていると思っている？',
       choices: ['No, he thinks nobody does', 'Yes, lots of people do', 'Only Ryan wants them'], a: 0,
@@ -193,7 +194,7 @@ export const leaveTelescope: Clip = {
       trap: 'nice（いい）からほめ言葉に聞こえるが、ほめていない。直後の Terrible try が手がかり。',
       use: 'Nice try. I’m not falling for it.（その手には乗らないよ）' },
 
-    { id: 'n3', skill: 'pragma', level: 'B1', point: 'family', ctx: true, seg: [128.5, 135.5],
+    { id: 'n3', skill: 'pragma', level: 'B1', point: 'family', ctx: true, seg: [128.5, 135.1],
       stem: 'How does Ryan’s mom answer “You should sell this”?',
       ja: '「これ売ったほうがいいよ」に、ライアンのお母さんは何と答える？',
       choices: ['No, it’s not for selling', 'Yes, it’s a great idea', 'Maybe, if it’s easy'], a: 0,

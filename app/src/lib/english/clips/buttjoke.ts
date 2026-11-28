@@ -12,6 +12,7 @@
 // EAR CHECK: 25.5 s i2 — “That sounds good to me” and “I believe you were going to do a presentation” are one (male)
 //   voice; Jerry answers “Yes, sir”. i2 doesn't depend on who it is
 // EXCLUDE 40–46 (Tom's "bra for a man" jab)
+// CHECKS 2026-11-28: segment ends pulled 0.4 s before the EXCLUDE they ran into (the player plays on 0.4 s): pr1 x1.
 import type { Clip } from '../types.ts';
 
 export const buttOfJoke: Clip = {
@@ -106,7 +107,7 @@ export const buttOfJoke: Clip = {
       mean: 'That sounds good to me ＝「それでいいね」。希望を言葉どおりに受け取り、すぐ仕事に戻す。',
       trap: '「何でもしよう」のあとなので、パーティーを連想しやすい。決め手は presentation（発表）。',
       use: 'Sounds good to me. Let’s get started.（いいね。始めよう）' },
-    { id: 'pr1', skill: 'pragma', level: 'B1', point: 'nojokes', reveals: ['support'], seg: [31.8, 39.9],
+    { id: 'pr1', skill: 'pragma', level: 'B1', point: 'nojokes', reveals: ['support'], seg: [31.8, 39.6],
       stem: 'What does “no jokes, no comments” tell the team?',
       ja: '「no jokes, no comments」は、みんなに何を伝えている？',
       choices: ['Not to tease Jerry', 'To help him set up', 'To go back to work'], a: 0,
@@ -117,7 +118,7 @@ export const buttOfJoke: Clip = {
       mean: 'Remember ＝ ここは「いい？忘れないで」と念をおす言葉。からかう人が出ると分かっている。',
       trap: 'support（ささえる）から、準備の手伝いと思いやすい。no jokes を聞く。',
       use: 'Remember, no phones at dinner.（いい？夕食中はスマホなしね）' },
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'support', reveals: ['nojokes'], seg: [33.1, 39.9],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'support', reveals: ['nojokes'], seg: [33.1, 39.6],
       stem: 'Type the end: “no jokes, no comments, ___.” (3 words)', answer: 'nothing but support',
       ja: '最後の3語を入力：「no jokes, no comments, ___.」',
       cue: '「no comments」のあと',

@@ -7,6 +7,7 @@
 // (the couple's sexual confessions)
 // The host's “Never, ever would have thought of that” is sarcasm, left out.
 // EAR CHECK: 15.3 s d3 pr1 — the "bridge… Pawnee and Eagleton" cut-in is Leslie's (assumed; "my show, my questions" shows it isn't the host's)
+// CHECKS 2026-11-28: segment ends pulled 0.4 s before the EXCLUDE they ran into (the player plays on 0.4 s): pr3.
 import type { Clip } from '../types.ts';
 
 export const fiftyYears: Clip = {
@@ -251,7 +252,7 @@ export const fiftyYears: Clip = {
       trap: '文字どおりの「一日の終わり」と思いやすい。but のあとの結論の合図。',
       use: 'At the end of the day, you decide.（結局はあなたが決めることだよ）' },
 
-    { id: 'pr3', skill: 'pragma', level: 'B2', point: 'tap', seg: [63.7, 73.5],
+    { id: 'pr3', skill: 'pragma', level: 'B2', point: 'tap', seg: [63.7, 73.2],
       stem: 'Why does Leslie ask, “Who likes tap dancing?”',
       ja: 'レスリーが「タップダンス好きな人？」と聞くのはなぜ？',
       choices: ['To change the subject', 'To start a dance show', 'To ask about their hobby'], a: 0,

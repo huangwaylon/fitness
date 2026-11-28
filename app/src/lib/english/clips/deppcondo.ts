@@ -8,6 +8,8 @@
 // coworker is never named, so the stems call him "his coworker". Jim is settled by "Jim" (1.4 s) and "Halpert" (44.2 s). m1 was deleted before it shipped.
 // EXCLUDE 42.7–44.7 (“Screw you, Halpert”)
 // EAR CHECK: 51.9 s d3 — “Well, it wasn't him” is Jim, about the Yankees game
+// CHECKS 2026-11-28: segment ends pulled 0.4 s before the EXCLUDE they ran into (the player plays on 0.4 s): g2;
+// started earlier to keep the minimum length after that: g2.
 import type { Clip } from '../types.ts';
 
 export const deppCondo: Clip = {
@@ -121,7 +123,7 @@ export const deppCondo: Clip = {
       trap: 'idea と movie で役や筋書きを期待しやすい。前置きが大きいほど、中身を最後まで聞く。',
       use: 'I have a great idea: let’s eat.（いいこと思いついた。食べよう）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'scene', reveals: ['sparrow'], seg: [27.6, 42.6],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'scene', reveals: ['sparrow'], seg: [27.25, 42.3],
       stem: 'How does Jim answer the Jack Sparrow act?',
       ja: 'ジャック・スパロウのまねに、ジムはどう返す？',
       choices: ['He jokes with wrong names', 'He gets excited too', 'He asks to see the photo'], a: 0,

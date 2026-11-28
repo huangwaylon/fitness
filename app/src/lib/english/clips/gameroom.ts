@@ -8,9 +8,11 @@
 // Segments from the captions, words from whisper (2026-11-16). Whisper puts "Hey, what's up?" at 95 s, the captions at
 // 101.3 s; the captions are used. Untested: whisper's "Of course" (62 s, no caption), 94.6 s "game room" (captions) vs
 // "guest room" (whisper).
-// EXCLUDE 109–113: "non-ugly"
+// EXCLUDE 109.4–113: "non-ugly" (CHECKS 2026-11-28: from 109, the ad’s words start at 110.0 by the captions; i1 to 109)
 // EXCLUDE 126–137: a girl of 19 as the point; the hat rack
 // The opening phone lines' speakers are unclear: p2 names no one.
+// CHECKS 2026-11-28: segment ends pulled 0.4 s before the EXCLUDE they ran into (the player plays on 0.4 s): i1 f1;
+// started earlier to keep the minimum length after that: i1.
 import type { Clip } from '../types.ts';
 
 export const gameRoom: Clip = {
@@ -288,7 +290,7 @@ export const gameRoom: Clip = {
       trap: '仲直りで終わると考えがち。だれがからかったかも入れかわりやすい。',
       use: 'Are you making fun of me?（私のことからかってる？）' },
 
-    { id: 'i1', skill: 'infer', level: 'B2', point: 'ad', ctx: true, seg: [102.8, 108.95],
+    { id: 'i1', skill: 'infer', level: 'B2', point: 'ad', ctx: true, seg: [102.8, 109],
       stem: 'Why does Joey check that they’re still moving in?',
       ja: 'ジョーイはなぜ、2人がまだ一緒に住むのか確かめる？',
       choices: ['His ad is already out', 'The fight may end them', 'He will put out an ad'], a: 0,
@@ -300,7 +302,7 @@ export const gameRoom: Clip = {
       trap: 'けんかの直後なので、2人を心配していると思いやすい。came out は過去で、もう出ている。',
       use: 'The ad came out this morning.（広告は今朝出た）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'pace', seg: [117.5, 126.0],
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'pace', seg: [117.5, 125.6],
       stem: 'What does Joey mean by “a change of pace”?',
       ja: 'ジョーイの「a change of pace」はどういう意味？',
       choices: ['Something new and different', 'A faster, busier way to live', 'A calmer, slower life'], a: 0,

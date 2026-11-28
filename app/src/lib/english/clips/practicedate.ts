@@ -12,6 +12,7 @@
 // EXCLUDE 282.5–287
 // (the “How big is it?” line, the nipples line, the porno invitation, “you coy bastard”)
 // EAR CHECK: 269.2 s x1 — “supposed to be fun” in both sources; the key claims “supposed to” runs together (≈“s’posta”)
+// CHECKS 2026-11-28: segment ends pulled 0.4 s before the EXCLUDE they ran into (the player plays on 0.4 s): f6.
 import type { Clip } from '../types.ts';
 
 export const practiceDate: Clip = {
@@ -234,7 +235,7 @@ export const practiceDate: Clip = {
       trap: 'Wow や thorough はほめ言葉に聞こえやすい。決め手は Just ask me a question。',
       use: 'Wow, that’s very detailed. Anyway…（へえ、詳しいね。それはそうと…）' },
 
-    { id: 'f6', skill: 'phrase', level: 'B1', point: 'blank', seg: [166.2, 175.6],
+    { id: 'f6', skill: 'phrase', level: 'B1', point: 'blank', seg: [166.2, 175.25],
       stem: 'Leslie says, “My mind is blank.” What does she mean?',
       ja: 'レスリーの「My mind is blank.」はどういう意味？',
       choices: ['She can’t think of anything', 'She is very tired', 'She forgot Dave’s name'], a: 0,

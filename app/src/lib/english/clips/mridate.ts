@@ -8,6 +8,7 @@
 // EAR CHECK: the candle trick (56–76 s) — the scenes file gives it to Leslie; the bank and transcript to Chris.
 // EXCLUDE 166.2–172.2 (period question)
 // EXCLUDE 216.8–231.6 (remarks about her body)
+// CHECKS 2026-11-28: s2's “Do you” -> “Can you” (the captions hear “do you ever break your arm”: too close to call).
 import type { Clip } from '../types.ts';
 
 export const mriBlindDate: Clip = {
@@ -301,13 +302,13 @@ export const mriBlindDate: Clip = {
     { id: 's2', skill: 'sound', level: 'B2', point: 'didyou', seg: [195.9, 201.6],
       stem: 'Fill the gap: “___ ever break your arm?”',
       ja: '「___ ever break your arm?」の空所は？',
-      choices: ['Did you', 'Do you', 'Would you'], a: 0,
-      choicesJa: ['（過去に）〜した？', '（ふだん）〜する？', '〜する？（もしもの話）'],
+      choices: ['Did you', 'Can you', 'Would you'], a: 0,
+      choicesJa: ['（過去に）〜した？', '〜できる？', '〜する？（もしもの話）'],
       cue: '「a thousand times」のあと',
       line: '*Did you* ever break your arm?',
       said: '「腕を折ったことある？」と聞く。',
       mean: 'Did you ＝「ディジュ」とつながる。Did you ever 〜? ＝ 〜したことある？',
-      trap: 'Do you は「ドゥユ」、Would you は「ウッジュ」。「ディ」で始まれば Did you。',
+      trap: 'Can you は「キャニュ」、Would you は「ウッジュ」。「ディ」で始まれば Did you。',
       use: 'Did you ever go to Kyoto?（京都に行ったことある？）' },
 
     { id: 'd2', skill: 'detail', level: 'B1', point: 'bike', seg: [199.8, 208.4],

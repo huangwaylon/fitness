@@ -10,6 +10,8 @@
 // EXCLUDE 18–21, 36–42, 66–69 (innuendo)
 // SKIP 128.5–154.4: talk ends; the last line runs over the end music
 // EAR CHECK: 100–128 s d3 m1 a2 pr2 — the woman who answers after “Erin, did this call come?” is Erin (from the turns)
+// CHECKS 2026-11-28: segment ends pulled 0.4 s before the EXCLUDE they ran into (the player plays on 0.4 s): g1 d1 pr1
+// c3 s1.
 import type { Clip } from '../types.ts';
 
 export const movember: Clip = {
@@ -18,7 +20,7 @@ export const movember: Clip = {
   show: 'The Office',
   credit: 'The Office (official YouTube channel)',
   questions: [
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'why', seg: [0, 17.9],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'why', seg: [0, 17.6],
       stem: 'Why do the men have mustaches?', ja: '男性たちはなぜ口ひげを生やしている？',
       choices: ['To raise money for a charity', 'To win a contest set by Toby', 'To look like a famous actor'], a: 0,
       choicesJa: ['チャリティーのお金を集めるため', 'トビーのコンテストで勝つため', '有名な俳優に似せるため'],
@@ -29,7 +31,7 @@ export const movember: Clip = {
       trap: 'Tom Selleck（口ひげで有名な俳優）や Toby から、まねやコンテストと考えがち。決め手は It’s a charity。',
       use: 'It’s for a good cause.（いいことのためなんだ）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'pledge', seg: [10.3, 17.9],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'pledge', seg: [10.3, 17.6],
       stem: 'What do you do first for Movember?', ja: 'モーベンバーでは、まず何をする？',
       choices: ['Promise some money', 'Bet a lot of money', 'Get a checkup'], a: 0,
       choicesJa: ['お金を出すと約束する', '大金を賭ける', '健康診断を受ける'],
@@ -118,7 +120,7 @@ export const movember: Clip = {
       trap: '30 は「サーティ」、13 は「サーティーン」。「スリー」のあと「マンス」なら3か月、「ウィーク」なら3週間。',
       use: 'Over the next three months, I’ll save money.（この先3か月で貯金する）' },
 
-    { id: 'pr1', skill: 'phrase', level: 'B1', point: 'trustme', seg: [58.5, 65.9],
+    { id: 'pr1', skill: 'phrase', level: 'B1', point: 'trustme', seg: [58.5, 65.6],
       stem: 'What does Jim mean by “Trust me”?', ja: 'ジムの “Trust me” はどういう意味？',
       choices: ['Believe me', 'Keep it secret', 'Do what I say'], a: 0,
       choicesJa: ['本当だって', '秘密にして', '言うとおりにして'],
@@ -129,7 +131,7 @@ export const movember: Clip = {
       trap: 'trust（信用する）から、何かを任せる話を連想しやすい。ここは「本当だよ」の前置き。',
       use: 'Trust me, this place is good.（本当だって、この店いいよ）' },
 
-    { id: 'c3', skill: 'detail', level: 'B1', point: 'office', ctx: true, seg: [59.5, 65.9],
+    { id: 'c3', skill: 'detail', level: 'B1', point: 'office', ctx: true, seg: [59.5, 65.6],
       stem: 'Where is Jim during the call?',
       ja: '電話会議のあいだ、ジムはどこにいる？',
       choices: ['At his own office', 'In the same room', 'In the annex'], a: 0,
@@ -141,7 +143,7 @@ export const movember: Clip = {
       trap: 'with you guys から、みんなと同じ部屋と考えがち。決め手は質問への Yeah。',
       use: 'Are you at the office right now?（今、会社にいる？）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'rather', reveals: ['trustme'], seg: [61.3, 65.9],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'rather', reveals: ['trustme'], seg: [61.3, 65.6],
       stem: 'Fill the gap: “Trust me, ___ be with you guys.”', ja: '空所に入るのは？ “Trust me, ___ be with you guys.”',
       choices: ['I’d rather', 'I’d better', 'I’d like to'], a: 0,
       choicesJa: ['むしろ〜したい', '〜したほうがいい', '〜したい'],

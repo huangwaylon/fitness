@@ -9,6 +9,7 @@
 // "two white" at 148 s and 155 s; whisper has "Andy Bernard" and "Dwight".
 // EAR CHECK: 57.7 s doubt — “I doubt that very much” is Dwight, answering “it's a racing stripe”
 // EXCLUDE 115.9–118.4 (the captions bleep a word in Dwight's “rock-a-doop” song, json3 [ __ ] 115.9)
+// CHECKS 2026-11-28: segment ends pulled 0.4 s before the EXCLUDE they ran into (the player plays on 0.4 s): d7.
 import type { Clip } from '../types.ts';
 
 export const dwightCar: Clip = {
@@ -231,7 +232,7 @@ export const dwightCar: Clip = {
       trap: '日本では握手＝あいさつと考えがち。決め手は続く You will sell me this car（この車を売るんだ）。',
       use: 'It’s a deal. Let’s shake on it.（決まりだ。握手しよう）' },
 
-    { id: 'd7', skill: 'detail', level: 'B1', point: 'upto', ctx: true, seg: [109.5, 115.8],
+    { id: 'd7', skill: 'detail', level: 'B1', point: 'upto', ctx: true, seg: [109.5, 115.5],
       stem: 'Someone asks what Dwight is doing. What is the answer?',
       ja: 'ドワイトが何をしているのか聞かれる。答えは？',
       choices: ['Nothing important', 'He is selling a car', 'He is on the phone'], a: 0,

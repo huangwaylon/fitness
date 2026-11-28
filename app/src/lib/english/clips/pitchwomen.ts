@@ -7,6 +7,7 @@
 // file. Speakers other than Dwight and Nellie aren't named in the audio, so stems don't name them.
 // EXCLUDE 145.9–150.9 (crude: "laboring over a stool")
 // EXCLUDE 179.2–184.8 (the birth line, "vagina")
+// CHECKS 2026-11-28: segment ends pulled 0.4 s before the EXCLUDE they ran into (the player plays on 0.4 s): f1 g1 c2.
 import type { Clip } from '../types.ts';
 
 export const pitchWomen: Clip = {
@@ -246,7 +247,7 @@ export const pitchWomen: Clip = {
       mean: 'like a person ＝「人間みたいに」。言われた側は「君は人間じゃない」と聞こえ、ムッとした。',
       trap: 'ほめられたと考えがちだが、言った人があわてて Of course（もちろん）となだめている。',
       use: 'Just be yourself.（いつもどおりでいいよ）' },
-    { id: 'f1', skill: 'phrase', level: 'B1', point: 'carryon', reveals: ['teller'], seg: [139.2, 145.6],
+    { id: 'f1', skill: 'phrase', level: 'B1', point: 'carryon', reveals: ['teller'], seg: [139.2, 145.5],
       stem: 'What does Nellie mean by “I can’t carry on”?',
       ja: 'ネリーの「I can’t carry on」はどういう意味？',
       choices: ['I can’t keep going', 'I can’t carry it', 'I can’t find him'], a: 0,
@@ -288,7 +289,7 @@ export const pitchWomen: Clip = {
       mean: '言葉はきついが、時間がない中で手本を見せようとしている。急ぎの指導。',
       trap: 'God, Dwight や garbage で「諦めた」に聞こえるが、続く「見て学べ」でまだ助ける気だと分かる。',
       use: 'Trust me on this one.（ここは任せて）', retired: true },
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'teach', reveals: ['proud'], seg: [155.4, 178.9],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'teach', reveals: ['proud'], seg: [155.4, 178.8],
       stem: 'How do they try to teach Dwight next?',
       ja: '次に、どうやってドワイトに教えようとする？',
       choices: ['By selling while Dwight watches', 'By sending Dwight to the client', 'By giving Dwight a book'], a: 0,
@@ -299,7 +300,7 @@ export const pitchWomen: Clip = {
       mean: 'Watch what I do ＝ 私のやることを見て。役を入れかえて、手本を見せている。',
       trap: '商談まで1時間もないので、すぐお客さんの所へ行くと考えがち。役を入れかえて練習を続ける。',
       use: 'Watch what I do, then try it.（私のやり方を見て、やってみて）' },
-    { id: 'c2', skill: 'pragma', level: 'B1', point: 'proud', ctx: true, seg: [170.2, 178.9],
+    { id: 'c2', skill: 'pragma', level: 'B1', point: 'proud', ctx: true, seg: [170.2, 178.8],
       stem: 'How does Dwight answer the compliment about the kids?',
       ja: '子どもをほめられて、ドワイトはどう答える？',
       choices: ['He says thanks with pride', 'He says they aren’t his', 'He says sorry for them'], a: 0,

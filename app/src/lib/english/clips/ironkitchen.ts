@@ -7,6 +7,7 @@
 // (58.9 s) is a loop. Untested: "Carol and Susan" (backstory; the captions have "carolly") and the speakers of 18 s,
 // 29 s and 52.6 s (no names; no key rests on them).
 // EXCLUDE 5.8–10.5: "you should have German subtitles" (a national stereotype joke)
+// CHECKS 2026-11-28: segment ends pulled 0.4 s before the EXCLUDE they ran into (the player plays on 0.4 s): n1 f2.
 import type { Clip } from '../types.ts';
 
 export const ironkitchen: Clip = {
@@ -15,7 +16,7 @@ export const ironkitchen: Clip = {
   show: 'Friends',
   credit: 'Friends (official YouTube channel)',
   questions: [
-    { id: 'n1', skill: 'number', level: 'B1', point: 'hours', seg: [0, 5.6], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'hours', seg: [0, 5.4], keep: true,
       stem: 'How much time does Monica say they have left?',
       ja: 'モニカは残り時間がどのくらいだと言う？',
       choices: ['12 hours and 30 minutes', '12 hours and 36 minutes', '20 hours and 30 minutes', '20 hours and 36 minutes'],
@@ -37,7 +38,7 @@ export const ironkitchen: Clip = {
       trap: '習った形の we only have に直したくなる。書き取りは、聞こえた語を書く。',
       use: 'I’ve only got one bag.（荷物は1つだけです）' },
 
-    { id: 'f2', skill: 'phrase', level: 'B1', point: 'move', seg: [1.3, 5.6],
+    { id: 'f2', skill: 'phrase', level: 'B1', point: 'move', seg: [1.3, 5.4],
       stem: 'What does “Move, move, move!” mean?',
       ja: '「Move, move, move!」はどういう意味？',
       choices: ['Hurry up!', 'Get out!', 'Change seats!'], a: 0,

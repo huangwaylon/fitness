@@ -17,6 +17,8 @@
 //   nipple-kit body talk
 // Left out: 42–46 s (ronwhiners's Kyle), 46–57 s (music, "choke him"), 182–192 s (vomit; 'Wait till…' is goodhusband's).
 // EAR CHECK: 62 s k1 — both sources hear "I'll save my time to Ann" (perhaps "cede"); the key stands on "to Ann"
+// CHECKS 2026-11-28: the “pee” lines (64.9–72.5) out: n3 (its point) retired, g2 starts after them.
+// EXCLUDE 64.9–72.5 (“…'cause I have to pee every six minutes…”)
 import type { Clip } from '../types.ts';
 
 export const annclub: Clip = {
@@ -103,7 +105,7 @@ export const annclub: Clip = {
       mean: 'turn ＝ 順番。save my time to 〜 ＝「私の時間を〜にあげる」。面白くなりそう、とゆずる。',
       trap: 'save（取っておく）から、あとに取っておくと考えがち。to Ann がつくので、アンにゆずる。',
       use: 'Go ahead, it’s your turn.（どうぞ、あなたの番だよ）' },
-    { id: 'n3', skill: 'number', level: 'B1', point: 'pee', seg: [64.4, 74.3], keep: true,
+    { id: 'n3', skill: 'number', level: 'B1', point: 'pee', seg: [64.4, 74.3], retired: true, keep: true,
       stem: 'How often does Ann have to go to the bathroom?',
       ja: 'アンはどのくらいの間かくでトイレに行かなきゃいけない？',
       choices: ['Every 6 minutes', 'Every 10 minutes', 'Every 16 minutes', 'Every 60 minutes'], a: 0,
@@ -114,15 +116,15 @@ export const annclub: Clip = {
       mean: 'every 〜 minutes ＝ 〜分おきに。pee ＝ おしっこ（くだけた語）。',
       trap: 'sixteen（16）や sixty（60）と迷いやすい。six の直後が minutes なら6。',
       use: 'The bus comes every ten minutes.（バスは10分おきに来ます）' },
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'complaints', seg: [64.4, 93.0],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'complaints', seg: [72.8, 93.0],
       stem: 'What does Ann mostly talk about?',
       ja: 'アンが主に話していることは何？',
       choices: ['Her body and food', 'Her job as a nurse', 'Her husband Chris'], a: 0,
       choicesJa: ['自分の体と食べ物', '看護師の仕事', '夫のクリス'],
-      cue: 'トイレの話から始まる長い話',
-      said: 'トイレが近い、好きな物が食べられない、あれが食べたい、と次々に話す。',
-      mean: 'beach ball in my stomach ＝ お腹のビーチボール。妊娠中のお腹のこと。',
-      trap: '仕事の愚痴の会なので、仕事の話と思いやすい。pee や hungry を聞く。',
+      cue: '「That sucks」のあとの長い話',
+      said: 'いつもお腹がすく、好きな物が食べられない、あれが食べたい、と次々に話す。',
+      mean: 'never not hungry ＝ いつもお腹がすいている。妊娠中で、体と食べ物の話ばかり。',
+      trap: '仕事の愚痴の会なので、仕事の話と思いやすい。hungry や cheese を聞く。',
       use: 'I’m always hungry these days.（最近いつもお腹がすいてる）' },
     { id: 'f5', skill: 'phrase', level: 'B2', point: 'hungry', seg: [72.8, 78.7],
       stem: '“I’m never not hungry.” What does Ann mean?',
@@ -157,7 +159,7 @@ export const annclub: Clip = {
       mean: '文の最後に相手の名前を付けて呼びかけている。だからすすめたのはラリー。',
       trap: 'ロンやドナの名前もこの場面に出る。断る文の最後の名前を聞く。',
       use: 'I can’t have coffee, thanks.（コーヒーは飲めないんです）' },
-    { id: 'd6', skill: 'detail', level: 'B1', point: 'wants', seg: [80, 90.8],
+    { id: 'd6', skill: 'detail', level: 'B1', point: 'wants', seg: [83, 90.8],
       stem: 'Which food does Ann say she wants?',
       ja: 'アンが食べたいと言っているのはどれ？',
       choices: ['Jelly beans', 'Flaxseed drinks', 'Salami slices'], a: 0,

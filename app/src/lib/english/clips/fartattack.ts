@@ -14,6 +14,7 @@
 // EXCLUDE 105.6–108.9 (“fart attack”)
 // Only Tom, Ann, Jerry and the doctor are named or addressed in the audio; other speakers are “someone” or “a coworker”.
 // EAR CHECK: 133.4 s s1 / 135.0 s x1 — "you've always" with an audible 've; "leave it to us" linked
+// CHECKS 2026-11-28: segment ends pulled 0.4 s before the EXCLUDE they ran into (the player plays on 0.4 s): d4 d2.
 import type { Clip } from '../types.ts';
 
 export const fartAttack: Clip = {
@@ -81,7 +82,7 @@ export const fartAttack: Clip = {
       trap: 'serious から「深刻」「まじめな人」を連想しやすい。ここは「本当に？」の驚き。',
       use: 'You won the lottery? Are you serious?（宝くじが当たった？本当に？）' },
 
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'breathe', seg: [52.3, 55.75],
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'breathe', seg: [52.3, 55.4],
       stem: 'What is Jerry told to do?',
       ja: 'ジェリーは何をするように言われる？',
       choices: ['Just breathe', 'Stand up now', 'Lie down now'], a: 0,
@@ -153,7 +154,7 @@ export const fartAttack: Clip = {
       trap: 'out of here だけだと今すぐに聞こえる。in のあとが「デイ」なら1、2日、「ウィーク」なら1、2週間。',
       use: 'I’ll be back in a day or two.（1、2日で戻ります）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'mild', seg: [88.0, 92.35],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'mild', seg: [88, 92],
       stem: 'How does the doctor describe what happened to Jerry?',
       ja: '医者は、ジェリーに何が起きたと言う？',
       choices: ['A mild heart attack', 'A serious heart attack', 'A mild stomach upset'], a: 0,

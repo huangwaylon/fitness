@@ -13,6 +13,7 @@
 // EXCLUDE 47.4–49.6 (“below the ass area”)
 // EXCLUDE 60.3–65.7 (“look at my ass” / “Stop looking at my ass”)
 // EXCLUDE 85.8–89.8 (“staring at his ass”)
+// CHECKS 2026-11-28: segment ends pulled 0.4 s before the EXCLUDE they ran into (the player plays on 0.4 s): n1.
 import type { Clip } from '../types.ts';
 
 export const hypocrite: Clip = {
@@ -259,7 +260,7 @@ export const hypocrite: Clip = {
       trap: 'totally（完全に）が強く、怒って話をやめると思いやすい。すぐ理由が続く。',
       use: 'That’s different. I asked first.（それは話が別。私が先に聞いたの）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'reasons', seg: [76.3, 85.5],
+    { id: 'n1', skill: 'number', level: 'B1', point: 'reasons', seg: [76.3, 85.4],
       stem: 'How many reasons does Rachel say make her case different?',
       ja: 'レイチェルは、自分の場合が違う理由はいくつあると言う？',
       choices: ['One', 'Two', 'Three', 'Four'], a: 1, keep: true,

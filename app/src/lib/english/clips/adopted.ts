@@ -8,6 +8,7 @@
 // the cue). Whisper's "Who are Bill and Colleen?" (112 s) is likely "Where are…": no item uses it.
 // EXCLUDE 9.7–13.1 (the "wee-wees and hoo-hoos" joke; json3 words)
 // EXCLUDE 39.9–41.9 ("I think I just had a tiny orgasm")
+// CHECKS 2026-11-28: segment ends pulled 0.4 s before the EXCLUDE they ran into (the player plays on 0.4 s): pr4 d1.
 import type { Clip } from '../types.ts';
 
 export const chandlerAdopted: Clip = {
@@ -28,7 +29,7 @@ export const chandlerAdopted: Clip = {
       trap: 'see を「見る」と考えがち。see a doctor（医者に診てもらう）と同じ「会う」の see。',
       use: 'Thank you for seeing me today.（今日はお時間をいただきありがとうございます）' },
 
-    { id: 'pr4', skill: 'pragma', level: 'B2', point: 'ohplease', ctx: true, seg: [3.0, 9.65],
+    { id: 'pr4', skill: 'pragma', level: 'B2', point: 'ohplease', ctx: true, seg: [3, 9.3],
       stem: 'What does the host mean by “Oh, please”?',
       ja: '夫婦の「Oh, please」はどういう意味？',
       choices: ['That’s too kind of you', 'Please help us, too', 'Please say more about it'], a: 0,
@@ -52,7 +53,7 @@ export const chandlerAdopted: Clip = {
       trap: 'I mean から、言い直して説明すると考えがち。沈黙のあとに全然ちがう話をしている。',
       use: 'Anyway, you have a lovely place.（それはそうと、すてきなお宅ですね）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'binder', seg: [27.6, 39.8],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'binder', seg: [27.6, 39.5],
       stem: 'How is the information in the book sorted?',
       ja: '本の情報はどうやって整理されている？',
       choices: ['By topic, with colors', 'By date, in a timeline', 'By agency, with forms'], a: 0,

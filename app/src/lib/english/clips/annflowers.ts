@@ -14,6 +14,7 @@
 // EXCLUDE 123–125.7: "acting like an ass"
 // EAR CHECK: 71.0 s s1 — "Would you" said as one blended "wuja" (both sources have "would you like that")
 // EAR CHECK: 159.8 s x1 — "worth a" linked into one sound (both sources have "it was worth a shot")
+// CHECKS 2026-11-28: segment ends pulled 0.4 s before the EXCLUDE they ran into (the player plays on 0.4 s): n2.
 import type { Clip } from '../types.ts';
 
 export const annFlowers: Clip = {
@@ -188,7 +189,7 @@ export const annFlowers: Clip = {
       trap: 'probably vote for him から意外ではないと分かる。決め手は because のあと。',
       use: 'There’s no justice in the world.（世の中、不公平だよね）' },
 
-    { id: 'n2', skill: 'number', level: 'B1', point: 'pct', seg: [95.85, 101.2], keep: true,
+    { id: 'n2', skill: 'number', level: 'B1', point: 'pct', seg: [95.85, 100.8], keep: true,
       stem: 'What share of people call the parks “pristine”?',
       ja: '公園を「とてもきれい」と言う人は何％？',
       choices: ['68%', '70%', '78%', '87%'], a: 2,

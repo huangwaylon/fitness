@@ -11,6 +11,7 @@
 // EAR CHECK: 210.6 s x1 — whisper “I gotta keep them away”, captions “I got to keep them away”; the key is “gotta keep”
 // EAR CHECK: 306.9 s r1 — the cut must fall after “Ron” and before “if the world was ending tomorrow”
 // EAR CHECK: 223 s c2 — Shauna assumed for “Actually, we were having a really great talk” (she is the one talking with Ben)
+// CHECKS 2026-11-28: segment ends pulled 0.4 s before the EXCLUDE they ran into (the player plays on 0.4 s): d1.
 import type { Clip } from '../types.ts';
 
 export const zorpVigil: Clip = {
@@ -29,7 +30,7 @@ export const zorpVigil: Clip = {
       mean: 'Afraid so ＝ I’m afraid so（あいにく、そうです）。悪い知らせに「はい」と言うときの言い方。',
       trap: 'afraid から「こわい」と考えがち。I’m afraid は「あいにく」の前置きにもなる。',
       use: 'Is the shop closed? — Afraid so.（店、閉まってる？ーあいにく）' },
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'vigil', seg: [27.2, 35.3],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'vigil', seg: [27.2, 34.9],
       stem: 'What do the group’s members do every few years?', ja: 'このグループは、数年ごとに何をする？',
       choices: ['Stay up all night in the park', 'Pray at home all night long', 'Walk through the park at dawn'], a: 0,
       choicesJa: ['公園で一晩中起きている', '家で一晩中いのる', '夜明けに公園を歩く'],

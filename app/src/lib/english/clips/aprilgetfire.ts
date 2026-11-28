@@ -7,6 +7,7 @@
 // with …. Untested: who “Burt Macklin” is and Andy's “Macklin's call” (backstory), and the talking head at 144–152 s.
 // EXCLUDE 48–50 (sexual remark)
 // SKIP 146–162: talking head (speaker not named), then music
+// CHECKS 2026-11-28: segment ends pulled 0.4 s before the EXCLUDE they ran into (the player plays on 0.4 s): d2.
 import type { Clip } from '../types.ts';
 
 export const aprilGetFired: Clip = {
@@ -101,7 +102,7 @@ export const aprilGetFired: Clip = {
       trap: '習った形に直して that と書きたくなる。最後の音は短い it。書き取りは聞こえた語を書く。',
       use: 'Nah, I don’t think that’s it.（いや、それは違うと思う）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'call', seg: [39.2, 48],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'call', seg: [39.2, 47.6],
       stem: 'What does April want Ann to tell Chris?',
       ja: 'エイプリルはアンにクリスへ何と言ってほしい？',
       choices: ['April chose not to call', 'April forgot to call', 'April’s phone didn’t work'], a: 0,

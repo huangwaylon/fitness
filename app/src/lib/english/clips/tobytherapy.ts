@@ -16,6 +16,7 @@
 // EAR CHECK: 228.5 s i2 (retired) — whisper “to find a kid he liked better”, captions “a kitty like better”
 // EAR CHECK: 290.6–300.4 s g1 wd — "Just fill them out any way you want" is Toby (assumed from the content); who says
 //   "Will do" isn't settled, so wd names no one ("fax them back to court" is probably "to corporate")
+// CHECKS 2026-11-28: segment ends pulled 0.4 s before the EXCLUDE they ran into (the player plays on 0.4 s): i4.
 import type { Clip } from '../types.ts';
 
 export const tobyTherapy: Clip = {
@@ -273,7 +274,7 @@ export const tobyTherapy: Clip = {
       use: 'Let’s not get too serious.（あまり深刻にならないでおこう）' },
 
     // restored in R4 as a phrase item, cut before the bleeped swear
-    { id: 'i4', skill: 'phrase', level: 'B2', point: 'trick', seg: [255.5, 262.6],
+    { id: 'i4', skill: 'phrase', level: 'B2', point: 'trick', seg: [255.5, 262.4],
       stem: 'What does Michael mean by “You son of a gun”?',
       ja: 'マイケルの「You son of a gun」はどういう意味？',
       choices: ['You really tricked me', 'You are a true friend', 'Please leave me alone'], a: 0,

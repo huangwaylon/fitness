@@ -8,6 +8,8 @@
 // whisper runs the clip together in long chunks, so all timings are the captions'. The friends are never named: stems
 // say "a friend". Left out: 40–52 s (who holds which phone), 181–192 s (the Mr. Peanut joke), 230.7 s.
 // EAR CHECK: 216–224 s who says "maybe we could get together later" and who "I'll call you. Or you call me" (c3 says A/B).
+// CHECKS 2026-11-28: “she needs to hear me pee” (100.5–101.7) out; s1 starts after it.
+// EXCLUDE 100.5–101.7 (“she needs to hear me pee”)
 import type { Clip } from '../types.ts';
 
 export const needyCall: Clip = {
@@ -170,7 +172,7 @@ export const needyCall: Clip = {
       trap: '電話が来ないので、忘れられたと思いやすい。choosing（選んで）なので、わざと。',
       use: 'I said hi, and he totally snubbed me.（あいさつしたのに、完全に無視された）' },
 
-    { id: 's1', skill: 'sound', level: 'B1', point: 'cant', seg: [101.4, 109.4],
+    { id: 's1', skill: 'sound', level: 'B1', point: 'cant', seg: [101.8, 109.4],
       stem: 'Which words do you hear: “I ___ her. I left a message”?',
       ja: '「I ___ her. I left a message」どれが聞こえる？',
       choices: ['can call', 'can’t call', 'could call'], a: 1,

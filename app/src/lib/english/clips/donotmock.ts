@@ -9,6 +9,7 @@
 // EXCLUDE 13–18
 // EXCLUDE 26–33
 // (the “Oscar is gay, that is his choice” joke; the “waste of life, you should give up” insult)
+// CHECKS 2026-11-28: segment ends pulled 0.4 s before the EXCLUDE they ran into (the player plays on 0.4 s): d1.
 import type { Clip } from '../types.ts';
 
 export const doNotMock: Clip = {
@@ -17,7 +18,7 @@ export const doNotMock: Clip = {
   show: 'The Office',
   credit: 'The Office (official YouTube channel)',
   questions: [
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'rule', seg: [0, 12.7],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'rule', seg: [0, 12.6],
       stem: 'What can’t you make fun of, says Michael?',
       ja: 'マイケルによると、からかってはいけないのは何？',
       choices: ['Things people regret', 'Things people choose', 'Things said in meetings'], a: 0,

@@ -11,6 +11,7 @@
 // EXCLUDE 13–18 (the "your mama" joke: an insult)
 // EAR CHECK: 81.7–84.5 s h1 — a sneeze is heard before "You're welcome" (captions have "but" at 81.7 s, then nothing
 //   until 84.5 s; whisper has neither)
+// CHECKS 2026-11-28: segment ends pulled 0.4 s before the EXCLUDE they ran into (the player plays on 0.4 s): n1.
 import type { Clip } from '../types.ts';
 
 export const germsTalk: Clip = {
@@ -67,7 +68,7 @@ export const germsTalk: Clip = {
       trap: '健康の話なので、国の機関と思いやすい。by のあとの University を聞く。',
       use: 'According to a recent study…（最近の調査によると）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'hundreds', seg: [6.0, 12.9], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'hundreds', seg: [6, 12.6], keep: true,
       stem: 'How many times more bacteria do keyboards have than toilet seats?',
       ja: 'キーボードには、便座の何倍の細菌がいる？',
       choices: ['Ten times', 'Dozens of times', 'Hundreds of times', 'Thousands of times'], a: 2,

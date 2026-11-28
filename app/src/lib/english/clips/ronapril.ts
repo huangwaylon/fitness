@@ -7,6 +7,7 @@
 // differ), 67–82 s (the slaughtered-calves story), 122–126 s and 167–172 s (who says "Do you want the door open" and
 // "Should I go?"). No scenes file for this video.
 // EXCLUDE 157.5–158.7: “April’s a pain in the ass” (a2 starts after it)
+// CHECKS 2026-11-28: widened to hold the line's starred words by the captions' times: h3.
 import type { Clip } from '../types.ts';
 
 export const ronAprilTakeOver: Clip = {
@@ -262,7 +263,7 @@ export const ronAprilTakeOver: Clip = {
       trap: '習った not to do に直したくなる。to not do も会話でよく言う。聞こえた順に書く。',
       use: 'I try to not think about it.（考えないようにしてる）' },
 
-    { id: 'h3', skill: 'attitude', level: 'B1', point: 'taught', ctx: true, seg: [184.4, 190.4],
+    { id: 'h3', skill: 'attitude', level: 'B1', point: 'taught', ctx: true, seg: [184.4, 191.3],
       stem: 'How does Ron feel about teaching April this?',
       ja: 'これをエイプリルに教えたことを、ロンはどう思っている？',
       choices: ['Proud', 'Sorry', 'Angry'], a: 0,

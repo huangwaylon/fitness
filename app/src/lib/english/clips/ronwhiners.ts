@@ -17,6 +17,10 @@
 // (goodhusband): Wait 'til I tell you, feel bad → annoyed, cool with me complaining. Untested: 46.7–56 s (music).
 // EXCLUDE 120.6–124.3 (vomiting talk)
 // EXCLUDE 175.3–177.4 (Ann wets herself)
+// CHECKS 2026-11-28: Ann's “pee” lines (65.2–72.5) out; c3 starts after them.
+// SKIP 47–72.5: the meeting's set-up (46.7–65 s) and Ann's excluded lines (c3 started at 64.65 before them)
+// EXCLUDE 65.2–72.5 (“…'cause I have to pee every six minutes…”)
+// CHECKS 2026-11-28: segment ends pulled 0.4 s before the EXCLUDE they ran into (the player plays on 0.4 s): g2 m1.
 import type { Clip } from '../types.ts';
 
 export const ronWhiners: Clip = {
@@ -155,14 +159,14 @@ export const ronWhiners: Clip = {
       trap: 'sixteen は後ろ、sixty は前を強く言う。six は短い一音。',
       use: 'The bus comes every ten minutes.（バスは10分おきに来ます）' },
 
-    { id: 'c3', skill: 'phrase', level: 'B1', point: 'sucks', ctx: true, seg: [64.65, 75.2],
+    { id: 'c3', skill: 'phrase', level: 'B1', point: 'sucks', ctx: true, seg: [72.6, 78.7],
       stem: 'What does “*That sucks*” mean here?',
       ja: 'ここでの「That sucks」はどういう意味？',
       choices: ['That sounds hard', 'That sounds funny', 'That is not true'], a: 0,
       choicesJa: ['それはつらいね', 'それは面白いね', 'それは本当じゃない'],
       cue: 'アンの悩みへの短い返事',
-      line: 'Ann: …I have a beach ball in my stomach… / *That sucks.* / Ann: I know.',
-      said: 'トイレが近いと話すアンに「それはきついな」と返し、アンは「でしょ」と言う。',
+      line: '*That sucks.* / Ann: I know. And I’m never not hungry.',
+      said: '体の悩みを話すアンに「それはきついな」と返し、アンは「でしょ」と言う。',
       mean: 'That sucks ＝ 文字どおりは「それは吸う」→「最悪だね・きついね」。友だちの愚痴に同情する、くだけた決まり文句。',
       trap: 'suck（吸う）から意味を取ると分からない。返事の I know（でしょ）で、同情されたと分かる。',
       use: 'Your flight got canceled? That’s too bad.（便が欠航？それは大変だね）' },
@@ -292,7 +296,7 @@ export const ronWhiners: Clip = {
       trap: 'I don’t の t は消えやすく、I do（私も）に聞こえることも。最後の amazing で決める。',
       use: 'Honestly, I feel great about it.（正直、すごくいい気分）' },
 
-    { id: 'g2', skill: 'gist', level: 'B2', point: 'nowhere', reveals: ['chris'], seg: [154.3, 175.2],
+    { id: 'g2', skill: 'gist', level: 'B2', point: 'nowhere', reveals: ['chris'], seg: [154.3, 174.9],
       stem: 'What is Ann’s final speech mostly about?',
       ja: 'アンの最後の話は、主に何について？',
       choices: ['She has no place to complain', 'Chris doesn’t help her at home', 'Her body hurts all the time'], a: 0,
@@ -327,7 +331,7 @@ export const ronWhiners: Clip = {
       trap: 'wouldn’t なら「ン」が残る。could は最初に「ク」の音がある。',
       use: 'I thought you’d be okay with it.（君なら平気だと思ってた）' },
 
-    { id: 'm1', skill: 'marker', level: 'B2', point: 'ykw', seg: [168.6, 175.2],
+    { id: 'm1', skill: 'marker', level: 'B2', point: 'ykw', seg: [168.6, 174.9],
       stem: 'What does “you know what?” mean here?',
       ja: 'ここでの「you know what?」はどういう意味？',
       choices: ['Here’s what I really think', 'Do you know the answer?', 'Are you even listening to me?'], a: 0,

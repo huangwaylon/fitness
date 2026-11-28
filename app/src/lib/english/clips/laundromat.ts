@@ -6,6 +6,8 @@
 // machine, sorting a wash, and a cart fight. Segments from the captions, words checked against whisper (2026-11-16).
 // Speakers from the scenes file: Ross argues for the machine (103–115 s); Rachel fights for the cart (244–271 s).
 // EAR CHECK: 126–132 s k2 — who says "show's over" / "Nothing to see here" (transcript ja reads it as a woman)
+// CHECKS 2026-11-28: “I'm a laundry virgin” out; p2 ends before it.
+// EXCLUDE 190.6–192.0 (“…laundry virgin”)
 import type { Clip } from '../types.ts';
 
 export const laundromat: Clip = {
@@ -201,7 +203,7 @@ export const laundromat: Clip = {
       trap: '直前に洗剤の話があるので、洗剤の量の話と勘違いしやすい。separate（分ける）が手がかり。',
       use: 'Do I need to separate these?（これ、分けたほうがいい？）' },
 
-    { id: 'p2', skill: 'phrase', level: 'B1', point: 'p2', ctx: true, seg: [180.3, 192.1],
+    { id: 'p2', skill: 'phrase', level: 'B1', point: 'p2', ctx: true, seg: [180.3, 190.2],
       stem: '“Okay, you caught me.” What does Rachel mean?',
       ja: '「Okay, you caught me.」レイチェルは何と言っている？',
       choices: ['Fine, I admit it', 'Fine, you can stay', 'Fine, I’ll stop now'], a: 0,

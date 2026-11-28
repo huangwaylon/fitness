@@ -9,6 +9,7 @@
 // EXCLUDE 88.3–90.4
 // EXCLUDE 237.8–239
 // SKIP 52–90.5: Dexhart's sexting confession and pseudonyms (explicit; the EXCLUDEd lines)
+// CHECKS 2026-11-28: segment ends pulled 0.4 s before the EXCLUDE they ran into (the player plays on 0.4 s): g1 s1.
 import type { Clip } from '../types.ts';
 
 export const runsAgain: Clip = {
@@ -263,7 +264,7 @@ export const runsAgain: Clip = {
       trap: '相手を責めてはいない。良いほうに読もうとする言い方と、確かめる right? を聞く。',
       use: 'That’s a good sign, right?（いい兆しだよね？）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'meeting', seg: [207.55, 237.72],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'meeting', seg: [207.55, 237.4],
       stem: 'What do the others think of Leslie’s plan?',
       ja: 'みんなはレスリーの計画をどう思う？',
       choices: ['They think it’s a bad idea', 'They want to help her run', 'They can’t decide about it'], a: 0,
@@ -299,7 +300,7 @@ export const runsAgain: Clip = {
       trap: 'I would love it で賛成と考えがち。but that means のあとが結論。',
       use: 'I’d love it if you came.（来てくれたら最高だな）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'hate', seg: [231.7, 237.72],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'hate', seg: [231.7, 237.4],
       stem: 'Fill the gap: “It seems risky, and ___ see you go through…”',
       ja: '「It seems risky, and ___ see you go through…」の空所は？',
       choices: ['I hate to', 'I’d hate to', 'I’d have to'], a: 1,

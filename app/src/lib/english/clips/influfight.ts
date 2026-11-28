@@ -16,6 +16,7 @@
 //   "she". Items don’t name or gender the speaker; qa 11-18 made those ja lines pronoun-free.
 // EAR CHECK: 236 s and 251 s — whisper "a hundred on Sonny" / "200 on Sonny" (captions "sunday", "don't say"); the
 //   opponent is likely Dianna (292 s). Items and the ja say 相手 (the opponent), not a name.
+// CHECKS 2026-11-28: segment ends pulled 0.4 s before the EXCLUDE they ran into (the player plays on 0.4 s): k1.
 import type { Clip } from '../types.ts';
 
 export const influencerFightClub: Clip = {
@@ -48,7 +49,7 @@ export const influencerFightClub: Clip = {
       trap: 'lay を lie（横になる）と取ると、かくれる話に聞こえる。ひとまとまりで覚える。',
       use: 'Let’s look around and get the lay of the land.（まず見て回って、様子をつかもう）', retired: true },
 
-    { id: 'k1', skill: 'phrase', level: 'B1', point: 'getto', seg: [14.4, 21.6],
+    { id: 'k1', skill: 'phrase', level: 'B1', point: 'getto', seg: [14.4, 21.3],
       stem: 'What does Kelly mean by “I get to fight you”?',
       ja: 'ケリーの「I get to fight you」はどういう意味？',
       choices: ['I have a chance to fight you', 'I’m afraid to fight you', 'I’ve fought you before'], a: 0,

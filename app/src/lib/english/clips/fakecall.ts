@@ -8,6 +8,7 @@
 // differ). Retired: c1, the humor item h1 and the slang "pulls" (p4); r1 and c2 came back in R4 as context items.
 // EAR CHECK: 116–122 s a2 — “Look, man, this is a bad idea” and “That is messed up, man” are Darryl's (assumed from
 //   the turns; captions don't say)
+// CHECKS 2026-11-28: widened to hold the line's starred words by the captions' times: i2.
 import type { Clip } from '../types.ts';
 
 export const fakeCall: Clip = {
@@ -252,7 +253,7 @@ export const fakeCall: Clip = {
       trap: 'cop（警官）が聞こえると本物と考えがち。pretend to be（〜のふり）が決め手。',
       use: 'Hi, it’s Ken from upstairs.（どうも、上の階のケンです）' },
 
-    { id: 'i2', skill: 'infer', level: 'B2', point: 'officer', reveals: ['darryl'], ctx: true, seg: [105.8, 114.9],
+    { id: 'i2', skill: 'infer', level: 'B2', point: 'officer', reveals: ['darryl'], ctx: true, seg: [105.8, 116.9],
       stem: 'Why does Andy call Darryl “officer”?',
       ja: 'アンディはなぜダリルを「officer」と呼ぶ？',
       choices: ['To keep the client fooled', 'He thinks Darryl is a cop', 'To tell Darryl to stop'], a: 0,

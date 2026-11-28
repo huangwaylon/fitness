@@ -8,6 +8,7 @@
 // “Good call, babe” (77 s) is Andy's.
 // EXCLUDE 117.9–121.8
 // EXCLUDE 163.0–164.5
+// CHECKS 2026-11-28: segment ends pulled 0.4 s before the EXCLUDE they ran into (the player plays on 0.4 s): nd g1.
 import type { Clip } from '../types.ts';
 
 export const andySecret: Clip = {
@@ -198,7 +199,7 @@ export const andySecret: Clip = {
       trap: 'icing、finger、ring と名詞が続く。決め手は boom のあとの動詞。',
       use: 'Oops, I swallowed my gum.（あ、ガム飲みこんじゃった）' },
 
-    { id: 'nd', skill: 'infer', level: 'B2', point: 'notdying', ctx: true, reveals: ['sick'], seg: [109.0, 117.85],
+    { id: 'nd', skill: 'infer', level: 'B2', point: 'notdying', ctx: true, reveals: ['sick'], seg: [109, 117.5],
       stem: 'What does April find out from Larry?', ja: 'エイプリルはラリーから何を知る？',
       choices: ['Larry isn’t really ill', 'Larry is getting worse', 'Larry lost his job'], a: 0,
       choicesJa: ['ラリーは本当は病気じゃない', 'ラリーは悪くなっている', 'ラリーは仕事を失った'],
@@ -220,7 +221,7 @@ export const andySecret: Clip = {
       trap: '病気のうそなので「心配させた」と怒ると考えがち。horrible の直前の文を聞く。',
       use: 'How could you do that to me?（よくもそんなことができたね）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'dodge', seg: [137.4, 163.0],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'dodge', seg: [137.4, 162.6],
       stem: 'What does Andy do when April asks again?',
       ja: 'エイプリルがまた聞くと、アンディはどうする？',
       choices: ['He tells silly fake secrets', 'He tells her the real secret', 'He gets angry at her'], a: 0,

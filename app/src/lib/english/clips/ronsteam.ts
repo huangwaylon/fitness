@@ -12,6 +12,7 @@
 // EAR CHECK: 128.7 s s1 — “They can wrap shrimp”: a weak “can” (クン), not “can't” (both sources have “can”)
 // EAR CHECK: 188.2 s s2 — “turn ’em back on” (whisper “’em”, captions “them”): the reduced form sounds like a weak “him”
 // EAR CHECK: 199.3 s x1 — “got rid of” runs together (ガリダヴ); both sources agree on the words
+// CHECKS 2026-11-28: segment ends pulled 0.4 s before the EXCLUDE they ran into (the player plays on 0.4 s): x1.
 import type { Clip } from '../types.ts';
 
 export const ronsTeam: Clip = {
@@ -345,7 +346,7 @@ export const ronsTeam: Clip = {
       trap: 'Leslie の名前から「怒られるのが怖い」と取りやすい。処分した理由は子どもの安全。',
       use: 'Being an adult is hard sometimes.（大人って時々つらい）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'gotrid', seg: [197.3, 201.7],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'gotrid', seg: [197.3, 201.4],
       stem: 'Type the missing words: “I ___ all the stink bombs.” (3 words)', answer: 'got rid of',
       ja: '「I ___ all the stink bombs.」の空所を書こう（3語）',
       cue: '「I forgot」のあと',

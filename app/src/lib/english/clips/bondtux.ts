@@ -13,6 +13,7 @@
 // EXCLUDE 172.5–176.6: "A little tight? I could see double-O and seven in those things" (sexual)
 // EXCLUDE 192–196.2: "double-O and seven are not getting in there" (sexual)
 // EAR CHECK: 181.6 s s2 — "you're not gonna be" (whisper "gonna", captions "going to"); the item turns only on "not".
+// CHECKS 2026-11-28: segment ends pulled 0.4 s before the EXCLUDE they ran into (the player plays on 0.4 s): p2.
 import type { Clip } from '../types.ts';
 
 export const bondtux: Clip = {
@@ -256,7 +257,7 @@ export const bondtux: Clip = {
       trap: 'くり返し頼まれて同情した、と考えがち。続く Not very 007 がからかい。',
       use: 'Can I have one? Pretty please?（1つちょうだい？お願い！）' },
 
-    { id: 'p2', skill: 'pragma', level: 'C1', point: 'weddingday', seg: [157.3, 161.7],
+    { id: 'p2', skill: 'pragma', level: 'C1', point: 'weddingday', seg: [157.3, 161.4],
       stem: 'Why does Chandler say, “It’s my wedding day”?',
       ja: 'チャンドラーはなぜ「今日は僕の結婚式だ」と言う？',
       choices: ['To make Ross say yes', 'To say sorry to Ross', 'To end the talk'], a: 0,

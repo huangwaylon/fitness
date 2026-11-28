@@ -13,6 +13,7 @@
 // EXCLUDE 165.3–170.5 (Michael's “sassy, powerful black man” line; “and you're you” after it may play)
 // EAR CHECK: 134.8 s Toby's “Can I talk to you (in/for?) a second” — json3 hears a word before “a second”, whisper
 // doesn't; x3 types only the 5 words before it.
+// CHECKS 2026-11-28: segment ends pulled 0.4 s before the EXCLUDE they ran into (the player plays on 0.4 s): pr1.
 import type { Clip } from '../types.ts';
 
 export const pamGivenUp: Clip = {
@@ -345,7 +346,7 @@ export const pamGivenUp: Clip = {
       trap: 'stutter（どもる）から話し方や言い直しの話と取りやすい。Whoa の反応で強さが分かる。',
       use: 'You heard me. I said no.（聞こえたでしょ。だめって言ったの）' },
 
-    { id: 'pr1', skill: 'pragma', level: 'B2', point: 'notjoking', reveals: ['denial'], ctx: true, seg: [157.2, 165.2],
+    { id: 'pr1', skill: 'pragma', level: 'B2', point: 'notjoking', reveals: ['denial'], ctx: true, seg: [157.2, 164.9],
       stem: 'What does Toby think of Michael’s answer?',
       ja: 'トビーはマイケルの答えをどう思っている？',
       choices: ['He doesn’t believe it', 'He agrees with Michael', 'He thinks it’s funny'], a: 0,

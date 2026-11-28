@@ -10,6 +10,7 @@
 //   “to two people” in both, which n1 rests on
 // EAR CHECK: 108–120 s nt4 — words from whisper (captions differ). Segs timed from the caption word offsets.
 // SKIP 138.5–161.5: the gift is handed over to music, no words
+// CHECKS 2026-11-28: segment ends pulled 0.4 s before the EXCLUDE they ran into (the player plays on 0.4 s): f1.
 import type { Clip } from '../types.ts';
 
 export const pamsMom: Clip = {
@@ -42,7 +43,7 @@ export const pamsMom: Clip = {
       trap: 'パムのお母さんなので、パムの誕生日と思いやすい。from のあとの your wedding を聞く。',
       use: 'Remember? From the party last week.（覚えてる？先週のパーティーで）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'messing', reveals: ['react'], seg: [13.9, 20.8],
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'messing', reveals: ['react'], seg: [13.9, 20.6],
       stem: 'What does “You’re messing with me” mean?',
       ja: '「You’re messing with me」はどういう意味？',
       choices: ['You’re joking with me', 'You’re making me angry', 'You mean a different woman'], a: 0,

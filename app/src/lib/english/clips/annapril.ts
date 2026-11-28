@@ -11,6 +11,7 @@
 // QA: i3 retired (its key, "she cares more about Ann", was arguable); k1 new ("I would be happy to", 55 s).
 // SKIP 195.5–217.5: the song (singing only)
 // SKIP 257.4–277.3: outro music
+// CHECKS 2026-11-28: segment ends pulled 0.4 s before the EXCLUDE they ran into (the player plays on 0.4 s): k1.
 import type { Clip } from '../types.ts';
 
 export const annApril: Clip = {
@@ -102,7 +103,7 @@ export const annApril: Clip = {
       trap: 'crush には「好きになる」の意味もあるが、ここは後ろに into ～ が続く。',
       use: 'They pressured him into saying yes.（彼らは無理やり彼にイエスと言わせた）' },
 
-    { id: 'k1', skill: 'pragma', level: 'B1', point: 'happyto', reveals: ['reco'], seg: [55.0, 59.85],
+    { id: 'k1', skill: 'pragma', level: 'B1', point: 'happyto', reveals: ['reco'], seg: [55, 59.5],
       stem: 'What does Ann mean by “I would be happy to”?',
       ja: 'アンの「I would be happy to」はどういう意味？',
       choices: ['Yes, I will gladly do it', 'I will be happy after it', 'I would, but I can’t'], a: 0,

@@ -14,6 +14,7 @@
 // SKIP 276.8–297.6: whisper repeats Ron's last line over the end music
 // EAR CHECK: 16–25 s a1 x1 — “Right. How long is this gonna take?” is taken as David's (Leslie has just greeted him
 //   by name; nobody names the speaker)
+// CHECKS 2026-11-28: segment ends pulled 0.4 s before the EXCLUDE they ran into (the player plays on 0.4 s): d3.
 import type { Clip } from '../types.ts';
 
 export const heroes: Clip = {
@@ -185,7 +186,7 @@ export const heroes: Clip = {
       trap: 'not を強めると反論になるが、ここは彼女の話を認めた上での限定。強勢は何と比べているかを示す。',
       use: 'Maybe at your office. Not at mine.（君の会社はそうでも、うちは違う）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'goal', seg: [126.4, 133.4],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'goal', seg: [126.4, 133.1],
       stem: 'What does Leslie hope to be someday?', ja: 'レスリーは、いつか何になりたい？',
       choices: ['The first woman director', 'The youngest director', 'A deputy director'], a: 0,
       choicesJa: ['初の女性局長', '最年少の局長', '副局長'],

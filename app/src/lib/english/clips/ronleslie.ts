@@ -9,6 +9,7 @@
 // EAR CHECK: 143.5 s wanna — “You wanna talk?” is Leslie, and wanna (not want to) as whisper has it
 // EXCLUDE 206.1–209.3: the “pee-pee poopy daddy” verse (crude bodily, lead ruling)
 // SKIP 216.5–237.5: the end card; whisper's lone "Thank you" at 237 s
+// CHECKS 2026-11-28: widened to hold the line's starred words by the captions' times: gowith.
 import type { Clip } from '../types.ts';
 
 export const ronLeslieLocked: Clip = {
@@ -123,7 +124,7 @@ export const ronLeslieLocked: Clip = {
       trap: 'Fine は「折れた」に聞こえやすい。言い方が極端すぎたら皮肉を疑う。',
       use: 'Fine, it’s all my fault, then.（はいはい、全部私のせいね）' },
 
-    { id: 'gowith', skill: 'phrase', level: 'B1', point: 'gowith', ctx: true, seg: [60.0, 68.0],
+    { id: 'gowith', skill: 'phrase', level: 'B1', point: 'gowith', ctx: true, seg: [60, 69.2],
       stem: 'What does Ron mean by “Let’s go with that”?',
       ja: 'ロンの「Let’s go with that」はどういう意味？',
       choices: ['Let’s use that story', 'Let’s leave together now', 'Let’s talk about that'], a: 0,

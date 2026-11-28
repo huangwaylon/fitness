@@ -11,6 +11,7 @@
 // EAR CHECK: 77.4 s f2 — “Tell me about it” (both sources) is Monica's, answering a complaint we don't hear
 // EAR CHECK: 38.8–39.7 s c3 — “some of them didn't make it” (both sources): “of them” and “didn't” reduced in one breath
 // EAR CHECK: 67.4–68.2 s c4 — “apparently a bunch of the invitations” (both sources): “a” and “of the” really there
+// CHECKS 2026-11-28: segment ends pulled 0.4 s before the EXCLUDE they ran into (the player plays on 0.4 s): d2 i2 h1.
 import type { Clip } from '../types.ts';
 
 export const joeyParents: Clip = {
@@ -125,7 +126,7 @@ export const joeyParents: Clip = {
       trap: 'some them、did と書きやすい。弱い語も落とさず、6語の文の形に戻す。',
       use: 'Some of them didn’t show up.（何人かは来なかった）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'postoffice', ctx: true, reveals: ['mixup'], seg: [41.3, 49.8],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'postoffice', ctx: true, reveals: ['mixup'], seg: [41.3, 49.5],
       stem: 'What does Joey finally tell Monica to blame?',
       ja: 'ジョーイは最後に、何のせいにしろと言う？',
       choices: ['The post office', 'The caterer', 'Chandler'], a: 0,
@@ -149,7 +150,7 @@ export const joeyParents: Clip = {
       trap: '席の並べ方の話が前にあったので迷いやすい。mix-up with のあとを聞く。',
       use: 'Sorry, there was a mix-up with your order.（すみません、ご注文に手違いがありました）' },
 
-    { id: 'i2', skill: 'detail', level: 'B1', point: 'hate', reveals: ['postoffice'], seg: [45.65, 49.8],
+    { id: 'i2', skill: 'detail', level: 'B1', point: 'hate', reveals: ['postoffice'], seg: [45.65, 49.5],
       stem: 'Why does Joey say the post office story will work?',
       ja: 'ジョーイは、郵便局の話がうまくいくのはなぜだと言う？',
       choices: ['His parents really dislike it', 'Their mail often goes missing', 'They always trust Monica'], a: 0,
@@ -240,7 +241,7 @@ export const joeyParents: Clip = {
       trap: '文字どおり「もっと話して」と考えがち。文句への返事なら「同感」。',
       use: 'It’s so hot! — Tell me about it.（暑いね！—ほんとそれ）' },
 
-    { id: 'h1', skill: 'humor', level: 'B2', point: 'lostoffice', reveals: ['postoffice'], seg: [78.1, 84.6],
+    { id: 'h1', skill: 'humor', level: 'B2', point: 'lostoffice', reveals: ['postoffice'], seg: [78.1, 84.4],
       stem: 'What is the joke in “US Lost Office”?',
       ja: '「US Lost Office」はどんな冗談？',
       choices: ['It loses mail, so “lost”', 'It is slow, so “lost”', 'It costs a lot, so “lost”'], a: 0,

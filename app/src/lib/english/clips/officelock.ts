@@ -11,6 +11,7 @@
 // SKIP 165.5–186: the end of Toby's line, then music (whisper's 183–186 s lines aren't in the captions)
 // EAR CHECK: 65 s r1 — captions "I don't think I chipped in for last year's", whisper "…I tipped him for last year's"
 //   (the key, last year's tip unpaid, holds either way)
+// CHECKS 2026-11-28: segment ends pulled 0.4 s before the EXCLUDE they ran into (the player plays on 0.4 s): d4.
 import type { Clip } from '../types.ts';
 
 export const officeLock: Clip = {
@@ -263,7 +264,7 @@ export const officeLock: Clip = {
       trap: 'do（する）だけでは向きが分かりにくく、やめないと勘違いしやすい。あとの I’ll stop calling で「了解」と決まる。',
       use: 'Call me when you arrive. — Will do.（着いたら電話して。—了解）' },
 
-    { id: 'd4', skill: 'detail', level: 'B2', point: 'party', ctx: true, seg: [121.15, 131.2],
+    { id: 'd4', skill: 'detail', level: 'B2', point: 'party', ctx: true, seg: [121.15, 131],
       stem: 'Why is it too bad they are off tomorrow?', ja: '明日が休みなのが、なぜちょっと惜しい？',
       choices: ['Michael may have a party planned', 'There is a lot of work to do', 'Hank will not be there then'], a: 0,
       choicesJa: ['マイケルがパーティーを計画していそう', '仕事がたくさんある', 'その日はハンクがいない'],

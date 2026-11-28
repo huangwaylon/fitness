@@ -13,6 +13,7 @@
 // EXCLUDE 146.7–149.5 ("bestiality" ×2)
 // EXCLUDE 155.2–159.1 ("who had sex with what")
 // EXCLUDE 202.6–206.8 (swear)
+// CHECKS 2026-11-28: segment ends pulled 0.4 s before the EXCLUDE they ran into (the player plays on 0.4 s): g1.
 import type { Clip } from '../types.ts';
 
 export const jerryPainting: Clip = {
@@ -54,7 +55,7 @@ export const jerryPainting: Clip = {
       trap: 'painting から、レスリーも描くと考えがち。決め手は look at（見る）。',
       use: 'You should really come and see this.（ぜひ見に来て）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'face', seg: [20.6, 35.95],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'face', seg: [20.6, 35.7],
       stem: 'What do they find in Jerry’s painting?', ja: 'ジェリーの絵に、何が見つかる？',
       choices: ['Leslie’s face on the goddess', 'Tom’s face on the goddess', 'The face of Jerry on the deer'], a: 0,
       choicesJa: ['女神の顔がレスリー', '女神の顔がトム', '鹿の顔がジェリー'],

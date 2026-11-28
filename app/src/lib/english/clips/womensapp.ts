@@ -14,6 +14,8 @@
 // EXCLUDE 223.45–251.1: the lesbian-haircut and period lines
 // SKIP 112.95–141.9: the flashing and penis lines (EXCLUDEd), with "What a surprise" and "no catfights" between them
 // SKIP 222.05–251.1: "That's (not) the same thing" (captions and whisper disagree), then the EXCLUDEd lines
+// CHECKS 2026-11-28: segment ends pulled 0.4 s before the EXCLUDE they ran into (the player plays on 0.4 s): n3 pr2 a1;
+// started earlier to keep the minimum length after that: pr2.
 import type { Clip } from '../types.ts';
 
 export const womensAppreciation: Clip = {
@@ -152,7 +154,7 @@ export const womensAppreciation: Clip = {
       trap: '前半を提案と取りやすい。最後の that’s what you’re doing が本音。',
       use: 'You might as well just lock us in.（いっそ閉じ込めればいいのに）' },
 
-    { id: 'n3', skill: 'detail', level: 'B1', point: 'please', seg: [47.85, 52.85],
+    { id: 'n3', skill: 'detail', level: 'B1', point: 'please', seg: [47.85, 52.45],
       stem: 'What does Michael say women have the right to do?',
       ja: '女性には何をする権利があると、マイケルは言う？',
       choices: ['Wear the clothes they like', 'Leave work when they like', 'Speak to anyone they like'], a: 0,
@@ -211,7 +213,7 @@ export const womensAppreciation: Clip = {
       trap: 'five は「ファイヴ」で短い。fifteen は後ろの「ティーン」が長い。two・ten は最初の音が違う。',
       use: 'Lobby, ten minutes. Don’t be late.（ロビーに10分後。遅れないで）' },
 
-    { id: 'pr2', skill: 'pragma', level: 'B2', point: 'challenge', ctx: true, seg: [78.5, 84.55],
+    { id: 'pr2', skill: 'pragma', level: 'B2', point: 'challenge', ctx: true, seg: [78.15, 84.15],
       stem: 'How does Michael answer “How are you qualified?”',
       ja: '「資格があるの？」と聞かれ、マイケルはどう答える？',
       choices: ['With a silly reason', 'With his work history', 'By saying he isn’t'], a: 0,
@@ -246,7 +248,7 @@ export const womensAppreciation: Clip = {
       trap: 'dolls（人形）から子どものおもちゃと考えがち。返事の collectible が決め手。',
       use: 'This old watch is worth more than my car.（この古い時計、僕の車より高いんだ）' },
 
-    { id: 'a1', skill: 'attitude', level: 'B1', point: 'bigdeal', seg: [108.8, 112.9],
+    { id: 'a1', skill: 'attitude', level: 'B1', point: 'bigdeal', seg: [108.8, 112.55],
       stem: 'How does this woman feel about the topic?',
       ja: 'この女性は、この話題をどう思っている？',
       choices: ['Tired of the topic', 'Very upset about it', 'Lost in the talk'], a: 0,

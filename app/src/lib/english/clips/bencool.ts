@@ -10,6 +10,7 @@
 // EAR CHECK: 19.4–24.4 s at1 — “A little too good… I'm not joking” is Frank's (assumed; no name is said)
 // EAR CHECK: 21.2 s x1, 189.3 s s1 — “live up to” runs together; “would be” is weak
 // EXCLUDE 148.8–153.3: swear (“Jamm is going to be so pissed”)
+// CHECKS 2026-11-28: segment ends pulled 0.4 s before the EXCLUDE they ran into (the player plays on 0.4 s): n1.
 import type { Clip } from '../types.ts';
 
 export const benCool: Clip = {
@@ -192,7 +193,7 @@ export const benCool: Clip = {
       trap: 'That’s not pizza で、注文のミスと勘違いしやすい。We know（知ってる）が答え。',
       use: 'I love sushi! — We know!（すし大好き！—知ってるよ！）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'vote', seg: [143.9, 148.8],
+    { id: 'n1', skill: 'number', level: 'B1', point: 'vote', seg: [143.9, 148.4],
       stem: 'What was the score of the vote?', ja: '投票の結果は何対何？',
       choices: ['2–1', '3–1', '3–2'], a: 2, keep: true,
       choicesJa: ['2対1', '3対1', '3対2'],

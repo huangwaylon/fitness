@@ -8,6 +8,7 @@
 // 51–62 s (whisper and captions split on who Leslie thanks).
 // EXCLUDE 17.4–21.4 (a heroin joke)
 // EXCLUDE 43.2–45.4 (a sexual demand)
+// CHECKS 2026-11-28: segment ends pulled 0.4 s before the EXCLUDE they ran into (the player plays on 0.4 s): g3 c5.
 import type { Clip } from '../types.ts';
 
 export const distract: Clip = {
@@ -38,7 +39,7 @@ export const distract: Clip = {
       trap: 'great place と聞くと、広さや場所の話と考えがち。I mean のあとが理由。',
       use: 'I mean, it’s cheap and close.（だって、安いし近いし）' },
 
-    { id: 'g3', skill: 'gist', level: 'B1', point: 'lot', seg: [21.42, 43],
+    { id: 'g3', skill: 'gist', level: 'B1', point: 'lot', seg: [21.42, 42.8],
       stem: 'What does April plan to do with this lot?',
       ja: 'エイプリルは、この土地をどうするつもり？',
       choices: ['Make it her dog park', 'Sell it to the city', 'Use it for parking'], a: 0,
@@ -61,7 +62,7 @@ export const distract: Clip = {
       trap: '「フォーティエイト」なら 48。forty だけなら 40、「フォーティーン」なら 14、84 は「エイ」で始まる。',
       use: 'Our flight leaves from Gate 48.（私たちの便は48番ゲートから）' },
 
-    { id: 'c5', skill: 'pragma', level: 'B2', point: 'anything', ctx: true, seg: [36.3, 43],
+    { id: 'c5', skill: 'pragma', level: 'B2', point: 'anything', ctx: true, seg: [36.3, 42.8],
       stem: 'How does April answer Leslie’s “I will do anything”?',
       ja: 'レスリーの「何でもする」に、エイプリルはどう答える？',
       choices: ['She asks for crazy things', 'She agrees to stop now', 'She asks for some money'], a: 0,

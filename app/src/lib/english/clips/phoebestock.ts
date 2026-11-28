@@ -6,11 +6,13 @@
 // errands and gets teased, then Phoebe learns she has lost millions on the market and talks herself into a heart attack.
 // Segments from the captions, words from whisper (2026-11-16). Untested on purpose: whose list it is (backstory),
 // 36–39 s (“they'll kill themselves”: no seg plays it), 47.7 s (“Phoebe” vs “baby”).
-// EXCLUDE 15–18: “You're his bitch” (an insult)
+// EXCLUDE 15.4–18: “You’re his bitch” (an insult; CHECKS 2026-11-28: from 15, the captions put “You’re” at 15.4)
 // SKIP 57–67.8: “Oh, my God!” and the channel's outro, no usable English
 // EAR CHECK: 39.4 s f3 — whisper “Great, now my chest hurts”, json3 “all right now my chest hurts”: if it's “All
 //   right”, f3 has no key; retire it and add an interpretive item in its place (the bank is at the 12-live floor)
 // EAR CHECK: 32.4 s x1 — both sources write “am I going to” twice; if it's said “am I gonna”, x1's answer changes
+// CHECKS 2026-11-28: segment ends pulled 0.4 s before the EXCLUDE they ran into (the player plays on 0.4 s): g3;
+// started earlier to keep the minimum length after that: g3.
 import type { Clip } from '../types.ts';
 
 export const phoebeStock: Clip = {

@@ -9,6 +9,7 @@
 // EXCLUDE 177–179
 // EXCLUDE 198–200
 // EAR CHECK: 171.7 s pr2 — the cut falls after “Y'all got your seat belts on?” (captions “seatbelt done”), before the crash
+// CHECKS 2026-11-28: segment ends pulled 0.4 s before the EXCLUDE they ran into (the player plays on 0.4 s): pr2.
 import type { Clip } from '../types.ts';
 export const vanBidding: Clip = {
   id: 'vanbidding', video: '2eY8lfAF06s', title: 'Donna Sacrifices Her Mercedes', dur: 228, wpm: 154, band: 'mid',
@@ -261,7 +262,7 @@ export const vanBidding: Clip = {
       mean: 'baby ＝ 赤ちゃん→赤ちゃんのように大事な物。車やギターなど、愛用品によく使うくだけた言い方。',
       trap: 'baby から子どもを連想しやすい。ここは駐車場で、ぶつけられる物＝車。',
       use: 'This old car is my baby.（この古い車は私の宝物なの）' },
-    { id: 'pr2', skill: 'predict', level: 'B1', point: 'crash', seg: [165.6, 171.7], then: [171.7, 176.9],
+    { id: 'pr2', skill: 'predict', level: 'B1', point: 'crash', seg: [165.6, 171.7], then: [171.7, 176.6],
       stem: 'The driver asks, “Y’all got your seat belts on?” What comes next?',
       ja: '運転する人が「みんなシートベルトした？」と聞く。次は何が起きる？',
       choices: ['A crash, on purpose', 'They drive away slowly', 'They stay and wait'], a: 0,

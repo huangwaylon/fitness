@@ -16,6 +16,9 @@
 // the GPS” answers him (Spencer overruled it). Kept out: the staffer's “I want you in my bed” (275.8–283.4 s).
 // Untested: 129.5 s, 180.6 s, 194.6 s, 231.5 s, who says “Thank you for apologizing” (≈ 245 s), 315–320 s.
 // EAR CHECK: 153.8–154.4 s s1 — "Hang a left up here" (both sources): "hang a" really runs together
+// CHECKS 2026-11-28: b1 ends on “None!” (the “Pee as you run” lines, whisper 17.2–21.4, out).
+// EXCLUDE 17.2–21.4 (“Pee as you run, Carly!”)
+// CHECKS 2026-11-28: segment ends pulled 0.4 s before the EXCLUDE they ran into (the player plays on 0.4 s): i3.
 import type { Clip } from '../types.ts';
 
 export const auditionDisaster: Clip = {
@@ -24,16 +27,16 @@ export const auditionDisaster: Clip = {
   show: 'iCarly',
   credit: 'iCarly (NickRewind, official YouTube channel)',
   questions: [
-    { id: 'b1', skill: 'pragma', level: 'B1', point: 'bathroom', ctx: true, seg: [14, 21],
+    { id: 'b1', skill: 'pragma', level: 'B1', point: 'bathroom', ctx: true, seg: [10.8, 16.8],
       stem: 'What is Carly told when she asks about the bathroom?',
       ja: 'トイレのことを聞いたカーリーは、何と言われる？',
       choices: ['There’s no time at all', 'She can go after this', 'It’s just over there'], a: 0,
       choicesJa: ['時間はまったくない', 'これが終わったら行っていい', 'すぐそこにある'],
       cue: '質問のすぐあとの一語',
-      line: 'Carly: *Do I have time to use the bathroom?* / *None!* Pee as you run, Carly!',
-      said: '「トイレに行く時間ある？」に、「ゼロ！走りながらしろ！」と返る。',
+      line: 'Carly: *Do I have time to use the bathroom?* / *None!*',
+      said: '「トイレに行く時間ある？」と聞くと、すぐに「ゼロ！」と返ってくる。',
       mean: 'Do I have time to 〜? ＝「〜する時間ある？」。旅行でも使える聞き方。None! ＝「（時間は）ゼロ！」。',
-      trap: 'run（走る）が聞こえるので、走って行けと考えがち。None ＝ 時間はまったくない。',
+      trap: '一語だけの短い返事なので聞きのがしやすい。None ＝ 時間はまったくない。',
       use: 'Do I have time to use the bathroom?（トイレに行く時間はありますか？）' },
 
     { id: 'g1', skill: 'gist', level: 'B1', point: 'canceled', seg: [33, 78],
@@ -293,7 +296,7 @@ export const auditionDisaster: Clip = {
       trap: '反語なので、答えは「何もない」と考えがち。Everything! と本気で答えている。',
       use: 'Who doesn’t love pizza?（ピザが嫌いな人なんている？）' },
 
-    { id: 'i3', skill: 'infer', level: 'B1', point: 'rivalry', seg: [268, 275.6],
+    { id: 'i3', skill: 'infer', level: 'B1', point: 'rivalry', seg: [268, 275.4],
       stem: 'Why does the show want them back?',
       ja: '番組は、なぜ2人を呼び戻す？',
       choices: ['They love the brother-sister fight', 'They feel sorry for the two', 'They need more people to play'], a: 0,

@@ -16,6 +16,8 @@
 // EXCLUDE 103.3–105.5 (the circumcision line, json3 103.4–105.4 s)
 // SKIP 183–203.5: music and credits (whisper's “Thank you” at 201 s)
 // No scenes file for this video.
+// CHECKS 2026-11-28: segment ends pulled 0.4 s before the EXCLUDE they ran into (the player plays on 0.4 s): f1 breathe
+// p3.
 import type { Clip } from '../types.ts';
 
 export const whosDaddy: Clip = {
@@ -48,7 +50,7 @@ export const whosDaddy: Clip = {
       trap: 'ten なら「テン」だけ、thousand なら「サウ」、two hundred なら前に「トゥー」。a hundred なら100。',
       use: 'I need you to print ten copies.（10部印刷してほしい）' },
 
-    { id: 'f1', skill: 'attitude', level: 'B1', point: 'kicking', ctx: true, seg: [4.8, 11.95],
+    { id: 'f1', skill: 'attitude', level: 'B1', point: 'kicking', ctx: true, seg: [4.8, 11.6],
       stem: 'How does Jan feel about her candle business?',
       ja: 'ジャンは、自分のキャンドルの仕事をどう思っている？',
       choices: ['Very happy with it', 'Worried about it', 'Bored with the work'], a: 0,
@@ -150,7 +152,7 @@ export const whosDaddy: Clip = {
       trap: 'five は「ファイヴ」、twenty は「トゥエンティ」、fifteen は「ティーン」が長い。短く「テン」なら10。',
       use: 'My phone buzzes every ten minutes.（スマホが10分おきに鳴る）' },
 
-    { id: 'breathe', skill: 'detail', level: 'B1', point: 'breathe', reveals: ['contract'], seg: [47.5, 52.45],
+    { id: 'breathe', skill: 'detail', level: 'B1', point: 'breathe', reveals: ['contract'], seg: [47.5, 52.1],
       stem: 'What does Michael tell Dwight to keep doing?',
       ja: 'マイケルはドワイトに、何を続けるように言う？',
       choices: ['Breathing', 'Sleeping', 'Pushing hard'], a: 0,
@@ -243,7 +245,7 @@ export const whosDaddy: Clip = {
       trap: 'ed が the に飲まれて check に聞こえやすい。',
       use: 'I checked the time. We’re fine.（時間は確認した。大丈夫）' },
 
-    { id: 'p3', skill: 'phrase', level: 'B2', point: 'expertise', seg: [99.5, 103.3],
+    { id: 'p3', skill: 'phrase', level: 'B2', point: 'expertise', seg: [99.5, 102.9],
       stem: 'What does “areas of expertise” mean?',
       ja: '「areas of expertise」はどういう意味？',
       choices: ['Things he knows well', 'Places he has worked', 'Jobs he wants to do'], a: 0,

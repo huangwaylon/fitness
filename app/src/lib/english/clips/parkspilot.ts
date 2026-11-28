@@ -6,6 +6,7 @@
 // whisper's repeated "He's a smart, capable guy" after that is a hallucination.
 // EXCLUDE 37.1–43.55: "I think he's a Libyan" and "I'm what you might call a redneck" (the joke turns on ethnicity).
 // EAR CHECK: 99–114 s, who describes Mark (Leslie in the old notes; the ja had male speech), so items name no speaker.
+// CHECKS 2026-11-28: segment ends pulled 0.4 s before the EXCLUDE they ran into (the player plays on 0.4 s): i3.
 import type { Clip } from '../types.ts';
 
 export const parkspilot: Clip = {
@@ -71,7 +72,7 @@ export const parkspilot: Clip = {
       trap: 'rapping を音楽のラップと考えがち。just … about some things なら気軽なおしゃべり。',
       use: 'We were just chatting about work.（仕事の話をちょっとしてただけ）' },
 
-    { id: 'i3', skill: 'infer', level: 'B2', point: 'outsiders', seg: [30.8, 37.0],
+    { id: 'i3', skill: 'infer', level: 'B2', point: 'outsiders', seg: [30.8, 36.7],
       stem: 'Why does Leslie say she and Tom work well together?',
       ja: 'レスリーは、なぜトムと息が合うと言う？',
       choices: ['They’re not typical officials', 'They both love working outside', 'They both grew up here'], a: 0,

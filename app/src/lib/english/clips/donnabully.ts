@@ -14,6 +14,7 @@
 // EAR CHECK: 49.0 s s2, 54.8 s x1 — "have to" said as hafta (not "had to"); "hunt you down" linked (t‿y ≈ チュ)
 // EAR CHECK: 141 s c1 — "How much postage…?" assumed Ron (as in ronreviews); "Who's it going to?" a coworker
 // EXCLUDE 77.6–80.4: swear (“go Mjolnir on his ass”)
+// CHECKS 2026-11-28: segment ends pulled 0.4 s before the EXCLUDE they ran into (the player plays on 0.4 s): p2.
 import type { Clip } from '../types.ts';
 
 export const donnaBully: Clip = {
@@ -140,7 +141,7 @@ export const donnaBully: Clip = {
       trap: 'In this building?（この建物の中？）が質問なので、驚いているだけと考えがち。決め手は hell no。',
       use: 'Cut in line? Oh, no way.（割り込み？冗談じゃない）' },
 
-    { id: 'p2', skill: 'phrase', level: 'B2', point: 'hammer', seg: [71.9, 77.6],
+    { id: 'p2', skill: 'phrase', level: 'B2', point: 'hammer', seg: [71.9, 77.2],
       stem: 'What does “come down on this dude” mean?',
       ja: '「come down on this dude」はどういう意味？',
       choices: ['Punish him very hard', 'Go down to his floor', 'Ask him to say sorry'], a: 0,

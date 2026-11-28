@@ -8,6 +8,7 @@
 // No scenes file. Untested: 52–59 s (the sources differ on "a massage"), 107–115 s (fiscal jargon, Ron's formal
 // objection). Retired: budget jargon (d1, i4), the C2 tier (nt1–nt3), slang (f2), d3 (its salary line is f4's set-up).
 // EXCLUDE 16.8–19.7: "gave me a semi" (sexual)
+// CHECKS 2026-11-28: segment ends pulled 0.4 s before the EXCLUDE they ran into (the player plays on 0.4 s): g3.
 import type { Clip } from '../types.ts';
 
 export const ronSlash: Clip = {
@@ -28,7 +29,7 @@ export const ronSlash: Clip = {
       trap: '「サーティ・トゥー」なら32、「サーティ」だけなら30、「トゥエンティ・スリー」なら23。40 はロンが言い足した数。',
       use: 'Prices went up by ten percent.（値段が10パーセント上がった）' },
 
-    { id: 'g3', skill: 'gist', level: 'B1', point: 'meeting', seg: [0, 16.8],
+    { id: 'g3', skill: 'gist', level: 'B1', point: 'meeting', seg: [0, 16.4],
       stem: 'What is this meeting about?',
       ja: 'これは何についての会議？',
       choices: ['Cutting the city’s spending', 'Hiring more workers for the city', 'Planning a city festival'], a: 0,

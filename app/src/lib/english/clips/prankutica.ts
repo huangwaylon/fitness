@@ -7,9 +7,11 @@
 // stairwell talk to Jim by radio; who says which radio line (137–162 s, 180 s, 184 s) isn't clear, so c1, p5 and f3
 // name no one.
 // EXCLUDE 132.6–134: "I don't have the control of my bladder" (crude)
-// EXCLUDE 137.9–140.4: "Take her to a motel. Make love to her, Jim" (sexual)
+// EXCLUDE 137.6–140.1: "Take her to a motel. Make love to her, Jim" (sexual; CHECKS 2026-11-28: the captions: “take” 137.7, the reply “No” 140.2)
 // EXCLUDE 146.5–152.4: "Just do it for Stanley… climb on top of her" (sexual)
 // EAR CHECK: 90.3 s en "All right, great, Scott." is likely "All right, great. So," (ja follows that)
+// CHECKS 2026-11-28: segment ends pulled 0.4 s before the EXCLUDE they ran into (the player plays on 0.4 s): c1;
+// started earlier to keep the minimum length after that: c1.
 import type { Clip } from '../types.ts';
 
 export const prankUtica: Clip = {
@@ -226,7 +228,7 @@ export const prankUtica: Clip = {
       mean: 'first of all ＝ まず第一に（言うことがいくつかある時の前置き）。無線で名前を連呼され、ばれるのが心配。',
       trap: 'help が聞こえるので、助けを呼ぶ話と考えがち。first of all のすぐあとが一つ目の頼み。',
       use: 'First of all, thank you for coming.（まず、来てくれてありがとう）' },
-    { id: 'c1', skill: 'pragma', level: 'B1', point: 'notdoing', ctx: true, seg: [140.4, 146.4],
+    { id: 'c1', skill: 'pragma', level: 'B1', point: 'notdoing', ctx: true, seg: [140.1, 146.1],
       stem: 'How does Jim answer the idea?', ja: 'その案に、ジムはどう答える？',
       choices: ['He says no to it', 'He says he will try', 'He says maybe later'], a: 0,
       choicesJa: ['断る', 'やってみると言う', 'あとでなら、と言う'],

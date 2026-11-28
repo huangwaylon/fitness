@@ -11,6 +11,7 @@
 // EXCLUDE 155.4–172.2
 // SKIP 155.4–172.2: the "this kind" joke on Martin and the "slaves" line
 // EAR CHECK: 252.6 s p3 g3 — "it's really your call" assumed Jim's and "Cool. Thank you." the man at the desk's
+// CHECKS 2026-11-28: segment ends pulled 0.4 s before the EXCLUDE they ran into (the player plays on 0.4 s): d5.
 import type { Clip } from '../types.ts';
 
 export const theMerger: Clip = {
@@ -67,7 +68,7 @@ export const theMerger: Clip = {
       trap: '日本語の「いえいえ、古いものです」とけんそんしがちだが、英語ではまず thanks と受け取る。',
       use: 'I love your bag! — Oh, thanks. It was a gift.（そのバッグすてき！—ありがとう、もらい物なの）' },
 
-    { id: 'd5', skill: 'detail', level: 'B1', point: 'boss', ctx: true, seg: [75.4, 83.3],
+    { id: 'd5', skill: 'detail', level: 'B1', point: 'boss', ctx: true, seg: [75.4, 83.1],
       stem: 'What does Michael say he really is?',
       ja: 'マイケルは、自分は本当は何だと言う？',
       choices: ['Their boss, Michael Scott', 'A robot from the future', 'A man from Mars'], a: 0,

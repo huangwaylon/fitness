@@ -10,6 +10,8 @@
 // EXCLUDE 130.2–133.1 (the crude detail of where Ben's kidney stone is lodged)
 // SKIP 165–185: music and the end card; whisper's lone "You're good." at 184 s
 // EXCLUDE 158.3–159.9: swear (“screw you, Partridge”)
+// CHECKS 2026-11-28: segment ends pulled 0.4 s before the EXCLUDE they ran into (the player plays on 0.4 s): p3 g1 d2;
+// started earlier to keep the minimum length after that: g1.
 import type { Clip } from '../types.ts';
 
 export const iceClown: Clip = {
@@ -208,7 +210,7 @@ export const iceClown: Clip = {
       mean: 'sure 〜, but … ＝ 確かに〜、でも…。相手の言い分を一度認めてから、自分の意見を言う形。',
       trap: 'sure（確かに）のすぐあとが、認めた中身。but のあとは「許してくれるのは大事だった」という言い返し。',
       use: 'Sure, it’s expensive. But it’s worth it.（確かに高い。でも価値はある）' },
-    { id: 'p3', skill: 'pragma', level: 'B2', point: 'whereis', ctx: true, seg: [122.4, 130.0],
+    { id: 'p3', skill: 'pragma', level: 'B2', point: 'whereis', ctx: true, seg: [122.4, 129.8],
       stem: 'What does the official mean by “then where is he?”',
       ja: '「then where is he?」で、町の人は何を言いたい？',
       choices: ['Ben doesn’t really care', 'He wants the hospital name', 'Ben is hiding close by'], a: 0,
@@ -241,7 +243,7 @@ export const iceClown: Clip = {
       mean: 'She’d ＝ She had。出身ではなく、住んだことがあるだけ。',
       trap: 'She’s なら「ズ」が聞こえる。She lived なら She のあとに音がない。「ド」なら She’d。',
       use: 'I’d never been there before.（それまで一度も行ったことがなかった）' },
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'arc', reveals: ['cared'], seg: [143.0, 158.15],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'arc', reveals: ['cared'], seg: [142.9, 157.9],
       stem: 'What does Leslie keep saying about Ben?',
       ja: 'レスリーはベンについて、何度も何と言う？',
       choices: ['He’s better than all of them', 'He’s not as good as Judy Garland', 'He’s too sick to care about the town'], a: 0,
@@ -272,7 +274,7 @@ export const iceClown: Clip = {
       mean: '言いすぎた自分に、自分でつっこむ。but のあと比べる相手を町の人へ下げた。',
       trap: '口論中なので相手への反論に聞こえやすい。but のあとの比べる相手の変化で決まる。',
       use: 'Okay, that’s crazy. Let me take that back.（いや、それは言いすぎ。取り消す）' },
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'cared', seg: [151.1, 158.15],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'cared', seg: [151.1, 157.9],
       stem: 'Why does Leslie say Ben is better than them?',
       ja: 'ベンのほうが町の人より上だ、とレスリーはなぜ言う？',
       choices: ['He worked hard for the town', 'He came all this way today', 'He forgave the town'], a: 0,

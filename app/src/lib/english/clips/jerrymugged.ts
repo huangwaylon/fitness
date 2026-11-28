@@ -11,6 +11,7 @@
 // EXCLUDE 167.3–169.3: the Klondike-bar line (“kill your wife”)
 // SKIP 166–202: Tom's teasing and the Klondike-bar line, then the outro (whisper's “Thank you” at 172–202 runs past the clip)
 // EXCLUDE 80.4–87.4: swear (“the doofus that got his ass kicked”)
+// CHECKS 2026-11-28: segment ends pulled 0.4 s before the EXCLUDE they ran into (the player plays on 0.4 s): g1 t1 n1.
 import type { Clip } from '../types.ts';
 
 export const jerryMugged: Clip = {
@@ -107,7 +108,7 @@ export const jerryMugged: Clip = {
       trap: 'possess（取りつく）から、誰かにやらされた話だと思いやすい。叱るときの決まった言い方。',
       use: 'What possessed you to buy that?（なんでそんなの買ったの）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'outcome', reveals: ['stunt'], seg: [59.2, 80.4],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'outcome', reveals: ['stunt'], seg: [59.2, 80],
       stem: 'What does Leslie’s TV appearance get her?', ja: 'テレビに出た結果、レスリーは何を得る？',
       choices: ['Money, but an angry boss', 'Praise, but no money', 'A new head of security'], a: 0,
       choicesJa: ['お金。でも上司は怒っている', 'ほめられるが、お金はない', '新しい警備の責任者'],
@@ -140,7 +141,7 @@ export const jerryMugged: Clip = {
       trap: 'upset が先に聞こえ、「怒りを見せるな」と考えがち。禁止の中身は do not のあと。',
       use: 'Never badmouth your old boss.（前の上司の悪口は言わないこと）' },
 
-    { id: 't1', skill: 'attitude', level: 'B2', point: 'stunt', seg: [70, 80.4],
+    { id: 't1', skill: 'attitude', level: 'B2', point: 'stunt', seg: [70, 80],
       stem: 'How does Paul feel when he tells her the news?', ja: '知らせを伝えるとき、ポールはどんな気持ち？',
       choices: ['Annoyed her trick worked', 'Glad the money finally came', 'Happy the mayor agreed'], a: 0,
       choicesJa: ['彼女の作戦がうまくいって不満', 'やっとお金が来てうれしい', '市長が賛成してうれしい'],
@@ -151,7 +152,7 @@ export const jerryMugged: Clip = {
       trap: 'happy や worked から、喜んでいるように聞こえるが、little stunt（小細工）という見下す言葉が本音。',
       use: 'Happy now? You got your way.（満足？思いどおりだね）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'amount', seg: [71.3, 80.4], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'amount', seg: [71.3, 80], keep: true,
       stem: 'How much will the mayor move to the parks?', ja: '市長は公園にいくら回す？',
       choices: ['$250', '$2,500', '$25,000'], a: 1,
       choicesJa: ['250ドル', '2,500ドル', '25,000ドル'],

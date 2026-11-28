@@ -9,6 +9,7 @@
 // (a film title), 190 s (the golf term “away”). Kept out: Jamm's “fat Hawaiian guy” and his “you racist” reply.
 // EXCLUDE 106.7–109.2
 // EXCLUDE 121–123.6
+// CHECKS 2026-11-28: segment ends pulled 0.4 s before the EXCLUDE they ran into (the player plays on 0.4 s): c1.
 import type { Clip } from '../types.ts';
 
 export const snowCones: Clip = {
@@ -160,7 +161,7 @@ export const snowCones: Clip = {
       trap: 'carrying clubs が聞こえるので、運ぶ係と考えがち。more than just は「だけじゃない」。',
       use: 'It’s more than just a job.（ただの仕事じゃないんだ）' },
 
-    { id: 'c1', skill: 'pragma', level: 'B1', point: 'thanks', ctx: true, seg: [98.3, 106.6],
+    { id: 'c1', skill: 'pragma', level: 'B1', point: 'thanks', ctx: true, seg: [98.3, 106.3],
       stem: 'How does Jamm answer “nice putter”?',
       ja: '「nice putter（いいパターですね）」に、ジャムは何と答える？',
       choices: ['He says thank you', 'He says it’s nothing special', 'He says it’s brand new'], a: 0,

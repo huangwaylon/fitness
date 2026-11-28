@@ -15,6 +15,7 @@
 // EXCLUDE 143–148 (a spelled-out insult)
 // EXCLUDE 184–188 (a prostitution joke)
 // SKIP 182–219.6: a prostitution joke, then garbled talk and music
+// CHECKS 2026-11-28: segment ends pulled 0.4 s before the EXCLUDE they ran into (the player plays on 0.4 s): p2 n1.
 import type { Clip } from '../types.ts';
 
 export const godfather: Clip = {
@@ -166,7 +167,7 @@ export const godfather: Clip = {
       trap: 'family の温かい響きで誘いに聞こえやすい。just（〜だけ）が断りの中心。',
       use: 'Sorry, this table is just for staff.（すみません、このテーブルは職員用です）' },
 
-    { id: 'p2', skill: 'pragma', level: 'B2', point: 'funny', ctx: true, seg: [84.7, 94],
+    { id: 'p2', skill: 'pragma', level: 'B2', point: 'funny', ctx: true, seg: [84.7, 93.6],
       stem: 'What do they say to “But I’m the godfather!”?',
       ja: '「But I’m the godfather!」に、何と返される？',
       choices: ['Funny, but that’s not true', 'Funny, please keep doing it', 'Funny, tell it again'], a: 0,
@@ -306,7 +307,7 @@ export const godfather: Clip = {
       trap: '直前の Eagles（アメフトのチーム）から試合の話と考えがち。決め手は say goodbye。',
       use: 'We came to say goodbye.（お見送りに来ました）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'months', seg: [173.7, 184], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'months', seg: [173.7, 183.6], keep: true,
       stem: 'How long will the young adult group be away?',
       ja: '若者の会は、どのくらい出かける？',
       choices: ['Three weeks', 'Three months', 'Six months', 'A year'], a: 1,

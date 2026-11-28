@@ -17,6 +17,8 @@
 // she can get it herself, don't try to fix it, legs/calves, That really sucks → thanks, don't apologize, a girl could
 // ask for. Not here: you asked for it, I see how it is, out of hand, you've taken it over, Chris wants to help
 // (annclub); sushi and cigars, I don't / I feel amazing, you know what?, I don't care, That sucks (ronwhiners).
+// CHECKS 2026-11-28: “My boobs are getting really sore” (13.4–14.7) out; i2 starts after it.
+// EXCLUDE 13.4–14.7 (“My boobs are getting really sore”)
 import type { Clip } from '../types.ts';
 
 export const goodHusband: Clip = {
@@ -61,7 +63,7 @@ export const goodHusband: Clip = {
       trap: '次にお腹の話が続くので、お腹を選びがち。up と to my neck を聞く。',
       use: 'I walked all the way home.（家までずっと歩いた）' },
 
-    { id: 'i2', skill: 'gist', level: 'B1', point: 'fix', seg: [5.5, 33.0],
+    { id: 'i2', skill: 'gist', level: 'B1', point: 'fix', seg: [14.7, 33],
       stem: 'What does Chris do about Ann’s complaints?',
       ja: 'アンの不満に、クリスはどうする？',
       choices: ['He tries to fix each one', 'He calls a doctor for her', 'He laughs at all of them'], a: 0,

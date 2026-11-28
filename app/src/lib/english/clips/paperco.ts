@@ -11,6 +11,7 @@
 // EAR CHECK: 135.2–136.2 s h4 (retired) — whisper "I'll do you one better", captions "I'll do you want better".
 // EAR CHECK: 69 s h1 — “Michael, we can hear you” is Pam's (assumed); 210–216 s d2 — “We already offer free delivery”
 // is Pam's and “They don't know that” Michael's (assumed).
+// CHECKS 2026-11-28: segment ends pulled 0.4 s before the EXCLUDE they ran into (the player plays on 0.4 s): n2.
 import type { Clip } from '../types.ts';
 
 export const paperco: Clip = {
@@ -54,7 +55,7 @@ export const paperco: Clip = {
       trap: 'only を聞き落とすと、本人が落ちこんで聞こえる。言い方の向きと数字の向きを分けて聞く。',
       use: 'Look on the bright side.（いい面を見ようよ）' },
 
-    { id: 'n2', skill: 'number', level: 'B1', point: 'count', reveals: ['viewed'], seg: [39, 47], keep: true,
+    { id: 'n2', skill: 'number', level: 'B1', point: 'count', reveals: ['viewed'], seg: [39, 46.8], keep: true,
       stem: 'Of those who haven’t replied, how many have viewed it?',
       ja: '返事をしていない人のうち、何人が見た？',
       choices: ['82', '702', '782', '788'], a: 2,

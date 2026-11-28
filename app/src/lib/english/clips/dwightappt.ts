@@ -8,6 +8,7 @@
 // EXCLUDE 9–15 (the anus lines)
 // EAR CHECK: 100.25 s r1 — the cut falls in the pause after "You know what, Pam?", before "You're right"
 // EAR CHECK: 15 s who says "Okay, um, Stanley, maybe you can just unspool…" (not Dwight's voice; Dwight speaks next)
+// CHECKS 2026-11-28: widened to hold the line's starred words by the captions' times: i3.
 import type { Clip } from '../types.ts';
 
 export const dwightAppt: Clip = {
@@ -166,7 +167,7 @@ export const dwightAppt: Clip = {
       trap: 'let me と put you がつながり、語の数がわかりにくい。決まった言い方ごと聞く。',
       use: 'Can I put you on hold?（保留にしてもいいですか）' },
 
-    { id: 'i3', skill: 'detail', level: 'B2', point: 'excuse', reveals: ['tellher'], ctx: true, seg: [69.4, 78.5],
+    { id: 'i3', skill: 'detail', level: 'B2', point: 'excuse', reveals: ['tellher'], ctx: true, seg: [69.4, 79.4],
       stem: 'What does Dwight tell Nate to do?',
       ja: 'ドワイトはネイトに何をしろと言う？',
       choices: ['Invent an excuse for Pam', 'Pass Pam’s call to him', 'Tell Pam the real reason'], a: 0,

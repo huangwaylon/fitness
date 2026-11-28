@@ -7,6 +7,7 @@
 // is one side only: he repeats what he hears.
 // SKIP 130.5–154.8: “It's just tragic” repeated, then the end music Named in the audio: Jim,
 // Creed, Debbie Brown, Dwight; the meeting's leader and the others are never named.
+// CHECKS 2026-11-28: widened to hold the line's starred words by the captions' times: a1.
 import type { Clip } from '../types.ts';
 
 export const creedDebbie: Clip = {
@@ -155,7 +156,7 @@ export const creedDebbie: Clip = {
       mean: '会うはずの相手の性別も分からないのは、行っていない証拠。思い出すふりで名前を聞き出している。',
       trap: '名前を伏せるのは配慮にも見えるが、すぐあと「誰がいなかった？」と聞く。知らないから聞いている。',
       use: 'Remind me, who was I meeting?（えっと、誰と会う予定だったっけ）' },
-    { id: 'a1', skill: 'infer', level: 'B2', point: 'perfect', reveals: ['blame'], ctx: true, seg: [65.0, 75.0],
+    { id: 'a1', skill: 'infer', level: 'B2', point: 'perfect', reveals: ['blame'], ctx: true, seg: [65, 76.3],
       stem: 'Why does Creed say “perfect” after the date?', ja: 'クリードはなぜ日付のあと「perfect」と言う？',
       choices: ['He got a name and day', 'The mill will fix it', 'The problem is over now'], a: 0,
       choicesJa: ['名前と日にちがわかった', '工場が直してくれる', '問題はもう終わった'],

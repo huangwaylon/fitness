@@ -13,6 +13,8 @@
 // EAR CHECK: 15.7 s s1 — “can't you just” (both sources); the claim is that “can't” keeps its long “æ” though the t is
 //   barely there
 // EAR CHECK: 59.9 s x1 — “drive up after” links into one stretch (both sources have the words)
+// CHECKS 2026-11-28: “weird sex stuff to my little sister” (44.9–48.4) out; g2 starts after it.
+// EXCLUDE 44.9–48.4 (“…you're doing weird sex stuff to my little sister”)
 import type { Clip } from '../types.ts';
 
 export const getaway: Clip = {
@@ -187,7 +189,7 @@ export const getaway: Clip = {
       trap: 'can’t you just の形は前と同じなので、またパーティーをずらす話と勘違いしやすい。最後まで聞く。',
       use: 'Can we do it the next day instead?（代わりに次の日にしない？）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'move', reveals: ['nextday', 'after'], seg: [39.3, 61.1],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'move', reveals: ['nextday', 'after'], seg: [48.4, 64.0],
       stem: 'How does the talk end?',
       ja: '話し合いはどう終わる？',
       choices: ['The couple stay for the party', 'The party moves to next week', 'The couple leave this weekend'], a: 0,
@@ -246,16 +248,6 @@ export const getaway: Clip = {
       trap: 'first を「初めて開く会」とだけ取ると、年齢と結びつかない。first birthday は1歳。',
       use: 'It’s his first birthday next week.（来週、あの子の1歳の誕生日）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'after', seg: [56.6, 61.1],
-      stem: 'Type what is said: “We can just ___ the party.” (3 words)', answer: 'drive up after',
-      ja: '聞こえた言葉を書こう：「We can just ___ the party.」（3語）',
-      cue: '「just」のあとの3語。',
-      line: 'We can just *drive up after* the party.',
-      said: '「パーティーのあとで車で行けばいいし」と言う。',
-      mean: 'drive up ＝ 車で（遠くへ）行く。drive up after がひと続きにつながる。',
-      trap: 'up と after がつながり、1語に聞こえやすい。語の切れ目は意味から考える。',
-      use: 'We’ll drive up on Saturday.（土曜に車で行くよ）' },
-
     { id: 'a2', skill: 'attitude', level: 'B2', point: 'stay', reveals: ['after'], seg: [57.1, 61.0], retired: true,
       stem: 'When the couple agree to stay, how does the agreement sound?',
       choices: ['Giving in, but saving the trip for later', 'Glad to have a reason to skip the trip',
@@ -266,6 +258,16 @@ export const getaway: Clip = {
       mean: '譲りながら、すぐ代わりの案を出している。しぶしぶだが本気の了承。',
       trap: 'All right を投げやりと取りやすいが、すぐ具体的な案を足す。旅行はやめずに後ろへずらしただけ。',
       use: 'All right, we’ll wait. We can eat later.（分かった、待つよ。食べるのは後で）' },
+
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'after', seg: [58.5, 61.1],
+      stem: 'Type what is said: “We can just ___ the party.” (3 words)', answer: 'drive up after',
+      ja: '聞こえた言葉を書こう：「We can just ___ the party.」（3語）',
+      cue: '「just」のあとの3語。',
+      line: 'We can just *drive up after* the party.',
+      said: '「パーティーのあとで車で行けばいいし」と言う。',
+      mean: 'drive up ＝ 車で（遠くへ）行く。drive up after がひと続きにつながる。',
+      trap: 'up と after がつながり、1語に聞こえやすい。語の切れ目は意味から考える。',
+      use: 'We’ll drive up on Saturday.（土曜に車で行くよ）' },
 
     { id: 'c1', skill: 'infer', level: 'B2', point: 'notwhy', ctx: true, seg: [61.1, 67.1],
       stem: 'What does Monica tell Chandler about the Maxim plan?',

@@ -11,6 +11,8 @@
 // agrees: the other couple only starts doubting) and buy it back at 122.3 s.
 // EAR CHECK: 87.4 s — "Theodore, we would like to return that ring" is Chris and Ann's (f3); A2 had it as the other couple's
 // EXCLUDE 70.2–71.6 (“You let me pee with the door open”: bathroom line)
+// CHECKS 2026-11-28: segment ends pulled 0.4 s before the EXCLUDE they ran into (the player plays on 0.4 s): g2;
+// started earlier to keep the minimum length after that: g2.
 import type { Clip } from '../types.ts';
 
 export const notShotgun: Clip = {
@@ -124,7 +126,7 @@ export const notShotgun: Clip = {
       trap: 'アルファベット3文字なので頭文字に聞こえやすい。予定表の「未定」でよく使う略語。',
       use: 'Time and place: TBD.（日時と場所は未定）' },
 
-    { id: 'g2', skill: 'gist', level: 'B2', point: 'feelmarried', reveals: ['date', 'tbd'], seg: [54.9, 70.1],
+    { id: 'g2', skill: 'gist', level: 'B2', point: 'feelmarried', reveals: ['date', 'tbd'], seg: [54.8, 69.8],
       stem: 'Why do Chris and Ann start to doubt the wedding?',
       ja: 'クリスとアンは、なぜ結婚式に迷い始める？',
       choices: ['They feel married already', 'They can’t agree on a date', 'Weddings take too much work'], a: 0,

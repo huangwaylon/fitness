@@ -10,6 +10,8 @@
 // EXCLUDE 121.3–126.95 (an ethnic stereotype, to the end of json3’s “Mexican.”)
 // EXCLUDE 142.3–145.3 (“one white, one Latina” joke)
 // EXCLUDE 165.3–166.3 (“Good girl” to Oscar)
+// CHECKS 2026-11-28: segment ends pulled 0.4 s before the EXCLUDE they ran into (the player plays on 0.4 s): m1 d5 g2;
+// started earlier to keep the minimum length after that: d5.
 import type { Clip } from '../types.ts';
 
 export const suckit: Clip = {
@@ -238,7 +240,7 @@ export const suckit: Clip = {
       trap: 'smarter が2回聞こえるが、前に not がある。決め手は just のあと。',
       use: 'You were right about the time.（時間のことは君が正しかった）' },
 
-    { id: 'm1', skill: 'detail', level: 'B1', point: 'actually', reveals: ['correct'], seg: [111, 121.2],
+    { id: 'm1', skill: 'detail', level: 'B1', point: 'actually', reveals: ['correct'], seg: [111, 120.9],
       stem: 'Why is Oscar called “Actually”?',
       ja: 'オスカーはなぜ「Actually」と呼ばれる？',
       choices: ['He corrects facts and grammar', 'He checks people’s emails', 'He tells long stories'], a: 0,
@@ -272,7 +274,7 @@ export const suckit: Clip = {
       trap: 'on me から「私のせい」と勘違いしやすい。コーヒーの話なので支払いのこと。',
       use: 'Lunch is on me today.（今日のランチはおごるよ）' },
 
-    { id: 'd5', skill: 'detail', level: 'B1', point: 'forget', ctx: true, seg: [136.2, 142.2],
+    { id: 'd5', skill: 'detail', level: 'B1', point: 'forget', ctx: true, seg: [135.9, 141.9],
       stem: 'What does Michael say Oscar is forgetting?',
       ja: 'マイケルは、オスカーが何を忘れていると言う？',
       choices: ['Their little chat', 'To pay for the coffee', 'His coffee cup'], a: 0,
@@ -284,7 +286,7 @@ export const suckit: Clip = {
       trap: 'コーヒーの席なので、支払いや忘れ物と考えがち。決め手は What? のあとの This chat。',
       use: 'Wait, you’re forgetting something.（待って、何か忘れてるよ）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'talking', seg: [145.4, 165.2],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'talking', seg: [145.4, 164.9],
       stem: 'What is Michael’s point over coffee?',
       ja: 'コーヒーを飲みながら、マイケルが言いたいことは？',
       choices: ['Keep talking to each other', 'Bosses should be strict', 'America must watch China'], a: 0,

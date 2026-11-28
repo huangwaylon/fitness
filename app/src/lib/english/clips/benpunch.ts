@@ -10,6 +10,7 @@
 // EXCLUDE 108.5–111.4 (vulgar)
 // EXCLUDE 151.8–159.3 (slur)
 // SKIP 151.5–179.5: the slur, the punch and the apologies (left out)
+// CHECKS 2026-11-28: segment ends pulled 0.4 s before the EXCLUDE they ran into (the player plays on 0.4 s): m2.
 import type { Clip } from '../types.ts';
 
 export const benpunch: Clip = {
@@ -272,7 +273,7 @@ export const benpunch: Clip = {
       trap: '本気の合図のあとで願いに聞こえるが、冗談でもない。前の条件と結果を結びつける。',
       use: 'A deal’s a deal. Pay up!（約束は約束。払ってね）' },
 
-    { id: 'm2', skill: 'marker', level: 'B2', point: 'aside', seg: [145.0, 151.5],
+    { id: 'm2', skill: 'marker', level: 'B2', point: 'aside', seg: [145, 151.4],
       stem: 'What does “*All joking aside*” mean?',
       ja: '「All joking aside」はどういう意味？',
       choices: ['Now I’m being serious', 'Here is one more joke', 'It is time to go'], a: 0,

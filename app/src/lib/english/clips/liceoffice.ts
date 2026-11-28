@@ -15,6 +15,11 @@
 // EAR CHECK: 145–174 s d6 — the one who starts "Meredith, I need to tell you something" and talks to camera is taken as
 //   Pam (no name in this stretch; Pam is named at 72.1 s and 264.4 s in the same storyline)
 // EAR CHECK: 223.0 s s1 — "We don't want it to last longer": the weak "don't" (both sources have it)
+// CHECKS 2026-11-28: “even when I pee” (99.2–100.2) out; d3 starts after it.
+// SKIP 80.2–100.2: hand-washing talk up to the excluded line (d3 started at 95.2 before it)
+// EXCLUDE 99.2–100.2 (“even when I pee”)
+// CHECKS 2026-11-28: segment ends pulled 0.4 s before the EXCLUDE they ran into (the player plays on 0.4 s): p4;
+// started earlier to keep the minimum length after that: p4.
 import type { Clip } from '../types.ts';
 
 export const liceOffice: Clip = {
@@ -153,14 +158,14 @@ export const liceOffice: Clip = {
       trap: '店員が注文を聞く言葉と考えがち。責められたあとなので開き直り。',
       use: 'What do you want? I’m only human.（しょうがないでしょ、人間だもの）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'angela', seg: [95.2, 105.3],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'angela', seg: [100.2, 105.3],
       stem: 'Why does Angela say she still got lice?',
       ja: 'アンジェラは、なぜシラミがうつったと言う？',
       choices: ['Because of Meredith', 'She forgot to wash', 'Because of Dwight'], a: 0,
       choicesJa: ['メレディスのせい', '洗うのを忘れた', 'ドワイトのせい'],
       cue: '「Not when it comes to」のあと',
       line: 'Apparently, none of that is protection enough. *Not when it comes to Meredith*.',
-      said: '「手は1日6回洗う。でも、メレディスが相手ではそれでも足りない」と言う。',
+      said: '「どれもうつらないための守りとしては足りない。メレディスが相手ではね」と言う。',
       mean: 'when it comes to 〜 ＝ 〜のこととなると。相手がメレディスだからだ、と言う。',
       trap: '「どれも足りない」から、洗い方の話と考えがち。決め手は when it comes to のあとの名前。',
       use: 'When it comes to food, I’m picky.（食べ物のこととなると、うるさいんです）' },
@@ -222,7 +227,7 @@ export const liceOffice: Clip = {
       trap: 'what does it が「ワダズィッ」と一続きになる。5語でひとまとまり。',
       use: 'What does it look like I’m doing? I’m cooking.（見て分からない？料理してるの）' },
 
-    { id: 'p4', skill: 'pragma', level: 'B1', point: 'hold', ctx: true, seg: [150.8, 156.8],
+    { id: 'p4', skill: 'pragma', level: 'B1', point: 'hold', ctx: true, seg: [150.5, 156.5],
       stem: 'What does Meredith ask Pam to do?',
       ja: 'メレディスはパムに何をたのむ？',
       choices: ['Stop talking for a moment', 'Hold her hair for her', 'Say it all again'], a: 0,

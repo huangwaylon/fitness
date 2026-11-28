@@ -10,6 +10,7 @@
 // EXCLUDE 78.7–80.8 (sexual slang "jump-offs")
 // EAR CHECK: 127.7 s s1 / 260.3 s x1 / 281.2 s s2 — the reductions are there (an audible ’ll in “I’ll be paying”;
 //   “get in touch with” run together; “on our” linked, “our” weak); both sources have these words
+// CHECKS 2026-11-28: segment ends pulled 0.4 s before the EXCLUDE they ran into (the player plays on 0.4 s): g1.
 import type { Clip } from '../types.ts';
 
 export const offGrid: Clip = {
@@ -42,7 +43,7 @@ export const offGrid: Clip = {
       trap: '「マンス」なら month。week は「ウィーク」、few months は「フュー」で less than がなく、years は「イヤーズ」。',
       use: 'I’ve lived here for less than a year.（ここに住んで1年たたない）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'trigger', reveals: ['month', 'invasion'], seg: [5.6, 25.3],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'trigger', reveals: ['month', 'invasion'], seg: [5.6, 25.2],
       stem: 'What makes Ron angry at the start?',
       ja: '最初、ロンは何に怒っている？',
       choices: ['Mail came to his new address', 'Mail came in Diane’s own name', 'His P.O. box was full'], a: 0,

@@ -17,6 +17,7 @@
 // EXCLUDE 187.7–190.6 (“this-ish” and the hashtag)
 // EXCLUDE 197.5–205.9 (the hashtags and their word-order talk)
 // EXCLUDE 253.2–254.7 (the hashtag choice)
+// CHECKS 2026-11-28: segment ends pulled 0.4 s before the EXCLUDE they ran into (the player plays on 0.4 s): p1 n2.
 import type { Clip } from '../types.ts';
 
 export const donnaPosts: Clip = {
@@ -25,7 +26,7 @@ export const donnaPosts: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    { id: 'p1', skill: 'pragma', level: 'B2', point: 'double', seg: [6.5, 14.9],
+    { id: 'p1', skill: 'pragma', level: 'B2', point: 'double', seg: [6.5, 14.7],
       stem: 'What does Leslie mean by “a double standard”?',
       ja: 'レスリーの「a double standard」はどういう意味？',
       choices: ['One rule for him, one for her', 'Two rules that are both fair', 'A question with two answers'], a: 0,
@@ -130,7 +131,7 @@ export const donnaPosts: Clip = {
       trap: 'fire（火）から火事を連想しやすいが、人を fire するなら「クビにする」。',
       use: 'I won’t let them fire you.（あなたをクビにはさせない）' },
 
-    { id: 'n2', skill: 'number', level: 'B1', point: 'time', seg: [68.4, 72.9],
+    { id: 'n2', skill: 'number', level: 'B1', point: 'time', seg: [68.4, 72.6],
       stem: 'What time is the first post from?',
       ja: '最初の投稿は何時のもの？',
       choices: ['9:02 a.m.', '9:20 a.m.', '9:12 a.m.', '2:09 a.m.'], a: 0,

@@ -13,6 +13,7 @@
 // Untested on purpose: 30–36.6 s ("I… sad" / "I said": the sources split), 45–55 s (rally crowd, garbled),
 // 100.5–101.8 s ("mistresses"), 110.8–113.4 s ("Great body"), 136.8 s ("Who wants a panini?":
 // the sources split), 151–153.8 s (captions "get animal from our backs", whisper "get Ann off of our backs").
+// CHECKS 2026-11-28: segment ends pulled 0.4 s before the EXCLUDE they ran into (the player plays on 0.4 s): respect.
 import type { Clip } from '../types.ts';
 
 export const jerryPlace: Clip = {
@@ -138,7 +139,7 @@ export const jerryPlace: Clip = {
       trap: 'Harsh words だけで非難と取りやすい。but のあとが言いたいこと。',
       use: 'Pricey, but I do love this place.（高いけど、この店は本当に好き）', retired: true },
 
-    { id: 'respect', skill: 'detail', level: 'B2', point: 'respect', ctx: true, seg: [61.7, 72.4],
+    { id: 'respect', skill: 'detail', level: 'B2', point: 'respect', ctx: true, seg: [61.7, 72.2],
       stem: 'Why does Jen say Leslie should cancel her events?',
       ja: 'ジェンは、なぜレスリーはイベントを中止すべきだと言う？',
       choices: ['To be kind to Nick’s family', 'Because Leslie is losing badly', 'Because the town is angry'], a: 0,

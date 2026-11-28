@@ -11,6 +11,7 @@
 // man who checks on the drunk woman (95 s) and the cleanse pair are not named. Left out: the owner's nickname (22 s),
 // the rap (62–72 s), the crosstalk at 124–141 s, the drunk talk at 191–213 s, "Your mother's butt" (233 s).
 // EXCLUDE 208.8–213.2
+// CHECKS 2026-11-28: segment ends pulled 0.4 s before the EXCLUDE they ran into (the player plays on 0.4 s): s2.
 import type { Clip } from '../types.ts';
 
 export const snakeJuice: Clip = {
@@ -310,7 +311,7 @@ export const snakeJuice: Clip = {
       trap: 'alert（しっかり）から、仕事や上司の話と考えがち。答えは直後の rat poison と Everybody’s wasted（泥酔）。',
       use: 'Someone has to stay sober tonight.（今夜は誰かしらふでいないと）' },
 
-    { id: 's2', skill: 'sound', level: 'B1', point: 'musicdown', seg: [203.6, 208.6],
+    { id: 's2', skill: 'sound', level: 'B1', point: 'musicdown', seg: [203.6, 208.4],
       stem: 'Fill the gap: “Turn this music ___.”',
       ja: '「Turn this music ___.」の空所は？',
       choices: ['down', 'up', 'off'], a: 0,

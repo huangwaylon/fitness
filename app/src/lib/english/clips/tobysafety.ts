@@ -9,6 +9,7 @@
 // EAR CHECK: 96.4 s w3 — merged whisper line: check the seg starts after "that dim light is a b…" and holds "Actually, you did"
 // EAR CHECK: 52.5 s a1 — "…skip ahead to the really dangerous stuff" taken as Michael's (no name in the line)
 // EXCLUDE 92–100.6: swear (“that dim light is a bitch”; whisper runs it into one long line)
+// CHECKS 2026-11-28: segment ends pulled 0.4 s before the EXCLUDE they ran into (the player plays on 0.4 s): w2.
 import type { Clip } from '../types.ts';
 
 export const tobySafety: Clip = {
@@ -213,7 +214,7 @@ export const tobySafety: Clip = {
       trap: 'vomit だけ聞くと体調の話と思いやすい。due to のあとが理由。',
       use: 'I’m dying of boredom.（退屈で死にそう）' },
 
-    { id: 'w2', skill: 'detail', level: 'B1', point: 'winter', seg: [81, 92],
+    { id: 'w2', skill: 'detail', level: 'B1', point: 'winter', seg: [81, 91.6],
       stem: 'What brings on this sadness, says Toby?',
       ja: 'トビーによると、この気分の落ちこみの原因は？',
       choices: ['The low light of winter', 'Too much time at a desk', 'Cold rooms at the office'], a: 0,

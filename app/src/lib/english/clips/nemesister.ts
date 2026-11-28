@@ -10,6 +10,7 @@
 // 159–173 s ("Mission accomplished: the sequel"), 279–282 s (world knowledge).
 // x2: who asks "Did I miss anything?" at 205 s isn't settled (Freddie or Millicent), so the stem names no one.
 // EXCLUDE 158–159: swear (“People are pissed”)
+// CHECKS 2026-11-28: segment ends pulled 0.4 s before the EXCLUDE they ran into (the player plays on 0.4 s): i1.
 import type { Clip } from '../types.ts';
 
 export const spencerRoastsCarly: Clip = {
@@ -157,7 +158,7 @@ export const spencerRoastsCarly: Clip = {
       trap: 'Carly の名前が聞こえるのでカーリーと思いやすい。文の頭の名前は呼びかけ。',
       use: 'Listen, Tom, we’re in this together.（ねえトム、僕らは一緒だよ）' },
 
-    { id: 'i1', skill: 'infer', level: 'B2', point: 'mission', ctx: true, seg: [149.5, 158],
+    { id: 'i1', skill: 'infer', level: 'B2', point: 'mission', ctx: true, seg: [149.5, 157.6],
       stem: 'What does “*Mission accomplished*” mean here?',
       ja: 'ここでの「Mission accomplished」はどういう意味？',
       choices: ['I meant it to be mean', 'I finished it in time', 'I wanted you to like it'], a: 0,

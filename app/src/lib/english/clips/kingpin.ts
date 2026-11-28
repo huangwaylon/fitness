@@ -10,6 +10,8 @@
 // c1 was deleted before it shipped: never reuse c1.
 // EAR CHECK: 175.4 s imin — “I'm in” is Andy, before “bring me back two cheeseburgers”
 // EXCLUDE 261.9–266.4 (the "Parking while Indian?" racial gag)
+// CHECKS 2026-11-28: the weed lines (100.6–107.3) out: i2 (its point) retired.
+// EXCLUDE 100.6–107.3 (“someone planted a whole mess of weed… there's weed down there”)
 import type { Clip } from '../types.ts';
 
 export const kingpin: Clip = {
@@ -125,7 +127,7 @@ export const kingpin: Clip = {
       trap: '穴に住むのはつらそう、と考えがち。決め手は It’s awesome。',
       use: 'I’m staying with a friend for now.（今のところ友だちの家にいます）' },
 
-    { id: 'i2', skill: 'infer', level: 'B2', point: 'carrots', ctx: true, seg: [100.2, 109.85],
+    { id: 'i2', skill: 'infer', level: 'B2', point: 'carrots', ctx: true, seg: [100.2, 109.85], retired: true,
       stem: 'What does Andy’s reaction to the weed show?',
       ja: 'weed（マリファナ）と聞いたアンディの反応から、何が分かる？',
       choices: ['He didn’t know it was weed', 'He knew who grew it', 'He thinks they’re all lying'], a: 0,

@@ -9,6 +9,8 @@
 // EXCLUDE 55–63
 // EXCLUDE 70–77
 // EXCLUDE 149–152 (the menstrual-calendar thread and its callback)
+// CHECKS 2026-11-28: segment ends pulled 0.4 s before the EXCLUDE they ran into (the player plays on 0.4 s): f2 c1 d6
+// d5.
 import type { Clip } from '../types.ts';
 
 export const aprilMen: Clip = {
@@ -85,7 +87,7 @@ export const aprilMen: Clip = {
       mean: 'reserve ＝ 予約する。signature ＝ サイン、署名。technically ＝ 規則の上では。',
       trap: '議会の話が続くので、議員のサインと考えがち。決め手は without のあと。',
       use: 'I’d like to reserve a room.（部屋を予約したいのですが）' },
-    { id: 'f2', skill: 'phrase', level: 'B2', point: 'club', seg: [34.1, 37],
+    { id: 'f2', skill: 'phrase', level: 'B2', point: 'club', seg: [34.1, 36.6],
       stem: 'Paula says government was “*a boys’ club*.” What does she mean?', ja: 'ポーラの「a boys’ club」の意味は？',
       choices: ['Only men were welcome', 'Young men ran all of it', 'It was just a hobby'], a: 0,
       choicesJa: ['男だけが歓迎された', '若い男が仕切っていた', 'ただの趣味だった'],
@@ -105,7 +107,7 @@ export const aprilMen: Clip = {
       mean: 'report ＝ 報告する。文字どおりは「報告できてうれしい」→うれしいお知らせです。いい知らせを伝える前置き。',
       trap: 'report（レポート）から、書類を書く話と考えがち。ここは口で知らせること。',
       use: 'I’m happy to report that we won.（うれしいお知らせです、勝ちました）' },
-    { id: 'c1', skill: 'pragma', level: 'B1', point: 'perfect', seg: [48.6, 54.85], ctx: true,
+    { id: 'c1', skill: 'pragma', level: 'B1', point: 'perfect', seg: [48.6, 54.6], ctx: true,
       stem: 'What does Leslie admit after the Milton question?', ja: 'ミルトンの話が出たあと、レスリーは何を認める？',
       choices: ['There are still some problems', 'There are no problems now', 'It was much better in the past'], a: 0,
       choicesJa: ['まだ問題が残っている', '今はもう問題がない', '昔のほうがずっとよかった'],
@@ -115,7 +117,7 @@ export const aprilMen: Clip = {
       mean: 'things aren’t perfect ＝ 完璧ではない。直前の「今はいい場所」を少しゆずって認める言い方。',
       trap: '直前に「今は変態のいない場所」と言ったので、問題はないと考えがち。決め手は返事の aren’t perfect。',
       use: 'It’s not perfect, but it works.（完璧じゃないけど、使えるよ）' },
-    { id: 'd6', skill: 'detail', level: 'B1', point: 'jobs', seg: [65, 69.95],
+    { id: 'd6', skill: 'detail', level: 'B1', point: 'jobs', seg: [65, 69.6],
       stem: 'What was Paula’s commission for?', ja: 'ポーラの委員会は何のためのもの？',
       choices: ['More city jobs for women', 'Better pay for city workers', 'More women on the council'], a: 0,
       choicesJa: ['市役所で女性の仕事を増やす', '市の職員の給料を上げる', '議会の女性を増やす'],
@@ -273,7 +275,7 @@ export const aprilMen: Clip = {
       mean: 'the girl（女の子）と呼び、お菓子係にしている。リーダーと見ていない。',
       trap: 'girl から、若すぎる話と考えがち。決め手は get more snacks（お菓子係）。',
       use: 'I’ll get more snacks.（お菓子をもっと買ってくるね）' },
-    { id: 'd5', skill: 'pragma', level: 'B1', point: 'mine', seg: [142.35, 148.9], ctx: true,
+    { id: 'd5', skill: 'pragma', level: 'B1', point: 'mine', seg: [142.35, 148.6], ctx: true,
       stem: 'How does Leslie answer “She has to leave”?', ja: '「She has to leave」に、レスリーはどう答える？',
       choices: ['She stays because it’s hers', 'She goes to get snacks', 'She lets the men lead'], a: 0,
       choicesJa: ['自分の委員会だから残る', 'お菓子を買いに行く', '男たちに任せる'],

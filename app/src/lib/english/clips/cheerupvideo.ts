@@ -12,6 +12,7 @@
 // EXCLUDE 59.3–64.5 (the suicide joke, again)
 // EXCLUDE 180.9–182.9 (an insult)
 // SKIP 206–238.8: the dance (cheers, "Go", "Oh, yeah")
+// CHECKS 2026-11-28: segment ends pulled 0.4 s before the EXCLUDE they ran into (the player plays on 0.4 s): g1 f3 s1.
 import type { Clip } from '../types.ts';
 
 export const michaelCheerUp: Clip = {
@@ -56,7 +57,7 @@ export const michaelCheerUp: Clip = {
       trap: 'push を「ボタンを押す」と取りやすい。through がつくと「やり通す」。',
       use: 'I’m tired, but let’s push through.（疲れたけど、がんばろう）' },
 
-    { id: 'g1', skill: 'gist', level: 'B2', point: 'eitherway', reveals: ['burn', 'talkdown'], seg: [22.9, 46.8],
+    { id: 'g1', skill: 'gist', level: 'B2', point: 'eitherway', reveals: ['burn', 'talkdown'], seg: [22.9, 46.5],
       stem: 'Why will Michael need help, whatever the news is?',
       ja: 'どんな知らせでも、マイケルにはなぜ助けが必要？',
       choices: ['He may go wild either way', 'He will cry either way', 'He has to see Holly'], a: 0,
@@ -102,7 +103,7 @@ export const michaelCheerUp: Clip = {
       trap: 'burn（燃やす）だけ聞くと、怒りと思いやすい。理由は out of のあとに来る。',
       use: 'I almost cried out of joy.（うれしくて泣きそうだった）' },
 
-    { id: 'f3', skill: 'phrase', level: 'B2', point: 'talkdown', seg: [39.1, 46.8],
+    { id: 'f3', skill: 'phrase', level: 'B2', point: 'talkdown', seg: [39.1, 46.5],
       stem: 'What does “I am going to need some talking down” mean?',
       ja: '「I am going to need some talking down」はどういう意味？',
       choices: ['Someone must calm me down', 'Someone must talk to me less', 'Someone must stay with me'], a: 0,
@@ -125,7 +126,7 @@ export const michaelCheerUp: Clip = {
       trap: 'nobody… like は他人への不満に聞こえやすい。比べた結果、選ばれたのが誰かを聞くと、本人の話。',
       use: 'Nobody makes pancakes like my dad.（パンケーキは父のが一番）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'snot', seg: [52.4, 59.2],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'snot', seg: [52.4, 58.9],
       stem: 'What did “It’s not” sound like?',
       ja: '「It’s not」は何に聞こえた？',
       choices: ['It’s snot', 'It’s hot', 'It’s nice'], a: 0,

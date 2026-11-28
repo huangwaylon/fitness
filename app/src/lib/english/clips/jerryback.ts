@@ -7,6 +7,7 @@
 // 107–119 s (ink squid), 137 s (whisper noise), 236–239 s, 270–276 s. R4 restored h2, h3, h4 as context items.
 // Same scene as newjerry (a re-upload, reviewed later): its writer should avoid this bank's points.
 // EXCLUDE 289.7–293.3
+// CHECKS 2026-11-28: segment ends pulled 0.4 s before the EXCLUDE they ran into (the player plays on 0.4 s): g2.
 import type { Clip } from '../types.ts';
 
 export const jerryBack: Clip = {
@@ -322,7 +323,7 @@ export const jerryBack: Clip = {
       trap: 'all（みんな）から、みんな退職するという話に聞こえるが、ジェリーの言葉を信じていない。',
       use: 'That’s what they all say.（みんなそう言うんだよね）' },
 
-    { id: 'g2', skill: 'gist', level: 'B2', point: 'plan', reveals: ['one'], seg: [274.2, 289.6],
+    { id: 'g2', skill: 'gist', level: 'B2', point: 'plan', reveals: ['one'], seg: [274.2, 289.3],
       stem: 'What is Ron’s plan for Jerry?', ja: 'ジェリーについてのロンの計画は？',
       choices: ['He visits weekly to be teased', 'He works full-time again', 'He visits so he isn’t lonely'], a: 0,
       choicesJa: ['週1回来て、からかわれ役になる', 'またフルタイムで働く', 'さびしくないように来る'],

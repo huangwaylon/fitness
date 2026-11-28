@@ -14,6 +14,7 @@
 // EAR CHECK: 157.8–159.2 s s1 — “didn't you just” said as one weak “dinchu-just” (both sources: “didn't you just”)
 // EAR CHECK: 142.5–143.2 s x1 — “on my way” runs together; both sources agree on the words
 // EXCLUDE 80.4–87.4: swear (“the doofus that got his ass kicked”)
+// CHECKS 2026-11-28: segment ends pulled 0.4 s before the EXCLUDE they ran into (the player plays on 0.4 s): n1 d1.
 import type { Clip } from '../types.ts';
 
 export const jerryBurritoLie: Clip = {
@@ -143,7 +144,7 @@ export const jerryBurritoLie: Clip = {
       trap: 'happy で喜び、乾いた言い方で皮肉と取りやすい。成功は本当で、不満は呼び方に出る。',
       use: 'Nice little stunt you pulled there.（うまいことやったね）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'amount', seg: [74.4, 80.3],
+    { id: 'n1', skill: 'number', level: 'B1', point: 'amount', seg: [74.4, 80],
       stem: 'How much will the mayor send to the parks?', ja: '市長は公園にいくら回す？',
       choices: ['$250', '$2,000', '$2,500', '$25,000'], a: 2, keep: true,
       choicesJa: ['250ドル', '2,000ドル', '2,500ドル', '25,000ドル'],
@@ -154,7 +155,7 @@ export const jerryBurritoLie: Clip = {
       trap: '250 なら two-fifty。2,000 と 25,000 なら最後が「サウザンド」。ここは最後が「ハンドレッド」。',
       use: 'It costs twenty-five hundred yen.（2,500円です）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'security', seg: [74.4, 80.4],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'security', seg: [74.4, 80],
       stem: 'What is the mayor’s money for?', ja: '市長のお金は何のため？',
       choices: ['Better security in parks', 'New playgrounds in parks', 'A reward for finding the mugger'], a: 0,
       choicesJa: ['公園の警備を強くする', '公園の新しい遊び場', '強盗を見つけた人へのお礼'],

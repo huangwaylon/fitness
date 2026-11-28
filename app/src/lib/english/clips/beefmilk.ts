@@ -9,6 +9,7 @@
 // EXCLUDE 74.8–78.1 ("the bastard")
 // EXCLUDE 83.8–88.3 (Tom's list: the radio show "Crazy Ira and the Douche")
 // EAR CHECK: 179.7 s a3 — “This woman knows business” is sincere admiration (dry, but not a dig)
+// CHECKS 2026-11-28: segment ends pulled 0.4 s before the EXCLUDE they ran into (the player plays on 0.4 s): a1.
 import type { Clip } from '../types.ts';
 
 export const beefMilk: Clip = {
@@ -161,7 +162,7 @@ export const beefMilk: Clip = {
       trap: 'bull だけ聞くと牛、shot だけだと猟犬に取りやすい。名前の直後の説明が正体。',
       use: 'I don’t really follow celebrities.（有名人にはあまり興味がない）' },
 
-    { id: 'a1', skill: 'attitude', level: 'B2', point: 'magnus', seg: [79.7, 83.6],
+    { id: 'a1', skill: 'attitude', level: 'B2', point: 'magnus', seg: [79.7, 83.4],
       stem: 'How does Ron feel about Magnus the elk?',
       ja: 'ロンはヘラジカのマグナスをどう思っている？',
       choices: ['He wants to hunt it', 'He loves the elk', 'He is scared of it'], a: 0,

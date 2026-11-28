@@ -9,6 +9,7 @@
 // EXCLUDE 37.2–41.2 ("not Fart": potty word)
 // EXCLUDE 168–174
 // SKIP 237–254.7: closing music; a lone "Thank you" at 254 s
+// CHECKS 2026-11-28: segment ends pulled 0.4 s before the EXCLUDE they ran into (the player plays on 0.4 s): id1.
 import type { Clip } from '../types.ts';
 
 export const conflictPranks: Clip = {
@@ -53,7 +54,7 @@ export const conflictPranks: Clip = {
       trap: '歯を見せる＝おどし、と思うと逆になる。submission は「従う」こと。',
       use: 'Smile for the camera!（カメラに向かって笑って！）' },
 
-    { id: 'id1', skill: 'detail', level: 'B2', point: 'threat', seg: [33.0, 37.1],
+    { id: 'id1', skill: 'detail', level: 'B2', point: 'threat', seg: [33, 36.8],
       stem: 'What does Dwight’s new ID card wrongly say?',
       ja: 'ドワイトの新しい身分証には、何がまちがって書いてある？',
       choices: ['That he’s a danger', 'That he’s the boss', 'That he’s a new hire'], a: 0,

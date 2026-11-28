@@ -15,9 +15,15 @@ one short line at most (*key words* starred); no audio ships. Each question has 
   first; C2 only with ⚙ 難しめの質問を増やす. Numbers in `draw.test.ts`.
 - **The plan** (`plan.ts`, kept in `plan-order.ts`, `npm run english:plan`): one clip order on every phone, a slow ramp
   by ease, `// A2 LATE:` banks last, varied by show; new clips go after it.
-- **Rules** (`clips.test.ts`, its markers `// SKIP`, `// EXCLUDE`, `// SWEAR-OK`): for an A2 learner, B1 the bulk, 3
-  parallel choices, the key never the longest; `// A2 RAMP` (first 30 banks) eases distractors; notes never say 不正解,
-  間違い or 残念. Tools: `npm run english:wpm` (speed bands), `english:segs` (segments from json3 word times).
+- **Rules** (`clips.test.ts`, its markers `// SKIP`, `// EXCLUDE`, `// SWEAR-OK`, `// CRUDE-OK`): for an A2 learner, B1
+  the bulk, 3 parallel choices, the key never the longest; a key may use heard words, distractors don't trap by echo
+  (`// A2 RAMP`, the first 30 banks: ≤ 1 distractor alone echoing the line); notes never say 不正解, 間違い or 残念.
+  Mechanical checks (`scripts/english-checks.ts`, `node scripts/english-checks.ts [clip…]` lists offenders): a segment's
+  0.4 s run-on never reaches an EXCLUDE; a line's starred words sit inside its segment by the json3 word times
+  (`english-captions/`); no fill-the-gap distractor is said in the gap's place; no crude or drug word is played. The
+  blind check (`scripts/english-blind.ts`): an LLM answers stem + choices with no transcript; an item it gets right
+  confidently is rewritten so listening decides; verdicts in `blind.json`. Tools: `npm run english:wpm` (speed bands),
+  `english:segs` (segments from json3 word times).
 
 ## Data
 vite.config.ts `english-data` builds from `clips/`: **the index** (`catalog.ts` ClipMeta in plan order, `v` =

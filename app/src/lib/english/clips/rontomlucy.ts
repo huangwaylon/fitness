@@ -11,6 +11,7 @@
 // EXCLUDE 53.2–55.7 ("Those bastards")
 // SKIP 220.1–240.6: music (whisper repeats the last line)
 // Open: d4 stays about 50 % blind (the break-up reason is the usual one in a romance).
+// CHECKS 2026-11-28: widened to hold the line's starred words by the captions' times: g2 p2.
 import type { Clip } from '../types.ts';
 
 export const ronTomLucy: Clip = {
@@ -258,7 +259,7 @@ export const ronTomLucy: Clip = {
       mean: '無視してと言うのは照れ隠し。ロンが正しかったから、ごまかしたかった。',
       trap: '「無視して」を「本気じゃない」と取りやすい。照れ隠しかは、問い返された時の答えで分かる。',
       use: 'Don’t listen to him. …Okay, it’s true.（あいつの話は気にしないで…まあ、本当だけど）' },
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'outcome', reveals: ['allin', 'dresses', 'fine'], seg: [189.9, 222.0],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'outcome', reveals: ['allin', 'dresses', 'fine'], seg: [189.9, 225.2],
       stem: 'How do things end for Tom and Lucy?',
       ja: 'トムとルーシーは最後にどうなる？',
       choices: ['Still together and happy', 'She asks him to slow down', 'They break up for now'], a: 0,
@@ -315,7 +316,7 @@ export const ronTomLucy: Clip = {
       mean: 'わざと打算的な理由を言う冗談。重い告白を軽く受け止め、「このままでいい」と伝えている。',
       trap: '言葉どおりなら冷たいが、冗談の「問題なし」。返事は言葉の形でなく、相手の気持ちに合わせる。',
       use: 'I’m only here for the snacks.（お菓子目当てで来てるだけだよ）' },
-    { id: 'p2', skill: 'phrase', level: 'B1', point: 'fine', ctx: true, seg: [215.3, 222.0],
+    { id: 'p2', skill: 'phrase', level: 'B1', point: 'fine', ctx: true, seg: [215.3, 225.2],
       stem: 'What does Tom mean by “I’m fine with that”?',
       ja: 'トムの「I’m fine with that」はどういう意味？',
       choices: ['That’s okay with me', 'I feel well today', 'I don’t agree with it'], a: 0,

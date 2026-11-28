@@ -13,6 +13,7 @@
 // EAR CHECK: 135.7 s g1 — “Oh, you know what you would love… the loft” is Michael answering “we should really consider
 //   getting a delivery guy” (assumed from the address; captions don't mark speakers)
 // EAR CHECK: 196.8–205 s p2 — the requests to “explain” the model are Michael's (assumed)
+// CHECKS 2026-11-28: widened to hold the line's starred words by the captions' times: a1.
 import type { Clip } from '../types.ts';
 
 export const crunchNumbers: Clip = {
@@ -210,7 +211,7 @@ export const crunchNumbers: Clip = {
       trap: 'can’t の t は消えやすい。弱く短い「クン」なら can、強く長ければ can’t。could は「クッ」。',
       use: 'Can we afford a new car?（新しい車を買う余裕ある？）' },
 
-    { id: 'a1', skill: 'pragma', level: 'B2', point: 'loftknow', ctx: true, seg: [142.2, 149.3],
+    { id: 'a1', skill: 'pragma', level: 'B2', point: 'loftknow', ctx: true, seg: [142.2, 150.5],
       stem: 'What does Pam mean by her reply?',
       ja: 'パムの返事はどういう意味？',
       choices: ['He doesn’t need to explain', 'She wants a loft, too', 'She has never seen one'], a: 0,

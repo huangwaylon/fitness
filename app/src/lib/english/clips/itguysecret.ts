@@ -9,6 +9,7 @@
 // EXCLUDE 65.4–71.9 ("games and porn" about inner-city kids)
 // EAR CHECK: 47.8 s — the one-word reply after "No." is "Sport." (captions) or "It's bored." (whisper); untested
 // EAR CHECK: 80.7 s c1 — both sources: "why you been telling", no "have"
+// CHECKS 2026-11-28: segment ends pulled 0.4 s before the EXCLUDE they ran into (the player plays on 0.4 s): f2.
 import type { Clip } from '../types.ts';
 
 export const itGuySecrets: Clip = {
@@ -195,7 +196,7 @@ export const itGuySecrets: Clip = {
       trap: 'getting の t が軽い「ラ」の音になり、to は小さく「タ」。know you はひと続き。',
       use: 'I’m still getting to know the area.（まだこのあたりに慣れてないんだ）' },
 
-    { id: 'f2', skill: 'phrase', level: 'B2', point: 'kept', seg: [55.7, 61.3],
+    { id: 'f2', skill: 'phrase', level: 'B2', point: 'kept', seg: [55.7, 61],
       stem: 'What does “he kept to himself” mean?',
       ja: '「he kept to himself」の意味は？',
       choices: ['He was quiet and private', 'He kept secrets', 'He kept things running'], a: 0,

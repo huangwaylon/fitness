@@ -13,6 +13,7 @@
 // EXCLUDE 0–4.0
 // EXCLUDE 48–51.5: swear (“Hey, smart ass” twice)
 // EXCLUDE 53–54.5: swear (“Neither of your asses are that smart”)
+// CHECKS 2026-11-28: segment ends pulled 0.4 s before the EXCLUDE they ran into (the player plays on 0.4 s): d2.
 import type { Clip } from '../types.ts';
 
 export const andyEyeTest: Clip = {
@@ -109,7 +110,7 @@ export const andyEyeTest: Clip = {
       trap: '話が変わるので「ところで」と思いやすい。Point is のあとが言いたいこと。',
       use: 'Point is, we made it on time.（要するに、間に合ったってこと）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'real', seg: [43.0, 48],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'real', seg: [43, 47.6],
       stem: 'What can Ann help Andy with?', ja: 'アンは、何なら手当てできる？',
       choices: ['Small cuts and bruises', 'His head and his eyes', 'His teeth and his tongue'], a: 0,
       choicesJa: ['小さな切り傷やあざ', '頭と目', '歯と舌'],

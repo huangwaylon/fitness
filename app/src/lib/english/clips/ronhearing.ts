@@ -7,6 +7,7 @@
 // hallucinations. The captions' "own game" (whisper "own gain") stays out of every line.
 // EXCLUDE 52.7–56.9 (Leslie's "big white stallion … little brown pony": a skin-colour joke about Tom)
 // EAR CHECK: 21.7 s r1 — the cut falls after Tom's “…for her own gain”, before “Thank you, Tom”
+// CHECKS 2026-11-28: segment ends pulled 0.4 s before the EXCLUDE they ran into (the player plays on 0.4 s): h2.
 import type { Clip } from '../types.ts';
 
 export const ronHearing: Clip = {
@@ -91,7 +92,7 @@ export const ronHearing: Clip = {
       mean: 'put A in front of B ＝ A を B より先にする、優先する。',
       trap: 'in front of ＝「〜の目の前」から、場所の話と思いやすい。put と組むと順番。',
       use: 'Don’t put work in front of your health.（健康より仕事を優先しないで）' },
-    { id: 'h2', skill: 'phrase', level: 'B1', point: 'ruin', seg: [46.3, 52.6],
+    { id: 'h2', skill: 'phrase', level: 'B1', point: 'ruin', seg: [46.3, 52.3],
       stem: '“You’re ruining it.” What does Tom mean?',
       ja: '「You’re ruining it」トムが言いたいことは？',
       choices: ['You’re making it worse', 'You’re doing it so well', 'You’re making me cry'], a: 0,

@@ -9,6 +9,7 @@
 // lines), 237–239 s ("screwed up").
 // EXCLUDE 7.5–14.5
 // EXCLUDE 246.7–257.5
+// CHECKS 2026-11-28: segment ends pulled 0.4 s before the EXCLUDE they ran into (the player plays on 0.4 s): c4.
 import type { Clip } from '../types.ts';
 
 export const momFlirt: Clip = {
@@ -17,7 +18,7 @@ export const momFlirt: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    { id: 'c4', skill: 'infer', level: 'B1', point: 'whatif', reveals: ['nowthat'], ctx: true, seg: [0, 7.4],
+    { id: 'c4', skill: 'infer', level: 'B1', point: 'whatif', reveals: ['nowthat'], ctx: true, seg: [0, 7.1],
       stem: 'What is Ben afraid Marlene will do?', ja: 'ベンは、マーリーンが何をするのを心配している？',
       choices: ['Tell people he is weak', 'Tell people he is mean', 'Call his boss about him'], a: 0,
       choicesJa: ['押しに弱いと言いふらす', '意地悪だと言いふらす', '彼の上司に電話する'],

@@ -12,6 +12,8 @@
 // SKIP 122–150.4: the rest of the “lesbian” aside, then the strip-joint advice (excluded)
 // EAR CHECK: 176 s — who answers “Decaf” to the coffee offer (the pilot's script: the waitress offers, Monica answers for Rachel).
 // EAR CHECK: 86.5 s — “Carol moved her stuff out today” (whisper) vs “your stuff” (captions); d4 is retired.
+// CHECKS 2026-11-28: segment ends pulled 0.4 s before the EXCLUDE they ran into (the player plays on 0.4 s): g1 i1 d2
+// h1.
 import type { Clip } from '../types.ts';
 
 export const pilotOpening: Clip = {
@@ -56,7 +58,7 @@ export const pilotOpening: Clip = {
       trap: 'go out（外に出る）から、外を歩くと思いやすい。with のあとが人なら恋愛の話が多い。',
       use: 'Are you two going out?（二人、付き合ってるの？）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'opening', seg: [3.0, 23.5],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'opening', seg: [3, 23.2],
       stem: 'What are the friends asking Monica about?',
       ja: 'みんなはモニカに何について聞いている？',
       choices: ['The man she’s dating', 'Her plans for the weekend', 'A problem at her work'], a: 0,
@@ -80,7 +82,7 @@ export const pilotOpening: Clip = {
       trap: 'has to は「ハストゥ」、bound to は「バウン」。「ガラ」と聞こえれば got to。',
       use: 'There’s got to be a better way.（もっといい方法があるはず）' },
 
-    { id: 'i1', skill: 'infer', level: 'B2', point: 'carl', seg: [14.0, 23.5],
+    { id: 'i1', skill: 'infer', level: 'B2', point: 'carl', seg: [14, 23.2],
       stem: 'What happened with Carl?',
       ja: 'カールとは何があった？',
       choices: ['He hurt the woman talking', 'He was mean to Monica', 'He works with Monica'], a: 0,
@@ -92,7 +94,7 @@ export const pilotOpening: Clip = {
       trap: 'her（彼女）はモニカのことなので、カールがモニカに何かしたと勘違いしやすい。I went through ＝「私が」経験した。',
       use: 'I know what you’re going through.（大変なのは分かるよ）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'dream', seg: [30.6, 38.5],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'dream', seg: [30.6, 38.1],
       stem: 'Where is Chandler in his dream?',
       ja: '夢の中で、チャンドラーはどこにいる？',
       choices: ['His high school cafeteria', 'His high school gym class', 'His office cafeteria'], a: 0,
@@ -104,7 +106,7 @@ export const pilotOpening: Clip = {
       trap: 'cafeteria は会社にもあるので、職場と考えがち。前の high school とつなげる。',
       use: 'I dreamed I was back in school.（学生に戻った夢を見た）' },
 
-    { id: 'h1', skill: 'detail', level: 'B1', point: 'mother', seg: [52.8, 64.8],
+    { id: 'h1', skill: 'detail', level: 'B1', point: 'mother', seg: [52.8, 64.6],
       stem: 'Why is the call from his mother weird?',
       ja: '母親からの電話が変なのはなぜ？',
       choices: ['She doesn’t usually phone him', 'She phones him too often', 'She doesn’t have a phone'], a: 0,

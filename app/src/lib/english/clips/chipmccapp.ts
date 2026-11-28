@@ -13,6 +13,7 @@
 // EXCLUDE 152.4–155.2 (the "dirty hicks" insult)
 // EXCLUDE 181.3–185.4 (the pee joke)
 // SKIP 54.8–77.6: Chip's song (sung lyrics) and "Let's play it again"
+// CHECKS 2026-11-28: segment ends pulled 0.4 s before the EXCLUDE they ran into (the player plays on 0.4 s): d3 g1.
 import type { Clip } from '../types.ts';
 
 export const chipMcCapp: Clip = {
@@ -249,7 +250,7 @@ export const chipMcCapp: Clip = {
       trap: '習った I’ve got to に直したくなる。書き取りは正しい文ではなく、言われた音を書く。',
       use: 'I gotta go, my mom’s calling.（行かなきゃ、ママから電話）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'albums', seg: [143.6, 152.35],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'albums', seg: [143.6, 152],
       stem: 'What is good about Pawnee for Chip?',
       ja: 'チップにとって、ポーニーの何がいい？',
       choices: ['People there pay for music', 'Chip grew up near there', 'Its fans have waited for years'], a: 0,
@@ -284,7 +285,7 @@ export const chipMcCapp: Clip = {
       trap: 'spend a night（泊まる）が聞こえて、ホテルと思いやすい。wouldn’t have to（しなくて済む）。',
       use: 'What if we leave early?（早めに出るのはどう？）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'outcome', reveals: ['sameday', 'proud'], seg: [156.3, 181.25],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'outcome', reveals: ['sameday', 'proud'], seg: [156.3, 180.9],
       stem: 'How does the meeting with Chip end?',
       ja: 'チップとの話し合いはどう終わる？',
       choices: ['Leslie calls it off', 'Chip agrees to come', 'Chip’s dad says no'], a: 0,

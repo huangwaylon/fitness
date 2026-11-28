@@ -9,6 +9,7 @@
 // EXCLUDE 47–50: a sexual line.
 // EXCLUDE 152–155: a crude closing line.
 // Untested: 54–63 s (the wrist-grab demo, speakers unnamed), 109–123 s (the hold itself).
+// CHECKS 2026-11-28: segment ends pulled 0.4 s before the EXCLUDE they ran into (the player plays on 0.4 s): g2.
 import type { Clip } from '../types.ts';
 
 export const ronSelfDefense: Clip = {
@@ -86,7 +87,7 @@ export const ronSelfDefense: Clip = {
       trap: 'ヘッドロックや腕のおさえこみもよくある技なので迷いやすい。from a のあとの wrist（手首）を聞く。',
       use: 'Let me demonstrate how it works.（どう動くか、やって見せるね）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'reason', seg: [31.5, 46.9],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'reason', seg: [31.5, 46.6],
       stem: 'What brought this student to the class?',
       ja: 'この生徒は、なぜこの教室に来た？',
       choices: ['A TV movie she watched', 'A friend who was attacked', 'Her doctor’s advice'], a: 0,

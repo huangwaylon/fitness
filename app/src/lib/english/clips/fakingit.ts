@@ -14,6 +14,7 @@
 // you on stupid Skype": speaker never named), 92–93 s ("That's not a toilet"), 144.7 s (five sandwiches), 170–174 s
 // (noodles). Who says the moon line (37–44 s) isn't settled, so its item names no one.
 // The ids nt1 and nt3 were dropped before they shipped: never reuse them.
+// CHECKS 2026-11-28: segment ends pulled 0.4 s before the EXCLUDE they ran into (the player plays on 0.4 s): m1.
 import type { Clip } from '../types.ts';
 
 export const fakingIt: Clip = {
@@ -46,7 +47,7 @@ export const fakingIt: Clip = {
       trap: 'カタカナのブリリアント（宝石の輝き）を連想しやすい。cool と並べて説明している。',
       use: 'That’s brilliant! Thank you.（すごい！ありがとう）' },
 
-    { id: 'm1', skill: 'marker', level: 'B1', point: 'speaking', seg: [9.38, 16.28],
+    { id: 'm1', skill: 'marker', level: 'B1', point: 'speaking', seg: [9.38, 15.9],
       stem: 'What does “Speaking of London” mean here?',
       ja: '「Speaking of London」は、ここではどういう意味？',
       choices: ['On the topic of London', 'I miss London so much', 'Let’s go to London now'], a: 0,

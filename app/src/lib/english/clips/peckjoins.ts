@@ -10,6 +10,7 @@
 // (68–75 s, 82–91 s, 221–229 s, 250–254 s).
 // EXCLUDE 191.5–195.4: "Milk Milk Lemonade 69" (a crude rhyme)
 // EAR CHECK: 36.5–41.5 s f3, 363.5–373.2 s f4 — whisper's lines are long here: confirm each seg
+// CHECKS 2026-11-28: segment ends pulled 0.4 s before the EXCLUDE they ran into (the player plays on 0.4 s): c5.
 import type { Clip } from '../types.ts';
 
 export const peckJoins: Clip = {
@@ -211,7 +212,7 @@ export const peckJoins: Clip = {
       mean: 'not only 〜 but also … ＝「〜だけでなく…も」。cool と scary の両方。',
       trap: '最後の easy（楽）から、落ち着いていたと思いやすい。but also の前後を聞く。',
       use: 'It was exciting, but also a little scary.（わくわくしたけど、ちょっと怖くもあった）' },
-    { id: 'c5', skill: 'infer', level: 'B2', point: 'comments', ctx: true, seg: [181.5, 191.4],
+    { id: 'c5', skill: 'infer', level: 'B2', point: 'comments', ctx: true, seg: [181.5, 191.1],
       stem: 'What is Carly upset about?',
       ja: 'カーリーは何に悩んでいる？',
       choices: ['Comments say she isn’t funny', 'Someone stole her phone', 'Her friends moved away'], a: 0,

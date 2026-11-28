@@ -14,6 +14,7 @@
 // Twin of jerryplace (same scene): items live there (interview gist, age, apologize in person, the face "no") stay
 // retired here; g4 asks what the reporter meant instead.
 // EXCLUDE 72.6–79.4 (Jen's simile: sexual)
+// CHECKS 2026-11-28: segment ends pulled 0.4 s before the EXCLUDE they ran into (the player plays on 0.4 s): d3.
 import type { Clip } from '../types.ts';
 
 export const leslieCancelled: Clip = {
@@ -140,7 +141,7 @@ export const leslieCancelled: Clip = {
       trap: '言葉どおり休戦の呼びかけと取りやすい。名指しは一人だけ。誰に向けた要求かで、ねらいを聞く。',
       use: 'Now’s not the time. Let’s talk later.（今はその時じゃない、あとで話そう）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'cancel', ctx: true, seg: [62, 72.6],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'cancel', ctx: true, seg: [62, 72.2],
       stem: 'What did Jen call on Leslie to do?',
       ja: 'ジェンはレスリーに何をするよう求めた？',
       choices: ['Cancel all her campaign events', 'Apologize to the Newport family', 'Quit the election forever'],

@@ -6,6 +6,7 @@
 // Segments from the captions, words from whisper (2026-11-16; whisper runs 1–3 s early here). Talk ends at ≈93.2 s.
 // EXCLUDE 39.1–44: a sex jab (“…you haven't had sex in three and a half months”); its reply (47–52 s) is untested.
 // Untested: 56.3–57.9 s, 68.3–69.0 s; speakers other than Joey aren't named, so no item turns on who says what.
+// CHECKS 2026-11-28: segment ends pulled 0.4 s before the EXCLUDE they ran into (the player plays on 0.4 s): at1.
 import type { Clip } from '../types.ts';
 
 export const joeyBrain: Clip = {
@@ -102,7 +103,7 @@ export const joeyBrain: Clip = {
       trap: 'off だけ聞くと、引っ越しや交代での退場にも思える。kill が付けば死による退場。',
       use: 'They killed off my favorite character.（好きなキャラが死んで退場した）' },
 
-    { id: 'at1', skill: 'attitude', level: 'B1', point: 'ridiculous', seg: [32.3, 39.05],
+    { id: 'at1', skill: 'attitude', level: 'B1', point: 'ridiculous', seg: [32.3, 38.7],
       stem: 'What does Joey’s friend think of the transplant story?',
       ja: '脳移植の話を、ジョーイの友だちはどう思っている？',
       choices: ['It’s silly', 'It’s exciting', 'It’s scary'], a: 0,

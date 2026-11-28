@@ -6,11 +6,13 @@
 // Segments from the captions, words from whisper (2026-11-16). Talk ends at ≈200 s. Untested: 70.8–78.6 s (Kelly's
 // list), 122.9–127.1 s ("a little junk"), 164.1–167.7 s ("from the boat", backstory). The desk-chair errand (79–87 s:
 // who sends whom is unclear) is tested without names. The new guy (Ryan) is never named in the audio.
-// EXCLUDE 161.6–163.6 (crude: “I’m not a slut”)
+// EXCLUDE 162.4–163.6 (crude: “I’m not a slut”; CHECKS 2026-11-28: from 161.6, which cut “up for anything” at 161.5–162.1)
 // SKIP 199–224: looped whisper and music, no usable speech
 // EAR CHECK: 19.1–31.0 s g1 a1 s2 — "But there's definitely a desk open in the back" and "No, no, seriously, I
 //   don't mind sharing" are taken as Michael's, "Which I guess I'll be taking" and "I'll be in the back" as Jim's (no
 //   names; set by the turns)
+// CHECKS 2026-11-28: segment ends pulled 0.4 s before the EXCLUDE they ran into (the player plays on 0.4 s): i3 f1;
+// widened to hold the line's starred words by the captions' times: f1.
 import type { Clip } from '../types.ts';
 
 export const jimBack: Clip = {
@@ -276,7 +278,7 @@ export const jimBack: Clip = {
       trap: 'あとで up for anything（何でもいい）と言うので、気軽な関係と思いやすい。',
       use: 'Definitely, no question.（もちろん、まちがいなく）' },
 
-    { id: 'i3', skill: 'infer', level: 'B2', point: 'donttell', reveals: ['longterm'], seg: [152.9, 161.5],
+    { id: 'i3', skill: 'infer', level: 'B2', point: 'donttell', reveals: ['longterm'], seg: [152.9, 161.2],
       stem: 'Why does Kelly say “Don’t tell him that”?',
       ja: 'ケリーはなぜ「彼にそれは言わないで」と言う？',
       choices: ['He might get scared', 'She wants to tell him herself', 'She hasn’t decided yet'], a: 0,
@@ -288,7 +290,7 @@ export const jimBack: Clip = {
       trap: '自分で言いたいから、と思いやすい。言ったばかりの中身が重すぎるのが理由。',
       use: 'Don’t tell her I said that, okay?（私が言ったって言わないでね）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'anything', seg: [156.0, 161.5],
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'anything', seg: [156, 162],
       stem: 'What does “I’m up for anything” mean?',
       ja: '「I’m up for anything」はどういう意味？',
       choices: ['I’m fine with whatever', 'I want something serious', 'I’m up late at night'], a: 0,

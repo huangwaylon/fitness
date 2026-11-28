@@ -9,8 +9,10 @@
 // / "first day"), 149 s ("Give them time. They'll adjust" / "give him time don't adjust"), 156.7 s ("marooning him on" /
 // "marooning in my") and 190–197 s (whisper's "I may have a compromise… Weak" / the captions' "a kind of reminds… a
 // weird"); no key rests on those words, and no line quotes them. The 169–173 s crude simile is left out of every line.
-// EXCLUDE 109.6–113.5
+// EXCLUDE 110.1–113.5: “swivel your ass” (CHECKS 2026-11-28: from 109.6, which cut “He won’t quit”, 109.6–110.0 by the captions)
 // EXCLUDE 169.4–172.9
+// CHECKS 2026-11-28: segment ends pulled 0.4 s before the EXCLUDE they ran into (the player plays on 0.4 s): p1;
+// widened to hold the line's starred words by the captions' times: p1.
 import type { Clip } from '../types.ts';
 
 export const ronDesk: Clip = {
@@ -181,7 +183,7 @@ export const ronDesk: Clip = {
       trap: 'shakeup の勢いで悪化の話と取りやすい。次の「待てばいい」が意味を決める。',
       use: 'The rain should peter out soon.（雨はそのうち弱まるはず）' },
 
-    { id: 'p1', skill: 'pragma', level: 'B2', point: 'withyou', ctx: true, seg: [102.9, 109.5],
+    { id: 'p1', skill: 'pragma', level: 'B2', point: 'withyou', ctx: true, seg: [102.9, 109.7],
       stem: 'What does Donna think about waiting?',
       ja: 'ドナは「待つ」ことをどう思っている？',
       choices: ['It won’t work this time', 'It is a good idea again', 'She will wait with Ron'], a: 0,

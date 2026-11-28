@@ -6,11 +6,12 @@
 // Segments from the captions, words from whisper (2026-11-16). Champion is Andy and April's dog.
 // Untested: 143–147 s and 161–171 s (the basement pair's choking game).
 // EXCLUDE 184–193 (the “ghost” fears Brett will mug him: a racist joke)
-// EXCLUDE 200–209 (the councilman's racist line)
+// EXCLUDE 200–208.7: the councilman’s racist line (CHECKS 2026-11-28: to 208.7, p3’s “If” at 208.8)
 // SKIP 177–209: the ghost joke turns racist, then the councilman's racist line
 // EAR CHECK: 109.4 s s1 — “She did make a stop” in both sources; the key rests on hearing the stressed “did” (not “didn’t”)
 // EAR CHECK: 251.8 s x1 — “I let you down” in both sources; the key claims “let you” links (≈“letcha”)
 // EAR CHECK: 304 s c4 — Ron taken as the one asking “Why here?” (her answer praises him; he then speaks of kinship)
+// CHECKS 2026-11-28: widened to hold the line's starred words by the captions' times: p3.
 import type { Clip } from '../types.ts';
 
 export const ronsKey: Clip = {
@@ -204,7 +205,7 @@ export const ronsKey: Clip = {
       trap: 'week は「ウィーク」と短い。month なら「マンス」、night なら「ナイト」。最初の2語で決める。',
       use: 'I was here last week.（先週ここに来ました）' },
 
-    { id: 'p3', skill: 'phrase', level: 'B1', point: 'mind', seg: [209.2, 215.5],
+    { id: 'p3', skill: 'phrase', level: 'B1', point: 'mind', seg: [208.7, 215.5],
       stem: 'What does “If you don’t mind” mean here?',
       ja: 'ここでの「If you don’t mind」はどういう意味？',
       choices: ['If it’s okay with you', 'If you have time', 'If you don’t remember'], a: 0,

@@ -13,6 +13,7 @@
 // Untested: 192–199 (the call to own up), 233–246 (the gun and "shoot under its head").
 // EAR CHECK: 120 s x1 — both sources "you better find out" with no "'d"
 // EAR CHECK: 42.8–48.0 s d5 — whisper puts "Are you in a lot of pain?" at 45 s: confirm the seg holds it
+// CHECKS 2026-11-28: segment ends pulled 0.4 s before the EXCLUDE they ran into (the player plays on 0.4 s): c3 c5.
 import type { Clip } from '../types.ts';
 
 export const ronShot: Clip = {
@@ -209,7 +210,7 @@ export const ronShot: Clip = {
       trap: '頭を撃たれた後なので、自分の死の話に聞こえやすい。them が誰を指すかを聞く。',
       use: 'Whoever did this is in big trouble.（やった人はただじゃすまない）' },
 
-    { id: 'c3', skill: 'phrase', level: 'B2', point: 'lightheaded', seg: [128.8, 133.9],
+    { id: 'c3', skill: 'phrase', level: 'B2', point: 'lightheaded', seg: [128.8, 133.6],
       stem: 'What does “Are you lightheaded?” mean?',
       ja: '「Are you lightheaded?」はどういう意味？',
       choices: ['Do you feel faint?', 'Does your head hurt?', 'Can you think clearly?'], a: 0,
@@ -257,7 +258,7 @@ export const ronShot: Clip = {
       trap: '薬を飲みすぎた場面なので、体がつらいからと考えがち。理由は No のあとのスコッチ。',
       use: 'I’m not wasting good food.（いい食べ物をむだにはしないよ）' },
 
-    { id: 'c5', skill: 'infer', level: 'B2', point: 'memory', ctx: true, seg: [179, 186.9],
+    { id: 'c5', skill: 'infer', level: 'B2', point: 'memory', ctx: true, seg: [179, 186.6],
       stem: 'What does Ann hope about Ron?',
       ja: 'アンはロンについて何を願っている？',
       choices: ['He forgets part of today', 'He sleeps through the night', 'He goes home tomorrow'], a: 0,
