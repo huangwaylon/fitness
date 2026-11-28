@@ -14,13 +14,15 @@ import { captionWords, catchLinesOf } from '../src/lib/english/catch-build.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
 
-/** waitress's lines as the build makes them (one: "does anybody need coffee"). */
-const LINES = catchLinesOf(waitress, captionWords(JSON.parse(readFileSync(new URL(`../../english-captions/${waitress.video}.en.json3`, import.meta.url), 'utf8'))));
-const LINE = LINES[0];
+/** waitress's lines as the build makes them (one: "does anybody need coffee"), read when a test runs, never at the
+ *  spec's load: CI's plan job lists the tests from a checkout without english-captions/ (pages.yml sparse-checkout). */
+let lines: ReturnType<typeof catchLinesOf> | null = null;
+const linesOf = () => (lines ??= catchLinesOf(waitress, captionWords(JSON.parse(readFileSync(new URL(`../../english-captions/${waitress.video}.en.json3`, import.meta.url), 'utf8')))));
 const shelf = (p: Page) => p.evaluate(() => JSON.parse(localStorage.getItem('island.english.caught') ?? '{}').A);
 const shot = (p: Page, name: string) => (process.env.CATCH_SHOTS ? p.screenshot({ path: `${process.env.CATCH_SHOTS}/${name}.png` }) : null);
 
 test('聞き取りチャレンジ at まとめ: no text first, a tile out of order hops back and the next is placed (0.75×), then the words lit at full speed; on the shelf as caught', async ({ page }) => {
+  const LINES = linesOf(), LINE = LINES[0];
   expect(LINES).toHaveLength(1);
   await fakeYoutube(page, { dur: 300 });
   await open(page);
@@ -67,6 +69,7 @@ test('聞き取りチャレンジ at まとめ: no text first, a tile out of ord
 });
 
 test('聞けたセリフ: back on home three days on, first thing; caught first try at full speed, 聞けた and counted; the shelf’s card before → now, ▶ its segment', async ({ page }) => {
+  const LINE = linesOf()[0];
   await fakeYoutube(page, { dur: 300 });
   const k = `waitress/${LINE.q}`;
   await page.addInitScript(([k, e]) => {
