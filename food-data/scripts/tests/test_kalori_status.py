@@ -186,6 +186,15 @@ class Status(unittest.TestCase):
         self.assertEqual(self.final({}, result='held', reasons='main_moved')['verdict'], 'held')
         self.assertEqual(self.final({}, result='held', reasons='diff_gate')['verdict'], 'held')
 
+    def test_merged_past_the_bands_is_healthy_with_a_note(self):
+        s = self.final({'alert': {'text': 'x', 'since': 9}}, result='published', merge_sha='abc', deploy='pending',
+                       alert_text='merged past the bands: too many added')
+        self.assertEqual((s['verdict'], s['reasons'], s['alert']['text'], s['alert']['since']),
+                         ('healthy', [], 'merged past the bands: too many added', NOW))
+        self.assertEqual(s['history'][-1]['result'], 'merged')
+        self.assertIsNone(self.final(s, result='published', merge_sha='def')['alert'])
+        self.assertIsNone(self.final({}, result='published', alert_text='x')['alert'])
+
     def test_failing_keeps_the_alert_since_and_the_last_merge(self):
         prev = {'alert': {'text': 'x', 'since': 9}, 'merge': {'sha': 'old', 'deploy': 'ok', 'pr': None},
                 'diff': {'added': 1}, 'dataset': {'tag': 'kalori-2026-11-18', 'dropped': {'a': 1}}}

@@ -42,7 +42,7 @@ English whatever the app's language (`i18n/jobs.en.json`, `pinLocale`). Sources:
 - **Rows** (`JobRow`, `ServiceRow`): age, dot, the last 24 runs; a tap shows 14 days. States: OK, Recovered (a success
   after a failure in the last day), First run, Running, Late (2 cadences + 10 min; daily/weekly 1 + 2 h), Stopped (4 +
   10 min; 2 + 2 h), Last run failed, Failing (two in a row), Partly failed, Waiting on…, No runs yet.
-- **Chain menus** (kalori-scrape + kalori-watch) from `status.json`: Held is warn + 「!」 with the step and PR link; Late
+- **Chain menus** (kalori-scrape + kalori-watch) from `status.json`: Held (a failed test, main moved) is warn + 「!」 with the step and branch link; a merge past the bands, healthy with its note; Late
   a day past `next`; detail: next run, items, 8 weeks, links.
 - The relay reads GitHub (`group: 'github'` jobs in `contract/jobs.ts`) on its tick or a read ≥ 5 min after the last.
 - **Daily limits (Cloudflare)**, last (`UsageRow`, `relay/src/cfUsage.ts`): DO rows read 5M, written 100k, DO requests

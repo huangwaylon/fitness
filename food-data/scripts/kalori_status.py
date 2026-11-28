@@ -342,7 +342,8 @@ def final(prev, a, now):
     if reasons:
         s['alert'] = alert_of(s['alert'], a.alert_text or alert_text(reasons), a.run_url, a.merge_pr or a.pr_url, now)
     elif s['verdict'] == 'healthy':
-        s['alert'] = None
+        # (a note with no reason: an update merged past the bands, healthy; the next healthy run clears it)
+        s['alert'] = alert_of(None, a.alert_text, a.run_url, None, now) if a.result == 'published' and a.merge_sha else None
     hres = {'published': 'merged' if a.merge_sha else 'none', 'held': 'held', 'failed': 'failed'}.get(a.result)
     if hres:
         t = (diff or {}).get('totals') or {}

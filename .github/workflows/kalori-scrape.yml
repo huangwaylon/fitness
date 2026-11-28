@@ -5,8 +5,8 @@
 # saved back even when it fails; at most 8 at a time, the rest queued: Actions' 20 jobs at once are account-wide, the
 # ITS runner 1 and suumo 8, and the ITS runner's successor and the deploys need room; a shard's rate is total_rate/20, so 8/20 of it at once), a retry (a new run of the shards that hit the site's limits, exit 2 or 3, or whose job
 # was lost), the report (coverage, the diff against the accepted release; complete and within the diff's limits:
-# publish), the update (kalori.json built without write access; then, within the bands, a commit on main, else a
-# branch and a PR: held), the status (status.json on the `kalori-status` branch, which the
+# publish), the update (kalori.json built without write access; then a commit on main, past a band too: noted, no
+# person's gate; a failed test or a main moved meanwhile: a branch, held, the next week redoes it), the status (status.json on the `kalori-status` branch, which the
 # app's bots tab reads: the only alert, no issue, no mail; then pages.yml and food-data.yml dispatched), the deploy check (the dispatched deploy's outcome). Runners are fresh IPs, so a retry needs no cool-down. Weekly, and by hand: a scheduled run has no inputs, so
 # every input has its default as a fallback (`inputs.x || 'default'`) and behaves as a default dispatch. GitHub drops
 # scheduled runs: its-bot's cron dispatches the week's (`weekly`) from an hour past the schedule when no run is this
@@ -610,9 +610,11 @@ jobs:
   # kalori.json against this job's own conversion of the release; the gates come from trusted inputs only (the report
   # job's diff.json and coverage.json, their digests checked; the kalori.json made here and BASE's; status.json's
   # history and the accepted drops), update-build's test flag only one more required signal; the bytes committed are
-  # this job's own (update-build's must equal them). Within every band: the commit onto main (re-applied while main's
-  # food files are still BASE's, else held: main_moved); the status job writes the status, then dispatches the deploy.
-  # Outside a band: the branch kalori-update/<tag> and a PR, held. Its verdict and reasons go to the status job.
+  # this job's own (update-build's must equal them). Within every band, or past band_* ones only (no
+  # person's gate: the status notes the bands passed, the deploy check reverts on red Food data checks): the commit onto
+  # main (re-applied while main's food files are still BASE's, else held: main_moved); the status job writes the status,
+  # then dispatches the deploy. A failed test, or main_moved: the branch kalori-update/<tag> (no PR), held; the next
+  # weekly run redoes the update. Its verdict and reasons go to the status job.
   update-merge:
     needs: [report, update-build]
     if: needs.report.outputs.tag != '' && github.ref == 'refs/heads/main'
@@ -620,10 +622,10 @@ jobs:
     timeout-minutes: 30
     permissions:
       contents: write       # the push to main, a held update's branch, status.json on a failure
-      pull-requests: write  # a held update's PR
     outputs:
       verdict: ${{ steps.result.outputs.verdict }}
       reasons: ${{ steps.result.outputs.reasons }}
+      past: ${{ steps.result.outputs.past }}
       sha: ${{ steps.merge.outputs.sha }}
       pr: ${{ steps.held.outputs.pr }}
       gates_sha: ${{ steps.gates.outputs.digest }}
@@ -635,7 +637,7 @@ jobs:
       COV_SHA: ${{ needs.report.outputs.cov_sha }}
       # The bands (kalori_status.py gates; its defaults mirror these, docs/food-data.md "Kalori" has the table): shares
       # of the accepted release's current products (diff.json's products_old, ~54k). A normal week is well inside
-      # each; past one, a person looks (the PR). With 4+ merged runs in status.json's history, added, gone, values and
+      # each; past one, merged all the same and noted (status.json's alert). With 4+ merged runs in status.json's history, added, gone, values and
       # ended become max(this, 3x the median of the last 8 merged runs) (kalori_status.py ADAPT_*).
       KALORI_BAND_ADDED: '0.025'    # new products (a new chain's menu is ~0.5 %)
       KALORI_BAND_GONE: '0.015'     # gone or missing (the report's own gate refuses publishing past 5 %)
@@ -729,7 +731,9 @@ jobs:
             --tests-ok "$(cat "$RUNNER_TEMP/update/ok")" --flags "$flags" --out "$RUNNER_TEMP/gates/gates.json" > "$RUNNER_TEMP/gates.md"
           cat "$RUNNER_TEMP/gates.md" >> "$GITHUB_STEP_SUMMARY"
           g="$RUNNER_TEMP/gates/gates.json"
+          # merge: every gate passed, or only bands (band_*) failed: a big week merges too, its bands noted
           { echo "ok=$(jq -r 'if .ok then 1 else 0 end' "$g")"; echo "reasons=$(jq -r '.reasons | join(",")' "$g")"
+            echo "merge=$(jq -r 'if .ok or (.reasons | all(startswith("band_"))) then 1 else 0 end' "$g")"
             echo "digest=$(sha256sum < "$g" | cut -d' ' -f1)"; } >> "$GITHUB_OUTPUT"
       # (for the status job: the limits and the drops)
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
@@ -741,14 +745,18 @@ jobs:
       - name: The commit, on BASE
         id: commit
         env:
-          OK: ${{ steps.gates.outputs.ok }}
+          MERGE: ${{ steps.gates.outputs.merge }}
+          REASONS: ${{ steps.gates.outputs.reasons }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add food-data/scripts/fetch.py app/static/food/kalori.json app/static/food/index.json
           if git diff --cached --quiet; then echo "nothing changed: no commit"; echo "changed=0" >> "$GITHUB_OUTPUT"; exit 0; fi
-          { if [ "$OK" = 1 ]; then echo "Kalori: $TAG (auto)"; else echo "Kalori: $TAG (held)"; fi
-            echo; echo "kalori.json from the release $TAG (kalori-scrape.yml)."; echo; cat "$RUNNER_TEMP/gates.md"; } > "$RUNNER_TEMP/msg"
+          # (the subject stays "(auto)" past a band too: kalori-deploy.sh reverts only that subject)
+          { if [ "$MERGE" = 1 ]; then echo "Kalori: $TAG (auto)"; else echo "Kalori: $TAG (held)"; fi
+            echo; echo "kalori.json from the release $TAG (kalori-scrape.yml)."
+            [ "$MERGE" != 1 ] || [ -z "$REASONS" ] || { echo; echo "Past the bands ($REASONS): merged all the same, noted in status.json."; }
+            echo; cat "$RUNNER_TEMP/gates.md"; } > "$RUNNER_TEMP/msg"
           git commit -q -F "$RUNNER_TEMP/msg"
           { echo "changed=1"; echo "commit=$(git rev-parse HEAD)"; } >> "$GITHUB_OUTPUT"
       # Up to 5 tries: main fetched; its food files (app/static/food, food-data/scripts, food-data/data_src,
@@ -757,7 +765,7 @@ jobs:
       # job writes the status first, then dispatches (the watch's outcome always lands after it).
       - name: Into main
         id: merge
-        if: steps.gates.outputs.ok == '1' && steps.commit.outputs.changed == '1'
+        if: steps.gates.outputs.merge == '1' && steps.commit.outputs.changed == '1'
         env:
           GH_TOKEN: ${{ github.token }}
           COMMIT: ${{ steps.commit.outputs.commit }}
@@ -779,34 +787,18 @@ jobs:
           done
           echo "::warning::the push to main lost 5 races: held (main_moved)"
           echo "moved=1" >> "$GITHUB_OUTPUT"
-      # Held (a band, or main moved): the commit on BASE as kalori-update/<tag>, a PR with the gates. A PR opened with
-      # GITHUB_TOKEN runs no CI: merging it to main runs the full CI and the deploy. With "Allow GitHub Actions to
-      # create pull requests" off, the branch's compare page is the status's PR link.
-      - name: Held, a branch and a PR
+      # Held (a failed test, or main moved): the commit on BASE as kalori-update/<tag>, no PR (no person's gate: the
+      # next weekly run redoes the update on main as it is then); its compare page is the status's link.
+      - name: Held, a branch
         id: held
-        if: steps.commit.outputs.changed == '1' && (steps.gates.outputs.ok != '1' || steps.merge.outputs.moved == '1')
+        if: steps.commit.outputs.changed == '1' && (steps.gates.outputs.merge != '1' || steps.merge.outputs.moved == '1')
         env:
           GH_TOKEN: ${{ github.token }}
           COMMIT: ${{ steps.commit.outputs.commit }}
-          REASONS: ${{ steps.gates.outputs.reasons }}
-          MOVED: ${{ steps.merge.outputs.moved }}
         run: |
           gh auth setup-git
           git push -q --force origin "$COMMIT:refs/heads/$BRANCH"
-          why=$REASONS; [ "$MOVED" != 1 ] || why=main_moved
-          { echo "Kalori data from the release [$TAG]($GITHUB_SERVER_URL/$GH_REPO/releases/tag/$TAG), **held: $why** (kalori-scrape.yml)."
-            echo; cat "$RUNNER_TEMP/gates.md"; echo; echo "From update-build:"; echo; cat "$RUNNER_TEMP/update/body.md"; echo
-            echo "Opened by Actions (GITHUB_TOKEN), so no CI runs on this PR: merging it to main runs the full CI and the deploy."
-            echo "Merging accepts the release (the next refresh's baseline); left unmerged or closed, it is rejected."
-            echo "What to do: docs/ops/runbook.md \"Refresh Kalori\"."; } > "$RUNNER_TEMP/body.md"
-          url=$(gh pr list --head "$BRANCH" --state open --json url --jq '.[0].url // empty')
-          if [ -n "$url" ]; then gh pr edit "$url" --body-file "$RUNNER_TEMP/body.md"
-          elif url=$(gh pr create --base main --head "$BRANCH" --title "Kalori: $TAG (held: $why)" --body-file "$RUNNER_TEMP/body.md" 2> "$RUNNER_TEMP/pr.err"); then :
-          else
-            cat "$RUNNER_TEMP/pr.err"
-            echo "::warning::Actions may not open pull requests here (Settings → Actions → General): the compare page instead"
-            url="$GITHUB_SERVER_URL/$GH_REPO/compare/main...$BRANCH?expand=1"
-          fi
+          url="$GITHUB_SERVER_URL/$GH_REPO/compare/main...$BRANCH"
           echo "pr=$url" >> "$GITHUB_OUTPUT"
           echo "held: $url" | tee -a "$GITHUB_STEP_SUMMARY"
       # (the status job writes too; this one speaks if that one never runs)
@@ -829,12 +821,13 @@ jobs:
           PR: ${{ steps.held.outputs.pr }}
           REASONS: ${{ steps.gates.outputs.reasons }}
         run: |
-          if [ -n "$SHA" ]; then v=merged; r=
+          past=
+          if [ -n "$SHA" ]; then v=merged; r=; past=$REASONS
           elif [ "$CHANGED" = 0 ]; then v=nochange; r=
           elif [ -n "$PR" ]; then v=held; r=$REASONS; [ "$MOVED" != 1 ] || r=main_moved
           else v=error; r=update; fi
-          { echo "verdict=$v"; echo "reasons=$r"; } >> "$GITHUB_OUTPUT"
-          echo "update-merge: $v $r"
+          { echo "verdict=$v"; echo "reasons=$r"; echo "past=$past"; } >> "$GITHUB_OUTPUT"
+          echo "update-merge: $v $r${past:+ (past the bands: $past)}"
 
   # status.json (the spec: docs/food-data.md "Kalori", the status) at the end of every run on main but a smoke or
   # partial one: the reasons (shared codes: the app's copy, kalori-watch.yml), the accepted dataset (main's KALORI_TAG
@@ -908,6 +901,7 @@ jobs:
           MERGE: ${{ needs.update-merge.result }}
           VERDICT: ${{ needs.update-merge.outputs.verdict }}
           MERGE_REASONS: ${{ needs.update-merge.outputs.reasons }}
+          MERGE_PAST: ${{ needs.update-merge.outputs.past }}
           MERGE_SHA: ${{ needs.update-merge.outputs.sha }}
           DIFF_SHA: ${{ needs.report.outputs.diff_sha }}
           COV_SHA: ${{ needs.report.outputs.cov_sha }}
@@ -936,7 +930,11 @@ jobs:
           if [ "$MERGE" = failure ] || [ "$VERDICT" = error ]; then add update "the update failed (update-merge's checks or the push)"; fi
           if [ "$VERDICT" = held ]; then
             for r in ${MERGE_REASONS//,/ }; do codes+=("$r"); done
-            why+=("held by the gates: ${MERGE_REASONS//,/, } (the PR has the table)")
+            why+=("held: ${MERGE_REASONS//,/, } (the run's summary has the gates)")
+          fi
+          # merged past the bands: no reason (healthy), a note as the alert's text (kalori_status.py final)
+          if [ "$VERDICT" = merged ] && [ -n "$MERGE_PAST" ]; then
+            p=${MERGE_PAST//band_/}; why+=("merged past the bands (${p//,/, }): the run's summary has the gates")
           fi
           # (each code once, in order)
           uniq=(); for c in "${codes[@]}"; do [[ " ${uniq[*]} " == *" $c "* ]] || uniq+=("$c"); done

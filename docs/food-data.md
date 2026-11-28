@@ -107,8 +107,9 @@ operating it: [runbook §13](ops/runbook.md#13-refresh-kalori).
   `KALORI_ALLOW_PARTIAL=1`.
 - **A refresh** (`kalori-scrape.yml`, weekly; its header lists the jobs): incremental, 20 shards on fresh runner IPs
   (kalori.jp blocks ~1,000 requests an IP a day), refused past 15 % changed or 5 % missing unless `allow_big_diff`.
-  Within the `KALORI_BAND_*` bands it commits `Kalori: <tag> (auto)` and deploys; outside, a held PR on
-  `kalori-update/<tag>`. `kalori-watch.yml` re-checks a late deploy (red data checks → revert). `kalori_prune.py` keeps
+  It commits `Kalori: <tag> (auto)` and deploys, past the `KALORI_BAND_*` bands too (no person's gate: the bands
+  passed are status.json's note); a failed test or `main_moved` leaves branch `kalori-update/<tag>` (no PR) and the
+  next week redoes it. `kalori-watch.yml` re-checks a late deploy (red data checks → revert). `kalori_prune.py` keeps
   3 releases + the pinned one. Status: orphan branch `kalori-status`, shown in ボット → Jobs.
 - **The file**: `shops`; items `kal:<id>`, **per serving**, `est` flags, `img`, `vg`/`st` sizes; the loader adds `sv`,
   `brand`. Conversion `kalori_convert.py`: categories, `ended` (`pop: -1`, retired after 90 / 180 days), drops.
