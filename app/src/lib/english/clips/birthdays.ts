@@ -1,3 +1,5 @@
+// ESL REVIEW 2026-11-28: keep 22, fix 2, retire 0, new 0 (i2/pr1 no longer name a speaker the audio doesn't: the
+// "I hate devil's food" voice and the "on my birthday" voice; 125.5 s "Screw it, Meredith" left playable, mild)
 // R4 REVIEW 2026-11-18: keep 13, rewrite 6, retire 1, new 4, ctx 5, tx 8, qa 11
 // A2 REVIEW 2026-11-17: keep 7, rewrite 10, retire 7, new 2 · sweep: cross-bank twins retired or rewritten
 // A2 RAMP: one of the plan's first 30; detail/gist keys may reuse a heard word (clips.test RAMP, review 11-24 #8)
@@ -161,8 +163,8 @@ export const birthdayGuide: Clip = {
       use: 'Can I pick the cake this time?（今回はケーキを選んでいい？）' },
 
     { id: 'i2', skill: 'attitude', level: 'B1', point: 'likeme', reveals: ['devils'], seg: [118.5, 127],
-      stem: 'How does the next man feel about devil’s food?',
-      ja: '次に来た男性は、デビルズフードをどう思っている？',
+      stem: 'How does the next person feel about devil’s food?',
+      ja: '次に来た人は、デビルズフードをどう思っている？',
       choices: ['He hates it', 'He loves it', 'He wants it too'], a: 0,
       choicesJa: ['大嫌い', '大好き', '自分もほしい'],
       cue: '「Jim!」と呼ぶ声のあと。',
@@ -173,12 +175,12 @@ export const birthdayGuide: Clip = {
       use: 'I hate waiting in line.（並ぶのは大嫌い）' },
 
     { id: 'pr1', skill: 'pragma', level: 'B2', point: 'everybody', reveals: ['likeme', 'devils', 'oneparty'], ctx: true, seg: [125.7, 133.8],
-      stem: 'How does Jim answer Creed’s “on my birthday”?',
-      ja: 'クリードの「on my birthday」に、ジムはどう答える？',
+      stem: 'How does Jim answer “on my birthday”?',
+      ja: '「on my birthday」に、ジムはどう答える？',
       choices: ['The party is for everyone', 'Happy birthday to you, Creed', 'He can pick the cake now'], a: 0,
       choicesJa: ['みんなのための会だ', '誕生日おめでとう、クリード', 'ケーキを選んでいい'],
       cue: '「on my birthday」への短い返事。',
-      line: 'Creed: I don’t think it’s fair to let someone else pick the cake on *my birthday*. / Jim: *Everybody’s birthday.*',
+      line: 'I don’t think it’s fair to let someone else pick the cake on *my birthday*. / Jim: *Everybody’s birthday.*',
       said: '「自分の誕生日に他人がケーキを選ぶのは不公平」に、ジムは「みんなの誕生日だよ」と返す。',
       mean: 'my を everybody’s に言いかえて、合同の会だと念を押す。直後の「今日は本当に私の誕生日」が笑いどころ。',
       trap: 'birthday が聞こえると、お祝いの言葉と勘違いしやすい。どの語を言いかえたかを聞く。',

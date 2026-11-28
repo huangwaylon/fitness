@@ -1,3 +1,6 @@
+// ESL REVIEW 2026-11-28: keep 14, fix 3, retire 0, new 0 (d1's 'New equipment' was arguably true of security
+// upgrades; f1's key 'They haven't got it' read as City Hall; d3 seg starts after "the farting" (json3 147.3 s), its
+// note no longer calls Lord Sheldon a pet: the clip never says what he is)
 // R4 REVIEW 2026-11-18: keep 9, rewrite 6, retire 1, new 2, ctx 4, tx 4, qa 7
 // A2 REVIEW 2026-11-17: keep 14, rewrite 2, retire 5, new 1
 // A2 RAMP: one of the plan's first 30; detail/gist keys may reuse a heard word (clips.test RAMP, review 11-24 #8)
@@ -87,8 +90,8 @@ export const jerryBurritoLie: Clip = {
 
     { id: 'f1', skill: 'phrase', level: 'B2', point: 'money', seg: [44.2, 49.2],
       stem: 'What does “it’s not *coming through*” mean here?', ja: 'ここでの「it’s not coming through」の意味は？',
-      choices: ['They haven’t got it', 'It is coming slowly', 'It isn’t enough'], a: 0,
-      choicesJa: ['まだもらえていない', 'ゆっくり来ている', '足りない'],
+      choices: ['It hasn’t been given', 'It is coming slowly', 'It isn’t enough'], a: 0,
+      choicesJa: ['まだ出ていない', 'ゆっくり来ている', '足りない'],
       cue: '「money from City Hall」のあと',
       line: 'We need money from City Hall, and *it’s not coming through*.',
       said: 'レスリーが「市からのお金が要るのに、出てこない」と言う。',
@@ -153,13 +156,13 @@ export const jerryBurritoLie: Clip = {
 
     { id: 'd1', skill: 'detail', level: 'B1', point: 'security', seg: [74.4, 80.4],
       stem: 'What is the mayor’s money for?', ja: '市長のお金は何のため？',
-      choices: ['Better security in parks', 'New equipment in parks', 'A reward for finding the mugger'], a: 0,
-      choicesJa: ['公園の警備を強くする', '公園の新しい設備', '強盗を見つけた人へのお礼'],
+      choices: ['Better security in parks', 'New playgrounds in parks', 'A reward for finding the mugger'], a: 0,
+      choicesJa: ['公園の警備を強くする', '公園の新しい遊び場', '強盗を見つけた人へのお礼'],
       cue: '「to the parks」のあと',
       line: 'to the parks *for security upgrades*.',
       said: 'ポールが「警備の強化のために、公園にお金を回す」と言う。',
       mean: 'security ＝ 警備、安全。upgrade ＝ よくすること、強化。',
-      trap: 'upgrade は設備にも使うので、設備の話と勘違いしやすい。前の security を聞く。',
+      trap: 'upgrade（よくすること）だけだと、遊び場などの話と勘違いしやすい。前の security を聞く。',
       use: 'We need better security.（もっと警備が必要だ）' },
 
     { id: 'n2', skill: 'number', level: 'B1', point: 'time', seg: [79.1, 84.4], retired: true,
@@ -263,14 +266,14 @@ export const jerryBurritoLie: Clip = {
       trap: 'on my way はつながり「オンマイウェイ」とひと続きに聞こえる。',
       use: 'I’m on my way.（今向かってるよ）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'drop', seg: [147.4, 156.9],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'drop', seg: [148.3, 156.9],
       stem: 'Why did Jerry drop his burrito?', ja: 'ジェリーはなぜブリトーを落とした？',
       choices: ['Lord Sheldon jumped at a bird', 'A bird flew right at him', 'He slipped on a log'], a: 0,
       choicesJa: ['ロード・シェルドンが鳥に飛びかかった', '鳥が飛んできた', '丸太で滑った'],
       cue: '「dropped the burrito」の前',
       line: '*Lord Sheldon, he lunged at a bird*, I dropped the burrito, and it lands on a log',
       said: 'ジェリーが「シェルドンが鳥に飛びかかって、ブリトーを落とした」と言う。',
-      mean: 'lunge at 〜 ＝ 〜に飛びかかる。Lord Sheldon はジェリーのペット。ブリトーは丸太の上に落ちた。',
+      mean: 'lunge at 〜 ＝ 〜に飛びかかる。Lord Sheldon の正体は説明されない。ブリトーは丸太の上に落ちた。',
       trap: 'a bird が聞こえるので、鳥が飛んできたと勘違いしやすい。飛びかかったのは he。',
       use: 'I dropped my phone.（スマホを落とした）' },
 

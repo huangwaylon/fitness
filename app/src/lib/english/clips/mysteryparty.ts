@@ -1,3 +1,5 @@
+// ESL REVIEW 2026-11-28: keep 21, fix 3, retire 0, new 0 (no json3 exists for Dcb95rHOvuw: times checked on whisper only;
+// f3 seg starts after "drink heavily", which the header leaves out; a1's key was ungrammatical; k3 trap 弟 → 兄弟)
 // R4 REVIEW 2026-11-18: keep 9, rewrite 5, retire 0, new 10, ctx 6, tx 3, qa 10
 // A2 REVIEW 2026-11-17: keep 9, rewrite 5, retire 10, new 1 · sweep: cakerush twins retired (p1 s1 x1), new f4 x2
 // A2 RAMP: one of the plan's first 30; detail/gist keys may reuse a heard word (clips.test RAMP, review 11-24 #8)
@@ -10,7 +12,8 @@
 // EXCLUDE 49–59.2 (the "sexy secretary" card)
 // EXCLUDE 159.5–166 (an ethnic idiom)
 // SKIP 34–59.3: the other character cards (wordplay names), then the secretary card (excluded).
-// EAR CHECK: 196.5–201.5 s f3 — whisper's line is long here: confirm the seg holds "I'm famished"
+// EAR CHECK: 198–207.4 s f3 — no json3 for this video (whisper only): confirm the seg holds "I'm famished" and starts
+//   after "we'll drink heavily" (≈ 197 s)
 import type { Clip } from '../types.ts';
 
 export const mysteryParty: Clip = {
@@ -88,7 +91,7 @@ export const mysteryParty: Clip = {
       line: 'And *I’m the detective’s wife*.',
       said: '「それで私は刑事の妻」と読む。',
       mean: 'the detective’s wife ＝ 刑事の妻。’s ＝「〜の」。',
-      trap: '刑事の役は「弟が被害者」なので家族の話が続き、sister と考えがち。決め手は最後の wife。',
+      trap: '刑事の役は「兄弟が被害者」なので家族の話が続き、sister と考えがち。決め手は最後の wife。',
       use: 'This is my brother’s wife.（こちらは兄の妻です）' },
 
     { id: 'g2', skill: 'gist', level: 'B1', point: 'game', ctx: true, reveals: ['party'], seg: [104.5, 122.5],
@@ -257,7 +260,7 @@ export const mysteryParty: Clip = {
       trap: 'of がほぼ消えて outta に聞こえるが、書き取りでは of を入れる。',
       use: 'Okay, I’m out of here. Bye!（じゃ、帰るね。バイバイ！）' },
 
-    { id: 'f3', skill: 'phrase', level: 'B1', point: 'famished', seg: [196.5, 207.4],
+    { id: 'f3', skill: 'phrase', level: 'B1', point: 'famished', seg: [198.0, 207.4],
       stem: 'What does “I’m famished” mean?',
       ja: '「I’m famished」はどういう意味？',
       choices: ['I’m very hungry', 'I’m very tired', 'I’m really happy'], a: 0,
@@ -320,7 +323,7 @@ export const mysteryParty: Clip = {
     { id: 'a1', skill: 'attitude', level: 'B2', point: 'labor', ctx: true, reveals: ['wholenew'], seg: [239.3, 252.4],
       stem: 'How does someone react to the women baking a new cake?',
       ja: '女性たちが新しいケーキを焼くという話に、どう反応する？',
-      choices: ['Annoyed the women get it again', 'Pleased to be trusted with it', 'Worried there isn’t enough time'], a: 0,
+      choices: ['Upset it’s women’s work again', 'Pleased to be trusted with it', 'Worried there isn’t enough time'], a: 0,
       choicesJa: ['また女性の仕事かとうんざり', '任されてうれしい', '時間が足りないか心配'],
       cue: '「Once」で始まる一言',
       line: 'Millicent and your mom can just go bake you a… cake. / *Once again* the women take on the emotional labor.',

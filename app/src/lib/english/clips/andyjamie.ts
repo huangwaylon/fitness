@@ -1,3 +1,6 @@
+// ESL REVIEW 2026-11-28: keep 13, fix 5, retire 0, new 0 (g2's 'angry at her' was arguable after "You never told me";
+// kbet's 'I don't believe it' fits a sarcastic "I bet"; k4 notes leaned on "were" where json3 hears "you're"; k3 seg
+// started on "which")
 // R4 REVIEW 2026-11-18: keep 6, rewrite 8, retire 1, new 4, ctx 9, tx 1, qa 8
 // A2 REVIEW 2026-11-17: keep 2, rewrite 13, retire 6, new 0
 // A2 RAMP: one of the plan's first 30; detail/gist keys may reuse a heard word (clips.test RAMP, review 11-24 #8)
@@ -8,7 +11,7 @@
 // "Andy's girlfriend". Untested: 0–6 s, 9–15 s, 35–44 s (the song), 92–100 s, 116 s, 118.6 s. "beer me" is Andy's
 // made-up phrase, so no item teaches it.
 // EAR CHECK: 85–91.5 s k3 — whisper's lines are long here; confirm "Which one is she? / The one in the green hoodie."
-// EAR CHECK: 28.4 s h1 — "I was thinking more like a CD" assumed Jim's from the turn-taking
+// EAR CHECK: 50.1 s h1 — "I was thinking more like a CD" assumed Jim's from the turn-taking
 // EAR CHECK: 109.7 s s1 — "what are you" (both sources): said as one reduced stretch (≈ "whaddaya")
 import type { Clip } from '../types.ts';
 
@@ -81,8 +84,8 @@ export const andyJamie: Clip = {
     { id: 'kbet', skill: 'pragma', level: 'B2', point: 'ibet', ctx: true, reveals: ['weather'], seg: [25.0, 31.0],
       stem: 'What does Jim mean by “I bet”?',
       ja: 'ジムの「I bet」はどういう意味？',
-      choices: ['Sure, I guess so', 'Let’s bet on it', 'I don’t believe it'], a: 0,
-      choicesJa: ['だろうね', 'それに賭けよう', '信じられない'],
+      choices: ['Sure, I guess so', 'Let’s bet on it', 'I have no idea'], a: 0,
+      choicesJa: ['だろうね', 'それに賭けよう', '全然分からない'],
       cue: '「really cold」の返事',
       line: 'Andy: Today was supposed to be really cold. / Jim: *I bet.*',
       said: '「今日はすごく寒いはずだったのに」に、ジムは「だろうね」とだけ返す。',
@@ -174,7 +177,7 @@ export const andyJamie: Clip = {
       stem: 'What does Jim mean by “Did that really need to be said?”',
       ja: 'ジムの「Did that really need to be said?」はどういう意味？',
       choices: ['You didn’t need to say that', 'Please say that again', 'I didn’t hear what you said'], a: 0,
-      choicesJa: ['言わなくても分かるよ', 'もう一度言って', '何て言ったか聞こえなかった'],
+      choicesJa: ['言わなくてよかったのに', 'もう一度言って', '何て言ったか聞こえなかった'],
       cue: '「a really good job」のあと',
       line: 'Andy: …let’s do a really good job, okay? / Jim: Did that *really need to be said*?',
       said: '「いい仕事をしよう」と言われ、「それ、言う必要あった？」と返す。',
@@ -217,7 +220,7 @@ export const andyJamie: Clip = {
       trap: 'teacher が先に聞こえるので引かれやすい。No のあとが本当の答え。',
       use: 'I work part-time at a café.（カフェでアルバイトしてます）' },
 
-    { id: 'k3', skill: 'detail', level: 'B1', point: 'hoodie', ctx: true, seg: [85.0, 91.5],
+    { id: 'k3', skill: 'detail', level: 'B1', point: 'hoodie', ctx: true, seg: [84.5, 91.0],
       stem: 'Which one is Andy’s girlfriend?',
       ja: 'アンディの彼女はどの人？',
       choices: ['The one in the green hoodie', 'The one in the white top', 'The one by the front door'], a: 0,
@@ -259,15 +262,15 @@ export const andyJamie: Clip = {
       cue: '「Oh, yeah」のあと',
       line: 'Andy: Are you a student here? / Jamie: Oh, yeah. / Andy: *You never told me you were in high school.*',
       said: '「ここの生徒？」「うん」「高校生だなんて、言ってくれなかったじゃないか」。',
-      mean: 'You never told me 〜 ＝「〜なんて聞いてないよ」。相手を責める気持ちの言い方。were は時制をそろえた形で、今も高校生。',
-      trap: 'were（過去形）から昔の話と考えがちだが、told に合わせた形。今、高校生だと分かった。',
+      mean: 'You never told me 〜 ＝「〜なんて聞いてないよ」。責める気持ちの言い方。in high school ＝ 高校生。',
+      trap: '学校の場面で先生の話も出たので、ここで働いていると考えがち。決め手は in high school（高校生）。',
       use: 'You never told me you had a sister!（お姉さんがいるなんて聞いてないよ！）' },
 
     { id: 'g2', skill: 'gist', level: 'B1', point: 'outcome', reveals: ['nevertold'], seg: [113.0, 140.0],
       stem: 'How does Andy react when he learns the truth?',
       ja: '本当のことが分かって、アンディはどうする？',
-      choices: ['He starts to panic', 'He calmly explains it all', 'He gets angry at her'], a: 0,
-      choicesJa: ['あわて出す', '落ち着いて説明する', '彼女に怒る'],
+      choices: ['He starts to panic', 'He calmly explains it all', 'He laughs it off'], a: 0,
+      choicesJa: ['あわて出す', '落ち着いて説明する', '笑って流す'],
       cue: '「Are you a student here?」から',
       line: 'Oh my god, oh my god. *I had no idea.*',
       said: '彼女が高校生だと分かり、「うわ、うわ」「全然知らなかったんだ」と言う。',

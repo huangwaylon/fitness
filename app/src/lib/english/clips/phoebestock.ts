@@ -1,3 +1,5 @@
+// ESL REVIEW 2026-11-28: keep 7, fix 5, retire 0, new 0 (f1 seg now holds “jeans”, json3 12.0 s; d4 holds “breathe”;
+// f3 starts after “themselves”; p2's said had 「ううん」 for a No that means 座ってない; i1 line no longer quotes “Phoebe”)
 // R4 REVIEW 2026-11-18: keep 6, rewrite 4, retire 5, new 2, ctx 4, tx 8, qa 6
 // A2 REVIEW 2026-11-17: keep 5, rewrite 9, retire 4, new 1
 // “Phoebe the Stockbroker | Friends” (the official Friends channel, Best of Season 6): a friend reads out a list of
@@ -6,6 +8,8 @@
 // 36–39 s (“they'll kill themselves”: no seg plays it), 47.7 s (“Phoebe” vs “baby”).
 // EXCLUDE 15–18: “You're his bitch” (an insult)
 // SKIP 57–67.8: “Oh, my God!” and the channel's outro, no usable English
+// EAR CHECK: 39.4 s f3 — whisper “Great, now my chest hurts”, json3 “all right now my chest hurts”: if it's “All
+//   right”, f3 has no key; retire it and add an interpretive item in its place (the bank is at the 12-live floor)
 // EAR CHECK: 32.4 s x1 — both sources write “am I going to” twice; if it's said “am I gonna”, x1's answer changes
 import type { Clip } from '../types.ts';
 
@@ -39,7 +43,7 @@ export const phoebeStock: Clip = {
       trap: 'dry cleaning も最初に出るが、動詞は drop off（出す）。pick up のあとの物を聞く。',
       use: 'Can you pick up the kids at five?（5時に子どもを迎えに行ける？）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'jeans', seg: [6, 11.5],
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'jeans', seg: [6, 12.6],
       stem: 'What does “wear in my new jeans” mean?',
       ja: '「wear in my new jeans」はどういう意味？',
       choices: ['Wear them until they’re soft', 'Wear them only at home', 'Check that they fit'], a: 0,
@@ -69,7 +73,7 @@ export const phoebeStock: Clip = {
       choicesJa: ['座っていない', '座ってしまった', 'まだ分からない'],
       cue: '彼の「did you?」のすぐあと。',
       line: 'He: Wait, you *didn’t just sit on my Kit Kats, did you?* / Phoebe: *No*, there was…',
-      said: '「まさか僕のキットカットに座ってないよね？」に「ううん」と答える。',
+      said: '「まさか僕のキットカットに座ってないよね？」に「No（座ってないよ）」と答える。',
       mean: 'didn’t 〜, did you? ＝「まさか〜してないよね」。英語は中身が「してない」なら No。No ＝ 座ってない。',
       trap: '日本語なら「うん、座ってない」なので、No を「座った」と考えがち。事実が否定なら No。',
       use: 'You didn’t lose the key, did you? — No, it’s here.（まさか鍵なくしてないよね？―うん、ここにある）' },
@@ -201,7 +205,7 @@ export const phoebeStock: Clip = {
       trap: '直前の kill me に引っぱられて「顧客も私に怒る」と聞きやすい。同じ形が続いたら、変わった一語に意味がある。',
       use: 'It wasn’t my money to lose.（失っていいお金じゃなかった）', retired: true },
 
-    { id: 'f3', skill: 'attitude', level: 'B2', point: 'greatnow', reveals: ['chest'], seg: [39.0, 42.5],
+    { id: 'f3', skill: 'attitude', level: 'B2', point: 'greatnow', reveals: ['chest'], seg: [39.3, 42.5],
       stem: 'When Phoebe says “Great,” how does she feel?',
       ja: 'フィービーが「Great」と言うとき、どんな気持ち？',
       choices: ['Upset that it got worse', 'Glad that it got better', 'Calm, nothing has changed'], a: 0,
@@ -213,7 +217,7 @@ export const phoebeStock: Clip = {
       trap: 'great から喜んでいると考えがちだが、すぐあとに hurts（痛い）が続く。皮肉は中身で見分ける。',
       use: 'Great, now it’s raining.（あーあ、今度は雨だよ）' },
 
-    { id: 'd4', ctx: true, skill: 'detail', level: 'B1', point: 'chest', seg: [40.0, 47.0],
+    { id: 'd4', ctx: true, skill: 'detail', level: 'B1', point: 'chest', seg: [40.0, 47.6],
       stem: 'He says “What?” What does Phoebe tell him?',
       ja: '彼の「What?」に、フィービーは何と答える？',
       choices: ['Her chest hurts', 'Her head hurts', 'Her stomach hurts'], a: 0,
@@ -243,7 +247,7 @@ export const phoebeStock: Clip = {
       choices: ['Her left arm hurts', 'Her right arm hurts', 'Her back hurts'], a: 0,
       choicesJa: ['左腕が痛い', '右腕が痛い', '背中が痛い'],
       cue: '「would I have」のあと、どこの痛みか。',
-      line: 'He: Phoebe, are you having a heart attack? / Phoebe: Well, if I were, would I have *shooting pains up and down my left arm?* / He: Yes. / Phoebe: *Then yes*, that is what I’m having.',
+      line: 'He: …are you having a heart attack? / Phoebe: Well, if I were, would I have *shooting pains up and down my left arm?* / He: Yes. / Phoebe: *Then yes*, that is what I’m having.',
       said: '「発作なら左腕に痛みが走る？」と聞き、「うん」に「じゃあ、それなの」と答える。',
       mean: 'if I were ＝「もしそうなら」。仮定の形で聞いて、今の左腕の痛みを伝えている。だから Then yes。',
       trap: 'if I were を「そうじゃないけど」と考えがち。中身は今の痛みの話。left（左）と right（右）を聞き分ける。',

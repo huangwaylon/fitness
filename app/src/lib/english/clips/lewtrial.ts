@@ -1,3 +1,6 @@
+// ESL REVIEW 2026-11-28: keep 21, fix 3, retire 0, new 0. No json3 for lbKEes-DX40, so times are whisper's (whole
+// seconds): k6 seg now holds its quoted "doorman into a doormat" (whisper 230–233 s; it began at 233.5); n1 ends
+// before "some of the time" (123 s), which played and pulled toward a distractor; k10 ends before the 188 s drink joke
 // R4 REVIEW 2026-11-18: keep 10, rewrite 6, retire 5, new 10, ctx 6, tx 2, qa 12
 // A2 REVIEW 2026-11-17: keep 9, rewrite 9, retire 5, new 0
 // A2 RAMP: one of the plan's first 30; detail/gist keys may reuse a heard word (clips.test RAMP, review 11-24 #8)
@@ -179,7 +182,7 @@ export const lewTrial: Clip = {
       trap: 'Freddie の話が先にあったので、フレディと考えがち。決め手は on のあとの your brother。',
       use: 'I was a witness to the accident.（その事故を目撃しました）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'most', seg: [117.7, 124], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'most', seg: [117.7, 122.0], keep: true,
       stem: 'How often did Gibby want to do the stunts?',
       ja: 'ギビーはどのくらいスタントをやりたがっていた？',
       choices: ['Some of the time', 'Most of the time', 'All of the time'], a: 1,
@@ -263,7 +266,7 @@ export const lewTrial: Clip = {
       trap: 'throw the game（わざと負ける）に似るが、off your game なら「調子をくずす」。',
       use: 'Don’t let him throw you off your game.（あいつにペースを乱されないで）' },
 
-    { id: 'k10', skill: 'pragma', level: 'B1', point: 'breathe', seg: [185.5, 191],
+    { id: 'k10', skill: 'pragma', level: 'B1', point: 'breathe', seg: [185.5, 188.3],
       stem: 'What is Spencer told to do?',
       ja: 'スペンサーは何をするように言われる？',
       choices: ['Breathe and sip water', 'Sit down and stay quiet', 'Go outside for a walk'], a: 0,
@@ -299,7 +302,7 @@ export const lewTrial: Clip = {
       trap: 'as much as we do を聞き落とすと、だれでもよく聞こえる。決め手は hates Lewbert。',
       use: 'She loves pizza as much as I do.（彼女も私と同じくらいピザ好き）' },
 
-    { id: 'k6', skill: 'phrase', level: 'B1', point: 'nailed', seg: [233.5, 245],
+    { id: 'k6', skill: 'phrase', level: 'B1', point: 'nailed', seg: [229.5, 236.5],
       stem: 'What does “Nailed it!” mean?',
       ja: '「Nailed it!」の意味は？',
       choices: ['I said it perfectly', 'I hurt my finger', 'I fixed the door'], a: 0,

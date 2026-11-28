@@ -1,3 +1,4 @@
+// ESL REVIEW 2026-11-28: keep 16, fix 0, retire 0, new 0 (every key line inside its seg by json3; nothing to change)
 // R4 REVIEW 2026-11-18: keep 8, rewrite 6, retire 1, new 2, ctx 4, tx 3, qa 11
 // A2 REVIEW 2026-11-17: keep 3, rewrite 11, retire 6, new 1
 // A2 RAMP: one of the plan's first 30; detail/gist keys may reuse a heard word (clips.test RAMP, review 11-24 #8)

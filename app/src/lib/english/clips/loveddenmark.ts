@@ -1,3 +1,4 @@
+// ESL REVIEW 2026-11-28: keep 14, fix 1, retire 0, new 0 (i1 seg to 85 s: json3 puts "know" of "I don't know" at 84.8 s)
 // R4 REVIEW 2026-11-18: keep 6, rewrite 9, retire 3, new 0, ctx 5, tx 6, qa 7
 // A2 REVIEW 2026-11-17: keep 7, rewrite 9, retire 3, new 2
 // A2 RAMP: one of the plan's first 30; detail/gist keys may reuse a heard word (clips.test RAMP, review 11-24 #8)
@@ -272,7 +273,7 @@ export const mostLovedDenmark: Clip = {
       trap: '聞き違いにも聞こえるが、ちゃんと「分かるでしょ？」に答えている。愛されている話とつなげる。',
       use: 'Can’t relate, sorry!（ごめん、その感覚はないわ）' },
 
-    { id: 'i1', skill: 'infer', level: 'B2', point: 'idontknow', ctx: true, seg: [77.0, 83.0],
+    { id: 'i1', skill: 'infer', level: 'B2', point: 'idontknow', ctx: true, seg: [77.0, 85.0],
       stem: 'Why does Ollie say, “I don’t know”?',
       ja: 'オリーが「分からない」と言うのはなぜ？',
       choices: ['Her town never does that', 'She didn’t hear Leslie', 'She never saw a piñata'], a: 0,

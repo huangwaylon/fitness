@@ -1,3 +1,5 @@
+// ESL REVIEW 2026-11-28: keep 13, fix 2, retire 0, new 0 (pr1's seg plays “It's still 500” (json3 42.3 s), n1's key:
+// now reveals 'amount'; c3's stem plainer for A2)
 // R4 REVIEW 2026-11-18: keep 7, rewrite 6, retire 5, new 2, ctx 6, tx 6, qa 6
 // A2 REVIEW 2026-11-17: keep 15, rewrite 2, retire 6, new 1
 // A2 RAMP: one of the plan's first 30; detail/gist keys may reuse a heard word (clips.test RAMP, review 11-24 #8)
@@ -52,7 +54,7 @@ export const ambulance: Clip = {
       use: 'I think I’m allergic to Mondays.（月曜アレルギーかも）' },
 
     { id: 'c3', skill: 'detail', level: 'B1', point: 'xray', ctx: true, seg: [8.3, 14.5],
-      stem: 'What word does April use for “microwaved”?',
+      stem: 'What does April say instead of “microwaved”?',
       ja: 'エイプリルは「microwaved」を何と言い直す？',
       choices: ['X-rayed', 'Cooked', 'Washed'], a: 0,
       choicesJa: ['レントゲンをとった', '料理した', '洗った'],
@@ -105,9 +107,9 @@ export const ambulance: Clip = {
       trap: '「ファイブ・ハンドレッド」なら500、「ファイブ・サウザンド」なら5,000、「フィフティ」だけなら50。',
       use: 'It’s five hundred dollars.（500ドルです）' },
 
-    { id: 'pr1', skill: 'pragma', level: 'B2', point: 'hedge', reveals: ['covered'], seg: [36.3, 43.9],
+    { id: 'pr1', skill: 'pragma', level: 'B2', point: 'hedge', reveals: ['covered', 'amount'], seg: [36.3, 43.9],
       stem: 'Why does Andy put “I think” before “you’re wrong”?', ja: 'アンディはなぜ「you’re wrong」の前に I think を付ける？',
-      choices: ['To say no softly', 'To ask her to check', 'To agree to pay'], a: 0,
+      choices: ['To say no softly', 'To ask them to check', 'To agree to pay'], a: 0,
       choicesJa: ['やわらかく反対するため', '確認を頼むため', '払うと同意するため'],
       cue: '金額を言われたあと',
       line: 'Oh, *I think*, uh, you’re wrong… *I believe* we’re covered.',

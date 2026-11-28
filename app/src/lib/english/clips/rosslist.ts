@@ -1,3 +1,5 @@
+// ESL REVIEW 2026-11-28: keep 10, fix 2, retire 0, new 0 (g1's line quoted a turn never said, "Come on, Rach":
+// now Ross's offer and her reply, seg 6–23 s from json3; g2's 'make her laugh at him' was near his real aim)
 // R4 REVIEW 2026-11-18: keep 6, rewrite 5, retire 4, new 1, ctx 3, tx 5, qa 6
 // A2 REVIEW 2026-11-17: keep 9, rewrite 6, retire 3, new 0
 // A2 RAMP: one of the plan's first 30; detail/gist keys may reuse a heard word (clips.test RAMP, review 11-24 #8)
@@ -19,8 +21,8 @@ export const rossList: Clip = {
     { id: 'g2', skill: 'gist', level: 'B1', point: 'purpose', reveals: ['whatll'], seg: [0, 16.9],
       stem: 'Why does Ross suggest the list?',
       ja: 'ロスはなぜリストを勧める？',
-      choices: ['To help her feel better', 'To hear what she likes', 'To make her laugh at him'], a: 0,
-      choicesJa: ['彼女の気分をよくするため', '好きな所を聞くため', '自分のことで笑わせるため'],
+      choices: ['To help her feel better', 'To hear what she likes', 'To make her say sorry'], a: 0,
+      choicesJa: ['彼女の気分をよくするため', '好きな所を聞くため', '彼女に謝らせるため'],
       cue: '提案の前、「I think」のあと。', line: 'I think I know *what’ll make you feel better*.',
       said: 'ロスは「気分がよくなる方法、分かったよ」と言って、自分のリストを勧める。',
       mean: 'make you feel better ＝ 気分をよくする。落ちこんだ相手を元気づけたいという申し出。',
@@ -50,6 +52,18 @@ export const rossList: Clip = {
       trap: '数秒後にリストを始めるので、引き受けたと考えがち。最初の返事は Forget it と No。',
       use: 'How about a coffee break?（コーヒー休憩はどう？）' },
 
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'ready', reveals: ['refuse'], ctx: true, seg: [6.0, 23.0],
+      stem: 'What does Rachel do after saying no?',
+      ja: 'レイチェルは断ったあと、どうする？',
+      choices: ['She starts the list anyway', 'She leaves the room angrily', 'She names his good points'], a: 0,
+      choicesJa: ['やっぱりリストを始める', '怒って部屋を出る', '長所を並べる'],
+      cue: '「I’m not gonna」のあと。',
+      line: 'Ross: How about you make a list about me? / Rachel: No, I’m *not gonna* stand here and make a list of… *Okay, you’re whiny*.',
+      said: '「リストなんか作らない」と言ったすぐあと、「じゃあ言うけど、泣き言ばっかり」と始める。',
+      mean: 'Okay ＝ ここでは「じゃあ言うけど」と話を切りかえる合図。迷わず続くのは、前から思っていたから。',
+      trap: 'not gonna（しない）を聞いて、そのまま断ったと考えがち。決め手は Okay のあとの you’re whiny。',
+      use: 'Okay, since you asked…（じゃあ、聞かれたから言うけど…）' },
+
     { id: 'h1', skill: 'humor', level: 'C1', point: 'ready', reveals: ['refuse'], seg: [8.6, 19.6], retired: true,
       stem: 'Why does the audience laugh as Rachel starts with “Okay, you’re…”?',
       choices: ['She said she wouldn’t, then starts at once', 'She said she wouldn’t, then starts with praise',
@@ -71,18 +85,6 @@ export const rossList: Clip = {
       mean: '考えずに次々出てくるのは、前から思っていたから。速さが本音の証拠。',
       trap: '笑いが起きるので作り話に聞こえやすい。迷わず続くのは、前から思っていたこと。',
       use: 'I’ve been meaning to tell you this.（ずっと言おうと思ってたんだけど）' },
-
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'ready', reveals: ['refuse'], ctx: true, seg: [10.2, 25.5],
-      stem: 'What does Rachel do after saying no?',
-      ja: 'レイチェルは断ったあと、どうする？',
-      choices: ['She starts the list anyway', 'She leaves the room angrily', 'She names his good points'], a: 0,
-      choicesJa: ['やっぱりリストを始める', '怒って部屋を出る', '長所を並べる'],
-      cue: '「I’m not gonna」のあと。',
-      line: 'Rachel: No, I’m *not gonna* stand here and make a list of… / Ross: Come on, Rach… / Rachel: *Okay, you’re whiny*.',
-      said: '「リストなんか作らない」と言ったすぐあと、「じゃあ言うけど、泣き言ばっかり」と始める。',
-      mean: 'Okay ＝ ここでは「じゃあ言うけど」と話を切りかえる合図。迷わず続くのは、前から思っていたから。',
-      trap: 'not gonna（しない）を聞いて、そのまま断ったと考えがち。決め手は Okay のあとの you’re whiny。',
-      use: 'Okay, since you asked…（じゃあ、聞かれたから言うけど…）' },
 
     { id: 'd4', skill: 'detail', level: 'B2', point: 'faults', seg: [12.4, 20],
       stem: 'After “whiny”, which two faults does Rachel name?',

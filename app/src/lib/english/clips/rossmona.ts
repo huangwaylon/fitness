@@ -1,3 +1,4 @@
+// ESL REVIEW 2026-11-28: keep 12, fix 0, retire 0, new 0 (12 live, the bank minimum: nothing unsound found)
 // R4 REVIEW 2026-11-18: keep 6, rewrite 4, retire 5, new 2, ctx 3, tx 5, qa 9
 // A2 RAMP: one of the plan's first 30; detail/gist keys may reuse a heard word (clips.test RAMP, review 11-24 #8)
 // Built for speech 0–47.5 s: quarters ≥ 2 and ≤ 40 %, ≤ 3 starts in any 10 s.

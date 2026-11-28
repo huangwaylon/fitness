@@ -1,3 +1,5 @@
+// ESL REVIEW 2026-11-28: keep 18, fix 3, retire 0, new 0 (g1's 'owing money to a friend' was arguably true: she
+// fears owing her friend; k1 seg now holds "today" (json3 83.4 s); t3 seg cut before the 176 s weight jab)
 // R4 REVIEW 2026-11-18: keep 9, rewrite 10, retire 0, new 2, ctx 7, tx 8, qa 10
 // A2 REVIEW 2026-11-17: keep 9, rewrite 9, retire 6, new 1
 // A2 RAMP: one of the plan's first 30; detail/gist keys may reuse a heard word (clips.test RAMP, review 11-24 #8)
@@ -9,8 +11,7 @@
 // named, so no stem names the lender and no key rests on who it is. Untested on purpose: 83–92 s, 132–134 s, 151 s,
 // 176–188 s (a jab at her old weight).
 // EXCLUDE 63–74.5 (Jack's remark on a tennis player's body)
-// EAR CHECK: 75–82.5 s k1 — whisper lumps 61.7–85.7 s into two lines; confirm the grandson exchange sits in the seg
-//   and Judy's "a woman in my office…" remark (≈ 83 s) doesn't
+// EAR CHECK: 75–83.9 s k1 — json3: "today" 83.4 s, "A woman in my office" 84.0 s; confirm the remark stays out
 // EAR CHECK: 93–99.5 s k2 — "Where have you been? / Emotional hell." (whisper line 94.2–105.4 s): confirm the timing
 // EAR CHECK: 17.3 s s1 d1 — "couldn't" (both sources): said with the t dropped, ending on the n (≈ "couldn")
 // EAR CHECK: 8.0 s x2 — "do you have any" (both sources): do you runs into one weak syllable, have any linked
@@ -25,13 +26,13 @@ export const monicabroke: Clip = {
     { id: 'g1', skill: 'gist', level: 'B1', point: 'rent', reveals: ['possib'], seg: [1.5, 29.9],
       stem: 'What is Monica worried about?',
       ja: 'モニカは何を心配している？',
-      choices: ['Paying this month’s rent', 'Owing money to a friend', 'Telling her parents the news'], a: 0,
-      choicesJa: ['今月の家賃を払うこと', '友だちにお金を借りていること', '両親に知らせること'],
+      choices: ['Paying this month’s rent', 'A job interview tomorrow', 'Telling her parents the news'], a: 0,
+      choicesJa: ['今月の家賃を払うこと', '明日の仕事の面接', '両親に知らせること'],
       cue: '「ほかの当ては？」の答え。',
       line: 'Well, there is a *possibility that I won’t make rent*.',
       said: '面接のあと、「家賃が払えないかも」と言う。',
       mean: 'make rent ＝ 家賃を期日までに用意する。お金の心配が、この場面の始まり。',
-      trap: '借りる話も出るが、まだだれにも借りていない。両親の話は最後に出るだけ。',
+      trap: '面接はもう終わった話（シャワーで洗い流した）。両親の話は最後に、借りる先として出るだけ。',
       use: 'I might not make rent this month.（今月の家賃、払えないかも）' },
 
     { id: 'n1', skill: 'number', level: 'B1', point: 'shower', seg: [1.8, 7.5], keep: true,
@@ -186,13 +187,13 @@ export const monicabroke: Clip = {
       trap: '言葉どおりなら同意だが、自分の部屋は片づけられた直後。状況と言葉が逆なら皮肉を疑う。',
       use: 'Oh, God forbid we’re five minutes late.（5分遅れたら大変だもんね（皮肉））' },
 
-    { id: 'k1', skill: 'detail', level: 'B1', point: 'grandson', ctx: true, seg: [75.0, 82.5],
+    { id: 'k1', skill: 'detail', level: 'B1', point: 'grandson', ctx: true, seg: [75.0, 83.9],
       stem: 'Where is the grandson today?',
       ja: '孫は今日どこにいる？',
       choices: ['With Carol and Susan', 'At school all day', 'At home with a sitter'], a: 0,
       choicesJa: ['キャロルとスーザンのところ', '一日じゅう学校', '家でシッターと'],
       cue: '「You didn’t bring him?」の答え',
-      line: 'Judy: Where’s my grandson? You didn’t bring him? / No, he’s at *Carol and Susan’s* today.',
+      line: 'Where’s my grandson? You didn’t bring him? / No, he’s at *Carol’s and Susan’s* today.',
       said: '「孫はどこ？連れてこなかったの？」に「うん、今日はキャロルとスーザンのところ」と答える。',
       mean: 'at 〜’s ＝「〜の家に」。’s のあとの house が省かれている。',
       trap: 'No（いいえ）から「連れてきた」と考えがち。英語の No は「連れてこなかった」＝日本語の「うん」。',
@@ -329,7 +330,7 @@ export const monicabroke: Clip = {
       trap: 'I mean は言い直しにも使うが、ここは前の言葉を直していない。後ろに理由が続く。',
       use: 'I mean, it’s free, so why not?（だって無料だし、いいじゃん）' },
 
-    { id: 't3', skill: 'attitude', level: 'B1', point: 'saurus', seg: [166.3, 178.3],
+    { id: 't3', skill: 'attitude', level: 'B1', point: 'saurus', seg: [166.3, 176.0],
       stem: 'How does Monica really feel about the loan?',
       ja: 'お金を貸してもらって、モニカは本当はどう思っている？',
       choices: ['Thankful for the help', 'Upset it’s so small', 'Embarrassed to take it'], a: 0,

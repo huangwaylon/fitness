@@ -1,3 +1,5 @@
+// ESL REVIEW 2026-11-28: keep 18, fix 1, retire 0, new 0 (c1's 'He lives on a farm' was true of Dwight, his beet farm
+// comes up at 79 s: now 'He lives with his mom')
 // R4 REVIEW 2026-11-18: keep 12, rewrite 6, retire 4, new 1, ctx 6, tx 1, qa 7
 // A2 REVIEW 2026-11-17: keep 9, rewrite 11, retire 3, new 1
 // A2 RAMP: one of the plan's first 30; detail/gist keys may reuse a heard word (clips.test RAMP, review 11-24 #8)
@@ -209,8 +211,8 @@ export const dwightHobbit: Clip = {
     { id: 'c1', skill: 'detail', level: 'B1', point: 'normal', ctx: true, seg: [69.8, 76],
       stem: 'How does Ryan answer Troy’s question about Dwight?',
       ja: 'トロイのドワイトについての質問に、ライアンはどう答える？',
-      choices: ['Dwight is just normal', 'He lives in a tiny house', 'He lives on a farm'], a: 0,
-      choicesJa: ['ドワイトはふつうだ', '小さな家に住んでいる', '農場に住んでいる'],
+      choices: ['Dwight is just normal', 'He lives in a tiny house', 'He lives with his mom'], a: 0,
+      choicesJa: ['ドワイトはふつうだ', '小さな家に住んでいる', 'お母さんと住んでいる'],
       cue: 'トロイの質問への、ライアンの返事。',
       line: 'Troy: Do you live in a *regular-sized house*? / Ryan: Yeah, *he’s a normal guy*. He’s cool.',
       said: 'トロイの「普通サイズの家に住んでるの？」に、ライアンが「うん、普通のやつだよ。いいやつさ」と答える。',

@@ -1,3 +1,5 @@
+// ESL REVIEW 2026-11-28: keep 23, fix 1, retire 0, new 0 (i1 seg now opens on Carly's “One minute, 45 seconds to go”,
+// so the timer is heard in the segment; no json3 for this video in english-captions/, so times are whisper's only)
 // R4 REVIEW 2026-11-18: keep 7, rewrite 6, retire 2, new 11, ctx 8, tx 18, qa 7
 // A2 REVIEW 2026-11-17: keep 3, rewrite 12, retire 8, new 0
 // “The First Episode of the New “iCARLY” 📸 | Full Episode in 5 Minutes | @NickRewind” (NickRewind, the official iCarly
@@ -158,12 +160,12 @@ export const newIcarly: Clip = {
       trap: '40 なら forty で止まる。55 なら「フィフティ」で始まる。「フォーティ・ファイヴ」が45。',
       use: 'Ten minutes to go!（あと10分！）' },
 
-    { id: 'i1', skill: 'infer', level: 'B2', point: 'out', reveals: ['left', 'terms'], seg: [121.0, 130.0],
+    { id: 'i1', skill: 'infer', level: 'B2', point: 'out', reveals: ['left', 'terms'], seg: [115.0, 130.0],
       stem: 'Why does Carly stop and leave?',
       ja: 'カーリーはなぜ話をやめて帰る？',
       choices: ['Her five minutes ended', 'The sculpture upset her', 'Spencer told her to go'], a: 0,
       choicesJa: ['5分が終わった', '作品に気分を悪くした', 'スペンサーに帰れと言われた'],
-      cue: '話の途中、最後のひと言',
+      cue: '最初の「to go」と、最後のひと言',
       line: 'The reason this is genius is because… *and I’m out*. Night, guys.',
       said: '作品のよさを話す途中で「…で、私はここまで。おやすみ」と帰る。',
       mean: 'I’m out ＝ もう抜けるね、帰るね。自分で決めた5分が来たので、文の途中でも出ていく。',

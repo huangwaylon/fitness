@@ -1,3 +1,5 @@
+// ESL REVIEW 2026-11-28: keep 15, fix 2, retire 0, new 0 (c2's key and notes said Donna's "spot" was a shop: the clip
+// never says so, now "attacked her online"; c1 seg now opens on "why" (json3 75.7 s), which it quotes)
 // R4 REVIEW 2026-11-18: keep 9, rewrite 6, retire 2, new 3, ctx 4, tx 11, qa 5
 // A2 REVIEW 2026-11-17: keep 8, rewrite 8, retire 5, new 1
 // A2 RAMP: one of the plan's first 30; detail/gist keys may reuse a heard word (clips.test RAMP, review 11-24 #8)
@@ -91,12 +93,12 @@ export const ronsReviews: Clip = {
     { id: 'c2', skill: 'infer', level: 'B2', point: 'troll', reveals: ['turndown'], ctx: true, seg: [38.5, 51],
       stem: 'Why is Donna angry with her visitor?',
       ja: 'ドナはなぜ、その人に怒っている？',
-      choices: ['He attacked her place online', 'He took one of her cats', 'He wants to have her job'], a: 0,
-      choicesJa: ['ネットで彼女の店をたたいた', '彼女の猫を1匹とった', '彼女の仕事をほしがっている'],
+      choices: ['He attacked her online', 'He took one of her cats', 'He wants to have her job'], a: 0,
+      choicesJa: ['ネットで彼女を攻撃した', '彼女の猫を1匹とった', '彼女の仕事をほしがっている'],
       cue: '「Then you tried to」のあと。',
       line: 'Visitor: Donna, you wanted to see me? / Donna: Yes, I did, *troll*. … Then you tried to *blow up my spot online*.',
-      said: 'ドナは「荒らしさん」と呼び、猫を断ったら、ネットで店の悪口を書いたと責める。',
-      mean: 'troll ＝ ネットで悪口を書いて荒らす人。blow up my spot ＝ ここでは「店の評判をつぶす」（くだけた言い方）。',
+      said: 'ドナは「荒らしさん」と呼び、猫の件を断ったら、ネットで自分をたたいたと責める。',
+      mean: 'troll ＝ ネットで悪口を書いて荒らす人。blow up my spot ＝ ここでは「私の評判をつぶす」（くだけた言い方）。',
       trap: '猫の話が先に出るので、猫が原因と考えがち。決め手は Then のあとの online。',
       use: 'Someone left a bad review online.（だれかがネットに悪いレビューを書いた）' },
 
@@ -193,7 +195,7 @@ export const ronsReviews: Clip = {
       trap: 'mailed は「メ」、sent は「セ」で始まる。「ネイルド」なら nailed。to my door も手がかり。',
       use: 'Someone nailed a notice to the door.（だれかがドアに貼り紙を打ちつけた）' },
 
-    { id: 'c1', skill: 'infer', level: 'B1', point: 'believe', reveals: ['nailed'], ctx: true, seg: [76.5, 87.5],
+    { id: 'c1', skill: 'infer', level: 'B1', point: 'believe', reveals: ['nailed'], ctx: true, seg: [75.3, 87.5],
       stem: 'What reason does Ron give the owner?',
       ja: 'ロンは店主にどんな理由を言う？',
       choices: ['He believes what it says', 'The food made him sick', 'A friend asked him to'], a: 0,

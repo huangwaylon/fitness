@@ -1,3 +1,5 @@
+// ESL REVIEW 2026-11-28: keep 20, fix 1, retire 0, new 0 (m2: wine throwing is ワインのぶっかけ, not かけ合い). No json3
+// captions in english-captions/ for this video: segments checked against whisper times only
 // R4 REVIEW 2026-11-18: keep 8, rewrite 7, retire 0, new 6, ctx 5, tx 7, qa 13
 // A2 REVIEW 2026-11-17: keep 9, rewrite 5, retire 7, new 1
 // A2 RAMP: one of the plan's first 30; detail/gist keys may reuse a heard word (clips.test RAMP, review 11-24 #8)
@@ -86,10 +88,10 @@ export const realityExposed: Clip = {
       stem: 'What is their show missing?',
       ja: '彼らの番組に足りないものは？',
       choices: ['Writers and wine throwing', 'Roses and immunity idols', 'Roommates and peanut butter'], a: 0,
-      choicesJa: ['脚本家とワインのかけ合い', 'バラと脱落を防ぐお守り', 'ルームメイトとピーナッツバター'],
+      choicesJa: ['脚本家とワインのぶっかけ', 'バラと脱落を防ぐお守り', 'ルームメイトとピーナッツバター'],
       cue: '「Every reality show has it」のあと。',
       line: 'It’s not working. Look, you know what? Every reality show has it. We’re missing… *Writers, wine throwing*, Andy Cohen.',
-      said: '「どの番組にもあるのに、うちにないもの。脚本家、ワインのかけ合い…」と言う。',
+      said: '「どの番組にもあるのに、うちにないもの。脚本家、ワインのぶっかけ…」と言う。',
       mean: 'We’re missing 〜 ＝ 〜が足りない。Andy Cohen はアメリカのリアリティー番組の有名司会者。',
       trap: 'roommates と peanut butter は、その前のほめ言葉で出た。決め手は missing のあと。',
       use: 'We’re missing two chairs.（いすが2つ足りません）' },
