@@ -19,7 +19,7 @@ export interface Card {
 export const CARDS: readonly Card[] = [
   { en: "It's your *birthday*! Happy birthday!", ja: '誕生日！おめでとう！', kw: '誕生日', pos: 'n' },
   { en: 'You find a *shortcut*. Move 3.', ja: '近道を見つけた！3マス進む。', move: 3 },
-  { en: "It's *allowance* day! Yay!", ja: 'おこづかいの日！やった！', kw: 'おこづかい', pos: 'n' },
+  { en: "It's *payday*! Yay!", ja: '給料日！やった！', kw: '給料日', pos: 'n' },
   { en: 'You buy a cup of *coffee*. Yum!', ja: 'コーヒーを買った。おいしい！', kw: 'コーヒー', pos: 'n' },
   { en: 'You see a *cat*. It is cute!', ja: '猫がいた。かわいい！', kw: '猫', pos: 'n' },
   { en: 'You *help* a lost man. "Thank you!"', ja: '道に迷った人を助けた。「ありがとう！」', kw: '助ける', pos: 'v' },
@@ -28,10 +28,10 @@ export const CARDS: readonly Card[] = [
   { en: 'You find a *shell* on the beach.', ja: '浜辺で貝がらを見つけた。', kw: '貝がら', pos: 'n' },
   { en: 'Your *bike* is fast. Move 2.', ja: '自転車でスイスイ！2マス進む。', move: 2 },
   { en: 'You *win* a prize at the shop!', ja: 'お店で賞品が当たった！', kw: '当たる・勝つ', pos: 'v' },
-  { en: 'You *dance* at the party.', ja: 'パーティーで踊った。', kw: '踊る', pos: 'v' },
+  { en: 'You *read* a book on the beach.', ja: '浜辺で本を読んだ。', kw: '読む', pos: 'v' },
   { en: 'The *wind* is strong. Move 1.', ja: '風が強い。1マス進む。', move: 1 },
   // the villagers'
-  { en: 'Isabelle says *hello*. Roll again!', ja: 'しずえが「おはようございます！」もう1回ふろう！', who: 'isabelle', again: true },
+  { en: 'Isabelle says *hello*. Roll again!', ja: 'しずえが「こんにちは！」もう1回ふろう！', who: 'isabelle', again: true },
   { en: 'Tom Nook *likes* your work.', ja: 'たぬきちが「いい仕事だね」とほめてくれた。', who: 'tom-nook', kw: '気に入る', pos: 'v' },
   { en: 'K.K. *sings* for you. So nice!', ja: 'とたけけが歌ってくれた。いい曲！', who: 'kk-slider', kw: '歌う', pos: 'v' },
   { en: 'Blathers shows you a *fossil*.', ja: 'フータが化石を見せてくれた。すごい！', who: 'blathers', kw: '化石', pos: 'n' },

@@ -134,7 +134,8 @@
 "level": 3
 },
 "Are you okay driving tonight?": {
-"level": 1
+"level": 1,
+"ja": "今夜、運転して大丈夫？"
 },
 "Are you seeing anyone?": {
 "level": 3
@@ -194,7 +195,7 @@
 "level": 2
 },
 "Call 3-1-1 to report a pothole.": {
-"level": 3
+"level": 0
 },
 "Call me anytime. I mean it.": {
 "level": 2
@@ -366,7 +367,7 @@
 },
 "Could you pin it up?": {
 "level": 3,
-"ja": "髪をアップにしてもらえますか"
+"ja": "（髪を）ピンで留めてもらえますか"
 },
 "Could you sign right here?": {
 "level": 1
@@ -529,7 +530,8 @@
 "level": 1
 },
 "Don’t take it personally.": {
-"level": 3
+"level": 3,
+"ja": "気を悪くしないで"
 },
 "Don’t talk. Just react.": {
 "level": 0
@@ -634,7 +636,8 @@
 "level": 3
 },
 "Fine. It was me.": {
-"level": 2
+"level": 2,
+"ja": "分かったよ、私がやった"
 },
 "First impressions can be wrong.": {
 "level": 2
@@ -740,7 +743,8 @@
 "level": 1
 },
 "He got fired for being late.": {
-"level": 2
+"level": 2,
+"ja": "彼は遅刻でクビになった"
 },
 "He hates spicy food.": {
 "level": 1
@@ -758,13 +762,15 @@
 "level": 2
 },
 "He promised me his old laptop.": {
-"level": 2
+"level": 2,
+"ja": "彼が古いパソコンをくれるって約束してくれたの"
 },
 "He reads all the time.": {
 "level": 1
 },
 "He slipped and broke his arm.": {
-"level": 2
+"level": 2,
+"ja": "彼、すべって腕を折ったの"
 },
 "He threw it in the river.": {
 "level": 2
@@ -827,7 +833,8 @@
 "level": 2
 },
 "Hold on one sec, please.": {
-"level": 2
+"level": 2,
+"ja": "ちょっと待ってね"
 },
 "Hold on, I’ll be right back.": {
 "level": 2
@@ -887,13 +894,15 @@
 "level": 0
 },
 "How about an extra blanket?": {
-"level": 2
+"level": 2,
+"ja": "毛布、もう1枚どう？"
 },
 "How about dinner tonight?": {
 "level": 1
 },
 "How about this weather, huh?": {
-"level": 3
+"level": 3,
+"ja": "いやあ、すごい天気だね"
 },
 "How are you gonna get home?": {
 "level": 3
@@ -911,7 +920,8 @@
 "level": 2
 },
 "How long is this gonna take?": {
-"level": 3
+"level": 3,
+"ja": "これ、どのくらいかかるの？"
 },
 "How much is postage to Japan?": {
 "level": 2
@@ -1089,7 +1099,8 @@
 "level": 2
 },
 "I don’t need a bag, thanks.": {
-"level": 2
+"level": 2,
+"ja": "袋は大丈夫です、ありがとう"
 },
 "I don’t trust that website.": {
 "level": 1
@@ -1206,7 +1217,7 @@
 "level": 2
 },
 "I just assumed you knew.": {
-"level": 3
+"level": 0
 },
 "I just got off the phone.": {
 "level": 3
@@ -1338,7 +1349,7 @@
 "level": 2
 },
 "I really hope it works out.": {
-"level": 3
+"level": 2
 },
 "I save 10% of every paycheck.": {
 "level": 2
@@ -1614,7 +1625,7 @@
 "level": 2
 },
 "It was anonymous, I promise.": {
-"level": 2
+"level": 3
 },
 "It was like two weeks ago.": {
 "level": 3
@@ -1808,13 +1819,14 @@
 "level": 3
 },
 "It’s twenty dollars an hour.": {
-"level": 1
+"level": 1,
+"ja": "1時間20ドルです"
 },
 "It’s two ninety-nine.": {
 "level": 2
 },
 "It’s valued at about two million.": {
-"level": 2
+"level": 3
 },
 "It’s worth a shot.": {
 "level": 3
@@ -1893,7 +1905,8 @@
 "level": 1
 },
 "I’ll never forget this. Thank you.": {
-"level": 2
+"level": 2,
+"ja": "このことは絶対忘れない。ありがとう"
 },
 "I’ll pass on dessert, thanks.": {
 "level": 3
@@ -1935,7 +1948,7 @@
 "level": 3
 },
 "I’m a terrible liar.": {
-"level": 1
+"level": 2
 },
 "I’m actually married, so no.": {
 "level": 2
@@ -1953,7 +1966,8 @@
 "level": 2
 },
 "I’m doing better, thanks.": {
-"level": 1
+"level": 1,
+"ja": "だいぶ良くなったよ、ありがとう"
 },
 "I’m done with this game.": {
 "level": 2
@@ -2028,7 +2042,8 @@
 "level": 2
 },
 "I’m happy for you either way.": {
-"level": 2
+"level": 2,
+"ja": "どっちになっても、私はうれしいよ"
 },
 "I’m headed out. See you tomorrow.": {
 "level": 2
@@ -2169,7 +2184,8 @@
 "level": 2
 },
 "I’m so nervous about tomorrow.": {
-"level": 1
+"level": 1,
+"ja": "明日のことですごく緊張してる"
 },
 "I’m so proud of you.": {
 "level": 2
@@ -2428,7 +2444,8 @@
 "level": 2
 },
 "Let’s go see what’s going on.": {
-"level": 2
+"level": 2,
+"ja": "何が起きてるか見に行こう"
 },
 "Let’s go together. It saves time.": {
 "level": 2
@@ -2437,7 +2454,8 @@
 "level": 2
 },
 "Let’s grab a coffee.": {
-"level": 2
+"level": 2,
+"ja": "コーヒーでも飲みに行こう"
 },
 "Let’s hop on the next bus.": {
 "level": 3
@@ -2461,7 +2479,7 @@
 "level": 2
 },
 "Let’s keep this going.": {
-"level": 3
+"level": 0
 },
 "Let’s keep work and home separate.": {
 "level": 2
@@ -2717,7 +2735,8 @@
 "level": 1
 },
 "No rush, take your time.": {
-"level": 1
+"level": 1,
+"ja": "急がなくていいよ、ゆっくりで"
 },
 "No rush. Just think about it.": {
 "level": 2
@@ -3141,7 +3160,8 @@
 "level": 3
 },
 "She invited some of her coworkers.": {
-"level": 2
+"level": 2,
+"ja": "彼女は同僚を何人か招待した"
 },
 "She just might be the one.": {
 "level": 3
@@ -3312,7 +3332,7 @@
 "level": 2
 },
 "Sorry, my mind just went blank.": {
-"level": 3
+"level": 0
 },
 "Sorry, my mind went blank.": {
 "level": 3
@@ -3441,7 +3461,8 @@
 "level": 2
 },
 "Thank you for inviting me.": {
-"level": 2
+"level": 2,
+"ja": "誘ってくれてありがとう"
 },
 "Thank you, that’s so sweet.": {
 "level": 2
@@ -3589,7 +3610,8 @@
 "level": 2
 },
 "That’s so sweet, but I can’t.": {
-"level": 2
+"level": 2,
+"ja": "優しいね、でも無理なの"
 },
 "That’s the best news all week!": {
 "level": 2
@@ -3665,7 +3687,8 @@
 "level": 2
 },
 "The meeting’s at 7 p.m.": {
-"level": 2
+"level": 2,
+"ja": "会議は午後7時です"
 },
 "The new boss seems pretty cool.": {
 "level": 2
@@ -3689,7 +3712,8 @@
 "level": 2
 },
 "The station is five minutes away.": {
-"level": 2
+"level": 2,
+"ja": "駅まで5分だよ"
 },
 "The station is this way, right?": {
 "level": 2
@@ -3749,7 +3773,7 @@
 "level": 2
 },
 "There are two kinds of people.": {
-"level": 3
+"level": 2
 },
 "There were about a thousand people.": {
 "level": 2
@@ -3807,7 +3831,8 @@
 "level": 3
 },
 "They scheduled the meeting for five.": {
-"level": 2
+"level": 2,
+"ja": "会議は5時になったよ"
 },
 "They won’t let us back in.": {
 "level": 2
@@ -3877,7 +3902,7 @@
 "level": 2
 },
 "This one’s way cheaper.": {
-"level": 2
+"level": 0
 },
 "This phone case is almost indestructible.": {
 "level": 3
@@ -4098,7 +4123,8 @@
 "level": 3
 },
 "We need ten cases of water.": {
-"level": 2
+"level": 2,
+"ja": "水が10ケース要る"
 },
 "We need three cases of water.": {
 "level": 2
@@ -4119,7 +4145,8 @@
 "level": 2
 },
 "We redid the bathroom.": {
-"level": 2
+"level": 2,
+"ja": "バスルームをリフォームした"
 },
 "We should do this again.": {
 "level": 2
@@ -4291,13 +4318,14 @@
 "level": 2
 },
 "What’s going on here?": {
-"level": 1
+"level": 1,
+"ja": "ここで何が起きてるの？"
 },
 "What’s going on? You look upset.": {
 "level": 2
 },
 "What’s good here?": {
-"level": 3
+"level": 2
 },
 "What’s so funny?": {
 "level": 1
@@ -4432,7 +4460,8 @@
 "level": 1
 },
 "Yeah, I know. She told me.": {
-"level": 2
+"level": 2,
+"ja": "うん、知ってる。彼女から聞いたよ"
 },
 "Yeah, I’m late. So what?": {
 "level": 3
@@ -4617,7 +4646,8 @@
 "level": 1
 },
 "You’ll be the guest of honor.": {
-"level": 2
+"level": 2,
+"ja": "あなたが主賓だよ"
 },
 "You’re all winners to me.": {
 "level": 2
