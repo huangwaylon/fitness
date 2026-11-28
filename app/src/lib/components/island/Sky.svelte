@@ -80,13 +80,14 @@
   /* sun / moon: glow box = 2.8 × the core (core 30 / glow 84 at 393, 26 / 72 compact, 22 / 60 at 320) */
   .orb {
     --glow: 84px;
-    position: absolute; z-index: 2; left: 12%; top: 46%; width: var(--glow); height: var(--glow); translate: -50% -50%;
+    position: absolute; z-index: 2; left: 12%; width: var(--glow); height: var(--glow); translate: -50% -50%;
     border-radius: 50%; pointer-events: none;
   }
   @media (max-height: 700px), (max-width: 359px) { .orb { --glow: 72px; } }
   @media (max-width: 339px) { .orb { --glow: 60px; } }
-  /* a short sky: the glow hugs the horizon, under the HUD */
-  @container sky (max-height: 150px) { .orb { top: 52%; } }
+  /* its height in the band: 46% from 180px up; a short sky (the horizon risen: a pinch out, the far end) lowers it to
+     52% at 150px and below, continuously (a container query stepped it at 150px, jumping as a pinch crossed it) */
+  .orb { top: clamp(46%, calc(46% + (180px - 100%) * 0.3), 52%); }
   .sun { background: radial-gradient(closest-side, var(--sun-core) 0 35%, var(--sun-ring) 50%, transparent 100%); }
   .sun.low { top: 62%; }
   .moon { background: radial-gradient(closest-side, var(--moon-glow) 45%, transparent 100%); display: grid; place-items: center; }
