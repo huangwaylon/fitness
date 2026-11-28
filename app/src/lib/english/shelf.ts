@@ -13,7 +13,7 @@ import type { CatchLine } from './types.ts';
 import type { LocalDate, Who } from '#lib/types.ts';
 
 /** Days after a line was last met before it comes back, by its step; past the last: never again. */
-export const STEPS = [3, 7, 21] as const;
+const STEPS = [3, 7, 21] as const;
 /** Lines back a day, at most. */
 export const PER_DAY = 3;
 

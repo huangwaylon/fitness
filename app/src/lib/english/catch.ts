@@ -6,7 +6,7 @@ import { fnv1a } from '#lib/random.ts';
 import type { CatchLine } from './types.ts';
 
 /** Lines a lesson offers, at most. */
-export const PER_LESSON = 2;
+const PER_LESSON = 2;
 /** The speed after a tile out of order. */
 export const SLOW = 0.75;
 
