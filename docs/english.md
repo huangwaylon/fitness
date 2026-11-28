@@ -1,6 +1,6 @@
 # English Study
 
-The leaf menu's 英語 opens **English Study**: one real TV clip a day, ~15 min: watch, answer 6–8 questions with
+The leaf menu's 英語 opens **English Study**: one real TV clip a day, ~5–10 min: watch, answer 5 questions with
 replays of the exact segment, read short Japanese notes. Solo; the guest has its own progress. Code
 `app/src/lib/english/` (strings `i18n.ts`). Copy casual (〜よう, 〜だよ, never です/ます) with sheet kanji; never red, ×, a
 sound, a score or a percentage; nothing locked ([decisions](decisions.md#english-and-food-data)).
@@ -10,11 +10,13 @@ A clip (`types.ts` Clip, one file each in `clips/`) is an official YouTube video
 questions, Japanese notes (言っていること / 意味 / 迷いやすい点 / 使えるフレーズ), a `cue` for a second listen. A question quotes
 one short line at most (*key words* starred); no audio ships. Each question has a never-reused `id`, `skill`, `level`
 (B1–C2), `point`, `reveals`, optional `ctx`; `retired` takes it out (never deleted).
-- **The draw** (`draw.ts`, pure, seeded by player, clip and play): 6–8 items, an easy opening (a B1 listening item in
-  the first three, never a dictation), one gist, ≤ 1 C1 and ≤ 1 each of dictation, humor, predict, pragma, unseen
-  first; C2 only with ⚙ 難しめの質問を増やす. Numbers in `draw.test.ts`.
+- **The draw** (`draw.ts`, pure, seeded by player, clip and play): 5 items (the owner 11-28: lessons ran 4–5 active
+  minutes), an easy opening (a B1 listening item in the first three, never a dictation), one gist, ≤ 1 each of
+  dictation, predict, and pragma or humor, unseen first; C1/C2 only with ⚙ 難しめの質問を増やす (then ≤ 1 each). The plan's
+  first 60 clips (`EARLY`) never draw pragma, humor, marker, predict nor a C level. Numbers in `draw.test.ts`.
 - **The plan** (`plan.ts`, kept in `plan-order.ts`, `npm run english:plan`): one clip order on every phone, a slow ramp
-  by ease, `// A2 LATE:` banks last, varied by show; new clips go after it.
+  by ease, the openers first (`opener`: ≤ 90 s, Friends or The Office, not fast; `-- --openers` moved them to the front
+  11-28), `// A2 LATE:` banks last, varied by show; new clips go after it.
 - **Rules** (`clips.test.ts`, its markers `// SKIP`, `// EXCLUDE`, `// SWEAR-OK`): for an A2 learner, B1 the bulk, 3
   parallel choices, the key never the longest; `// A2 RAMP` (first 30 banks) eases distractors; notes never say 不正解,
   間違い or 残念. Tools: `npm run english:wpm` (speed bands), `english:segs` (segments from json3 word times).
@@ -34,8 +36,12 @@ Tabs **ホーム · フレーズ · すごろく** ([sugoroku.md](sugoroku.md));
 - **The library**: すべて, 短い動画 (≤ 2:30), by show; 場面で選ぶ (`collections.ts`).
 - **Lesson**: the player pinned on top; 質問へ, ‹ 前へ / 次へ ›, まとめ always open; a card fits above the fold at
   393×852; 訳を見る records nothing. ツール (`StudySheet.svelte`): 字幕, size, speed, あらすじ, セリフ, phrases, ⚑.
+- **A card**: the stem in English (訳を見る its Japanese); a meaning item's choices (gist, infer, pragma, attitude, who,
+  humor) in Japanese, their English under them once answered; the others' in English. Answered: 意味 and 使えるフレーズ,
+  言っていること / 迷いやすい点 one tap away (詳しく), whatever the pick.
 - **A miss**: the segment again, the `cue`, 答えを見る; a second miss shows 「答えはこれ」. ◎ first try, ○ second.
-- **まとめ** writes the row ([Progress](#progress)), lists scenes to hear again; おわる ignores a tap within 600 ms
+- **まとめ** writes the row ([Progress](#progress)), 今日のフレーズ (the first scene to hear again's `use`, else the first
+  phrase item's), lists scenes to hear again; おわる ignores a tap within 600 ms
   (`ui-state/tapGuard.ts`). ふりかえり replays the scenes, records nothing.
 
 ## Phrase review

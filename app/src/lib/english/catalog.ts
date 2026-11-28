@@ -2,7 +2,7 @@
 // bank. The build makes it from clips/index.ts's CLIPS (vite.config.ts english-data: the module
 // `clips/index.ts?english-index`, in the sheet's chunk) and writes each bank as a file of its own, fetched when a
 // lesson opens (data.ts). Pure.
-import { drawSize } from './draw.ts';
+import { DRAW_SIZE } from './draw.ts';
 import { fnv1a } from '#lib/random.ts';
 import { clipHash, scenesHash, transcriptHash } from './hash.ts';
 import { keyWordsOf, splitUse, wordsOf } from './phrases.ts';
@@ -21,7 +21,7 @@ export interface ClipMeta {
   dur: number;
   band: Band;
   tags: readonly string[];
-  /** A play's questions (draw.ts drawSize, or the live items if fewer). */
+  /** A play's questions (draw.ts DRAW_SIZE, or the live items if fewer). */
   n: number;
   /** The bank's live items (home's もう一度 prefers a clip with many not met yet). */
   items: number;
@@ -40,7 +40,7 @@ export function metaOf(c: Clip): ClipMeta {
   const items = c.questions.filter((q) => !q.retired).length;
   return {
     id: c.id, video: c.video, title: c.title, show: SHORT[c.show], dur: c.dur, band: c.band, tags: c.tags,
-    n: Math.min(drawSize(c.dur), items), items, v: clipHash(c), credit: c.credit
+    n: Math.min(DRAW_SIZE, items), items, v: clipHash(c), credit: c.credit
   };
 }
 

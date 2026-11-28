@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { CLIPS } from './clips/index.ts';
 import { PLANNED } from './plan-order.ts';
-import { planOf } from './plan.ts';
+import { opener, planOf } from './plan.ts';
 
 const SHOW = { F: 'Friends', O: 'The Office', P: 'Parks and Recreation' } as const;
-const clip = (id: string, wpm: number, show: keyof typeof SHOW, tags: string[] = ['家']) => ({ id, wpm, dur: 120, tags, show: SHOW[show], questions: [] });
+const clip = (id: string, wpm: number, show: keyof typeof SHOW, tags: string[] = ['家'], dur = 120, band: 'slow' | 'mid' | 'fast' = 'mid') => ({ id, wpm, dur, band, tags, show: SHOW[show], questions: [] });
 
 describe('the shared plan', () => {
   it('holds every clip once, the written order first', () => {
@@ -25,6 +25,17 @@ describe('the shared plan', () => {
     const plan = planOf(lib, []).map((c) => c.id);
     for (const [i, id] of plan.entries()) expect(Number(id.slice(1))).toBeLessThan(i + 5);
     expect(plan[0]).toBe('c0');
+  });
+
+  it('puts the openers first (≤ 90 s, a well-known show, not fast), however slow the others', () => {
+    const lib = [clip('a', 100, 'F'), clip('b', 100, 'P', ['家'], 80), clip('c', 160, 'O', ['職場'], 85), clip('d', 170, 'F', ['電話'], 70, 'fast'), clip('e', 180, 'F', ['電話'], 90, 'slow')];
+    expect(planOf(lib, []).map((c) => c.id).slice(0, 2).toSorted()).toEqual(['c', 'e']);
+  });
+
+  it('starts the written plan with the openers', () => {
+    const n = CLIPS.filter(opener).length;
+    expect(n).toBeGreaterThan(5);
+    expect(planOf(CLIPS).slice(0, n).every(opener)).toBe(true);
   });
 
   it('puts the late clips after all the others, however easy', () => {

@@ -1,5 +1,6 @@
 // R4 REVIEW 2026-11-18: keep 6, rewrite 8, retire 3, new 0, ctx 4, tx 3, qa 7
 // A2 REVIEW 2026-11-17: keep 1, rewrite 14, retire 3, new 0
+// A2 RAMP: one of the plan's first 30; detail/gist keys may reuse a heard word (clips.test RAMP, review 11-24 #8)
 // “Dwight's New Job - The Office US” (the official The Office channel, BEST OF SEASON 3 - The Office US): one talking
 // head. Dwight says he has left Dunder Mifflin and is on the job market, presents a three-part résumé, promises "three
 // words" for himself and gives more, then admits the job he has taken is only for money "for the time being", and goes
@@ -42,8 +43,8 @@ export const dwightNewJob: Clip = {
     { id: 'g1', skill: 'gist', level: 'B2', point: 'scene', reveals: ['market'], seg: [2.0, 47.0],
       stem: 'What is Dwight mostly doing as he talks?',
       ja: 'ドワイトは話しながら、主に何をしている？',
-      choices: ['Praising himself to get hired', 'Showing off his new job', 'Saying why he quit his job'], a: 0,
-      choicesJa: ['雇ってもらおうと自分をほめる', '新しい仕事を自慢する', '仕事を辞めた理由を話す'],
+      choices: ['Praising himself to get hired', 'Showing off his new job', 'Saying why he left the company'], a: 0,
+      choicesJa: ['雇ってもらおうと自分をほめる', '新しい仕事を自慢する', '会社を辞めた理由を話す'],
       cue: '「on the job market」から',
       line: 'I am officially *on the job market*. … *How would I describe myself?*',
       said: '会社を辞めたと言い、履歴書や自分を表す言葉で、自分の長所を次々に売りこむ。',

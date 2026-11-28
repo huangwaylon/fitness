@@ -2,7 +2,6 @@
 // captions in english-captions/ for this video: segments checked against whisper times only
 // R4 REVIEW 2026-11-18: keep 8, rewrite 7, retire 0, new 6, ctx 5, tx 7, qa 13
 // A2 REVIEW 2026-11-17: keep 9, rewrite 5, retire 7, new 1
-// A2 RAMP: one of the plan's first 30; detail/gist keys may reuse a heard word (clips.test RAMP, review 11-24 #8)
 // “Carly and Freddie EXPOSED On Reality TV 🎥 | Full Scene | iCarly” (NickRewind, Best of the New iCarly): a
 // director tries to film drama for a reality show starring Carly and Freddie: a staged peanut butter fight, a therapy
 // story, aerial silks, “receipts”, until someone walks out.

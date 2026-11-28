@@ -1,5 +1,6 @@
 // R4 REVIEW 2026-11-18: keep 6, rewrite 5, retire 3, new 2, ctx 3, tx 9, qa 11
 // A2 REVIEW 2026-11-17: keep 5, rewrite 8, retire 5, new 2
+// A2 RAMP: one of the plan's first 30; detail/gist keys may reuse a heard word (clips.test RAMP, review 11-24 #8)
 // “Joey Skips Work on Thanksgiving | Friends” (the official Friends channel, Best of Season 9): Joey asks his friends
 // for a good lie to explain why he missed a work thing; a friend says he stinks at lying, Phoebe tests him with her
 // missing muffin, his raccoon story collapses, and the friends agree to help him practice a lie. The friend with the

@@ -6,7 +6,7 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { bandsOf, CLIPS } from './clips/index.ts';
-import { draw, GROUP_OF, seedOf, type History } from './draw.ts';
+import { draw, DRAW_SIZE, GROUP_OF, seedOf, type History } from './draw.ts';
 import { PLANNED } from './plan-order.ts';
 import { cleanLine } from '#lib/contract/text.ts';
 import { notInTrimmedFont } from '../../../scripts/font-subsets.ts';
@@ -100,7 +100,7 @@ const turns = (line: string) => line.split(' / ').filter((t) => t.trim()).length
  *  fill shows in one; the draw's own rules over many seeds are draw.test.ts's. */
 function plays(c: Clip, harder: boolean) {
   const live = c.questions.filter((q) => !q.retired), c2s = live.filter((q) => q.level === 'C2');
-  const size = c.dur < 90 ? 6 : c.dur < 180 ? 7 : 8;
+  const size = DRAW_SIZE;
   for (let s = 0; s < 1; s++) {
     const seen: History = {};
     let prev: Question[] = [];

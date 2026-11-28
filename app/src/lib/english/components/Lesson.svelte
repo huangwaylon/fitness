@@ -24,10 +24,10 @@
   import { TV_GM } from '#lib/contract/listen.ts';
   import type { CcMode, YtPlayer } from '../player.svelte.ts';
   import { againOf, answersOf, blank, dictate, heard, pick, reveal, review, settled, stepped, unansweredOf, type QState, type Review } from '../lesson.ts';
-  import { choiceOrder, draw, historyOf, seedOf } from '../draw.ts';
+  import { choiceOrder, draw, EARLY, historyOf, seedOf } from '../draw.ts';
   import { newActive, sent, tick, touched, type Active } from '../active.ts';
   import { loadSaved, partWay, save } from '../session.ts';
-  import { bankNow, loadBank } from '../data.ts';
+  import { bankNow, LIBRARY, loadBank } from '../data.ts';
   import { harderOn, scenesOn, setScenes } from '../prefs.ts';
   import { reloadOnRepeat } from '#lib/ui-state/reload.ts';
   import { tapGuard } from '#lib/ui-state/tapGuard.ts';
@@ -70,7 +70,7 @@
   let at = $state(resume ? saved!.at : -1);
   let st = $state<QState[]>([]);
   function begin(c: Bank): void {
-    qs = resume ? saved!.ids.flatMap((id) => c.questions.filter((q) => q.id === id)) : draw(c, past.seen, play, seed, { harder: harderOn() });
+    qs = resume ? saved!.ids.flatMap((id) => c.questions.filter((q) => q.id === id)) : draw(c, past.seen, play, seed, { harder: harderOn(), early: LIBRARY.findIndex((m) => m.id === id) < EARLY });
     st = resume && qs.length === saved!.ids.length ? saved!.st : qs.map(blank);
     if (resume && qs.length !== saved!.ids.length) at = -1;
     full = c;
@@ -512,7 +512,8 @@
   .why dt { font: 700 var(--fs-s)/1.4 var(--font-ui); color: var(--text-soft); }
   .why dd { margin: 0 0 4px; }
   .phrase { padding: 8px 10px; border-radius: var(--r-row); background: var(--card); font-size: var(--fs-body); }
-  .today { display: grid; gap: 2px; }
+  .today { display: grid; gap: 2px; background: var(--ok-bg); box-shadow: inset 0 0 0 2px var(--ok-edge); }
+  .today span { font-weight: 700; }
   .today small { font-size: var(--fs-s); color: var(--text-soft); }
   .phrase b { font: 700 var(--fs-s)/1.4 var(--font-ui); color: var(--text-soft); margin-right: 4px; }
   .more summary { display: flex; align-items: center; gap: 4px; min-height: var(--hit); margin: -6px 0; list-style: none; cursor: pointer;

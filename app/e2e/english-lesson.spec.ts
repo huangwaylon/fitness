@@ -21,7 +21,7 @@ test('home: today’s clip, the week, the library; the lesson never locks: 質�
   const thumb = sheet(page).locator('[data-en-today] [data-en-thumb] img');
   await expect(thumb).toHaveAttribute('src', 'https://i.ytimg.com/vi/lm2MpPpkGL8/hqdefault.jpg');
   await expect(thumb).toHaveAttribute('referrerpolicy', 'no-referrer');
-  await expect(sheet(page).locator('[data-en-today]')).toContainText('Friends · ゆっくり · 職場 · 6問');
+  await expect(sheet(page).locator('[data-en-today]')).toContainText('Friends · ゆっくり · 職場 · 5問');
   await expect(sheet(page).locator('[data-en-lib] [data-en-clip]')).toHaveCount(3);
   await expect(sheet(page).locator('[data-en-lib] [data-en-clip="waitress"]')).toHaveCount(0);
   await expect(sheet(page).locator('[data-en-all]')).toHaveText(new RegExp(`すべて見る（${CLIPS.length}本）`));
@@ -160,10 +160,12 @@ test('まとめ: the scenes to hear again, the clip’s row: ✓ in the library,
   await cardAt(page, 0).locator(`[data-choice="${(await questionAt(page, 0)).a}"]`).click();
   // on to まとめ, the others missed (答えはこれ); a dictation drawn: some words, then all
   let n = 1, dict = false;
+  const drawn = [await questionAt(page, 0)];
   for (; ; n++) {
     await lesson(page).locator('[data-en-next]').click();
     if (await lesson(page).locator('[data-en-end]').count()) break;
     const x = await questionAt(page, n);
+    drawn.push(x);
     if (!x.answer) {
       await miss(cardAt(page, n), x);
       continue;
@@ -192,6 +194,12 @@ test('まとめ: the scenes to hear again, the clip’s row: ✓ in the library,
   // an again row says the line heard there (its stars dropped), not the phrase to use
   const lines = waitress.questions.flatMap((x) => (x.line ? [x.line.replaceAll('*', '')] : []));
   expect(lines).toContain((await lesson(page).locator('[data-en-again] .ph').first().textContent())!.trim());
+  // 今日のフレーズ: the first scene to hear again's phrase to use, its English and its Japanese
+  const first = drawn[Number(await lesson(page).locator('[data-en-again]').first().getAttribute('data-en-again'))];
+  const [en, ja] = first.use.split('（');
+  await expect(lesson(page).locator('[data-en-phrase-today-en]')).toHaveText(en.trim());
+  await expect(lesson(page).locator('[data-en-phrase-today-ja]')).toHaveText(ja.replace(/）$/, ''));
+  await expect(lesson(page).locator('[data-en-phrase-today]')).toContainText('今日のフレーズ');
   await lesson(page).locator('[data-en-done]').click();
   // the main card goes on to the plan's next clip (the finished one isn't offered again today, not even as a row)
   await expect(sheet(page).locator('[data-en-today]')).toHaveAttribute('data-en-today', AFTER.id);

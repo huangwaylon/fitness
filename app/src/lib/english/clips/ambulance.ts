@@ -2,7 +2,6 @@
 // now reveals 'amount'; c3's stem plainer for A2)
 // R4 REVIEW 2026-11-18: keep 7, rewrite 6, retire 5, new 2, ctx 6, tx 6, qa 6
 // A2 REVIEW 2026-11-17: keep 15, rewrite 2, retire 6, new 1
-// A2 RAMP: one of the plan's first 30; detail/gist keys may reuse a heard word (clips.test RAMP, review 11-24 #8)
 // “Andy Runs Into an Ambulance | Parks and Recreation” (the official Parks and Recreation channel, Season 5): after a
 // day of doctors, Andy is handed a $500 bill, insists his “free medicine card” and “the insurance thing” cover it, runs
 // out, hits an ambulance, and decides doctors are scam artists: he and April will just care for each other.

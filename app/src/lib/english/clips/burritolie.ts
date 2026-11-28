@@ -3,7 +3,6 @@
 // note no longer calls Lord Sheldon a pet: the clip never says what he is)
 // R4 REVIEW 2026-11-18: keep 9, rewrite 6, retire 1, new 2, ctx 4, tx 4, qa 7
 // A2 REVIEW 2026-11-17: keep 14, rewrite 2, retire 5, new 1
-// A2 RAMP: one of the plan's first 30; detail/gist keys may reuse a heard word (clips.test RAMP, review 11-24 #8)
 // “Leslie Discovers Jerry's Burrito Lie | Parks and Recreation” (the official Parks and Recreation channel, Season 2):
 // Leslie uses a TV news spot about Jerry's “mugging” to shame City Hall into funding park security; her boss Paul is
 // furious but the money comes through, and before the press event Leslie learns Jerry fell into a creek after a burrito.

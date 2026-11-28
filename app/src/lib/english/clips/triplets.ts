@@ -1,5 +1,6 @@
 // R4 REVIEW 2026-11-18: keep 6, rewrite 3, retire 9, new 4, ctx 3, tx 10, qa 5
 // A2 REVIEW 2026-11-17: keep 8, rewrite 9, retire 3, new 1
+// A2 RAMP: one of the plan's first 30; detail/gist keys may reuse a heard word (clips.test RAMP, review 11-24 #8)
 // “The Moment They Realized They’re Having Triplets | Friends” (the official Friends channel, Best of Season 4): the
 // doctor says three babies, and Frank and Alice cheer; Phoebe, relieved, lists the worries she'd had (raising three,
 // the cost), the joy drains, and Alice rallies with a plan to have her home-ec class sew baby clothes.
