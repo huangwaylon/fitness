@@ -1,3 +1,5 @@
+// ESL REVIEW 2026-11-28: keep 16, fix 1, retire 0, new 0 (p1's key “She ends the call” wasn't true: Michael's “Wait,
+//   wait” keeps her on and she transfers him; now “She tries to hang up”)
 // R4 REVIEW 2026-11-18: keep 6, rewrite 9, retire 1, new 2, ctx 5, tx 2, qa 11
 // A2 REVIEW 2026-11-17: keep 13, rewrite 3, retire 2, new 0 (c1, c2 stay retired)
 // “Michael Tries To Steal A Sales Person - The Office US” (the official The Office channel, Best of Season 4): Michael
@@ -116,8 +118,8 @@ export const poachBen: Clip = {
 
     { id: 'p1', skill: 'pragma', level: 'B1', point: 'goodbye', reveals: ['poach'], ctx: true, seg: [38.4, 47.5],
       stem: 'How does Karen answer Michael’s threat?', ja: 'マイケルのおどしに、カレンはどう答える？',
-      choices: ['She ends the call', 'She agrees to it', 'She gets very angry'], a: 0,
-      choicesJa: ['電話を終わらせる', '受け入れる', 'すごく怒る'],
+      choices: ['She tries to hang up', 'She agrees to it', 'She gets very angry'], a: 0,
+      choicesJa: ['電話を切ろうとする', '受け入れる', 'すごく怒る'],
       cue: '「poach one of yours」のあと',
       line: 'Michael: I am going to poach one of yours. / Karen: *Ooh. Goodbye, Michael*.',
       said: 'カレンが「へえ。じゃあね、マイケル」と電話を切ろうとする。',

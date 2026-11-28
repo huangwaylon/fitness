@@ -1,3 +1,6 @@
+// ESL REVIEW 2026-11-28: keep 21, fix 2, retire 0, new 0 (p2's “It doesn’t matter” was half true: he does say
+// “Doesn’t matter what I think”; k4 no longer names a cream the clip never names). No json3 for this video in
+// english-captions/: segments checked against whisper only.
 // R4 REVIEW 2026-11-18: keep 8, rewrite 7, retire 1, new 8, ctx 6, tx 4, qa 17
 // A2 REVIEW 2026-11-17: keep 11, rewrite 4, retire 8, new 1
 // “Carly's First New iCarly Web Show 📱 Full Scene | iCarly” (NickRewind, Best of the New iCarly): Carly doubts she can
@@ -100,8 +103,8 @@ export const icFirstShow: Clip = {
     { id: 'p2', skill: 'pragma', level: 'B1', point: 'want', reveals: ['own'], ctx: true, seg: [43.0, 49.0],
       stem: 'How does Carly’s friend answer her question?',
       ja: 'カーリーの友だちは、カーリーの質問にどう答える？',
-      choices: ['It’s her choice', 'It doesn’t matter', 'She can’t do it alone'], a: 0,
-      choicesJa: ['決めるのはカーリー', 'どうでもいい', '一人では無理'],
+      choices: ['It’s her choice', 'She should ask Sam', 'She can’t do it alone'], a: 0,
+      choicesJa: ['決めるのはカーリー', 'サムに聞くべき', '一人では無理'],
       cue: '答えの後半、「what you」のあと。',
       line: 'Carly: Do you think I could do it on my own? / Friend: Doesn’t matter what I think. *It matters what you want*.',
       said: '「一人でできる？」に「僕の考えより、君がどうしたいかが大事」と答える。',
@@ -328,8 +331,8 @@ export const icFirstShow: Clip = {
       use: 'I’m not nervous at all. Nope.（全然緊張してないよ。ほんとに）' },
 
     { id: 'k4', skill: 'pragma', level: 'B1', point: 'enough', ctx: true, seg: [227.5, 234.5],
-      stem: 'What does Spencer say about more cream?',
-      ja: 'もっとクリームを塗ろうとすると、スペンサーは何と言う？',
+      stem: 'What does Spencer say to “Some more?”',
+      ja: '「Some more?」と聞かれて、スペンサーは何と言う？',
       choices: ['Please stop it now', 'Put on some more', 'Try a different one'], a: 0,
       choicesJa: ['もうやめて', 'もう少し塗って', '別のを試して'],
       cue: 'Some more? のあと。',

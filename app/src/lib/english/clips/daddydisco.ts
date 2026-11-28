@@ -1,3 +1,5 @@
+// ESL REVIEW 2026-11-28: keep 18, fix 2, retire 0, new 0 (d3, pr1: stems named Michael for lines whose speaker the
+// clip never shows)
 // R4 REVIEW 2026-11-18: keep 13, rewrite 3, retire 0, new 4, ctx 4, tx 7, qa 14
 // A2 REVIEW 2026-11-17: keep 3, rewrite 13, retire 8, new 0
 // “Don't refer to yourself as our 'Daddy' - The Office US” (the official The Office channel, BEST OF SEASON 5): with
@@ -181,8 +183,8 @@ export const daddyDisco: Clip = {
       use: 'All work and no play isn’t good.（仕事ばかりで遊ばないのはよくない）' },
 
     { id: 'd3', ctx: true, skill: 'detail', level: 'B2', point: 'disco', seg: [83.2, 95.3],
-      stem: 'What does Michael say the new place really is?',
-      ja: 'マイケルによると、新しい場所は本当は何？',
+      stem: 'What is the new place really like?',
+      ja: '新しい場所は、本当はどんな所？',
       choices: ['A disco with coffee', 'A haunted coffeehouse', 'A haunted disco'], a: 0,
       choicesJa: ['コーヒーのあるディスコ', 'お化けの出る喫茶店', 'お化けの出るディスコ'],
       cue: '「haunted disco」への直し。',
@@ -283,13 +285,13 @@ export const daddyDisco: Clip = {
       use: 'You were supposed to call me back.（折り返すはずだったでしょ）' },
 
     { id: 'pr1', ctx: true, skill: 'pragma', level: 'B1', point: 'nowork', reveals: ['onhold', 'answer'], seg: [135.3, 142],
-      stem: 'She wants Kevin back. What does Michael say?',
-      ja: '同僚はケビンに戻ってほしい。マイケルは何と言う？',
+      stem: 'She wants Kevin back. What is the reply?',
+      ja: '同僚はケビンに戻ってほしい。返ってくる答えは？',
       choices: ['You can’t work in here', 'Go back up and work', 'Please answer the phone'], a: 0,
       choicesJa: ['ここで仕事はだめ', '上に戻って仕事して', '電話に出てください'],
       cue: '「come back up」への返事。',
-      line: '…and *come back up*. / Michael: Sorry. This is a *no-work zone*.',
-      said: '「戻ってくるはずだったでしょ」に、「すみません、ここは仕事禁止ゾーンだ」と返す。',
+      line: '…and *come back up*. / Sorry. This is a *no-work zone*.',
+      said: '「戻ってくるはずだったでしょ」に、「すみません、ここは仕事禁止ゾーンだ」と返ってくる。',
       mean: 'no-〜 zone ＝ 〜禁止の場所。no-smoking zone（禁煙エリア）と同じ形。ケビンを上に返さない言い訳。',
       trap: 'Sorry で始まるので、ケビンを返すと考えがち。決め手は no のすぐあとの work。',
       use: 'This is a no-smoking area.（ここは禁煙エリアです）' },

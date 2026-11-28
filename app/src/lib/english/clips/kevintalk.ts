@@ -1,3 +1,5 @@
+// ESL REVIEW 2026-11-28: keep 13, fix 4, retire 0, new 0 (f1's use now teaches hunt down; m1's seg starts before
+// Kevin's “But save time”, json3 91.3 s; n1/d4 stems no longer end “…, says the coworker?”)
 // R4 REVIEW 2026-11-18: keep 10, rewrite 6, retire 0, new 1, ctx 4, tx 1, qa 6
 // A2 REVIEW 2026-11-17: keep 12, rewrite 3, retire 6, new 1
 // “Kevin's Small Talk - The Office US” (the official The Office channel, BEST OF The Office - Season 8): Kevin has
@@ -33,7 +35,7 @@ export const kevinTalk: Clip = {
       said: '同僚が「元の書類を探してきてくれる？」と頼む。',
       mean: 'hunt down ＝ 文字どおり「狩る」、ここでは「探し出す」。original ＝ 原本。',
       trap: 'hunt down を知らないと、読む・コピーするなど書類の作業を選びがち。hunt ＝ 狩る→「探しまわって見つける」。',
-      use: 'Can you just check this for me?（ちょっとこれ見てくれる？）' },
+      use: 'Can you hunt down the receipt for me?（レシートを探し出してくれる？）' },
 
     { id: 'x1', skill: 'dict', level: 'B2', point: 'medo', seg: [12.8, 15.9], retired: true,
       stem: 'Type Kevin’s answer: “___.” (3 words)', answer: 'yes me do',
@@ -178,7 +180,7 @@ export const kevinTalk: Clip = {
       trap: 'code が聞こえるので法律の話に聞こえるが、ここは dress code（服装の決まり）と同じ「決まり」。',
       use: 'What’s the dress code?（服装の決まりは何ですか）' },
 
-    { id: 'm1', ctx: true, skill: 'marker', level: 'B2', point: 'though', reveals: ['hour'], seg: [92.4, 99],
+    { id: 'm1', ctx: true, skill: 'marker', level: 'B2', point: 'though', reveals: ['hour'], seg: [90.8, 99],
       stem: 'What does “*though*” show in “Does it save time, though?”', ja: '「Does it save time, though?」の though は何を表す？',
       choices: ['Doubt about Kevin’s point', 'Interest in the time saved', 'Agreement with Kevin'], a: 0,
       choicesJa: ['ケビンの言い分を疑っている', '節約した時間に興味がある', 'ケビンへの賛成'],
@@ -190,7 +192,7 @@ export const kevinTalk: Clip = {
       use: 'Is it really cheaper, though?（でも、本当に安いの？）' },
 
     { id: 'n1', skill: 'number', level: 'B1', point: 'hour', seg: [93.74, 99],
-      stem: 'How long have they been there, says the coworker?', ja: '同僚によると、もうどのくらいここにいる？',
+      stem: 'How long does the coworker say they’ve been there?', ja: '同僚によると、もうどのくらいここにいる？',
       choices: ['About 10 minutes', 'About half an hour', 'About an hour', 'About 2 hours'], a: 2, keep: true,
       choicesJa: ['10分くらい', '30分くらい', '1時間くらい', '2時間くらい'],
       cue: '「we’ve been here for」のあと',
@@ -201,7 +203,7 @@ export const kevinTalk: Clip = {
       use: 'We’ve been waiting for about an hour.（1時間くらい待っています）' },
 
     { id: 'd4', skill: 'detail', level: 'B2', point: 'tiny', seg: [96.6, 107.7],
-      stem: 'How much time is Kevin saving, says the coworker?', ja: '同僚によると、ケビンが節約している時間は？',
+      stem: 'How much time does the coworker say Kevin saves?', ja: '同僚によると、ケビンが節約している時間は？',
       choices: ['A very tiny amount', 'About an hour a day', 'A lot of time'], a: 0,
       choicesJa: ['ほんのわずか', '1日に1時間くらい', 'たくさん'],
       cue: '「at most」のあと',

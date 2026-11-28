@@ -1,3 +1,5 @@
+// ESL REVIEW 2026-11-28: keep 21, fix 1, retire 0, new 0 (i5's key “They didn't hear the phone” read as Carly and
+// Freddie: now “The call was missed”; its seg ends before the possum line). No json3 for this video: whisper times.
 // R4 REVIEW 2026-11-18: keep 13, rewrite 5, retire 1, new 4, ctx 5, tx 7, qa 16
 // A2 REVIEW 2026-11-17: keep 5, rewrite 13, retire 6, new 1
 // “Carly & Freddie Go PUBLIC As A Couple 🥰 | Full Scene | iCarly” (NickRewind, Best of Carly & Freddie): stuck on a
@@ -310,9 +312,9 @@ export const goPublic: Clip = {
       trap: 'sick ＝ 病気・気持ち悪いと取りやすい。物や技をほめる sick は、ほめ言葉。',
       use: 'Those are some sick shoes!（その靴、めっちゃいいね！）' },
 
-    { id: 'i5', ctx: true, skill: 'infer', level: 'C1', point: 'rescue', seg: [253.3, 262.3],
+    { id: 'i5', ctx: true, skill: 'infer', level: 'C1', point: 'rescue', seg: [253.3, 261.8],
       stem: 'Why was the rescue so late?', ja: '助けが遅れたのはなぜ？',
-      choices: ['They didn’t hear the phone', 'Their phone battery died', 'Their car broke down'], a: 0,
+      choices: ['The call was missed', 'The phone battery died', 'The car broke down'], a: 0,
       choicesJa: ['電話に気づかなかった', '電話の電池が切れた', '車が故障した'],
       cue: '「thanks for finally rescuing」のあと',
       line: 'And thanks for *finally* rescuing us. / Oh, yeah. Sorry I *didn’t hear my phone*.',

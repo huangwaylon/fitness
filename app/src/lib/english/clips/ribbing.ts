@@ -1,3 +1,6 @@
+// ESL REVIEW 2026-11-28: keep 20, fix 4, retire 0, new 0 (k1's line is “You've had a slump”, not “We've hit a
+// slump”; k7's seg starts before “What's going on” (48.0 s), k2's holds “little finger” to its end; s1's choicesJa
+// tell will from would). k5's “I'm on a call” is whisper's only (the json3 misses it, a quiet line): kept.
 // R4 REVIEW 2026-11-18: keep 8, rewrite 7, retire 4, new 8, ctx 10, tx 3, qa 21
 // A2 REVIEW 2026-11-17: keep 5, rewrite 14, retire 2, new 0
 // “Just guys gently ribbing each other - The Office US” (the official The Office channel, BEST OF SEASON 2 - The Office
@@ -54,7 +57,7 @@ export const ribbing: Clip = {
     { id: 's1', skill: 'sound', level: 'B2', point: 'whatll', seg: [19.7, 26.6],
       stem: 'Fill the gap: “___ do if I drop spinach dip on him?”', ja: '空所に入るのは？ “___ do if I drop spinach dip on him?”',
       choices: ['What’ll I', 'What do I', 'What would I'], a: 0,
-      choicesJa: ['何を〜するだろう', '何を〜する', '何を〜するかな'],
+      choicesJa: ['（これから）何を〜しよう', '何を〜する', '（もしも）何を〜するだろう'],
       cue: '「respect him」のすぐあと',
       line: '*What’ll I* do if I drop spinach dip on him at a party?',
       said: '部下の心の声として「ディップをこぼしたらどうしよう」と言う。',
@@ -73,7 +76,7 @@ export const ribbing: Clip = {
       trap: 'distance（距離）の話のあとなので、上司らしくする話に聞こえるが、決め手は even（もっと）。',
       use: 'Maybe I need to be even friendlier.（もっと気さくにならないとね）' },
 
-    { id: 'k7', skill: 'phrase', level: 'B1', point: 'sameold', seg: [48.0, 53.5],
+    { id: 'k7', skill: 'phrase', level: 'B1', point: 'sameold', seg: [46.9, 53.5],
       stem: 'What does “same old stuff” mean?', ja: '“same old stuff” はどういう意味？',
       choices: ['Nothing new, as usual', 'Some old things to sell', 'A very old problem'], a: 0,
       choicesJa: ['いつもどおり、特に何もない', '売るための古い物', 'とても古い問題'],
@@ -99,14 +102,14 @@ export const ribbing: Clip = {
       stem: 'What does “It happens to the best of us” mean?', ja: '“It happens to the best of us” はどういう意味？',
       choices: ['It happens to everyone', 'Only the best people do it', 'It happened to the top worker'], a: 0,
       choicesJa: ['誰にでもあること', '一番すごい人だけがする', '一番の社員に起きた'],
-      cue: '「We’ve hit a slump.」のあと',
-      line: 'We’ve hit a slump. *It happens to the best of us.*',
+      cue: '「slump」のあと',
+      line: 'You’ve had a slump. *It happens to the best of us.*',
       said: '「スランプなんだよ。誰にでもあることさ」と言う。',
       mean: '文字どおりは「最高の人にも起きる」→ だから誰にでも起きる。失敗した人をなぐさめる決まり文句。',
       trap: 'best（一番）から、すごい人だけの話を連想しやすい。「すごい人でさえ」→「誰でも」。',
       use: 'Don’t worry. It happens to the best of us.（気にしないで。誰にでもあることだよ）' },
 
-    { id: 'k2', skill: 'detail', level: 'B2', point: 'snap', ctx: true, seg: [79.0, 88.0],
+    { id: 'k2', skill: 'detail', level: 'B2', point: 'snap', ctx: true, seg: [79.0, 88.5],
       stem: 'What does Jim say about snapping a little finger?', ja: '小指を鳴らすことについて、ジムは何と言う？',
       choices: ['No one can do it', 'Michael does it often', 'It is very loud'], a: 0,
       choicesJa: ['誰にもできない', 'マイケルはよくやる', 'とても大きな音がする'],

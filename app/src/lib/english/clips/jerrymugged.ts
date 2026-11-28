@@ -1,3 +1,5 @@
+// ESL REVIEW 2026-11-28: keep 13, fix 5, retire 0, new 0 (p2's 17-word stem cut; t2/f4 now end before “Leslie, I
+// wasn't mugged” (json3 110.2 s), which spoiled g2; t1's said reworded; c1 stem plain)
 // R4 REVIEW 2026-11-18: keep 9, rewrite 6, retire 0, new 3, ctx 5, tx 6, qa 11
 // A2 REVIEW 2026-11-17: keep 7, rewrite 11, retire 4, new 1
 // “Jerry Gets Mugged | Parks and Recreation” (the official Parks and Recreation channel, Season 2): Leslie uses Jerry's
@@ -40,7 +42,7 @@ export const jerryMugged: Clip = {
       use: 'Let me introduce my coworker, Ken.（同僚の Ken を紹介します）' },
 
     { id: 'c1', skill: 'detail', level: 'B1', point: 'mugged', seg: [11.5, 25.5],
-      stem: 'What happened to Jerry this morning, says Leslie?', ja: 'レスリーによると、ジェリーは今朝どうした？',
+      stem: 'What does Leslie say happened to Jerry this morning?', ja: 'レスリーによると、ジェリーは今朝どうした？',
       choices: ['He was robbed in a park', 'He hurt his arm at work', 'He got lost in a park'], a: 0,
       choicesJa: ['公園で強盗にあった', '職場で腕をけがした', '公園で迷子になった'],
       cue: '「He was」のあと',
@@ -144,7 +146,7 @@ export const jerryMugged: Clip = {
       choicesJa: ['彼女の作戦がうまくいって不満', 'やっとお金が来てうれしい', '市長が賛成してうれしい'],
       cue: '彼女の行動を呼ぶ言い方',
       line: 'I’m sure you’ll be happy to know your *little stunt* worked.',
-      said: '「うれしいだろうが、君のちょっとした作戦はうまくいったよ」と言う。',
+      said: '「君の小細工がうまくいったと知ったら、さぞうれしいだろうね」と言う。',
       mean: 'little stunt ＝ 人目を引くちょっとした作戦。見下す言い方で、本人はおもしろくない。',
       trap: 'happy や worked から、喜んでいるように聞こえるが、little stunt（小細工）という見下す言葉が本音。',
       use: 'Happy now? You got your way.（満足？思いどおりだね）' },
@@ -162,7 +164,7 @@ export const jerryMugged: Clip = {
       use: 'It’s twenty-five hundred dollars.（2,500ドルです）' },
 
     { id: 'p2', ctx: true, skill: 'pragma', level: 'B2', point: 'respect', seg: [87.4, 93.4],
-      stem: 'Paul has just called Jerry a rude name. Why does Leslie say “We treat everyone with respect”?', ja: 'ポールがジェリーを失礼に呼んだ。レスリーは、なぜ「We treat everyone with respect」と言う？',
+      stem: 'Paul called Jerry a rude name. Why does Leslie talk about respect?', ja: 'ポールがジェリーを失礼な名前で呼んだ。レスリーはなぜ respect の話をする？',
       choices: ['To protect Jerry', 'To ask who he means', 'To laugh at his joke'], a: 0,
       choicesJa: ['ジェリーをかばうため', '誰のことか聞くため', '彼の冗談に笑うため'],
       cue: '「分からない」のあとの一文',
@@ -172,7 +174,7 @@ export const jerryMugged: Clip = {
       trap: '「分からない」をそのまま取ると、本当に聞いていると考えがち。決め手は次の respect。',
       use: 'Sorry, who are you referring to?（失礼、誰のことでしょう）' },
 
-    { id: 't2', skill: 'infer', level: 'B1', point: 'nervous', reveals: ['heart'], seg: [101.9, 111.3],
+    { id: 't2', skill: 'infer', level: 'B1', point: 'nervous', reveals: ['heart'], seg: [101.9, 109.7],
       stem: 'What is Leslie trying to do for Jerry here?', ja: 'ここでレスリーは、ジェリーに何をしてあげようとしている？',
       choices: ['Help him feel calm', 'Make him go faster', 'Talk for him instead'], a: 0,
       choicesJa: ['落ち着かせる', '急がせる', '代わりに話す'],
@@ -183,7 +185,7 @@ export const jerryMugged: Clip = {
       trap: 'あとでレスリーが代わりに話すが、ここではまだ。are you nervous? と You’ll be fine で、落ち着かせている。',
       use: 'Take a breath. You’ll be fine.（深呼吸して。大丈夫）' },
 
-    { id: 'f4', skill: 'phrase', level: 'B1', point: 'heart', seg: [103.2, 109.9],
+    { id: 'f4', skill: 'phrase', level: 'B1', point: 'heart', seg: [103.2, 109.7],
       stem: 'What does Leslie tell Jerry to do in his speech?', ja: 'スピーチで何をするよう、レスリーはジェリーに言う？',
       choices: ['Say honestly how he feels', 'Learn his speech first', 'Talk about his health'], a: 0,
       choicesJa: ['気持ちを正直に話す', '先にスピーチを覚える', '自分の健康の話をする'],

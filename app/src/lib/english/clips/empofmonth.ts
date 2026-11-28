@@ -1,3 +1,5 @@
+// ESL REVIEW 2026-11-28: keep 20, fix 1, retire 0, new 0 (d1's stem names who wants it; segments and keys match
+// the json3 words)
 // R4 REVIEW 2026-11-18: keep 11, rewrite 5, retire 0, new 5, ctx 5, tx 3, qa 11
 // A2 REVIEW 2026-11-17: keep 3, rewrite 15, retire 4, new 0
 // “Employee of the Month - The Office US” (the official The Office channel, BEST OF SEASON 6): Andy pitches an
@@ -104,7 +106,7 @@ export const empOfMonth: Clip = {
       use: 'It was all your idea, remember?（全部君の案だったよね？）', retired: true },
 
     { id: 'd1', skill: 'detail', level: 'B1', point: 'traced', seg: [44.2, 53.6],
-      stem: 'Why should Andy think the idea is his?', ja: 'なぜアンディに、自分の案だと思わせたい？',
+      stem: 'Why does Dwight want Andy to think it’s his idea?', ja: 'ドワイトはなぜ、アンディに自分の案だと思わせたい？',
       choices: ['So no one traces it to Dwight', 'So Michael likes it more', 'So Andy tells David Wallace'], a: 0,
       choicesJa: ['ドワイトまでたどられないように', 'マイケルがもっと気に入るように', 'アンディが上司に話すように'],
       cue: '「so」のあと',

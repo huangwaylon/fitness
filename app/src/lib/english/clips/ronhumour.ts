@@ -1,3 +1,4 @@
+// ESL REVIEW 2026-11-28: keep 22, fix 1, retire 0, new 0 (p4: seg starts before its quoted “that presentation”)
 // R4 REVIEW 2026-11-18: keep 18, rewrite 2, retire 0, new 3, ctx 6, tx 7, qa 13
 // A2 REVIEW 2026-11-17: keep 9, rewrite 8, retire 7, new 1
 // “Ron hates accountant humour | Parks and Recreation” (the official Parks and Recreation channel, Season 7): the
@@ -260,7 +261,7 @@ export const ronHumour: Clip = {
       trap: 'Craig と Donna は直前に名前が出た人。2人は嫌がっている。呼ばれるのは Get me のあと。',
       use: 'Any questions? No? I didn’t think so.（質問は？ない？だと思った）' },
 
-    { id: 'p4', ctx: true, skill: 'pragma', level: 'B2', point: 'ask', seg: [177.0, 184.0],
+    { id: 'p4', ctx: true, skill: 'pragma', level: 'B2', point: 'ask', seg: [175.6, 184.0],
       stem: 'What do they ask Barney to do?',
       ja: 'みんなはバーニーに何を頼む？',
       choices: ['Talk to April, then decide', 'Give April the job today', 'Watch their presentation again'], a: 0,

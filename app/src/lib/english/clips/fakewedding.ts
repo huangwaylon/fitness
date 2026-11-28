@@ -1,3 +1,6 @@
+// ESL REVIEW 2026-11-28: keep 15, fix 7, retire 0, new 0. Six segments ended before their key word by the json3
+//   times (i2 “camera” 154.0, k3 “second” 159.4, r1 “realistic” 177.7, k5 “angel” 200.4, k7 “marry me” ~241.9; k2
+//   now starts at “And on the wedding” 95.4); g2's trap said “wedding” is heard in a segment that only says “wedlock”.
 // R4 REVIEW 2026-11-18: keep 7, rewrite 5, retire 4, new 10, ctx 7, tx 5, qa 22
 // A2 REVIEW 2026-11-17: keep 5, rewrite 9, retire 10, new 2
 // “Ross & Rachel's Fake Wedding | Friends” (the official Friends channel, Best of Season 8): at his parents' party for
@@ -72,7 +75,7 @@ export const fakeWedding: Clip = {
       line: '…we’ve *told them all you’re married*. — What? — *Thanks for going along with this*.',
       said: '両親は友だちに「二人は結婚している」と話したと言い、「合わせてくれてありがとう」と続ける。',
       mean: 'go along with 〜 ＝ 〜に合わせる。今夜だけ夫婦のふりをしてほしい、という頼み。',
-      trap: 'wedding（結婚式）が何度も聞こえて「今夜結婚して」と思いやすい。もう結婚していることになっている。',
+      trap: 'married が聞こえて「今夜結婚して」と思いやすい。友だちには、もう結婚していると話してある。',
       use: 'Can you just play along tonight?（今夜だけ話を合わせてくれる？）' },
 
     { id: 'p1', retired: true, skill: 'pragma', level: 'B2', point: 'little', reveals: ['told'], seg: [40, 56.3],
@@ -223,7 +226,7 @@ export const fakeWedding: Clip = {
       trap: 'want to なら「ワナ」と「ア」の音。don’t なら d で始まる「ドウン」。「ウォウ」なら won’t。',
       use: 'I won’t say a word.（だれにも言わないよ）' },
 
-    { id: 'k2', skill: 'phrase', level: 'B2', point: 'gift', seg: [96.0, 101.5],
+    { id: 'k2', skill: 'phrase', level: 'B2', point: 'gift', seg: [95.0, 101.5],
       stem: 'What is “a little something” here?', ja: 'ここでの “a little something” は何？',
       choices: ['A small gift', 'A short speech', 'A bit of food'], a: 0,
       choicesJa: ['ちょっとした贈り物', '短いスピーチ', '少しの食べ物'],
@@ -270,7 +273,7 @@ export const fakeWedding: Clip = {
       trap: 'Barbados と Bahamas は出だしが似ている。beach の長い「イー」や boat は聞こえない。',
       use: 'We got married on a beach.（ビーチで結婚式を挙げたの）' },
 
-    { id: 'i2', skill: 'infer', level: 'B2', point: 'pictures', ctx: true, seg: [141.5, 152.5],
+    { id: 'i2', skill: 'infer', level: 'B2', point: 'pictures', ctx: true, seg: [141.5, 154.5],
       stem: 'Why can’t the relatives see wedding pictures?', ja: '親せきはなぜ結婚式の写真を見られない？',
       choices: ['The camera had no film', 'The pictures aren’t back yet', 'Ross lost all the pictures'], a: 0,
       choicesJa: ['カメラにフィルムがなかった', '写真がまだできていない', 'ロスが写真を全部なくした'],
@@ -281,7 +284,7 @@ export const fakeWedding: Clip = {
       trap: 'so would I（私も見たい）で終わりに聞こえるが、続きが写真のない理由。',
       use: 'You wouldn’t think it’d rain in July.（7月に雨なんて思わないよね）' },
 
-    { id: 'k3', skill: 'phrase', level: 'B1', point: 'excuse', seg: [154.0, 158.5],
+    { id: 'k3', skill: 'phrase', level: 'B1', point: 'excuse', seg: [154.6, 159.8],
       stem: 'What does “Would you excuse us for a second?” mean?', ja: '“Would you excuse us for a second?” はどういう意味？',
       choices: ['We’ll leave you for a moment', 'Please forgive our mistake', 'Please say that again'], a: 0,
       choicesJa: ['少し席を外させて', '私たちのミスを許して', 'もう一度言って'],
@@ -303,7 +306,7 @@ export const fakeWedding: Clip = {
       trap: 'I’m not you（あなたとは違う）に気を取られやすいが、理由はそのあとの only wedding。',
       use: 'This may be my only chance.（これが最後のチャンスかもしれない）' },
 
-    { id: 'r1', skill: 'pragma', level: 'B2', point: 'realistic', ctx: true, seg: [169.5, 177.0],
+    { id: 'r1', skill: 'pragma', level: 'B2', point: 'realistic', ctx: true, seg: [169.5, 178.3],
       stem: 'What does Rachel think of Ross’s Harley idea?', ja: 'ロスのハーレーの案を、レイチェルはどう思う？',
       choices: ['It’s not believable', 'It’s a great idea', 'It costs too much'], a: 0,
       choicesJa: ['信じてもらえない', 'すごくいい案', 'お金がかかりすぎる'],
@@ -325,7 +328,7 @@ export const fakeWedding: Clip = {
       trap: 'not at first を「全員ではない」と取りやすい。first は時間の話。',
       use: 'It was hard, but totally worth it.（大変だったけど、やる価値はあった）' },
 
-    { id: 'k5', skill: 'detail', level: 'B1', point: 'angel', ctx: true, seg: [191.3, 200.0],
+    { id: 'k5', skill: 'detail', level: 'B1', point: 'angel', ctx: true, seg: [191.3, 200.9],
       stem: 'What does Rachel say people told her?', ja: 'レイチェルは、人に何と言われたと言う？',
       choices: ['She looked like an angel', 'She looked like a princess', 'She looked very tired'], a: 0,
       choicesJa: ['天使みたいだった', 'お姫様みたいだった', 'とても疲れて見えた'],
@@ -381,7 +384,7 @@ export const fakeWedding: Clip = {
       trap: 'came down（暗くなった）の down から「座った」を連想しやすい。knee（ひざ）が聞こえれば片ひざ。',
       use: 'He got down on one knee and proposed.（彼は片ひざをついてプロポーズした）' },
 
-    { id: 'k7', skill: 'detail', level: 'B1', point: 'stars', reveals: ['knee'], seg: [234.0, 241.0],
+    { id: 'k7', skill: 'detail', level: 'B1', point: 'stars', reveals: ['knee'], seg: [234.0, 242.3],
       stem: 'Where were the words “Will you marry me?”', ja: '「Will you marry me?」の言葉はどこにあった？',
       choices: ['In the stars on the dome', 'On a cake for her', 'Inside the little ring box'], a: 0,
       choicesJa: ['ドームの星の中', '彼女へのケーキの上', '小さな指輪の箱の中'],

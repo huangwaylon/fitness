@@ -1,3 +1,5 @@
+// ESL REVIEW 2026-11-28: keep 23, fix 1, retire 0, new 0 (n2's seg ran out before “delicates”, the third machine's word:
+//   now to 214.6 s, json3. All keys checked against the captions; the bank is sound)
 // R4 REVIEW 2026-11-18: keep 12, rewrite 8, retire 0, new 4, ctx 6, tx 3, qa 13
 // A2 REVIEW 2026-11-17: keep 7, rewrite 0, retire 1, new 13
 // “Ross and Rachel's First Date at the Laundromat | Friends” (official Friends channel): a 'coincidence', a saved
@@ -211,7 +213,7 @@ export const laundromat: Clip = {
       trap: 'caught（つかまえた）から、つかまる話を連想しやすい。ここは「見ぬかれた」。',
       use: 'You caught me. I ate the cake.（ばれたか。ケーキを食べたのは私）' },
 
-    { id: 'n2', skill: 'number', level: 'B1', point: 'machines', seg: [201, 213], stem: 'How many machines does Ross tell her to use?',
+    { id: 'n2', skill: 'number', level: 'B1', point: 'machines', seg: [201, 214.6], stem: 'How many machines does Ross tell her to use?',
       ja: 'ロスは、洗濯機を何台使うように言う？',
       choices: ['2', '3', '4'], a: 1, keep: true,
       choicesJa: ['2台', '3台', '4台'],

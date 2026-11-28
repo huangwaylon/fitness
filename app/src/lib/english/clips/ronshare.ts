@@ -1,3 +1,5 @@
+// ESL REVIEW 2026-11-28: keep 13, fix 3, retire 0, new 0 (a1's seg back to Tom's “I've been working” at 4.5 s; pr3's
+// line: the captions don't confirm “Little”; pr2's use made natural)
 // R4 REVIEW 2026-11-18: keep 7, rewrite 8, retire 4, new 1, ctx 4, tx 5, qa 8
 // A2 REVIEW 2026-11-17: keep 4, rewrite 13, retire 3, new 1
 // “Ron Swanson Doesn't Share Food | Parks and Recreation” (the official Parks and Recreation channel, Season 5): at a
@@ -27,6 +29,18 @@ export const ronShare: Clip = {
       trap: 'first job（初めての仕事）が聞こえるので、仕事の話と考えがち。続きはお金の行き先。',
       use: 'I put my money into a savings account.（お金は普通預金に入れている）' },
 
+    { id: 'a1', skill: 'attitude', level: 'B2', point: 'admire', ctx: true, seg: [4.3, 12.6],
+      stem: 'What does Ron think of Tom working tonight?',
+      ja: 'トムが今夜も働いていることを、ロンはどう思う？',
+      choices: ['He thinks it’s great', 'He thinks it’s silly', 'He thinks it’s too much'], a: 0,
+      choicesJa: ['立派だと思う', 'ばかげていると思う', 'やりすぎだと思う'],
+      cue: 'トムの話のあと、ロンの最初の一言。',
+      line: 'Tom: I’ve been *working on my presentation*… / Ron: *I admire the work ethic*.',
+      said: '準備で忙しいと話すトムに、ロンは「その勤勉さは立派だ」と返す。',
+      mean: 'admire ＝ 立派だと思う。work ethic ＝ まじめに働く姿勢。ロンは本気でほめている。',
+      trap: '平らな声なので皮肉に聞こえるが、すぐ投資の話が続く。本気のほめ言葉。',
+      use: 'I really admire your hard work.（あなたの頑張り、本当に尊敬します）' },
+
     { id: 'd1', skill: 'detail', level: 'B1', point: 'congrats', seg: [5.5, 10.0],
       stem: 'Why did Tom come to the party?',
       ja: 'トムはなぜパーティーに来た？',
@@ -38,18 +52,6 @@ export const ronShare: Clip = {
       mean: 'come by ＝ ちょっと寄る。head back ＝ 戻る。プレゼンの準備はまだ続いている。',
       trap: '先に presentation と言うので、それが目的と考えがち。目的は came by to のあと。',
       use: 'I just came by to say hi.（ちょっと顔を出しに来ただけ）' },
-
-    { id: 'a1', skill: 'attitude', level: 'B2', point: 'admire', ctx: true, seg: [5.6, 13.4],
-      stem: 'What does Ron think of Tom working tonight?',
-      ja: 'トムが今夜も働いていることを、ロンはどう思う？',
-      choices: ['He thinks it’s great', 'He thinks it’s silly', 'He thinks it’s too much'], a: 0,
-      choicesJa: ['立派だと思う', 'ばかげていると思う', 'やりすぎだと思う'],
-      cue: 'トムの話のあと、ロンの最初の一言。',
-      line: 'Tom: I’ve been *working on my presentation*… / Ron: *I admire the work ethic*.',
-      said: '準備で忙しいと話すトムに、ロンは「その勤勉さは立派だ」と返す。',
-      mean: 'admire ＝ 立派だと思う。work ethic ＝ まじめに働く姿勢。ロンは本気でほめている。',
-      trap: '平らな声なので皮肉に聞こえるが、すぐ投資の話が続く。本気のほめ言葉。',
-      use: 'I really admire your hard work.（あなたの頑張り、本当に尊敬します）' },
 
     { id: 'n1', skill: 'number', level: 'B1', point: 'nine', seg: [12.7, 18.1], keep: true,
       stem: 'How old was Ron when he got his first job?',
@@ -166,7 +168,7 @@ export const ronShare: Clip = {
       said: '日程の変更を頼まれ、「私は約束を守る。人にも守ってほしい」と返す。',
       mean: 'keep an appointment ＝ 約束（予定）を守る。No と言わず、自分の主義を言って断っている。',
       trap: 'No という語がないので、OK と考えがち。others to do the same ＝ 君も守れ。',
-      use: 'I’d like to keep our plan.（予定どおりにしたいです）' },
+      use: 'I’d like to keep our appointment.（予定どおりでお願いしたいです）' },
 
     { id: 'a2', skill: 'pragma', level: 'B2', point: 'backdown', reveals: ['appoint', 'eight'], ctx: true, seg: [39.97, 46.0],
       stem: 'What does Tom do after Ron says no?',
@@ -263,13 +265,13 @@ export const ronShare: Clip = {
       trap: 'That’s just を「ただの〜です」とかばう言い方と勘違いしやすい。one of many はほめ言葉。',
       use: 'That’s just one of my many talents.（これも私のたくさんの特技の一つ）' },
 
-    { id: 'pr3', skill: 'pragma', level: 'B2', point: 'rethink', ctx: true, seg: [78.6, 85.0],
+    { id: 'pr3', skill: 'pragma', level: 'B2', point: 'rethink', ctx: true, seg: [78.6, 85.6],
       stem: 'Ron says, “Rethink that move, son.” What does he mean?',
       ja: 'ロンの「Rethink that move, son.」はどういう意味？',
       choices: ['Don’t take my shrimp', 'Ask before you take one', 'Change your business plan'], a: 0,
       choicesJa: ['私のエビを取るな', '取る前に聞け', '事業計画を変えろ'],
       cue: '最後の短い命令。',
-      line: 'Jean-Ralphio: Little *shrimp*? / Ron: *Rethink that move, son*.',
+      line: 'Jean-Ralphio: …*shrimp*? / Ron: *Rethink that move, son*.',
       said: 'ジャン・ラルフィオがエビに手をのばすと、ロンが「その動き、考え直せ」と言う。',
       mean: 'rethink ＝ 考え直す。move ＝ 手の動き。「その手を考え直せ」→「手を出すな」という静かな警告。',
       trap: 'rethink や move は商談の言葉にも聞こえるが、直前はエビ。手の動きのこと。',

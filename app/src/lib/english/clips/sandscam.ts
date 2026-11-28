@@ -1,3 +1,5 @@
+// ESL REVIEW 2026-11-28: keep 23, fix 1, retire 0, new 0 (d1: “got the sand scooter” was arguably true, he shows it
+// off just before; now “gave them away”). No json3 for this video in english-captions/: segments left as they were.
 // R4 REVIEW 2026-11-18: keep 10, rewrite 4, retire 3, new 10, ctx 7, tx 8, qa 19
 // A2 REVIEW 2026-11-17: keep 9, rewrite 7, retire 8, new 0
 // “Freddie and Carly Lose Their Money in a Scam?! 💸 New iCarly Full Scene | NickRewind” (NickRewind, Best of Carly &
@@ -44,13 +46,13 @@ export const sandScam: Clip = {
     { id: 'd1', ctx: true, skill: 'detail', level: 'B1', point: 'buy', seg: [18.9, 27.9],
       stem: 'What did Freddie do with his bonus sand coins?',
       ja: 'フレディはボーナスのコインで何をした？',
-      choices: ['He bought more sand', 'He got the sand scooter', 'He saved it for his daughter'], a: 0,
-      choicesJa: ['もっと砂を買った', '砂のスクーターと交換した', '娘のために貯めた'],
+      choices: ['He bought more sand', 'He gave them away', 'He saved them for later'], a: 0,
+      choicesJa: ['もっと砂を買った', '人にあげてしまった', 'あとのために貯めた'],
       cue: '「which」のあと',
       line: 'I thought you only sold one case. / I did, but that netted me … bonus sand coins, *which I used to buy more sand*.',
       said: '「1箱しか売ってないと思ってた」に「でもボーナスのコインで、さらに砂を買った」と話す。',
       mean: 'use 〜 to buy … ＝「〜を使って…を買う」。コインは砂に消え、お金は手元に残っていない。',
-      trap: 'scooter は最初に見せた景品。daughter はこのあとの話。which のあとが使い道。',
+      trap: 'coins（コイン）と聞くと、貯めたと考えがち。使い道は which I used to buy のあと。',
       use: 'I used it to buy a new phone.（それで新しい携帯を買ったの）' },
 
     { id: 's1', retired: true, skill: 'sound', level: 'B2', point: 'rich', seg: [26.4, 34.5],

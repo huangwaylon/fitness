@@ -1,3 +1,5 @@
+// ESL REVIEW 2026-11-28: keep 19, fix 0, retire 0, new 0 (all live items checked against the json3 words: lines inside
+// their segments, one defensible key each)
 // R4 REVIEW 2026-11-18: keep 12, rewrite 3, retire 0, new 4, ctx 6, tx 7, qa 9
 // A2 REVIEW 2026-11-17: keep 4, rewrite 9, retire 9, new 2
 // “Dwight vs. Andy - The Office US” (the official The Office channel, BEST OF SEASON 3): Dwight and Andy meet and argue

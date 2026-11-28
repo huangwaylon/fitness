@@ -1,3 +1,5 @@
+// ESL REVIEW 2026-11-28: keep 21, fix 2, retire 0, new 0 (p6's said called the made-up “kachina” a cappuccino,
+// though Holly says she doesn't know it; d4's stem plain)
 // R4 REVIEW 2026-11-18: keep 13, rewrite 4, retire 2, new 6, ctx 6, tx 3, qa 20
 // A2 REVIEW 2026-11-17: keep 3, rewrite 14, retire 5, new 2
 // “No more brain damage - The Office US” (the official The Office channel, BEST OF SEASON 7): Michael plans to be the
@@ -177,7 +179,7 @@ export const mykonos: Clip = {
       choicesJa: ['彼女の分を注文する', '彼女の持ち物を言う', '彼女の希望を聞く'],
       cue: '「何か注文する？」への返事',
       line: 'Look, you wanna order something? / *She will have* a great kachina.',
-      said: '「何か注文する？」に「彼女には、すごいカプチーノを」と答える。',
+      said: '「何か注文する？」に「彼女にはグレート・カチーナを」と、聞いたことのない名前で注文する。',
       mean: 'She’ll have 〜 ＝ 彼女には〜を。店で人の分を注文する言い方。自分なら I’ll have 〜。',
       trap: 'have（持っている）から、持ち物の話と考えがち。注文を聞かれた返事なので「〜をください」。',
       use: 'I’ll have a coffee, and she’ll have tea.（私はコーヒー、彼女には紅茶を）' },
@@ -265,7 +267,7 @@ export const mykonos: Clip = {
       use: 'I’m getting to it, I promise.（今やるところだから、本当に）' },
 
     { id: 'd4', skill: 'detail', level: 'B1', point: 'nice', seg: [202.6, 211.1],
-      stem: 'Why is closing hard for Andy, he says?',
+      stem: 'Why does Andy say closing is hard for him?',
       ja: 'アンディによると、売り込みを決めるのが難しいのはなぜ？',
       choices: ['He’s a nice guy', 'He’s a new guy', 'He’s a shy guy'], a: 0,
       choicesJa: ['いいやつだから', '新人だから', '恥ずかしがりだから'],

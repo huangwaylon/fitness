@@ -1,3 +1,4 @@
+// ESL REVIEW 2026-11-28: keep 23, fix 0, retire 0, new 0 (every key and segment checked against the json3 words)
 // R4 REVIEW 2026-11-18: keep 14, rewrite 7, retire 0, new 2, ctx 6, tx 1, qa 9
 // A2 REVIEW 2026-11-17: keep 5, rewrite 15, retire 3, new 1
 // “Michael Becomes Jim - The Office US” (the official The Office channel, BEST OF SEASON 2): Jim tells the camera he
