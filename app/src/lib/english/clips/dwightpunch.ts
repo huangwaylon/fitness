@@ -1,3 +1,5 @@
+// ESL REVIEW 2026-11-28: keep 16, fix 2, retire 0, new 0 (p1: a choice in Michael's voice like the others; k2: the trap quoted
+// a line after the segment)
 // R4 REVIEW 2026-11-18: keep 12, rewrite 5, retire 2, new 2, ctx 4, tx 1, qa 9
 // A2 REVIEW 2026-11-17: keep 4, rewrite 15, retire 3, new 0
 // “Dwight Punches Michael  - The Office US” (the official The Office channel, BEST OF SEASON 2): asked whom he could
@@ -129,7 +131,7 @@ export const dwightPunch: Clip = {
 
     { id: 'p1', skill: 'pragma', level: 'B2', point: 'theory', ctx: true, seg: [40.5, 48.6],
       stem: 'What does Michael mean by “In theory, I have”?', ja: 'マイケルの “In theory, I have” はどういう意味？',
-      choices: ['Not really, not yet', 'Yes, all done', 'He can’t really remember'], a: 0,
+      choices: ['Not really, not yet', 'Yes, all done', 'I can’t really remember'], a: 0,
       choicesJa: ['本当はまだ', 'はい、全部終わった', '覚えていない'],
       cue: '「Yes」のすぐあとの二語',
       line: 'Coworker: Have you signed the expense reports yet? / Michael: Yes. *In theory, I have.* I *just need to* cross some T’s…',
@@ -168,7 +170,7 @@ export const dwightPunch: Clip = {
       line: 'I’m friends with everybody in this office. *We’re all best friends.* I love everybody here.',
       said: 'カメラに「この職場の全員と友だちだ。みんな大親友。全員が大好きだ」と話す。',
       mean: 'best friends ＝ 大親友。このあと But sometimes（でも時々）と、なぐる話につなげる前置き。',
-      trap: 'すぐあとに coming into work late（遅刻）が出るので、遅刻の話と考えがち。最初の一文を聞く。',
+      trap: 'このあと殴る話になるので、こわがられていると考えがち。最初の We’re all best friends を聞く。',
       use: 'We’re all good friends here.（ここではみんな仲がいいんです）' },
 
     // anchor: 71.2–84.3 s "sometimes your best friends start coming into work late… dentist appointments that aren't

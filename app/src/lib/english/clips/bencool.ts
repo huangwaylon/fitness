@@ -1,3 +1,5 @@
+// ESL REVIEW 2026-11-28: keep 20, fix 2, retire 0, new 0 (g1: “Lots of new paperwork” was arguably true, he is handed a pile of
+// papers; at3: a choice's Japanese added “ベンに”)
 // R4 REVIEW 2026-11-18: keep 12, rewrite 8, retire 1, new 2, ctx 5, tx 2, qa 23
 // A2 REVIEW 2026-11-17: keep 16, rewrite 3, retire 3, new 2 (nt1, nt2 stay retired)
 // “Ben is Finally Cool | Parks and Recreation” (the official Parks and Recreation channel, Season 6): Ben starts at
@@ -60,7 +62,7 @@ export const benCool: Clip = {
 
     { id: 'g1', skill: 'gist', level: 'B1', point: 'firstday', seg: [28.6, 50.6],
       stem: 'What is Ben given on his first day?', ja: '初日、ベンは何を渡される？',
-      choices: ['Their hardest case', 'Lots of new paperwork', 'An easy family will'], a: 0,
+      choices: ['Their hardest case', 'Forms for new staff', 'An easy family will'], a: 0,
       choicesJa: ['いちばん難しい案件', 'たくさんの入社書類', '簡単な遺言の仕事'],
       cue: '「But it’s」のあと',
       line: 'Sorry to start you out like this… But it’s *our toughest case*.',
@@ -303,7 +305,7 @@ export const benCool: Clip = {
     { id: 'at3', skill: 'attitude', level: 'B2', point: 'toogood', ctx: true, seg: [210.6, 218.3],
       stem: 'How does Barney feel about the news?', ja: 'バーニーはこの知らせをどう受け止める？',
       choices: ['He isn’t surprised', 'He is very angry', 'He doesn’t care at all'], a: 0,
-      choicesJa: ['驚いていない', 'ベンにすごく怒っている', '全然気にしていない'],
+      choicesJa: ['驚いていない', 'すごく怒っている', '全然気にしていない'],
       cue: '「No need to explain」のあと',
       line: 'Ben: …and I have to quit again. / Barney: *No need to explain.* … I knew it was *too good to be true*.',
       said: 'バーニーが「説明はいらない。うますぎる話だとわかってた」と言う。',

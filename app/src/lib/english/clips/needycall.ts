@@ -1,3 +1,5 @@
+// ESL REVIEW 2026-11-28: keep 19, fix 2, retire 0, new 0 (g1: 0–40 s never showed the waiting, now 14.5–56.5 s, up to
+// “Why isn't she calling me back?”; f2: the line named Chandler, whose phone is unsettled)
 // R4 REVIEW 2026-11-18: keep 14, rewrite 1, retire 2, new 3, ctx 7, tx 2, qa 22
 // A2 REVIEW 2026-11-17: keep 7, rewrite 12, retire 4, new 1
 // “Chandler Is Desperate and Needy | Friends” (the official Friends channel, Best of Season 1): Chandler waits all day
@@ -14,18 +16,6 @@ export const needyCall: Clip = {
   show: 'Friends',
   credit: 'Friends (official YouTube channel)',
   questions: [
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'calling', seg: [0, 40],
-      stem: 'What is Chandler doing after his message?',
-      ja: '伝言のあと、チャンドラーは何をしている？',
-      choices: ['Waiting for a woman to call', 'Planning a big dinner party', 'Fixing his broken phone'], a: 0,
-      choicesJa: ['女性からの電話を待っている', '大きな夕食会を計画している', 'こわれた電話を直している'],
-      cue: '留守電への伝言のあと',
-      line: 'Oh, Danielle… Give me a call when you get a chance. Bye-bye.',
-      said: 'ダニエルの留守電に伝言を残し、そのあとは電話が来るのをずっと待っている。',
-      mean: '何気ない伝言に見せて、実は電話を待ちわびている。',
-      trap: 'dishes（食器）の話も出るので、料理の話と考えがち。それは音の演出。',
-      use: 'I’m waiting for a call.（電話を待ってるんだ）' },
-
     { id: 'f6', skill: 'phrase', level: 'B1', point: 'chance', seg: [0.7, 14.5],
       stem: 'What does “Give me a call when you get a chance” mean?',
       ja: '「Give me a call when you get a chance」はどういう意味？',
@@ -49,6 +39,18 @@ export const needyCall: Clip = {
       mean: '軽く聞こえた留守電は、実は練りに練ったもの。短さと時間の差がおかしい。',
       trap: '2時間と聞くと、長い伝言と思いやすい。聞こえた伝言はとても短い。',
       use: 'Oh, I didn’t think you’d pick up!（あ、出ると思わなかった！）' },
+
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'calling', seg: [14.5, 56.5],
+      stem: 'What is Chandler doing after his message?',
+      ja: '伝言のあと、チャンドラーは何をしている？',
+      choices: ['Waiting for a woman to call', 'Planning a big dinner party', 'Fixing his broken phone'], a: 0,
+      choicesJa: ['女性からの電話を待っている', '大きな夕食会を計画している', 'こわれた電話を直している'],
+      cue: '最後のひとこと',
+      line: '*Why isn’t she calling me back?*',
+      said: '留守電に伝言を入れたあと、友だちとあれこれ話し、最後に「なんでかけ直してこないんだ」とこぼす。',
+      mean: 'call 〜 back ＝ かけ直す。何気ない伝言に見せて、実は電話を待ちわびている。',
+      trap: 'dishes（食器）の話も出るので、料理の話と考えがち。最後の calling me back を聞く。',
+      use: 'I’m waiting for a call.（電話を待ってるんだ）' },
 
     { id: 'n1', skill: 'number', level: 'B1', point: 'hours', reveals: ['rehearse'], seg: [16.5, 21.9], keep: true,
       stem: 'How long has Chandler been working on the message?',
@@ -92,7 +94,7 @@ export const needyCall: Clip = {
       choices: ['To help you next time', 'To put in my notes', 'Only for this one time'], a: 0,
       choicesJa: ['次のために言っておくと', 'ぼくのメモに書くために', '今回だけ'],
       cue: '「Yeah, but」のあと',
-      line: 'Chandler: Can I use your phone? / Friend: Yeah. But *for future reference*, that thing in your hand can also be used as a phone.',
+      line: 'A: Can I use your phone? / B: Yeah. But *for future reference*, that thing in your hand can also be used as a phone.',
       said: '「電話借りていい？」「いいけど、今後のために言うと、手に持ってるそれも電話だよ」と返す。',
       mean: 'for future reference ＝ 今後のために（言っておくと）。軽い皮肉の前置きにも使う。',
       trap: 'reference（参考、記録）から、記録の話と勘違いしやすい。future（これから）が大事。',

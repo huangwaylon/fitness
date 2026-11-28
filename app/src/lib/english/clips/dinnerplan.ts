@@ -1,3 +1,4 @@
+// ESL REVIEW 2026-11-28: keep 14, fix 1, retire 0, new 0 (x1: the stem's Japanese glossed the blank as “できた”)
 // R4 REVIEW 2026-11-18: keep 9, rewrite 2, retire 3, new 3, ctx 3, tx 5, qa 6
 // A2 REVIEW 2026-11-17: keep 8, rewrite 10, retire 4, new 0
 // “Michael's Cunning Dinner Party Plan - The Office US” (the official The Office channel, BEST OF SEASON 4 - The Office
@@ -197,7 +198,7 @@ export const dinnerplan: Clip = {
 
     { id: 'x1', skill: 'dict', level: 'B2', point: 'getout', seg: [69.8, 77.7],
       stem: 'Type what Jim says: “We’ve been able to ___.” (4 words)', answer: 'get out of it',
-      ja: 'ジムの言葉を書こう：「毎回___できた」（4語）',
+      ja: 'ジムの言葉を書こう：「We’ve been able to ___.」（4語）',
       cue: 'able to のあと、つながる4語。',
       line: 'every time we’ve been able to *get out of it*',
       said: '「毎回、逃げられてきた」と言う。',

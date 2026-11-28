@@ -1,3 +1,5 @@
+// ESL REVIEW 2026-11-28: keep 16, fix 2, retire 0, new 0 (d3: the trap quoted “big, big, big” from before the segment; s1: a
+// choice's Japanese was a description, not a translation)
 // R4 REVIEW 2026-11-18: keep 12, rewrite 7, retire 1, new 0, ctx 5, tx 10, qa 9
 // A2 REVIEW 2026-11-17: keep 9, rewrite 8, retire 5, new 3
 // “Chandler & Monica Argue About Move In Plans | Friends” (the official Friends channel, Best of Season 6): Monica
@@ -203,7 +205,7 @@ export const gameRoom: Clip = {
       line: 'Chandler: So, that’s it? / Monica: … The beautiful guest room’s going to be *filled with antiques*.',
       said: '「それで終わり？」に「すてきな客間は、アンティークでいっぱいにするの」と答える。',
       mean: 'antiques ＝ 古い家具など。be filled with 〜 ＝ 〜でいっぱいになる。ゲーム機は合わない。',
-      trap: '前の big, big, big が耳に残り、大きすぎると勘違いしやすい。',
+      trap: 'ゲーム機は大型なので、大きすぎるのが理由と考えがち。決め手は filled with antiques。',
       use: 'The room is filled with antiques.（部屋はアンティークでいっぱい）' },
 
     { id: 'h3', skill: 'humor', level: 'C1', point: 'asteroids', reveals: ['antiques'], seg: [74.3, 80],
@@ -231,7 +233,7 @@ export const gameRoom: Clip = {
       stem: 'Fill the gap: “___ against the beautiful guest room?”',
       ja: 'すき間をうめよう：「___ against the beautiful guest room?」',
       choices: ['What do you have', 'What did you have', 'What have you got'], a: 0,
-      choicesJa: ['何が気に入らないの（What do you have）', '何が気に入らなかったの（What did you have）', '同じ意味の別の言い方（What have you got）'],
+      choicesJa: ['何が気に入らないの（What do you have）', '何が気に入らなかったの（What did you have）', '何が気に入らないの（What have you got）'],
       cue: '文の最初の速い部分',
       line: '*What do you have* against the beautiful guest room?',
       said: '「客間の何が気に入らないの？」と聞く。',

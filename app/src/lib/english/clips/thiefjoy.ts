@@ -1,3 +1,4 @@
+// ESL REVIEW 2026-11-28: keep 17, fix 1, retire 0, new 0 (i1: the key “You make it no fun” -> “You take the fun away”)
 // R4 REVIEW 2026-11-18: keep 11, rewrite 5, retire 3, new 2, ctx 5, tx 15, qa 7
 // A2 REVIEW 2026-11-17: keep 11, rewrite 8, retire 4, new 0
 // “You are a thief of joy | Season 5 Deleted Scene | Superfan - The Office US” (the official The Office channel,
@@ -107,7 +108,7 @@ export const thiefOfJoy: Clip = {
     { id: 'i1', skill: 'phrase', level: 'B2', point: 'joy', reveals: ['thief'], ctx: true, seg: [50.45, 57.7],
       stem: 'What does “You are a *thief of joy*” mean here?',
       ja: 'ここでの「You are a thief of joy」はどういう意味？',
-      choices: ['You make it no fun', 'You steal company things', 'You make us all happy'], a: 0,
+      choices: ['You take the fun away', 'You steal company things', 'You make us all happy'], a: 0,
       choicesJa: ['君がいると楽しくない', '会社の物を盗んでいる', 'みんなを楽しくしてくれる'],
       cue: '「Never.」のあとの返事。',
       line: 'Dwight, you’ve really never stolen any company time? / Dwight: *Never.* / *You are a thief of joy.*',

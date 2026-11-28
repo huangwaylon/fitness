@@ -1,3 +1,4 @@
+// ESL REVIEW 2026-11-28: keep 17, fix 1, retire 0, new 0 (f2: the key “I will surely come” -> natural “I’ll come for sure”)
 // R4 REVIEW 2026-11-18: keep 12, rewrite 4, retire 1, new 2, ctx 4, tx 1, qa 9
 // A2 REVIEW 2026-11-17: keep 5, rewrite 11, retire 3, new 1
 // “Ron Swanson's Self-Defense Class | Parks and Recreation” (the official Parks and Recreation channel, Season 2): Ron
@@ -100,7 +101,7 @@ export const ronSelfDefense: Clip = {
     { id: 'f2', skill: 'phrase', level: 'B1', point: 'there', seg: [50.2, 55.5],
       stem: 'What does “I’m there” mean here?',
       ja: 'ここでの「I’m there」はどういう意味？',
-      choices: ['I will surely come', 'I came here by force', 'I’ll come if I’m free'], a: 0,
+      choices: ['I’ll come for sure', 'I came here by force', 'I’ll come if I’m free'], a: 0,
       choicesJa: ['絶対に行く', 'むりやり来させられた', 'ひまなら行く'],
       cue: '最後の2語',
       line: 'So, yeah, *free* self-defense class, *I’m there*.',

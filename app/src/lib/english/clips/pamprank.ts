@@ -1,3 +1,4 @@
+// ESL REVIEW 2026-11-28: keep 17, fix 1, retire 0, new 0 (f1: ended on “Don't pimp me”, now 32.8 s, the line under EXCLUDE)
 // R4 REVIEW 2026-11-18: keep 12, rewrite 5, retire 0, new 1, ctx 4, tx 4, qa 11
 // A2 REVIEW 2026-11-17: keep 9, rewrite 8, retire 3, new 0
 // “Michael Fires Pam - The Office US” (the official The Office channel, BEST OF SEASON 1 - The Office US): Michael
@@ -6,6 +7,7 @@
 // Segments from the captions, words from whisper (2026-11-16). Named in the audio: Ryan (46 s), Pam (39.2 s, 85.3 s).
 // Michael is never named, so stems name him as the show does. 110–129 s is silent (Pam's reaction is only seen).
 // SKIP 110–129: silent (Pam's reaction is only seen)
+// EXCLUDE 33.2–33.9: crude slang (“Don't pimp me”)
 // Untested: 21.7–27.4 s (TV shows: world knowledge),
 // 35.4–38.8 s (the sources differ); whisper loops "I don't know about that" from 154 s to the end (the captions have it once, at 155 s; that one is used).
 // EAR CHECK: 152.5 s g2 i2 — "You're a jerk" is assumed Pam's (no name; it answers "We totally got you", and Michael
@@ -53,7 +55,7 @@ export const pamprank: Clip = {
       trap: 'first と third も同じ文に出るので、順番が混ざりやすい。boss のすぐあとの語を聞く。',
       use: 'Safety first, speed second.（安全第一、速さは二の次）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'along', seg: [27.9, 34.2],
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'along', seg: [27.9, 32.8],
       stem: 'What does “go along with it” mean?',
       ja: '「go along with it」はどういう意味？',
       choices: ['Act as if it’s real', 'Walk with me to Pam', 'Watch and learn'], a: 0,

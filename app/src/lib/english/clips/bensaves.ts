@@ -1,3 +1,4 @@
+// ESL REVIEW 2026-11-28: keep 19, fix 1, retire 0, new 0 (shortly: started on “Still sounds like it's about sex”, now 121.1 s)
 // R4 REVIEW 2026-11-18: keep 18, rewrite 0, retire 1, new 2, ctx 5, tx 13, qa 18
 // A2 REVIEW 2026-11-17: keep 7, rewrite 10, retire 7, new 2
 // “Ben saves the day | Parks and Recreation” (the official Parks and Recreation channel, Season 2): the state auditors
@@ -174,7 +175,7 @@ export const benSaves: Clip = {
       trap: 'I don’t know は怒っているようにも聞こえるが、ここは迷い。決め手は don’t feel like。',
       use: 'I don’t really feel like going out.（あまり出かける気分じゃない）' },
 
-    { id: 'shortly', skill: 'phrase', level: 'B1', point: 'shortly', seg: [119.6, 124.6],
+    { id: 'shortly', skill: 'phrase', level: 'B1', point: 'shortly', seg: [121.1, 125.0],
       stem: 'What does “I’ll be back shortly” mean?',
       ja: '「I’ll be back shortly」の意味は？',
       choices: ['I’ll come back soon', 'I’ll be short', 'I’ll come back tomorrow'], a: 0,

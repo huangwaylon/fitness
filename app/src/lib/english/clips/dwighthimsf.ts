@@ -1,3 +1,4 @@
+// ESL REVIEW 2026-11-28: keep 13, fix 0, retire 0, new 0
 // R4 REVIEW 2026-11-18: keep 6, rewrite 5, retire 2, new 1, ctx 4, tx 2, qa 8
 // A2 REVIEW 2026-11-17: keep 3, rewrite 10, retire 7, new 4 · sweep: dwightself twins retired (d2 d4 f1 p2 s1 i1), new d5 d6
 // “Dwight Fights Himself - The Office US” (the official The Office channel, BEST OF SEASON 6 - The Office US): at his

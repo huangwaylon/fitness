@@ -1,3 +1,4 @@
+// ESL REVIEW 2026-11-28: keep 21, fix 1, retire 0, new 0 (c4: “Mike” is whisper's only, out of the line and the cue)
 // R4 REVIEW 2026-11-18: keep 12, rewrite 6, retire 3, new 4, ctx 7, tx 6, qa 13
 // A2 REVIEW 2026-11-17: keep 6, rewrite 10, retire 7, new 4
 // “911 CALL ME  - The Office US” (the official The Office channel, BEST OF SEASON 5 - The Office US): Michael phones
@@ -339,9 +340,9 @@ export const callMe911: Clip = {
       ja: '「大丈夫？」と聞かれて、マイケルは何と答える？',
       choices: ['He says he is fine', 'He says he is sick', 'He says he is tired'], a: 0,
       choicesJa: ['大丈夫だと言う', '具合が悪いと言う', '疲れたと言う'],
-      cue: '「Are you alright, Mike?」の返事。',
-      line: '*Are you alright*, Mike? / Michael: *I am. I am.*',
-      said: '「大丈夫、マイク？」に、「大丈夫。大丈夫だ」と2回答える。',
+      cue: '「Are you all right?」の返事。',
+      line: 'Someone: *Are you all right?* / Michael: *I am. I am.*',
+      said: '「大丈夫？」に、「大丈夫。大丈夫だ」と2回答える。',
       mean: 'I am ＝ I am all right の略。質問の動詞だけで短く答える形。このあとカメラに本音を言う。',
       trap: 'I am だけでは何のことか分かりにくい。質問の all right を受けて I am (all right)＝「大丈夫」。',
       use: 'Are you okay? — I am, thanks.（大丈夫？—うん、ありがとう）' },

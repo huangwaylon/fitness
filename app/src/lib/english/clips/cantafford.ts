@@ -1,3 +1,4 @@
+// ESL REVIEW 2026-11-28: keep 23, fix 1, retire 0, new 0 (d4: the trap quoted a “Monica!” before the segment)
 // R4 REVIEW 2026-11-18: keep 13, rewrite 5, retire 6, new 6, ctx 11, tx 4, qa 15
 // A2 REVIEW 2026-11-17: keep 6, rewrite 11, retire 7, new 4
 // “When Half the Friends Can't Afford Dinner | Friends” (the official Friends channel, Best of Season 2): at Monica's
@@ -49,7 +50,7 @@ export const cantAfford: Clip = {
       line: 'Waiter: *Are we ready to order?* / Friend: Oh, you know what, *we haven’t even looked yet*.',
       said: '「ご注文はお決まりですか」に「実は、まだ見てもいないの」と答える。',
       mean: 'ready to order ＝ 注文が決まった。haven’t even looked ＝ まだ見てもいない。',
-      trap: 'すぐ前に Monica! と呼ぶ声があり、モニカを待っていると思いやすい。答えは looked yet。',
+      trap: '「まだ」の理由をあれこれ想像しやすい。答えは we haven’t even looked yet（まだ見てもいない）。',
       use: 'Sorry, we haven’t decided yet.（すみません、まだ決めていません）' },
 
     { id: 'a1', retired: true, skill: 'attitude', level: 'C1', point: 'edge', seg: [35.0, 43.1],

@@ -1,3 +1,5 @@
+// ESL REVIEW 2026-11-28: keep 22, fix 2, retire 0, new 0 (d5: “Will they eat it?” had one speaker's answer; d4: the trap's
+// “fancy” is said before the segment)
 // R4 REVIEW 2026-11-18: keep 11, rewrite 8, retire 1, new 6, ctx 9, tx 30, qa 11
 // A2 REVIEW 2026-11-17: keep 4, rewrite 15, retire 5, new 1
 // “Carly Pulls Her FIRST Prank Ever 🤣 | FULL EPISODE in 5 Minutes | iCarly” (NickRewind, Best of Carly Shay ❤️): Carly
@@ -149,10 +151,10 @@ export const firstPrank: Clip = {
       use: 'Meet me at the station right after work.（仕事のあとすぐ駅で会おう）' },
 
     { id: 'd5', skill: 'pragma', level: 'B1', point: 'noeat', ctx: true, seg: [121.0, 128.5],
-      stem: 'Will they eat the dessert from Neville?',
-      ja: 'ネビルからのデザートを二人は食べる？',
-      choices: ['No, not at all', 'Yes, all of it', 'Only after Carly comes'], a: 0,
-      choicesJa: ['絶対に食べない', '全部食べる', 'カーリーが来てから食べる'],
+      stem: 'What does one friend say about Neville’s dessert?',
+      ja: '友だちのひとりは、ネビルのデザートについて何と言う？',
+      choices: ['I won’t eat any of it', 'I’ll try a little of it', 'I’ll wait for Carly first'], a: 0,
+      choicesJa: ['絶対に食べない', '少しだけ食べてみる', 'まずカーリーを待つ'],
       cue: '「I don’t know, but」のあと。',
       line: 'How did he get this up here? / I don’t know, but *there’s no way I’m eating anything*.',
       said: '「どうやってここに持ちこんだの？」「わからないけど、絶対に何も食べないからね」。',
@@ -251,7 +253,7 @@ export const firstPrank: Clip = {
       line: 'Well, *my face is already smooth*. So I gave it to my friend Lucas here.',
       said: '「俺の顔はもうすべすべだから、友だちのルーカスにあげた」と言う。',
       mean: 'smooth ＝ すべすべ。So の前が理由。自分には要らないので回した。',
-      trap: 'fancy（高級な）が先に聞こえるが、理由は So の直前。',
+      trap: 'もらったのが高級なクリームなので、遠慮したと考えがち。理由は So の直前。',
       use: 'I didn’t need it, so I gave it away.（要らなかったから人にあげた）' },
 
     { id: 'h3', skill: 'detail', level: 'B1', point: 'glow', retired: true, seg: [226.5, 233.0],

@@ -1,3 +1,5 @@
+// ESL REVIEW 2026-11-28: keep 13, fix 2, retire 0, new 0 (d2: the key said “a different drink”, the clip only “not what I
+// ordered”; p1: the line named Ross where the captions don't, the trap counted the No's)
 // R4 REVIEW 2026-11-18: keep 10, rewrite 4, retire 5, new 1, ctx 4, tx 3, qa 8
 // A2 REVIEW 2026-11-17: keep 7, rewrite 11, retire 1, new 0
 // “Janice Breaks Up with Ross | Friends” (the official Friends channel, Best of Season 5): Ross moans about a wrong
@@ -18,9 +20,9 @@ export const janicedump: Clip = {
     { id: 'd2', skill: 'detail', level: 'B1', point: 'order', ctx: true, seg: [0, 6.5],
       stem: 'What is wrong with Ross’s coffee?',
       ja: 'ロスのコーヒーの何がいけない？',
-      choices: ['It’s a different drink', 'It’s not hot enough', 'It costs too much'], a: 0,
-      choicesJa: ['注文したのと違う飲み物', '熱さが足りない', '値段が高すぎる'],
-      cue: '「What is wrong now?」への答え。',
+      choices: ['It’s the wrong order', 'It’s not hot enough', 'It costs too much'], a: 0,
+      choicesJa: ['頼んだものと違う', '熱さが足りない', '値段が高すぎる'],
+      cue: 'ジャニスの最初の質問への答え。',
       line: 'Janice: *What is wrong now?* / Ross: This *isn’t what I ordered*.',
       said: '「今度は何？」と聞かれ、「注文したのと違う」と答える。',
       mean: 'This isn’t what I ordered ＝ これ、注文したのと違う。店で使える決まり文句。',
@@ -138,10 +140,10 @@ export const janicedump: Clip = {
       choices: ['Stops him to talk herself', 'Lets him finish first', 'Refuses to talk at all'], a: 0,
       choicesJa: ['止めて自分が話す', '先に彼に話させる', '話すこと自体を断る'],
       cue: '「Sometimes I feel」のあとの返事。',
-      line: 'Janice: Ross, we need to talk. / Ross: Okay. *Sometimes I feel*— / Janice: *No, no, no*… *I’m going to talk.*',
+      line: 'Janice: …we need to talk. / Ross: Okay. *Sometimes I feel*— / Janice: *No, no, no*… *I’m going to talk.*',
       said: 'ロスが「時々僕は…」と話し始めると、「だめ、私が話すの」と止める。',
       mean: 'we need to talk ＝ 話があるの（別れ話の前によく言う）。I’m going to talk ＝ 私が話す番。',
-      trap: 'No が7回続くので、話すこと自体を断ったと考えがち。決め手はそのあとの I’m going to talk。',
+      trap: 'No が何度も続くので、話すこと自体を断ったと考えがち。決め手はそのあとの I’m going to talk。',
       use: 'Wait, let me talk first.（待って、先に話させて）' },
 
     { id: 'f2', skill: 'phrase', level: 'B2', point: 'sun', seg: [33.1, 44.9],

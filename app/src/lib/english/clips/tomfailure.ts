@@ -1,3 +1,4 @@
+// ESL REVIEW 2026-11-28: keep 21, fix 2, retire 0, new 0 (g2, i5: choices' Japanese, unnatural or not what the English says)
 // R4 REVIEW 2026-11-18: keep 9, rewrite 9, retire 0, new 5, ctx 5, tx 7, qa 13
 // A2 REVIEW 2026-11-17: keep 13, rewrite 4, retire 7, new 0
 // “Tom finds his true purpose: failure | Parks and Recreation” (the official Parks and Recreation channel, Season 7):
@@ -189,7 +190,7 @@ export const tomFailure: Clip = {
       stem: 'What does Lucy want Tom to do?',
       ja: 'ルーシーはトムに何をしてほしい？',
       choices: ['Move on from his failure', 'Make a new film about it', 'Buy back his collection'], a: 0,
-      choicesJa: ['失敗から前に進む', 'それの新しい映像を作る', 'コレクションを買い戻す'],
+      choicesJa: ['失敗から前に進む', 'そのことで新しい映画を作る', 'コレクションを買い戻す'],
       cue: 'ルーシーの最後の言葉',
       line: 'Look, you had a tough break. … *You just got to move on*.',
       said: '「運が悪かっただけ」と慰め、最後に「とにかく前に進まなきゃ」と励ます。',
@@ -280,7 +281,7 @@ export const tomFailure: Clip = {
       stem: 'What is Tom’s point about chances?',
       ja: 'チャンスについて、トムは何を言いたい？',
       choices: ['Success can take many tries', 'You only get a few chances', 'Two or three tries are enough'], a: 0,
-      choicesJa: ['成功には何度も挑戦が要る', 'チャンスは数回しかない', '2、3回で勝てる'],
+      choicesJa: ['成功には何度も挑戦が要る', 'チャンスは数回しかない', '2、3回で十分'],
       cue: '「isn’t about」のあと',
       line: 'the story of America *isn’t about second or third chances*. It’s about fourth, fifth… *fiftieth chances*.',
       said: '「アメリカは2度目や3度目でなく、4度目、5度目…50度目のチャンスの話だ」と言う。',
