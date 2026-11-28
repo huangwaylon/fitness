@@ -227,7 +227,6 @@ amaze
 amazed
 amazes
 amazing
-amazon
 ambition
 among
 amongst
@@ -237,7 +236,6 @@ amounts
 amused
 amusing
 an
-analyse
 analysed
 analyses
 analysis
@@ -1307,9 +1305,6 @@ center
 centered
 centers
 central
-centre
-centred
-centres
 cents
 century
 cereal
@@ -1391,8 +1386,6 @@ chefs
 chemical
 chemist
 chemists
-cheque
-cheques
 cherish
 cherries
 cherry
@@ -1410,7 +1403,6 @@ chief
 chiefs
 child
 children
-chile
 chili
 chill
 chilled
@@ -1615,9 +1607,6 @@ colored
 colorful
 coloring
 colors
-colour
-coloured
-colours
 column
 columns
 comb
@@ -1839,7 +1828,6 @@ craft
 crafted
 crafting
 crafts
-crap
 crash
 crashed
 crashes
@@ -1985,8 +1973,6 @@ damaged
 damages
 damaging
 dammed
-damn
-damned
 damning
 damp
 damper
@@ -2085,7 +2071,6 @@ default
 defeat
 defeated
 defeats
-defence
 defences
 defend
 defended
@@ -2894,9 +2879,6 @@ favored
 favoring
 favorite
 favors
-favour
-favoured
-favours
 fax
 fear
 feared
@@ -3065,8 +3047,6 @@ flatter
 flavor
 flavored
 flavors
-flavour
-flavours
 flea
 fleas
 fled
@@ -3318,7 +3298,6 @@ gamer
 games
 gaming
 gang
-gaol
 gap
 gaps
 garage
@@ -3538,8 +3517,6 @@ greeted
 greeting
 greets
 grew
-grey
-greys
 grid
 grief
 grill
@@ -3654,8 +3631,6 @@ happy
 harbor
 harbored
 harbors
-harbour
-harbours
 hard
 harder
 hardest
@@ -3669,7 +3644,6 @@ harming
 harmony
 harms
 harness
-harry
 harsh
 hart
 harvest
@@ -3839,9 +3813,6 @@ honor
 honored
 honoring
 honors
-honour
-honoured
-honours
 hood
 hoodie
 hoodies
@@ -3907,7 +3878,6 @@ humble
 humid
 humor
 humorous
-humour
 hundred
 hundreds
 hung
@@ -3947,8 +3917,6 @@ identity
 ideology
 idiom
 idioms
-idiot
-idiots
 idol
 idols
 ids
@@ -4174,13 +4142,11 @@ jets
 jewel
 jewelry
 jewels
-jimmy
 job
 jobs
 jog
 jogged
 jogging
-john
 join
 joined
 joining
@@ -4320,9 +4286,6 @@ labor
 labored
 laboring
 labors
-labour
-laboured
-labours
 labs
 lack
 lacked
@@ -4474,7 +4437,6 @@ liberals
 liberate
 liberty
 library
-licence
 licences
 license
 licensed
@@ -4544,8 +4506,6 @@ lit
 liter
 literary
 liters
-litre
-litres
 little
 littlest
 live
@@ -4609,8 +4569,6 @@ looser
 loosing
 lord
 lords
-lorries
-lorry
 lose
 loser
 losers
@@ -4729,7 +4687,6 @@ marches
 marching
 margin
 margins
-maria
 marine
 marines
 mark
@@ -4778,7 +4735,6 @@ math
 maths
 mating
 matrix
-matt
 matter
 mattered
 matters
@@ -4837,7 +4793,6 @@ member
 members
 memorial
 memories
-memorise
 memorize
 memory
 men
@@ -4876,8 +4831,6 @@ metering
 meters
 method
 methods
-metre
-metres
 metro
 mice
 micro
@@ -4887,7 +4840,6 @@ middling
 midnight
 might
 mighty
-mike
 mild
 milder
 mile
@@ -4915,7 +4867,6 @@ minerals
 mines
 mini
 minimal
-minimise
 minimize
 minimum
 minimums
@@ -5069,8 +5020,6 @@ mugs
 mule
 mules
 multiple
-mum
-mums
 murder
 murdered
 murderer
@@ -5376,7 +5325,6 @@ ordinary
 organ
 organic
 organics
-organise
 organism
 organize
 organs
@@ -5506,7 +5454,6 @@ papers
 parade
 paradise
 parallel
-paralyse
 paralyze
 parcel
 parcels
@@ -5609,7 +5556,6 @@ pencils
 pending
 penguin
 penguins
-penis
 penned
 pennies
 penning
@@ -5641,9 +5587,7 @@ personal
 persons
 persuade
 pet
-peter
 petition
-petrol
 pets
 petting
 petty
@@ -5719,8 +5663,6 @@ piping
 pirate
 pirated
 pirates
-piss
-pissed
 pit
 pitch
 pitched
@@ -5840,7 +5782,6 @@ popping
 pops
 popular
 pork
-porn
 port
 portal
 ported
@@ -5892,7 +5833,6 @@ powerful
 powering
 powers
 practice
-practise
 praise
 praised
 praises
@@ -6201,8 +6141,6 @@ ranked
 ranking
 ranks
 rap
-rape
-raped
 rapid
 rapidly
 rapids
@@ -6250,9 +6188,6 @@ reads
 ready
 readying
 real
-realise
-realised
-realises
 reality
 realize
 realized
@@ -6523,7 +6458,6 @@ rich
 richer
 riches
 richest
-rick
 rid
 ridden
 ridding
@@ -6587,7 +6521,6 @@ rocking
 rocks
 rocky
 rode
-roger
 rogers
 role
 roles
@@ -6669,9 +6602,6 @@ ruling
 rumor
 rumored
 rumors
-rumour
-rumoured
-rumours
 run
 runaway
 runaways
@@ -6953,11 +6883,9 @@ sew
 sewed
 sewing
 sewn
-sex
 sexes
 sexual
 sexually
-sexy
 shade
 shaded
 shades
@@ -7984,7 +7912,6 @@ terrific
 terrify
 terror
 terrors
-terry
 test
 tested
 testing
@@ -8004,8 +7931,6 @@ that
 the
 theater
 theaters
-theatre
-theatres
 thee
 theft
 thefts
@@ -8165,7 +8090,6 @@ tongues
 tonight
 toning
 tons
-tony
 too
 took
 tool
@@ -8759,7 +8683,6 @@ welfare
 well
 welling
 wells
-welsh
 went
 wept
 were

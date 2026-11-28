@@ -104,7 +104,28 @@ bitch bitches bitchy bitched bitching jap japs paki pakis dago dagos wop wops gy
 honkies squaw squaws darky darkie darkies redskin redskins hymie kraut krauts retard retards retarded nigger niggers nigga niggas
 cunt cunts fuck fucks fucked fucker fuckers fucking shit shits shitty bullshit asshole assholes arse arses arsehole tits titty titties
 boner boners blowjob handjob clit clits dick dicks dickhead prick pricks skank skanky negro negroes golliwog shemale milf milfs niggaz hos jew jewed jewing jews wog wogs yid yids'''.split()
-block=(flagged|set(CUR))
+# the 2026-11-28 review's: slurs, insults about bodies and minds, sexual and vulgar words SCOWL doesn't flag
+CUR2='''poof poofs poofter poofters dagoes honkey honkeys honkie spazzes spastic spastics sambo sambos mulatto papist papists
+coolie coolies shylock shylocks pommy pommies limey limeys mongol mongols mongo mongos mongoes gypsy gypsies gypsied gypsying
+gypper gyppers gypping gypster gypsters negroid negroids spick spicks nazi nazis midget midgets cretin cretins imbecile moron
+morons moronic fatso fatsos gimp gimps gimped gimpier gimpiest gimping gimpy cripple cripples crippler niggard niggards niggle
+niggled niggler nigglers niggles niggling welsh welshed welshes welshing floozy hussy harlot harlotry harlots strumpet trollop
+trollops jezebel jezebels whored sluttier sluttish bitchier bitchily bimbo bimbos slag slags slagged slagging wench hooker hookers
+bawd bawds bawdier bawdies bawdiest bawdily bawdy cuckold cuckolds piss pissed pisser pissers pisses pissing pissoir pissoirs
+bastard bastards bastardy boob boobs boobie boobies boobed boobing tit turd turds tosser bugger buggered buggers buggery sodomy
+sodomies sodomite sodomize sodom sodoms sodding shag shagged bollocks crap crapped crapper crappers crapping crappy dong dongs poon
+poons pecker peckers weenie weiner spunk spunked spunks spunking spunkies goddamn frig frigging bonk bonked bonking bonks nympho
+porn porno pornos porns orgasm orgasms orgasmic orgy orgies erotic erotica horny smut smutty pimp pimps pimped pimping nob nobs
+rapist rapists raper rapers'''.split()
+block=(flagged|set(CUR)|set(CUR2))
+# accepted but never a hint or a rack's seed (common.txt): UK spellings (the table's English is American), names, unpleasant hints
+NOHINT=set('''centre centres centred colour coloured colours favour favoured favours flavour flavours grey greys harbour harbours
+honour honoured honours humour labour laboured labours litre litres memorise metre metres minimise organise realise realised
+realises rumour rumoured rumours theatre theatres cheque cheques defence licence practise analyse paralyse gaol lorry lorries petrol
+mum mums john maria peter harry jimmy terry roger matt tony rick mike chile amazon penis rape raped sex sexy damn damned idiot
+idiots'''.split())
+# Japan loanwords a table types and plurals the lists lack (sugoroku-words.ts LOAN has the rest)
+EXTRA=set('onsen ryokan yukata sensei otaku emojis vlogs'.split())
 # --- tiers
 def freqsrc(w):
     # (openly licensed sources only: no SUBTLEX, no Google 10k)
@@ -124,10 +145,10 @@ modern={w for w in size if ok.match(w) and w not in enable and len(w)>=3 and rea
 modern=(modern|{f for w in modern for f in forms.get(w,()) if ok.match(f)})-enable
 def keep_txt(w): return w in base or realw(w,70) or w in CAL or w in modern or (len(w)>=4 and zipf.get(w,0)>=3 and w not in caps)
 txt_kept={w for w in words_txt if keep_txt(w)}
-accept=(expand(base)|txt_kept|everyday|CAL|modern|expand(learner&enable))-block
+accept=(expand(base)|txt_kept|everyday|CAL|modern|expand(learner&enable)|EXTRA|NOHINT)-block
 accept={w for w in accept if ok.match(w)}
 lexp={f for w in learner|everyday for f in forms.get(w,set())|{w}}
-common=({w for w in lexp if w in learner or w in everyday or zipf.get(w,0)>=2.5}|{w for w in enable if zipf.get(w,0)>=4 and len(w)>3 and (w not in caps or size.get(w,99)<=50)}|everyday)&accept
+common=({w for w in lexp if w in learner or w in everyday or zipf.get(w,0)>=2.5}|{w for w in enable if zipf.get(w,0)>=4 and len(w)>3 and (w not in caps or size.get(w,99)<=50)}|everyday)&accept-NOHINT
 open('/tmp/wordlist/accept.txt','w').write('\n'.join(sorted(accept))+'\n')
 open('/tmp/wordlist/common.txt','w').write('\n'.join(sorted(common))+'\n')
 info=lambda w: f"{w} (scowl {size.get(w,'-')}, zipf {zipf.get(w,0):.2f}, freq-src {freqsrc(w)})"

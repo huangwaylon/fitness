@@ -1,5 +1,5 @@
 // 英語すごろく's 絵 stones (docs/sugoroku.md "Rules"): an everyday thing's picture (Google's Noto Emoji, Apache 2.0,
-// hotlinked from its CDN: pictures.json, 415 words a single emoji shows, chosen for A1–A2 with our Japanese), its
+// hotlinked from its CDN: pictures.json, 706 words a single emoji shows, chosen for A1–A2 with our Japanese), its
 // English name to spell (やさしい: one of three spellings; ふつう: its letters, the first given; むずかしい: its letters and
 // two more), its tier by the seat's level (TIERS).
 import data from './pictures.json';
