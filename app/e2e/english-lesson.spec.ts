@@ -122,9 +122,10 @@ test('a miss: the segment again with the cue, one retry, then 答えはこれ; n
   await expect(card).toHaveAttribute('data-result', 'shown');
   await expect(card.locator('[data-en-reveal]')).toContainText('答えはこれ');
   await expect(card.locator('[data-ans]')).toHaveAttribute('data-choice', String(q0.a));
-  // 意味 and 使えるフレーズ open; くわしく (言っていること, 迷いやすい点) opened by itself after a miss
+  // 意味 and 使えるフレーズ open; くわしく (言っていること, 迷いやすい点) one tap away, a miss too
   await expect(card.locator('[data-en-reveal] .phrase')).toBeVisible();
-  await expect(card.locator('[data-en-more]')).toHaveAttribute('open', '');
+  await expect(card.locator('[data-en-more]')).not.toHaveAttribute('open', '');
+  await card.locator('[data-en-more] summary').click();
   await expect(card.locator('[data-en-said]')).toBeVisible();
   await expect(card.locator('[data-en-reveal]')).toContainText('言っていること');
   await expect(card.locator('[data-en-reveal] u')).toHaveText([...q0.line!.matchAll(/\*(.+?)\*/g)].map((m) => m[1]));
@@ -143,12 +144,10 @@ test('a miss: the segment again with the cue, one retry, then 答えはこれ; n
     else await cardAt(page, i).locator(`[data-choice="${x.a}"]`).click();
     await expect(cardAt(page, i)).toHaveAttribute('data-result', how);
     if (how !== 'shown') await expect(cardAt(page, i).locator('[data-en-reveal]')).toContainText(how === 'first' ? '◎ 聞き取れた！' : '○ 聞き取れた！');
-    // くわしく: closed on a first try (a tap opens it), open after a miss
+    // くわしく: closed whatever the pick, a tap opens it
     const said = cardAt(page, i).locator('[data-en-said]');
-    if (how === 'first') {
-      await expect(said).toBeHidden();
-      await cardAt(page, i).locator('[data-en-more] summary').click();
-    }
+    await expect(said).toBeHidden();
+    await cardAt(page, i).locator('[data-en-more] summary').click();
     await expect(said).toBeVisible();
   }
 });
@@ -619,6 +618,7 @@ test('a question’s Japanese, when written: hidden till 訳を見る (then on e
   await expect(card.locator('[data-en-choice-ja]')).toHaveCount(await card.locator('[data-choice]').count());
   // the next questions show it too; a form item's choices' only at the reveal
   const ids = [q0.id];
+  const right: [string, number, number, number][] = [[q0.id, 1, q0.a!, 0]];
   for (let i = 1; ; i++) {
     await press(lesson(page).locator('[data-en-next]'));
     if (!(await cardAt(page, i).count())) break;
@@ -628,18 +628,27 @@ test('a question’s Japanese, when written: hidden till 訳を見る (then on e
     await expect(c.locator('[data-en-ja-show]')).toHaveCount(0);
     if (q.ja) await expect(c.locator('[data-en-stem-ja]')).toBeVisible();
     if (q.choices && ['marker', 'phrase', 'sound'].includes(q.skill)) await expect(c.locator('[data-en-choice-ja]')).toHaveCount(0);
+    // a meaning item's choices: the Japanese the choice, its English under it only once answered
+    if (q.choices && ['gist', 'infer', 'pragma', 'attitude', 'who', 'humor'].includes(q.skill)) {
+      for (const b of await c.locator('[data-choice]').all()) await expect(b.locator('.prl')).toHaveText(`訳${await b.getAttribute('data-choice')}`);
+      await expect(c.locator('[data-en-choice-en]')).toHaveCount(0);
+      await press(c.locator(`[data-choice="${q.a}"]`));
+      right.push([q.id, 1, q.a!, 0]);
+      await expect(c.locator('[data-en-choice-en]')).toHaveCount(q.choices.length);
+      await expect(c.locator(`[data-choice="${q.a}"] [data-en-choice-en]`)).toHaveText(q.choices[q.a!]);
+    }
   }
   await expect(lesson(page).locator('[data-en-end]')).toBeVisible();
   // まとめ's payoff: this week's dot just earned
   await expect(lesson(page).locator('[data-en-end-week]')).toHaveAttribute('data-en-end-week', '1');
   await expect(lesson(page).locator('[data-en-end-week]')).toHaveText('今週 1/3日');
-  // the listen row: question 1 first-time right, nothing else recorded (the unanswered aren't)
+  // the listen row: question 1 and the meaning items first-time right, nothing else recorded (the unanswered aren't)
   await expect(lesson(page).locator('.foot [data-en-done]')).toHaveAttribute('data-en-armed', '');
   await press(lesson(page).locator('[data-en-done]'));
   await expect.poll(async () => {
     const ev = await page.evaluate(() => (JSON.parse(localStorage.getItem('island-demo.events') ?? '{}').events ?? []).filter((e: { type: string }) => e.type === 'listen').map((e: { data: { r: unknown } }) => e.data.r));
     return ev.at(-1);
-  }).toEqual([[q0.id, 1, q0.a, 0]]);
+  }).toEqual(right);
 });
 
 test('a lesson plays on the silent switch: iOS audio session “playback” while it’s open, paused when the page is hidden, the island’s “ambient” again after', async ({ page }) => {

@@ -128,6 +128,7 @@ const S = {
   endWeek: { ja: '今週 {k}/3日', en: 'This week {k}/3 days' },
   endWeekMet: { ja: '今週の3日、達成！', en: '3 days this week!' },
   endAgain: { ja: 'もう一度聞きたい場面', en: 'Scenes to hear again' },
+  todayPhrase: { ja: '今日のフレーズ', en: 'Today’s phrase' },
   endAll: { ja: '全部、1回目で聞き取れたね ◎', en: 'Every one on the first listen ◎' },
   endWatch: { ja: 'もう一度、通して見る', en: 'Watch it through again' },
   endLeave: { ja: 'おわる', en: 'Finish' },

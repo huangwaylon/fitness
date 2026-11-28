@@ -23,7 +23,7 @@
   import { weekView, WEEK_TARGET } from '../progress.ts';
   import { TV_GM } from '#lib/contract/listen.ts';
   import type { CcMode, YtPlayer } from '../player.svelte.ts';
-  import { againOf, answersOf, blank, clean, dictate, heard, pick, reveal, review, settled, stepped, unansweredOf, type QState, type Review } from '../lesson.ts';
+  import { againOf, answersOf, blank, dictate, heard, pick, reveal, review, settled, stepped, unansweredOf, type QState, type Review } from '../lesson.ts';
   import { choiceOrder, draw, historyOf, seedOf } from '../draw.ts';
   import { newActive, sent, tick, touched, type Active } from '../active.ts';
   import { loadSaved, partWay, save } from '../session.ts';
@@ -134,7 +134,7 @@
   const cur = $derived(q ? (rv ? rv.st[rv.at] : st[at]) : null);
   /** The card's state settled: the play's, or ふりかえり's own. */
   const setCur = (x: QState) => (rv ? (rv = settled(rv, x)) : (st[at] = x));
-  const today = () => localDateAt(week.model?.now ?? Date.now());
+  const dayNow = () => localDateAt(week.model?.now ?? Date.now());
 
   function keep(): void {
     if (bank !== 'ready') return;
@@ -161,7 +161,7 @@
     const ms = Math.round(Math.min(act.unsent, 3_600_000));
     const g = `tv${Date.now().toString(36).slice(-6)}${Math.floor(Math.random() * 1296).toString(36).padStart(2, '0')}`;
     // (the answers in a finished play's rows only up to its まとめ: a later one would read as the next play's, draw.ts historyOf)
-    week.send('listen', { d: today(), g, gm: TV_GM, u: id, ms, ...(finished && { f: 1 }), r: finished || !sentDay ? answersOf(qs, st) : [] });
+    week.send('listen', { d: dayNow(), g, gm: TV_GM, u: id, ms, ...(finished && { f: 1 }), r: finished || !sentDay ? answersOf(qs, st) : [] });
     act = sent(act);
     keep();
   }
@@ -195,7 +195,7 @@
     // まとめ reached: the play's row (once; もう一度 the same day is a play of its own and writes its own). Only with the
     // bank in: before (loading, or failed) `len` is 0, so 質問へ's at 0 would read as まとめ
     if (bank === 'ready' && at === len && !sentDay) {
-      sentDay = today();
+      sentDay = dayNow();
       writeRow(true);
     }
   }
@@ -291,11 +291,27 @@
       return () => clearTimeout(t);
     });
   /** 訳を見る: the question's Japanese, hidden till tapped, then shown on every card for the rest of this lesson (the
-   *  review 11-24: a tap a card was friction for an A2 reader), always at the reveal; the choices' too (a form item's never before answering: it would answer it). Nothing recorded. */
+   *  review 11-24: a tap a card was friction for an A2 reader), always at the reveal; a listening item's choices' too (a
+   *  form item's never before answering: it would answer it). Nothing recorded. */
   let jaAll = $state(false);
   const FORM = new Set<Question['skill']>(['marker', 'phrase', 'sound', 'dict']);
+  /** A meaning item's choices in Japanese first, their English under them once answered (the owner 11-28: "the
+   *  questions were vague and hard to answer correctly"; first-try gist ~50 %, pragma ~33 % with English choices: what
+   *  was missed was reading three English readings of a scene, not hearing it). */
+  const MEANING = new Set<Question['skill']>(['gist', 'infer', 'pragma', 'attitude', 'who', 'humor']);
   const jaOn = $derived(!!cur?.r || jaAll);
-  const choiceJa = $derived(!!q?.choicesJa && !FORM.has(q.skill));
+  const jaFirst = $derived(!!q?.choicesJa && MEANING.has(q.skill));
+  /** The choices' Japanese 訳を見る shows (a listening item's: not a form one's, nor a meaning one's, already in it). */
+  const choiceJa = $derived(!!q?.choicesJa && !FORM.has(q.skill) && !jaFirst);
+  /** まとめ's 今日のフレーズ: the `use` of the first scene to hear again, else of the first phrase item (else the first
+   *  item's), as its English and its Japanese (the note's「English（日本語）」). */
+  const today = $derived.by(() => {
+    if (!end) return null;
+    const x = qs[again[0] ?? qs.findIndex((y) => y.skill === 'phrase')] ?? qs[0];
+    if (!x?.use) return null;
+    const [en, ja] = x.use.split('（');
+    return { en: en.trim(), ja: ja?.replace(/）\s*$/, '') ?? '' };
+  });
   /** An again row's words: the line heard there (the key words' stars dropped), else the phrase to use. */
   const phrase = (x: Question) => x.line?.replaceAll('*', '') ?? x.use.split('（')[0];
   /** A segment as the sheet says it, m:ss in whole seconds (57.3–63.45 → 0:57〜1:04), as the player's clock. */
@@ -360,8 +376,10 @@
           {#if q.choices}
             <div class="choices">
               {#each choiceOrder(q, rv ? `${seed}:rv` : seed) as i (i)}{@const c = q.choices[i]}{@const ja = cur.r || (jaAll && choiceJa) ? q.choicesJa?.[i] : undefined}
-                <button type="button" class="prow choice" class:ans={!!cur.r && i === q.a} class:tried={!cur.r && cur.miss > 0 && i === cur.pick} lang="en" data-sfx="tick" data-choice={i} data-ans={(!!cur.r && i === q.a) || undefined}
-                  aria-disabled={!!cur.r || undefined} onclick={() => !cur.r && choose(i)}><span class="prl">{c}{#if ja}<small lang="ja" data-en-choice-ja>{ja}</small>{/if}</span></button>
+                <button type="button" class="prow choice" class:ans={!!cur.r && i === q.a} class:tried={!cur.r && cur.miss > 0 && i === cur.pick} lang={jaFirst ? 'ja' : 'en'} data-sfx="tick" data-choice={i} data-ans={(!!cur.r && i === q.a) || undefined}
+                  data-en-ja-first={jaFirst || undefined} aria-disabled={!!cur.r || undefined} onclick={() => !cur.r && choose(i)}>
+                  {#if jaFirst}<span class="prl">{q.choicesJa?.[i]}{#if cur.r}<small lang="en" data-en-choice-en>{c}</small>{/if}</span>
+                  {:else}<span class="prl">{c}{#if ja}<small lang="ja" data-en-choice-ja>{ja}</small>{/if}</span>{/if}</button>
               {/each}
             </div>
           {:else}
@@ -383,8 +401,9 @@
               {#if q.line}<p class="line" lang="en"><KeyedText text={q.line} /></p>{/if}
               <dl class="why"><dt>{s('mean')}</dt><dd>{q.mean}</dd></dl>
               <p class="phrase"><b>{s('use')}</b> <span lang="en">{q.use}</span></p>
-              <!-- the deeper notes folded; open by themselves after a miss, when the trap matters most -->
-              <details class="more" open={!clean(cur.r)} data-en-more>
+              <!-- the deeper notes (言っていること, 迷いやすい点) one tap away, a miss too: 意味 and the phrase are what a card
+                   says (the owner 11-28 read too much and kept too little); the same card whatever the pick -->
+              <details class="more" data-en-more>
                 <summary data-sfx="tick">{s('details')}<Icon name="chevron-down" size={16} /></summary>
                 <dl class="why">
                   <dt>{s('said')}</dt><dd data-en-said>{q.said}</dd>
@@ -400,6 +419,7 @@
       <article class="card pad" data-en-end>
         <p class="lead"><b>{s('endHead')}</b><span class="meta"><Phrases text={s('endDone')} /></span></p>
         {#if wk > 0}<p class="wk" data-en-end-week={wk}><span class="dots" aria-hidden="true">{#each { length: WEEK_TARGET } as _, i (i)}<i class:on={i < wk}></i>{/each}</span>{wk >= WEEK_TARGET ? s('endWeekMet', { k: wk }) : s('endWeek', { k: wk })}</p>{/if}
+        {#if today}<p class="phrase today" data-en-phrase-today><b>{s('todayPhrase')}</b><span lang="en" data-en-phrase-today-en>{today.en}</span>{#if today.ja}<small data-en-phrase-today-ja>{today.ja}</small>{/if}</p>{/if}
         {#if again.length}
           <p class="meta" data-en-again-note><Phrases text={reviewed ? s('endAgain') : s('endReviewNote', { n: again.length })} /></p>
           <ul class="again">
@@ -492,6 +512,8 @@
   .why dt { font: 700 var(--fs-s)/1.4 var(--font-ui); color: var(--text-soft); }
   .why dd { margin: 0 0 4px; }
   .phrase { padding: 8px 10px; border-radius: var(--r-row); background: var(--card); font-size: var(--fs-body); }
+  .today { display: grid; gap: 2px; }
+  .today small { font-size: var(--fs-s); color: var(--text-soft); }
   .phrase b { font: 700 var(--fs-s)/1.4 var(--font-ui); color: var(--text-soft); margin-right: 4px; }
   .more summary { display: flex; align-items: center; gap: 4px; min-height: var(--hit); margin: -6px 0; list-style: none; cursor: pointer;
     font: 700 var(--fs-s)/1 var(--font-ui); color: var(--text-soft); -webkit-tap-highlight-color: transparent; }
