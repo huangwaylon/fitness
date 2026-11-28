@@ -1,3 +1,5 @@
+// ESL REVIEW 2026-11-28: keep 22, fix 2, retire 0, new 0 (i1's stem named Spencer for a line whose speaker the
+//   clip doesn't settle; p2's choicesJa added "how many" to "warn them about viewers")
 // R4 REVIEW 2026-11-18: keep 11, rewrite 4, retire 2, new 9, ctx 7, tx 10, qa 11
 // A2 REVIEW 2026-11-17: keep 3, rewrite 13, retire 6, new 1
 // A2 RAMP: one of the plan's first 30; detail/gist keys may reuse a heard word (clips.test RAMP, review 11-24 #8)
@@ -118,8 +120,8 @@ export const auditionDisaster: Clip = {
       use: 'Keep up, the tour is moving!（遅れないで、ツアー進んでるよ！）' },
 
     { id: 'i1', skill: 'infer', level: 'B1', point: 'urgent', seg: [130.6, 142.6],
-      stem: 'How does Spencer want Raul to drive?',
-      ja: 'スペンサーはラウルにどう運転してほしい？',
+      stem: 'How is Raul asked to drive?',
+      ja: 'ラウルはどう運転してと頼まれる？',
       choices: ['As fast as he can', 'Slowly and with care', 'Back home to get food'], a: 0,
       choicesJa: ['できるだけ速く', 'ゆっくり気をつけて', '食べ物を取りに家へ'],
       cue: '「drive like」のあと',
@@ -330,7 +332,7 @@ export const auditionDisaster: Clip = {
       stem: 'Why does the person from the show bring up followers?',
       ja: '番組の人がフォロワーの話をするのはなぜ？',
       choices: ['To get them back in the game', 'To warn them about viewers', 'To ask how many they have'], a: 0,
-      choicesJa: ['二人をゲームに戻すため', '見る人の多さを注意するため', '何人いるか聞くため'],
+      choicesJa: ['二人をゲームに戻すため', '見る人のことで注意するため', '何人いるか聞くため'],
       cue: '「content creator, right?」のあと',
       line: 'Some contestants on our show get *more than a million new followers*. / *Let’s do a challenge*, bro.',
       said: '「新しいフォロワーが100万人以上つく人もいる」と言うと、「やろう」と返る。',

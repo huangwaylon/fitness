@@ -1,3 +1,6 @@
+// ESL REVIEW 2026-11-28: keep 14, fix 6, retire 0, new 0 (g1 quoted the untested 77–79 s line, now "It’s not
+// cappuccino"; ph4's seg cut "power it down" at "power" (181.1 s): to 181.7, EXCLUDE trimmed to the crude line itself;
+// x1 seg to the end of "move it"; i2's third choice answers "how sure"; h1 an off-point star; g2 姉→姉妹)
 // R4 REVIEW 2026-11-18: keep 10, rewrite 7, retire 0, new 3, ctx 7, tx 7, qa 14
 // A2 REVIEW 2026-11-17: keep 8, rewrite 8, retire 4, new 1
 // A2 RAMP: one of the plan's first 30; detail/gist keys may reuse a heard word (clips.test RAMP, review 11-24 #8)
@@ -11,7 +14,7 @@
 // 16 s, 30–39 s (an unnamed talking head), 46–52 s (the Nard Dog nickname: captions garble it), 52–57 s (Luke's
 // favourite films), 77–79 s, 88–90 s ("Venus": a jab at looks), 99–108 s ("scram, twerp": rude), 114 s, 159 s ("lost him
 // in a forest"), 195–201 s, 212–220 s (the punishment itself: shown, not said), 245–247 s ("Texas justice"), 255 s.
-// EXCLUDE 181.2–183 (a crude line)
+// EXCLUDE 181.7–183 (a crude line; captions: "power it down" ends ≈ 181.6, the line starts 181.8)
 import type { Clip } from '../types.ts';
 
 export const michaelsNephew: Clip = {
@@ -108,7 +111,7 @@ export const michaelsNephew: Clip = {
       choices: ['It means “but”', 'It means “so”', 'It means “also”'], a: 0,
       choicesJa: ['「でも」の意味', '「だから」の意味', '「それに」の意味'],
       cue: '「He was the worst」のあと',
-      line: 'That face, how *ugly* he was. He was the worst. *Good worker, though.*',
+      line: 'That face, how ugly he was. He was the worst. *Good worker, though.*',
       said: '「あの顔、ひどかったな。最悪だった。仕事はできたけどね」と付け足す。',
       mean: '文の最後の though ＝「〜だけどね」。前の話と反対のことを付け足す。',
       trap: 'though は文の最後に来ると気づきにくい。but と同じで、前の話を少し打ち消す。',
@@ -120,10 +123,10 @@ export const michaelsNephew: Clip = {
       choices: ['He messes up simple jobs', 'He talks about movies too much', 'He comes in late every day'], a: 0,
       choicesJa: ['かんたんな仕事をだめにする', '映画の話ばかりする', '毎日おくれて来る'],
       cue: '同僚どうしの文句のところ',
-      line: '*He messed yours up, too.* … Did you send those samples…? Because *he didn’t get them*.',
+      line: '*It’s not cappuccino.* … Did you send those samples…? Because *he didn’t get them*.',
       said: 'コーヒーの注文をまちがえ、たのまれた見本もとどかない。同僚は「クビにすべき」と言う。',
       mean: 'mess up ＝ だめにする、まちがえる。かんたんな用事を何度も失敗している。',
-      trap: '映画好きの自己紹介を連想しやすいが、同僚が怒るのは仕事の失敗。messed up と didn’t get them が決め手。',
+      trap: '映画好きの自己紹介を連想しやすいが、同僚が怒るのは仕事の失敗。not cappuccino と didn’t get them が決め手。',
       use: 'He keeps getting my order wrong.（いつも注文をまちがえるんだ）' },
 
     { id: 's1', skill: 'sound', level: 'B2', point: 'gotto', reveals: ['lookinto'], seg: [77.1, 82.1],
@@ -153,8 +156,8 @@ export const michaelsNephew: Clip = {
     { id: 'i2', skill: 'infer', level: 'B2', point: 'ifasked', ctx: true, seg: [90.7, 99.6],
       stem: 'How sure is Luke that he sent the samples?',
       ja: 'ルークは、見本を送ったことにどのくらい自信がある？',
-      choices: ['Not really sure', 'Completely sure', 'He says no one asked'], a: 0,
-      choicesJa: ['あまり自信がない', '完全に自信がある', 'たのまれていないと言う'],
+      choices: ['Not really sure', 'Completely sure', 'Sure no one asked him'], a: 0,
+      choicesJa: ['あまり自信がない', '完全に自信がある', 'たのまれていないと確信'],
       cue: '答えの最初の「if」',
       line: 'Did you send those samples…? He didn’t get them. / Luke: If you asked me to do it, *I’m sure I did it*.',
       said: '「見本、送った？届いてないって」に「たのまれたなら、きっと送ったはず」と答える。',
@@ -188,7 +191,7 @@ export const michaelsNephew: Clip = {
       stem: 'Why is having Luke there a big deal for Michael?',
       ja: 'ルークがいることは、なぜマイケルにとって大事？',
       choices: ['His family stopped seeing him', 'His sister asked him to do it', 'Luke is a great worker'], a: 0,
-      choicesJa: ['家族に縁を切られていた', '姉にたのまれた', 'ルークは仕事ができる'],
+      choicesJa: ['家族に縁を切られていた', '姉妹にたのまれた', 'ルークは仕事ができる'],
       cue: '「Because his mother」のあと',
       line: '…his mother… kind of *cut me off* from that side of the family',
       said: 'ルークの母（異母姉妹）に、15年前に家族の縁を切られた話をする。',
@@ -251,7 +254,7 @@ export const michaelsNephew: Clip = {
       trap: '文法どおり Do you just want と書きたくなる。書き取りは、正しい形でなく言われた音を書く。',
       use: 'So you’re not coming tonight?（じゃあ今夜は来ないってこと？）', retired: true },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'goahead', seg: [176.5, 180.6],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'goahead', seg: [176.5, 181.0],
       stem: 'Type what Luke says: “I’m just gonna ___ it.” (4 words)', answer: 'go ahead and move',
       ja: 'ルークの言葉を入力：「I’m just gonna ___ it.」（4語）',
       cue: '「unclear here」のすぐあと',
@@ -261,7 +264,7 @@ export const michaelsNephew: Clip = {
       trap: 'ahead と and がつながり、1語に聞こえやすい。4語あるか数える。',
       use: 'I’ll go ahead and order for us.（先に注文しておくね）' },
 
-    { id: 'ph4', skill: 'phrase', level: 'B1', point: 'powerdown', seg: [177.0, 181.1],
+    { id: 'ph4', skill: 'phrase', level: 'B1', point: 'powerdown', seg: [177.0, 181.7],
       stem: 'What does Michael want Luke to do with the pointer?',
       ja: 'マイケルは、ルークにポインターをどうしてほしい？',
       choices: ['Switch it off', 'Point it lower', 'Move it a little'], a: 0,

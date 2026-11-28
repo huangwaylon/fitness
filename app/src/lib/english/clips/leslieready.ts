@@ -1,3 +1,5 @@
+// ESL REVIEW 2026-11-28: keep 22, fix 2, retire 0, new 0 (p4 ended at 202.4 s, before the captions' "get to work"
+//   202.7–202.9 s it asks about: now 189.4–204; d4 starts at 209 s so the doctorate its stem names is heard)
 // R4 REVIEW 2026-11-18: keep 13, rewrite 3, retire 2, new 8, ctx 6, tx 10, qa 14
 // A2 REVIEW 2026-11-17: keep 4, rewrite 12, retire 4, new 2
 // A2 RAMP: one of the plan's first 30; detail/gist keys may reuse a heard word (clips.test RAMP, review 11-24 #8)
@@ -305,7 +307,7 @@ export const leslieReady: Clip = {
       trap: '長い副詞 definitely に強勢を置きたくなる。否定のすぐあとの短い動詞が強ければ、対比の返し。',
       use: 'Not that I mind. Okay, I do.（気にしてないよ。いや、してる）' },
 
-    { id: 'p4', skill: 'phrase', level: 'B1', point: 'getwork', reveals: ['message'], seg: [189.4, 202.4],
+    { id: 'p4', skill: 'phrase', level: 'B1', point: 'getwork', reveals: ['message'], seg: [189.4, 204.0],
       stem: 'What does “get to work” mean here?',
       ja: 'ここでの「get to work」はどういう意味？',
       choices: ['Start working now', 'Arrive at the office', 'Go home from work'], a: 0,
@@ -317,7 +319,7 @@ export const leslieReady: Clip = {
       trap: 'get to 〜 ＝「〜に着く」から、職場に着く意味もある。ここは Now, go…（さあ）の命令なので「始めよう」。',
       use: 'Okay, let’s get to work.（よし、取りかかろう）' },
 
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'library', seg: [213.2, 223],
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'library', seg: [209.0, 223],
       stem: 'Besides the doctorate, what honor does Leslie get?',
       ja: '名誉博士号のほかに、レスリーは何を受ける？',
       choices: ['The library gets her name', 'She will teach at the school', 'Her papers go to the library'], a: 0,

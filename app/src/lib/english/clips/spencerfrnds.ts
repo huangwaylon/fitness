@@ -1,3 +1,5 @@
+// ESL REVIEW 2026-11-28: keep 20, fix 2, retire 0, new 0 (d2: "Not too young or too old" was true after "Perfect age";
+// i2: "The fries came very late" was true by the "About time" in its seg)
 // R4 REVIEW 2026-11-18: keep 15, rewrite 0, retire 1, new 6, ctx 8, tx 1, qa 5
 // A2 REVIEW 2026-11-17: keep 8, rewrite 9, retire 4, new 0
 // A2 RAMP: one of the plan's first 30; detail/gist keys may reuse a heard word (clips.test RAMP, review 11-24 #8)
@@ -125,8 +127,8 @@ export const spencerFriends: Clip = {
     { id: 'd2', skill: 'detail', level: 'B1', point: 'criteria', seg: [62.6, 71.9],
       stem: 'What do the girls say about how the stranger looks?',
       ja: 'その知らない男性の見た目について、女の子たちは何と言う？',
-      choices: ['Not too stupid or smart', 'Not too young or too old', 'Not too smart or loud'], a: 0,
-      choicesJa: ['ばかすぎず、頭よすぎない', '若すぎず、年すぎない', '頭よすぎず、うるさすぎない'],
+      choices: ['Not too stupid or smart', 'Not too big or too small', 'Not too smart or loud'], a: 0,
+      choicesJa: ['ばかすぎず、頭よすぎない', '大きすぎず、小さすぎない', '頭よすぎず、うるさすぎない'],
       cue: '「Perfect age」のあと、look に続く言葉。',
       line: 'Perfect age… Doesn’t look *too stupid or too smart*.',
       said: '「年もちょうど。ばかすぎず、頭よすぎない」と品定めする。',
@@ -233,8 +235,8 @@ export const spencerFriends: Clip = {
     { id: 'i2', skill: 'infer', level: 'B2', point: 'fries', reveals: ['abouttime'], ctx: true, seg: [178.1, 189.3],
       stem: 'Why does one of the men say “What the heck?”',
       ja: '男性の一人はなぜ「What the heck?」と言う？',
-      choices: ['Spencer took their fries', 'The fries came very late', 'Spencer wanted nachos'], a: 0,
-      choicesJa: ['スペンサーがポテトを取った', 'ポテトが来るのがおそかった', 'スペンサーがナチョスをほしがった'],
+      choices: ['Spencer took their fries', 'The fries were cold', 'Spencer wanted nachos'], a: 0,
+      choicesJa: ['スペンサーがポテトを取った', 'ポテトが冷めていた', 'スペンサーがナチョスをほしがった'],
       cue: '「What the heck」のすぐあとの文。',
       line: 'Oh, God, those look good. / What the heck? *You said you didn’t want chili fries*.',
       said: '「うまそう」と手を出し、「いらないって言ったじゃん」と言われる。',

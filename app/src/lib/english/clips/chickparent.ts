@@ -1,3 +1,5 @@
+// ESL REVIEW 2026-11-28: keep 16, fix 2, retire 0, new 0 (i1 seg now holds the "Who was up" it quotes, from 47.6 s; fight
+//   seg from the captions' 95.5–102.8 s, was 88–99.8 s: 7 s of silence and "than we used to" cut off)
 // R4 REVIEW 2026-11-18: keep 7, rewrite 8, retire 2, new 3, ctx 5, tx 4, qa 12
 // A2 REVIEW 2026-11-17: keep 5, rewrite 10, retire 9, new 2
 // A2 RAMP: one of the plan's first 30; detail/gist keys may reuse a heard word (clips.test RAMP, review 11-24 #8)
@@ -137,7 +139,7 @@ export const chickParent: Clip = {
       trap: 'four は「フォー」、nine は「ナイン」。「ファイヴ」と聞こえれば5。',
       use: 'I was up until three last night.（昨夜は3時まで起きてた）' },
 
-    { id: 'i1', skill: 'infer', level: 'B2', point: 'getup', ctx: true, seg: [50, 59.1],
+    { id: 'i1', skill: 'infer', level: 'B2', point: 'getup', ctx: true, seg: [47.6, 59.1],
       stem: 'What does the reply to “Who was up…?” mean?',
       ja: '「夜中に起きてたのは誰だ」への返事の意味は？',
       choices: ['I get up too, every time', 'I sleep through the night', 'I get up before you'], a: 0,
@@ -264,7 +266,7 @@ export const chickParent: Clip = {
       trap: 'what you が一語に聞こえ、語数を数えにくい。I know what you 〜 の形で拾う。',
       use: 'I know what you mean.（言いたいこと、分かるよ）' },
 
-    { id: 'fight', skill: 'detail', level: 'B1', point: 'fight', seg: [88, 99.8],
+    { id: 'fight', skill: 'detail', level: 'B1', point: 'fight', seg: [94, 101.6],
       stem: 'What has changed since they got the chick?',
       ja: 'ひよこが来てから、何が変わった？',
       choices: ['They fight more than before', 'They sleep less than before', 'They go out less than before'], a: 0,

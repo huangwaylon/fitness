@@ -1,3 +1,5 @@
+// ESL REVIEW 2026-11-28: keep 11, fix 3, retire 0, new 0 (a1: the third choice made parallel, not half-true;
+// s1: the ja's Japanese gap "遊び ___" didn't match the English gap; d4: the line's question mark)
 // R4 REVIEW 2026-11-18: keep 6, rewrite 8, retire 0, new 0, ctx 6, tx 2, qa 13
 // A2 REVIEW 2026-11-17: keep 6, rewrite 9, retire 3, new 0
 // A2 RAMP: one of the plan's first 30; detail/gist keys may reuse a heard word (clips.test RAMP, review 11-24 #8)
@@ -34,8 +36,8 @@ export const catFreddie: Clip = {
     { id: 'a1', skill: 'attitude', level: 'B1', point: 'here', ctx: true, seg: [3.6, 14.9],
       stem: 'How does Freddie react when Cat says Sam is “in here”?',
       ja: 'サムは「中にいる」と聞いて、フレディはどう反応する？',
-      choices: ['Relieved, and calls for Sam', 'Doubtful, and asks Cat again', 'Worried about Sam’s injuries'], a: 0,
-      choicesJa: ['ほっとして、サムを呼ぶ', '疑って、キャットにもう一度聞く', 'サムのけがを心配する'],
+      choices: ['Relieved, and calls out for Sam', 'Doubtful, and asks Cat again', 'Worried, and asks if she’s hurt'], a: 0,
+      choicesJa: ['ほっとして、サムを呼ぶ', '疑って、キャットにもう一度聞く', '心配して、けがはないか聞く'],
       cue: '答えを聞いた直後の短い一言と、次にすること。',
       line: 'Freddie: Is she in the hospital? / Cat: No, she’s *just in here*. / Freddie: *Oh, thanks.* Sam? Sam, where are you?',
       said: '「中にいるよ」と聞き、フレディは「ありがとう」と言ってサムを呼ぶ。',
@@ -85,7 +87,7 @@ export const catFreddie: Clip = {
       choices: ['Sam’s roommate', 'Sam’s neighbor', 'Sam’s sister'], a: 0,
       choicesJa: ['サムのルームメイト', 'サムの隣の人', 'サムの姉妹'],
       cue: '「so you’re Sam’s」のあとの一語。',
-      line: 'so you’re Sam’s *roommate*. – Uh-huh.',
+      line: 'so you’re Sam’s *roommate*? – Uh-huh.',
       said: '「じゃあ君がサムのルームメイト？」に、キャットが「うん」と答える。',
       mean: 'roommate ＝ 部屋を一緒に借りて住む人。Uh-huh ＝ うん（くだけた返事）。',
       trap: '家にいるので姉妹や隣の人も考えやすいが、聞こえた一語 roommate で決める。',
@@ -197,7 +199,7 @@ export const catFreddie: Clip = {
 
     { id: 's1', skill: 'sound', level: 'B2', point: 'wanna', reveals: ['hangout'], seg: [90.6, 93.7],
       stem: 'Fill the gap: “You ___ hang out with me today?”',
-      ja: '空所に入る語は？「今日、私と遊び ___？」',
+      ja: '空所に入る語は？「You ___ hang out with me today?」',
       choices: ['want to', 'wanted to', 'won’t'], a: 0,
       choicesJa: ['たい', 'たかった', 'ない（つもり）'],
       cue: '文の2語目、短く縮んだ音。',

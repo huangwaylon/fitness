@@ -1,3 +1,5 @@
+// ESL REVIEW 2026-11-28: keep 22, fix 1, retire 0, new 0 (f1: "Say it in your own way" was arguably true of "Use
+// your words!", now "Stop talking so much"; segs unchecked against json3: none in the repo, whisper agrees with them)
 // R4 REVIEW 2026-11-18: keep 14, rewrite 2, retire 1, new 7, ctx 5, tx 7, qa 10
 // A2 REVIEW 2026-11-17: keep 6, rewrite 11, retire 6, new 0
 // A2 RAMP: one of the plan's first 30; detail/gist keys may reuse a heard word (clips.test RAMP, review 11-24 #8)
@@ -20,13 +22,13 @@ export const grandpaAssistant: Clip = {
     { id: 'f1', skill: 'phrase', level: 'B2', point: 'words', seg: [5.3, 14.9],
       stem: 'What does “Use your words!” mean?',
       ja: '「Use your words!」はどういう意味？',
-      choices: ['Tell me what you need', 'Choose your words carefully', 'Say it in your own way'], a: 0,
-      choicesJa: ['何がほしいか言って', '言葉をよく選んで', '自分なりに言って'],
+      choices: ['Tell me what you need', 'Choose your words carefully', 'Stop talking so much'], a: 0,
+      choicesJa: ['何がほしいか言って', '言葉をよく選んで', 'しゃべりすぎないで'],
       cue: '水を3種類すすめたあとの一言。',
       line: 'More water? Less water? Sparkling water? *Use your words!*',
       said: '水は多め？少なめ？炭酸？と聞いて、「言葉で言って！」と付ける。',
       mean: 'Use your words ＝ 泣かずに言葉で言って。小さい子に言う決まり文句。ここでは植物に言っている。',
-      trap: 'your words から「自分の言葉で」と考えがちだが、ここは「（泣かずに）言葉で言って」。直前に水の種類を並べている。',
+      trap: 'your words から「言葉を選んで」と考えがちだが、ここは「（泣かずに）言葉で言って」。直前に水の種類を並べている。',
       use: 'Use your words, buddy. What’s wrong?（言葉で言ってごらん。どうしたの？）' },
 
     { id: 'd1', skill: 'detail', level: 'B1', point: 'wigs', seg: [12.4, 20.4],

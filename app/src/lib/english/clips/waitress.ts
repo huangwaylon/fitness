@@ -1,3 +1,4 @@
+// ESL REVIEW 2026-11-28: keep 13, fix 0, retire 0, new 0
 // R4 REVIEW 2026-11-18: keep 10, rewrite 3, retire 5, new 0, ctx 4, tx 5, qa 4
 // A2 REVIEW 2026-11-17: keep 7, rewrite 9, retire 4, new 2
 // A2 RAMP: one of the plan's first 30; detail/gist keys may reuse a heard word (clips.test RAMP, review 11-24 #8)

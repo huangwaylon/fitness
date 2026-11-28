@@ -1,3 +1,4 @@
+// ESL REVIEW 2026-11-28: keep 19, fix 1, retire 0, new 0 (pr1's trap no longer says every spoken kill means angry)
 // R4 REVIEW 2026-11-18: keep 7, rewrite 10, retire 0, new 3, ctx 8, tx 8, qa 8
 // A2 REVIEW 2026-11-17: keep 8, rewrite 9, retire 5, new 0
 // A2 RAMP: one of the plan's first 30; detail/gist keys may reuse a heard word (clips.test RAMP, review 11-24 #8)
@@ -93,7 +94,7 @@ export const bloomingdales: Clip = {
       line: 'Monica, *she will kill you*. She will kill you like a dog in the street.',
       said: '「モニカ、殺されるぞ。道ばたの犬みたいに」と2回言う。',
       mean: 'kill ＝ 文字どおりは「殺す」、ここでは「ものすごくおこる」という大げさな言い方。',
-      trap: '文字どおり取ると、けがをさせる話に聞こえやすい。会話の kill はたいてい「おこる」。',
+      trap: '文字どおり取ると、けがをさせる話に聞こえやすい。会話の 人 will kill you は、たいてい「すごくおこる」。',
       use: 'My boss is going to kill me.（上司にすごくおこられる）' },
     { id: 'c2', skill: 'attitude', level: 'C2', point: 'bigdeal', seg: [64.6, 88.9],
       stem: 'When Monica calls the trip “not that big a deal”, what is she not saying?',

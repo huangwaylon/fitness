@@ -1,3 +1,5 @@
+// ESL REVIEW 2026-11-28: keep 20, fix 1, retire 0, new 0 (a2: Carly's “I feel awful” is sympathy, not an apology:
+//   申し訳ない → 気の毒 / 心が痛む in its key's Japanese and notes)
 // R4 REVIEW 2026-11-18: keep 4, rewrite 8, retire 4, new 9, ctx 6, tx 5, qa 17
 // A2 REVIEW 2026-11-17: keep 2, rewrite 14, retire 7, new 0
 // A2 RAMP: one of the plan's first 30; detail/gist keys may reuse a heard word (clips.test RAMP, review 11-24 #8)
@@ -33,11 +35,11 @@ export const replaceHarry: Clip = {
       stem: 'How does Carly feel about Harry?',
       ja: 'カーリーはハリーのことをどう思っている？',
       choices: ['Sorry he isn’t getting better', 'Sick, like she caught it too', 'Angry that he won’t get better'], a: 0,
-      choicesJa: ['治らなくて申し訳ない', '自分もうつって具合が悪い', '治ろうとしないので怒っている'],
+      choicesJa: ['治らないのが気の毒', '自分もうつって具合が悪い', '治ろうとしないので怒っている'],
       cue: '「San Francisco」の話のあと',
       line: 'Well, I *feel awful*. I don’t know why he’s not getting better.',
-      said: '「本当に申し訳ない気分。なんで良くならないのか分からない」と言う。',
-      mean: 'feel awful ＝ ここでは「申し訳ない、つらい」。看病している人の言葉。',
+      said: '「本当に心が痛む。なんで良くならないのか分からない」と言う。',
+      mean: 'feel awful ＝ ここでは「心が痛む、つらい」。看病している人の言葉。',
       trap: 'feel awful は体調にも使うので、具合が悪いと勘違いしやすい。看病している側の気持ち。',
       use: 'I feel awful about being late.（遅れて本当にごめんね）' },
 

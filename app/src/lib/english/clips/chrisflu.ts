@@ -1,3 +1,6 @@
+// ESL REVIEW 2026-11-28: keep 12, fix 3, retire 0, new 0 (d2's distractor "has flu" → "has the flu"; s2, k2, g2 start
+//   after "Stop… pooping" (104.3 s), kept out like the vomit lines)
+// SKIP 84–105.3: the microchip callback (i2, retired) and the vomit, drawer and pooping lines, kept out
 // R4 REVIEW 2026-11-18: keep 11, rewrite 2, retire 3, new 2, ctx 4, tx 3, qa 5
 // A2 REVIEW 2026-11-17: keep 4, rewrite 9, retire 7, new 3
 // A2 RAMP: one of the plan's first 30; detail/gist keys may reuse a heard word (clips.test RAMP, review 11-24 #8)
@@ -41,7 +44,7 @@ export const chrisFlu: Clip = {
 
     { id: 'd2', skill: 'detail', level: 'B1', point: 'mask', reveals: ['whatswith'], ctx: true, seg: [7.5, 13.5],
       stem: 'Why is Chris wearing a mask?', ja: 'クリスはなぜマスクをしている？',
-      choices: ['So he won’t catch the flu', 'Because he already has flu', 'To keep dust out on runs'], a: 0,
+      choices: ['So he won’t catch the flu', 'He already has the flu', 'To keep dust out on runs'], a: 0,
       choicesJa: ['インフルにかからないため', 'もうインフルにかかっているから', '走るときにほこりを防ぐため'],
       cue: '質問への最初の答え',
       line: 'What’s with the mask? / *Flu prevention*.',
@@ -263,7 +266,7 @@ export const chrisFlu: Clip = {
       trap: '機械の話と取りやすい。前に出たたとえが、あとで説明なしに戻ってくることは多い。',
       use: 'My Monday brain has been compromised.（月曜の頭はもうダメ）' },
 
-    { id: 's2', skill: 'sound', level: 'B1', point: 'hafta', seg: [104, 109.5],
+    { id: 's2', skill: 'sound', level: 'B1', point: 'hafta', seg: [105.3, 109.5],
       stem: 'Fill the gap: “You ___ get up off the floor now.”', ja: '空所に入るのは？ “You ___ get up off the floor now.”',
       choices: ['have to', 'had to', 'want to'], a: 0,
       choicesJa: ['〜しなきゃ', '〜しなきゃいけなかった', '〜したい'],
@@ -274,7 +277,7 @@ export const chrisFlu: Clip = {
       trap: 'had to なら「ハットゥ」、want to なら「ワナ」。「ハフ」と f の音が聞こえれば have to。',
       use: 'I have to go now.（もう行かなきゃ）' },
 
-    { id: 'k2', skill: 'infer', level: 'B2', point: 'floor', reveals: ['hafta'], ctx: true, seg: [105.0, 111.5],
+    { id: 'k2', skill: 'infer', level: 'B2', point: 'floor', reveals: ['hafta'], ctx: true, seg: [105.4, 111.5],
       stem: 'What does Chris answer to “get up off the floor”?',
       ja: '「床から起きなきゃ」に、クリスは何と答える？',
       choices: ['He wants to stay there', 'He asks for some help', 'He gets up slowly'], a: 0,
@@ -286,7 +289,7 @@ export const chrisFlu: Clip = {
       trap: '答えに yes も no もないので迷いやすい。床を friend と呼ぶ＝離れたくない。',
       use: 'I don’t want to get up yet.（まだ起きたくない）' },
 
-    { id: 'g2', skill: 'gist', level: 'B2', point: 'lovesflu', seg: [105.2, 120.3],
+    { id: 'g2', skill: 'gist', level: 'B2', point: 'lovesflu', seg: [105.4, 120.4],
       stem: 'Why does Ann say “I love the flu”?', ja: 'アンはなぜ “I love the flu” と言う？',
       choices: ['He seems less scary now', 'She can skip the dinner', 'She likes caring for him'], a: 0,
       choicesJa: ['彼が前ほど近寄りがたくない', '夕食に行かなくていい', '看病するのが好き'],

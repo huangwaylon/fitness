@@ -1,3 +1,5 @@
+// ESL REVIEW 2026-11-28: keep 14, fix 1, retire 0, new 0 (x1's seg ran into Rachel's "we should do it again" at
+// 12.8 s, a second, different answer to type: it ends at 11.9 s, after "again" at 11.2 s)
 // R4 REVIEW 2026-11-18: keep 9, rewrite 3, retire 5, new 3, ctx 6, tx 0, qa 7
 // A2 REVIEW 2026-11-17: keep 2, rewrite 4, retire 2, new 10
 // A2 RAMP: one of the plan's first 30; detail/gist keys may reuse a heard word (clips.test RAMP, review 11-24 #8)
@@ -50,7 +52,7 @@ export const datinglang: Clip = {
       trap: 'walked を「歩いた」だけと思うと、送ってもらった話だと気づきにくい。to のあとが行き先。',
       use: 'Can I walk you to the station?（駅まで送ろうか）' },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'dothis', seg: [6.6, 14.5],
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'dothis', seg: [6.6, 11.9],
       stem: 'Type what he said: “We should ___.” (3 words)', ja: '彼が言ったことを書こう：“We should ___.”（3語）', answer: 'do this again',
       cue: '「We should」のあと',
       line: 'He walked me to the subway and said, “We should *do this again*.”',

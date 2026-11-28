@@ -1,3 +1,5 @@
+// ESL REVIEW 2026-11-28: keep 16, fix 2, retire 0, new 0 (p2: seg ran out on "out" at 95.6 s, now 96.4; g2: the line's
+// "I think you should" dropped to "should": captions "I think I should", whisper "you")
 // R4 REVIEW 2026-11-18: keep 9, rewrite 5, retire 3, new 4, ctx 9, tx 1, qa 8
 // A2 REVIEW 2026-11-17: keep 4, rewrite 11, retire 5, new 2
 // A2 RAMP: one of the plan's first 30; detail/gist keys may reuse a heard word (clips.test RAMP, review 11-24 #8)
@@ -191,7 +193,7 @@ export const dwightGun: Clip = {
       trap: 'us が弱く、make a や make it に聞こえやすい。make のあとは「人＋動詞」。',
       use: 'Don’t make me ask you twice.（2回言わせないで）' },
 
-    { id: 'p2', skill: 'phrase', level: 'B2', point: 'freaked', seg: [90.6, 95.6],
+    { id: 'p2', skill: 'phrase', level: 'B2', point: 'freaked', seg: [90.6, 96.4],
       stem: 'What does “I freaked you guys out” mean?',
       ja: '「I freaked you guys out」はどういう意味？',
       choices: ['I scared all of you', 'I made you all laugh', 'I made you all wait'], a: 0,
@@ -281,7 +283,7 @@ export const dwightGun: Clip = {
       choices: ['Take him to the hospital', 'Call his family', 'Let him rest at his desk'], a: 0,
       choicesJa: ['病院に連れて行く', '家族に電話する', '席で休ませる'],
       cue: '「something’s definitely wrong」から',
-      line: 'Something’s definitely wrong. … I think you should *go to the hospital*. … I’ll take them.',
+      line: 'Something’s definitely wrong. … should *go to the hospital*. … I’ll take them.',
       said: '症状を調べたあと「病院に行ったほうがいい」となり、ダリルが連れて行く。',
       mean: 'should go to the hospital ＝「病院に行ったほうがいい」。I’ll take them ＝ 私が連れて行く。',
       trap: 'ジョーに電話する話が出るので、だれかに電話して終わると考えがち。決め手は go to the hospital。',

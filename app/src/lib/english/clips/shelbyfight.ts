@@ -1,3 +1,5 @@
+// ESL REVIEW 2026-11-28: keep 23, fix 1, retire 0, new 0 (w1 was a pragma item asking only what Shelby wants, its key
+//   the line's own words: now asks how “What do you want?” sounds, as its notes already taught)
 // R4 REVIEW 2026-11-18: keep 7, rewrite 6, retire 3, new 11, ctx 7, tx 25, qa 7
 // A2 REVIEW 2026-11-17: keep 2, rewrite 14, retire 6, new 0
 // A2 RAMP: one of the plan's first 30; detail/gist keys may reuse a heard word (clips.test RAMP, review 11-24 #8)
@@ -254,15 +256,15 @@ export const shelbyFight: Clip = {
       use: 'Stop it, you’re making me blush!（やめてよ、照れるじゃん）' },
 
     { id: 'w1', skill: 'pragma', level: 'B2', point: 'want', ctx: true, seg: [243.8, 250.0],
-      stem: 'What does Shelby say she wants?',
-      ja: 'シェルビーは何がしたいと言う？',
-      choices: ['To talk to Carly', 'To fight Carly again', 'To find her coach'], a: 0,
-      choicesJa: ['カーリーと話したい', 'カーリーともう一度戦いたい', 'コーチを探したい'],
-      cue: '「What do you want?」への答え',
-      line: 'Friend: What do you want? / Shelby: *To talk to Carly*. I want to ask her what—',
-      said: '「何の用？」と聞かれ、シェルビーは「カーリーと話したいの」と答える。',
+      stem: 'How does “What do you want?” sound here?',
+      ja: 'ここでの「What do you want?」はどう聞こえる？',
+      choices: ['Cold, not friendly', 'Kind, ready to help', 'Happy and surprised'], a: 0,
+      choicesJa: ['冷たくて、そっけない', '親切で、手伝う気がある', 'うれしくて驚いている'],
+      cue: 'シェルビーが来たときの、最初の一言の調子。',
+      line: 'Friend: What do you want? / Shelby: To talk to Carly. I want to ask her what—',
+      said: '試合のあとに来たシェルビーに「何の用？」と聞き、シェルビーは「カーリーと話したいの」と答える。',
       mean: 'What do you want? ＝ ここでは「何の用？」。冷たく突き放す言い方なので、お店や職場では使わない。',
-      trap: 'want から、何か物がほしいと考えがち。答えは To talk to Carly（カーリーと話すこと）。',
+      trap: '店員の「ご用件は？」のような親切な質問に聞こえるが、相手はさっきカーリーと戦ったシェルビー。',
       use: 'I just want to talk.（ちょっと話したいだけなの）' },
 
     { id: 'g2', skill: 'gist', level: 'B1', point: 'cause', reveals: ['easy', 'gym', 'claim', 'getit', 'must', 'kid', 'admit'], seg: [262.6, 289.2],

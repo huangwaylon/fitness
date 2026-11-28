@@ -1,3 +1,4 @@
+// ESL REVIEW 2026-11-28: keep 22, fix 1, retire 0, new 0 (f6's cue spelled the holiday as whisper's "Hap-A-Ween")
 // R4 REVIEW 2026-11-18: keep 12, rewrite 6, retire 2, new 7, ctx 5, tx 20, qa 11
 // A2 REVIEW 2026-11-17: keep 4, rewrite 13, retire 6, new 1
 // A2 RAMP: one of the plan's first 30; detail/gist keys may reuse a heard word (clips.test RAMP, review 11-24 #8)
@@ -67,7 +68,7 @@ export const halfoween: Clip = {
       ja: 'ロボットは何のお礼を言う？',
       choices: ['Inviting it to the party', 'Giving it some candy', 'Opening the door'], a: 0,
       choicesJa: ['パーティーに招いてくれたこと', 'お菓子をくれたこと', 'ドアを開けてくれたこと'],
-      cue: '「Happy Hap-A-Ween!」のあと。',
+      cue: '「Happy Halfoween!」のあと。',
       line: '*Thank you for inviting me to your party.*',
       said: '「パーティーに招いてくれてありがとう」と言う。',
       mean: 'Thank you for 〜ing ＝ 〜してくれてありがとう。invite ＝ 招く。招かれた側の決まったあいさつ。',

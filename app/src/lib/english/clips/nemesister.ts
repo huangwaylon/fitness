@@ -1,3 +1,4 @@
+// ESL REVIEW 2026-11-28: keep 20, fix 1, retire 0, new 0 (d2's stem names Millicent, not a bare "her")
 // R4 REVIEW 2026-11-18: keep 8, rewrite 10, retire 0, new 3, ctx 4, tx 31, qa 10
 // A2 REVIEW 2026-11-17: keep 3, rewrite 13, retire 6, new 1
 // A2 RAMP: one of the plan's first 30; detail/gist keys may reuse a heard word (clips.test RAMP, review 11-24 #8)
@@ -214,8 +215,8 @@ export const spencerRoastsCarly: Clip = {
       use: 'Sorry I’m late. Did I miss anything?（遅れてごめん。何か見逃した？）' },
 
     { id: 'd2', skill: 'detail', level: 'B1', point: 'business', seg: [212.5, 225.3],
-      stem: 'Why does Freddie give her a keyboard?',
-      ja: 'フレディはなぜキーボードをあげる？',
+      stem: 'Why does Freddie give Millicent a keyboard?',
+      ja: 'フレディはなぜミリセントにキーボードをあげる？',
       choices: ['She’s starting a new business', 'She’s starting at a new school', 'She’s starting a new channel'], a: 0,
       choicesJa: ['新しく商売を始めるから', '新しい学校に入るから', '新しいチャンネルを始めるから'],
       cue: '「since you’re」のあと。',
