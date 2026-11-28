@@ -121,13 +121,13 @@ function playMoves(id = G, n = 900): Move[] {
 }
 
 describe('online: the rules', () => {
-  it('new games carry RULES 5 (GEN 2 boards: the id the layout seed); this build folds only those (an older start asks for the update)', () => {
-    expect([RULES, GEN]).toEqual(['5', 2]);
-    expect(['1', '2', '3', '4', '5', '6', undefined].map(playsRules)).toEqual([false, false, false, false, true, false, false]);
+  it('new games carry RULES 6 (GEN 2 boards: the id the layout seed); this build folds only those (an older start asks for the update)', () => {
+    expect([RULES, GEN]).toEqual(['6', 2]);
+    expect(['1', '2', '3', '4', '5', '6', '7', undefined].map(playsRules)).toEqual([false, false, false, false, false, true, false, false]);
     const start = (r: string, g = 'abcdefghij') => ({ g, i: 0, a: 'start', s: 'A2B2', l: 'n', r, who: 'A' }) as Move;
-    expect(foldMoves([start('5')], ctx)).toMatchObject({ layout: layoutKey('abcdefghij'), rules: '5' });
-    for (const r of ['1', '4', '6']) expect([otherRules([start(r)]), foldMoves([start(r)], ctx)]).toEqual([true, null]);
-    expect(otherRules([start('5')])).toBe(false);
+    expect(foldMoves([start('6')], ctx)).toMatchObject({ layout: layoutKey('abcdefghij'), rules: '6' });
+    for (const r of ['1', '5', '7']) expect([otherRules([start(r)]), foldMoves([start(r)], ctx)]).toEqual([true, null]);
+    expect(otherRules([start('6')])).toBe(false);
     // (an id from before layouts, 6–8 letters: none)
     expect(foldMoves([start('5', 'game01')], ctx)).toBeNull();
   });
@@ -166,7 +166,7 @@ describe('online: the rules', () => {
   // the results' `lastMini` aside; a deal copies its exchange's text into the state, so an edit to data/*.json that a pinned game deals
   // re-pins without a RULES bump. Re-pinned 2026-11-20 without a RULES bump, twice: the save's CONTENT lost the classic
   // board, then the cards' unread stars / gift; the fold otherwise the same: '10radj7' with the old CONTENT put back)
-  const PIN: Record<string, readonly [string, string]> = { '5': ['2h8owh', 'minigame00 minigame08 minigame21 minigame28 minigame35'] };
+  const PIN: Record<string, readonly [string, string]> = { '6': ['436jlh', 'minigame00 minigame08 minigame21 minigame28 minigame35'] };
   const hashOf = (ids: string) => {
     const g0 = newGame([{ who: 'A', name: 'A', level: 1 }, { who: 'B', name: 'B', level: 2 }], 'x', 'normal');
     const lists = [file('words.txt'), file('accept.txt'), JSON.stringify(everyday), JSON.stringify(linesJson)].map((x) => fnv1a(x));

@@ -15,8 +15,8 @@ export type Move = Omit<SgIntent, 'kind'> & { who: Who; t?: number };
  *  update (otherRules). Bump it with any change to what a fold makes of the moves: game.ts's rules, the cards, the
  *  pictures, the board generator (family.ts GEN), the mini-games and their deal, the word or line lists
  *  (mini/online.test's pin fails until it is). A game keeps the rules it started on; this build plays only its own
- *  ('1'–'4' retired 2026-11-20). */
-export const RULES = '5';
+ *  ('1'–'4' retired 2026-11-20, '5' 2026-11-28). */
+export const RULES = '6';
 export const playsRules = (r: string | undefined): boolean => r === RULES;
 /** Whether the game held was started on rules this build doesn't play (or before they were sent): it can't be played here. */
 export const otherRules = (log: readonly Move[]): boolean => log[0]?.a === 'start' && !playsRules(log[0].r);
