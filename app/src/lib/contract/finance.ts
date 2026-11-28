@@ -29,7 +29,7 @@ export const isFinType = (t: unknown): t is FinType => (FIN_TYPES as readonly un
 
 /** 100 % in basis points: a share is an integer 0…FIN_BP. */
 export const FIN_BP = 10_000;
-/** An amount at most (yen; at least 1). Times FIN_BP it stays a safe integer, so finSplit's arithmetic is exact. */
+/** An amount at most (yen; at least 1). */
 export const FIN_AMT_MAX = 100_000_000;
 /** An id's characters at most. */
 const FIN_ID = 64;
@@ -182,14 +182,17 @@ export function finSlot(type: FinType, d: Rec): string | null {
 export const finInstanceId = (templateId: string, month: string): string => `${templateId}#${month}`;
 
 /**
- * An amount split between the payer and the other person: the payer's part rounded half up (integer arithmetic,
- * exact), the other's the rest, so the two always add back to `amt`: a shared cost never loses or invents a yen.
+ * An amount split between the payer and the other person: the payer's part as the old app rounded it (Math.round of
+ * amt × the share as a fraction), the other's the rest, so the two always add back to `amt`: a shared cost never loses or invents a yen.
  * `amt` integer yen (0 allowed: a draft's), `ps` basis points; anything else throws rather than reaching a balance.
  */
 export function finSplit(amt: number, ps: number): { payerYen: number; otherYen: number } {
   if (!isInt(amt, 0, FIN_AMT_MAX)) throw new TypeError(`amt must be integer yen 0…${FIN_AMT_MAX}, got ${String(amt)}`);
   if (!isBp(ps)) throw new TypeError(`ps must be integer basis points 0…${FIN_BP}, got ${String(ps)}`);
-  const payerYen = Math.floor((amt * ps + FIN_BP / 2) / FIN_BP);
+  // (the old app's arithmetic exactly, sharedfinances money.js splitYen: Math.round(yen × share) on the fraction as a
+  // double, so a row moved over keeps its yen to the one: ps / FIN_BP is the same double as the old fraction for every
+  // whole-bp share; exact half-up integer maths gave 1 yen more at e.g. ¥45 × 0.7, 31.4999… → 31 there)
+  const payerYen = Math.round(amt * (ps / FIN_BP));
   return { payerYen, otherYen: amt - payerYen };
 }
 

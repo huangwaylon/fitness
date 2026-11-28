@@ -110,14 +110,14 @@ describe('the split never loses or invents a yen', () => {
     }
   });
 
-  it('can differ by a yen from the old app’s float rounding (Math.round(amt × fraction)) at a share like 0.7', () => {
-    // 45 × 0.7 is 31.499… in floats, so the old app gave the payer 31; the exact half up gives 32. The import's
-    // parity check compares each row's payerYen, so such a row is reported rather than silently moved.
-    expect(Math.round(45 * 0.7)).toBe(31);
-    expect(finSplit(45, 7000).payerYen).toBe(32);
-    // the even split, 80 % and the quarters agree everywhere the old app's amounts reach
-    for (const bp of [5000, 8000, 2000, 2500, 7500]) {
-      for (let amt = 1; amt <= 20000; amt++) if (finSplit(amt, bp).payerYen !== Math.round((amt * bp) / FIN_BP)) throw new Error(`${amt} ${bp}`);
+  it('is the old app’s arithmetic exactly (Math.round(amt × fraction)), so a row moved over keeps its yen', () => {
+    // 45 × 0.7 is 31.499… in floats: the old app gave the payer 31, and so does finSplit (exact half-up would give 32
+    // and move the balance by a yen on import)
+    expect(finSplit(45, 7000).payerYen).toBe(31);
+    // every whole-percent share and every amount the old app's rows reach agree with Math.round(amt × fraction)
+    for (let pct = 0; pct <= 100; pct++) {
+      const fraction = pct === 100 ? 1 : Number(`0.${String(pct).padStart(2, '0')}`);
+      for (let amt = 1; amt <= 20000; amt++) if (finSplit(amt, pct * 100).payerYen !== Math.round(amt * fraction)) throw new Error(`${amt} ${pct}%`);
     }
   });
 });
