@@ -44,6 +44,8 @@
     "english:wpm": "node scripts/english-wpm.ts",
     "english:segs": "node scripts/english-segs.ts",
     "english:plan": "node scripts/english-plan.ts",
+    "english:checks": "node scripts/english-checks.ts",
+    "english:blind": "node scripts/english-blind.ts",
     "sugoroku:words": "node scripts/sugoroku-words.ts",
     "models": "node scripts/models.ts",
     "room-models": "node scripts/room-models.ts",

@@ -1,7 +1,7 @@
 // English Study's mechanical content checks (docs/english.md "Content", Rules; the 2026-11-28 panel's O7): what a
 // reviewer kept finding by hand, checked against YouTube's word times (english-captions/<video>.en.json3 at the repo
 // root) and the whisper transcripts. clips.test.ts asserts each list empty; run alone it prints the offenders:
-//   node scripts/english-checks.ts [clip id…]
+//   npm run english:checks [-- clip id…]
 //   a. tail:  a live item's segment end + the player's 0.4 s run-on (and a predict's continuation) inside an EXCLUDE
 //   b. line:  the quoted line's starred words (a dictation's answer) not inside its segment by caption word times
 //   c. gap:   a fill-the-gap item's distractor that, put in the gap, is said inside the segment
@@ -15,16 +15,16 @@ import { CLIPS } from '../src/lib/english/clips/index.ts';
 import type { Clip, Question, TranscriptFile } from '../src/lib/english/types.ts';
 
 /** How long the player runs past a segment's end, s (docs/english.md "The player"). */
-export const RUN_ON = 0.4;
+const RUN_ON = 0.4;
 const HERE = join(import.meta.dirname, '../src/lib/english');
 const CAPTIONS = join(import.meta.dirname, '../../english-captions');
 
 type Span = readonly [number, number];
 type Json3 = { events?: { tStartMs?: number; segs?: { utf8?: string; tOffsetMs?: number }[] }[] };
 /** A caption word: normalized text, its start and (estimated) end, s. */
-export type Word = { w: string; t: number; e: number; loose?: true };
+type Word = { w: string; t: number; e: number; loose?: true };
 
-export const norm = (s: string) => s.toLowerCase().replace(/[’‘]/g, "'").replace(/[^a-z0-9']/g, '').replace(/'/g, '');
+const norm = (s: string) => s.toLowerCase().replace(/[’‘]/g, "'").replace(/[^a-z0-9']/g, '').replace(/'/g, '');
 
 const ONES = 'zero one two three four five six seven eight nine ten eleven twelve thirteen fourteen fifteen sixteen seventeen eighteen nineteen'.split(' ');
 const TENS = 'x x twenty thirty forty fifty sixty seventy eighty ninety'.split(' ');
@@ -40,7 +40,7 @@ function numberWords(w: string): string[] {
 }
 
 /** The caption words of a json3 file, in time order. */
-export function wordsOf(d: Json3): Word[] {
+function wordsOf(d: Json3): Word[] {
   const out: Word[] = [];
   for (const ev of d.events ?? [])
     for (const s of ev.segs ?? [])
@@ -60,10 +60,10 @@ export function wordsOf(d: Json3): Word[] {
 
 const SRC = new Map<string, string>();
 /** A clip's source file (its header markers). */
-export const srcOf = (c: Clip) => SRC.get(c.id) ?? (SRC.set(c.id, readFileSync(join(HERE, 'clips', `${c.id}.ts`), 'utf8')), SRC.get(c.id)!);
+const srcOf = (c: Clip) => SRC.get(c.id) ?? (SRC.set(c.id, readFileSync(join(HERE, 'clips', `${c.id}.ts`), 'utf8')), SRC.get(c.id)!);
 const CW = new Map<string, Word[] | null>();
 /** A clip's caption words, or null when it has no captions file. */
-export function captionsOf(c: Clip): Word[] | null {
+function captionsOf(c: Clip): Word[] | null {
   if (!CW.has(c.video)) {
     const p = join(CAPTIONS, `${c.video}.en.json3`);
     CW.set(c.video, existsSync(p) ? wordsOf(JSON.parse(readFileSync(p, 'utf8'))) : null);
@@ -71,7 +71,7 @@ export function captionsOf(c: Clip): Word[] | null {
   return CW.get(c.video)!;
 }
 const TF = new Map<string, TranscriptFile['lines'] | null>();
-export function transcriptOf(c: Clip): TranscriptFile['lines'] | null {
+function transcriptOf(c: Clip): TranscriptFile['lines'] | null {
   if (!TF.has(c.video)) {
     const p = join(HERE, 'transcripts', `${c.video}.en.json`);
     TF.set(c.video, existsSync(p) ? (JSON.parse(readFileSync(p, 'utf8')) as TranscriptFile).lines : null);
@@ -80,11 +80,11 @@ export function transcriptOf(c: Clip): TranscriptFile['lines'] | null {
 }
 
 /** A header's `// <tag> a–b[, c–d][: why]` spans. */
-export const spansOf = (src: string, tag: string): Span[] =>
+const spansOf = (src: string, tag: string): Span[] =>
   [...src.matchAll(new RegExp(`^// ${tag} ([^:\\n]*)`, 'gm'))].flatMap((m) => [...m[1].matchAll(/(\d+(?:\.\d+)?)\s*[–-]\s*(\d+(?:\.\d+)?)/g)].map((r) => [+r[1], +r[2]] as Span));
 const overlaps = (s: Span, spans: readonly Span[]) => spans.some(([x, y]) => s[0] < y && s[1] > x);
 /** What a live item plays: its segment and a predict's continuation, each with the run-on. */
-export const played = (q: Question): Span[] => [q.seg, ...(q.then ? [q.then] : [])].map((s) => [s[0], s[1] + RUN_ON] as Span);
+const played = (q: Question): Span[] => [q.seg, ...(q.then ? [q.then] : [])].map((s) => [s[0], s[1] + RUN_ON] as Span);
 const live = (c: Clip) => c.questions.filter((q) => !q.retired);
 const f1 = (n: number) => n.toFixed(1);
 
@@ -115,7 +115,7 @@ const SAME = new Set(['ok okay', 'okay ok', 'gonna going', 'going gonna', 'wanna
 
 /** A line's tokens (speaker labels, parentheses and stars dropped), each with whether it was starred and whether a
  *  fragment (… or a turn) ends after it. */
-export function tokensOf(line: string): { w: string; star: boolean; brk: boolean }[] {
+function tokensOf(line: string): { w: string; star: boolean; brk: boolean }[] {
   const out: { w: string; star: boolean; brk: boolean }[] = [];
   for (const turn of line.split(' / ')) {
     const body = turn.replace(/^\s*[A-Z][\w’'.]*(?: [A-Z][\w’'.]*){0,2}(?: \([^)]*\))?:\s/, '').replace(/\([^)]*\)/g, ' ');
@@ -137,7 +137,7 @@ export function tokensOf(line: string): { w: string; star: boolean; brk: boolean
 }
 
 /** The best local alignment of `toks` in cw[lo, hi): token index → caption word index, and the share matched. */
-export function align(toks: { w: string; brk: boolean }[], cw: Word[], lo: number, hi: number): { map: Map<number, number>; ratio: number } {
+function align(toks: { w: string; brk: boolean }[], cw: Word[], lo: number, hi: number): { map: Map<number, number>; ratio: number } {
   const n = toks.length, m = hi - lo, W = m + 1;
   const H = new Float32Array((n + 1) * W);
   let best = 0, bi = 0, bj = 0;
@@ -165,7 +165,7 @@ const HELD = 0.8;
 /** How far outside its segment a line is looked for, s (further off, a repeated word, not the line). */
 const NEAR = 5;
 /** Where a line sits in the captions near its item: each starred token's caption time, or why it can't be placed. */
-export function starTimes(q: Question, cw: Word[]): { star: (number | null)[]; ratio: number } | string {
+function starTimes(q: Question, cw: Word[]): { star: (number | null)[]; ratio: number } | string {
   const line = q.line ?? (q.answer ? `*${q.answer}*` : undefined);
   if (!line) return 'no line';
   let toks = tokensOf(line);
@@ -245,7 +245,7 @@ export function gapOffenders(c: Clip): string[] {
 // ── d. crude and drug words
 /** Words no played segment may carry (2026-11-28, beside clips.test.ts SWEAR): drugs, crude body and sex words. Not
  *  here, by choice: naked, nipple, hump, a baby's sex, a sex scandal (plain words in these shows). */
-export const CRUDE = /\b(cocaine|coke ?heads?|heroin|meth|marijuana|weed|stoned|stoner|smok(?:e|ed|ing) (?:pot|a joint|weed|crack)|pot ?brownies?|roll(?:ed|ing)? a joint|crack ?(?:head|pipe|cocaine)|pimp\w*|hookers?|prostitut\w*|whores?|sluts?|slutty|boob\w*|tits|titties|pee|peed|peeing|pees|piss\w*|porn\w*|virgin(?:s|ity)?|orgasm\w*|horny|condoms?|penis\w*|vagina\w*|boners?|erections?|masturbat\w*|testicles?|(?:have|having|had) sex|sex (?:stuff|life|tape)|sexual\w*)\b/gi;
+const CRUDE = /\b(cocaine|coke ?heads?|heroin|meth|marijuana|weed|stoned|stoner|smok(?:e|ed|ing) (?:pot|a joint|weed|crack)|pot ?brownies?|roll(?:ed|ing)? a joint|crack ?(?:head|pipe|cocaine)|pimp\w*|hookers?|prostitut\w*|whores?|sluts?|slutty|boob\w*|tits|titties|pee|peed|peeing|pees|piss\w*|porn\w*|virgin(?:s|ity)?|orgasm\w*|horny|condoms?|penis\w*|vagina\w*|boners?|erections?|masturbat\w*|testicles?|(?:have|having|had) sex|sex (?:stuff|life|tape)|sexual\w*)\b/gi;
 const crudeIn = (text: string) => text.match(CRUDE) ?? [];
 
 /** Where a whisper line's word (at character `k`) sits when the captions don't have it (bleeped, misheard: “boob” as
@@ -292,7 +292,7 @@ export function crudeOffenders(c: Clip): string[] {
 // ── e. no captions
 export const noCaptions = () => CLIPS.filter((c) => !captionsOf(c)).map((c) => c.id);
 
-export const CHECKS = { tail: tailOffenders, line: lineOffenders, gap: gapOffenders, crude: crudeOffenders } as const;
+const CHECKS = { tail: tailOffenders, line: lineOffenders, gap: gapOffenders, crude: crudeOffenders } as const;
 
 if (import.meta.url === pathToFileURL(process.argv[1] ?? '').href) {
   const only = process.argv.slice(2);

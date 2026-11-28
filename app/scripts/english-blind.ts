@@ -16,9 +16,9 @@ import { CLIPS } from '../src/lib/english/clips/index.ts';
 import { PLANNED } from '../src/lib/english/plan-order.ts';
 import type { Question } from '../src/lib/english/types.ts';
 
-export const SURE = 0.8;
+const SURE = 0.8;
 const BLIND = join(import.meta.dirname, '../src/lib/english/blind.json');
-export type Verdict = 'ok' | 'fixed' | 'retired';
+type Verdict = 'ok' | 'fixed' | 'retired';
 type Item = { clip: string; id: string; stem: string; choices: string[] };
 type Answer = { clip: string; id: string; pick: number; conf: number };
 
@@ -36,10 +36,10 @@ function order(clip: string, q: Question): number[] {
   return ix;
 }
 
-export const verdicts = (): Record<string, Record<string, Verdict>> => (existsSync(BLIND) ? JSON.parse(readFileSync(BLIND, 'utf8')) : {});
+const verdicts = (): Record<string, Record<string, Verdict>> => (existsSync(BLIND) ? JSON.parse(readFileSync(BLIND, 'utf8')) : {});
 
 /** The live choice items of the plan's first `n` clips, in plan order. */
-export function itemsOf(n: number): { clip: string; q: Question }[] {
+function itemsOf(n: number): { clip: string; q: Question }[] {
   return PLANNED.slice(0, n).flatMap((id) => {
     const c = CLIPS.find((x) => x.id === id);
     return c ? c.questions.filter((q) => !q.retired && q.choices && q.a !== undefined).map((q) => ({ clip: id, q })) : [];
